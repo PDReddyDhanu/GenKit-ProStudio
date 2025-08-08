@@ -15,14 +15,14 @@ export default function ProjectGallery() {
             <h1 className="text-4xl font-bold text-center mb-12 font-headline">Project Showcase</h1>
             
             {projects.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 [perspective:1000px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {projects.map((project, index) => {
                         const team = teams.find(t => t.id === project.teamId);
                         return (
                             <Card 
                                 key={project.id} 
-                                className="flex flex-col transition-all duration-300 transform-gpu hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]"
-                                style={{ animationDelay: `${index * 100}ms` }}
+                                className="flex flex-col transition-all duration-300 transform-gpu animate-slow-float"
+                                style={{ animationDelay: `${index * 150}ms`, animationDuration: '8s' }}
                             >
                                 <CardHeader>
                                     <CardTitle className="font-headline">{project.name}</CardTitle>

@@ -60,9 +60,9 @@ export default function TeamFinder() {
 
             <h2 className="text-2xl font-bold mb-6">Teams Looking for Members</h2>
             {teams.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [perspective:1000px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {teams.map(team => (
-                        <Card key={team.id} className="flex flex-col transition-all duration-300 transform-gpu hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20 hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]">
+                        <Card key={team.id} className="flex flex-col transition-all duration-300 transform-gpu animate-slow-float">
                             <CardHeader>
                                 <CardTitle className="font-headline">{team.name}</CardTitle>
                                 <CardDescription className="flex items-center gap-2">

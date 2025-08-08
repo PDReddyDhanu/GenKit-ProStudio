@@ -104,6 +104,20 @@ export default {
             '0%': { transform: 'translateY(30px) scale(0.95)', opacity: '0' },
             '100%': { transform: 'translateY(0) scale(1)', opacity: '1' },
         },
+        'slow-float': {
+            '0%': {
+                transform: 'translateY(0px) rotateX(0deg) rotateY(0deg)',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+            },
+            '50%': {
+                transform: 'translateY(-10px) rotateX(5deg) rotateY(3deg)',
+                boxShadow: '0 25px 50px -12px rgba(var(--primary), 0.25)'
+            },
+            '100%': {
+                transform: 'translateY(0px) rotateX(0deg) rotateY(0deg)',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+            },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -112,6 +126,7 @@ export default {
         'slide-in-up': 'slide-in-up 0.5s ease-in-out forwards',
         'slide-in-down': 'slide-in-down 0.5s ease-in-out forwards',
         'card-in': 'card-in 0.6s ease-out forwards',
+        'slow-float': 'slow-float 6s ease-in-out infinite',
       },
     },
   },
