@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Trophy } from 'lucide-react';
 
 export default function IntroAnimation() {
     const [isVisible, setIsVisible] = useState(true);
@@ -38,11 +39,17 @@ export default function IntroAnimation() {
             <div className="absolute inset-0 animate-lightning-flash opacity-0" style={{ animationDelay: '2.5s' }}></div>
             <div className="absolute inset-0 animate-lightning-flash opacity-0" style={{ animationDelay: '3.5s' }}></div>
             
-            <h1 className="z-10 text-5xl md:text-7xl font-extrabold tracking-tighter text-center font-headline text-white animate-title-reveal"
-                style={{ textShadow: '0 0 10px rgba(255,255,255,0.5), 0 0 20px rgba(192, 192, 255, 0.5)'}}
-            >
-                Welcome to HackSprint
-            </h1>
+            <div className="z-10 text-center animate-title-reveal">
+                <Trophy className="h-16 w-16 mx-auto mb-4 text-primary" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))' }}/>
+                <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-white font-headline"
+                    style={{ textShadow: '0 0 10px rgba(255,255,255,0.5), 0 0 20px rgba(192, 192, 255, 0.5)'}}
+                >
+                    Welcome to HackSprint
+                </h1>
+                <p className="text-sm text-gray-400 mt-4 opacity-70">
+                    developed by Dhanunjay Reddy
+                </p>
+            </div>
         </div>
     );
 }
