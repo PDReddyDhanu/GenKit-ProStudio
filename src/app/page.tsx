@@ -43,6 +43,16 @@ export default function Home() {
                     title="Team Formation"
                     description="Easily register, create, and join teams to start collaborating."
                 />
+                 <FeatureCard
+                    icon={<Users className="w-12 h-12" />}
+                    title="Team Finder"
+                    description="Discover teams or recruit members based on skills and interests."
+                />
+                <FeatureCard
+                    icon={<Lightbulb className="w-12 h-12" />}
+                    title="AI Idea Generation"
+                    description="Brainstorm project ideas with our intelligent suggestion system."
+                />
                 <FeatureCard
                     icon={<Github className="w-12 h-12" />}
                     title="Project Submissions"
@@ -54,11 +64,6 @@ export default function Home() {
                     description="Get instant, AI-powered feedback on your code submissions."
                 />
                 <FeatureCard
-                    icon={<Lightbulb className="w-12 h-12" />}
-                    title="AI Idea Generation"
-                    description="Brainstorm project ideas with our intelligent suggestion system."
-                />
-                <FeatureCard
                     icon={<Trophy className="w-12 h-12" />}
                     title="Fair Judging"
                     description="A dedicated portal for judges to score projects, enhanced with AI summaries."
@@ -67,11 +72,6 @@ export default function Home() {
                     icon={<BarChart className="w-12 h-12" />}
                     title="Live Leaderboard"
                     description="Track team progress in real-time with our dynamic leaderboard."
-                />
-                 <FeatureCard
-                    icon={<Users className="w-12 h-12" />}
-                    title="Team Finder"
-                    description="Discover teams or recruit members based on skills and interests."
                 />
                  <FeatureCard
                     icon={<Trophy className="w-12 h-12" />}

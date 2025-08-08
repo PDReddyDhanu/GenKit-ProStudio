@@ -73,11 +73,11 @@ export function Header() {
                     <span className="font-bold text-lg font-headline">HackSprint</span>
                 </Link>
                 <nav className="hidden md:flex items-center gap-4">
+                    <NavLink href="/teams">Teams</NavLink>
                     <NavLink href="/gallery">Showcase</NavLink>
-                    <NavLink href="/teams">Team Finder</NavLink>
                     <NavLink href="/leaderboard">Leaderboard</NavLink>
                     <NavLink href="/results">Results</NavLink>
-                    <NavLink href="/sponsors">Partners</NavLink>
+                    <NavLink href="/partners">Partners</NavLink>
                     <NavLink href="/admin">Admin</NavLink>
                 </nav>
                 <div className="flex items-center gap-4">
