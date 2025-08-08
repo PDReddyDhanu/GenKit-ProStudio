@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AdminDashboard from './_components/AdminDashboard';
 import { AuthMessage } from '@/components/AuthMessage';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Announcements from './_components/Announcements';
 
 export default function AdminPortal() {
     const { state, dispatch } = useHackathon();
@@ -46,5 +48,23 @@ export default function AdminPortal() {
         );
     }
 
-    return <AdminDashboard />;
+    return (
+        <div className="container max-w-7xl mx-auto py-12 animate-slide-in-up">
+            <h1 className="text-4xl font-bold mb-8 font-headline">Admin Dashboard</h1>
+            <AuthMessage />
+
+             <Tabs defaultValue="management" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="management">User Management</TabsTrigger>
+                    <TabsTrigger value="announcements">Announcements</TabsTrigger>
+                </TabsList>
+                <TabsContent value="management" className="mt-6">
+                    <AdminDashboard />
+                </TabsContent>
+                <TabsContent value="announcements" className="mt-6">
+                    <Announcements />
+                </TabsContent>
+            </Tabs>
+        </div>
+    );
 }

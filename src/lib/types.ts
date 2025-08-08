@@ -1,6 +1,13 @@
-export interface User {
-  id: string;
+export interface UserProfileData {
   name: string;
+  skills: string[];
+  bio: string;
+  github: string;
+  linkedin: string;
+}
+
+export interface User extends UserProfileData {
+  id: string;
   email: string;
   password: string; // WARNING: In a real app, never store plaintext passwords
   teamId?: string;

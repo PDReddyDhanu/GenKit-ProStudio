@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, FileText, Github, Trophy, Users } from "lucide-react";
+import { BarChart, FileText, Github, Lightbulb, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 
 const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => (
@@ -48,15 +48,35 @@ export default function Home() {
                     title="Project Submissions"
                     description="Seamlessly submit your projects with GitHub repository integration."
                 />
-                <FeatureCard
+                 <FeatureCard
                     icon={<FileText className="w-12 h-12" />}
+                    title="AI Code Review"
+                    description="Get instant, AI-powered feedback on your code submissions."
+                />
+                <FeatureCard
+                    icon={<Lightbulb className="w-12 h-12" />}
+                    title="AI Idea Generation"
+                    description="Brainstorm project ideas with our intelligent suggestion system."
+                />
+                <FeatureCard
+                    icon={<Trophy className="w-12 h-12" />}
                     title="Fair Judging"
-                    description="A dedicated portal for judges to score projects based on custom rubrics."
+                    description="A dedicated portal for judges to score projects, enhanced with AI summaries."
                 />
                 <FeatureCard
                     icon={<BarChart className="w-12 h-12" />}
                     title="Live Leaderboard"
                     description="Track team progress in real-time with our dynamic leaderboard."
+                />
+                 <FeatureCard
+                    icon={<Users className="w-12 h-12" />}
+                    title="Team Finder"
+                    description="Discover teams or recruit members based on skills and interests."
+                />
+                 <FeatureCard
+                    icon={<Trophy className="w-12 h-12" />}
+                    title="Project Showcase"
+                    description="A gallery of all submitted projects to celebrate the work."
                 />
             </div>
         </section>

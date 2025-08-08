@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useReducer, useContext, ReactNode, useEffect } from 'react';
-import { User, Team, Project, Judge, Score } from '../lib/types';
+import { User, Team, Project, Judge, Score, UserProfileData } from '../lib/types';
 import { JUDGING_RUBRIC } from '../lib/constants';
 
 interface HackathonState {
@@ -30,6 +30,7 @@ type Action =
   | { type: 'ADMIN_APPROVE_STUDENT'; payload: { userId: string } }
   | { type: 'LOGIN_JUDGE'; payload: { email: string; password: string } }
   | { type: 'SCORE_PROJECT'; payload: { projectId: string; scores: Score[] } }
+  | { type: 'UPDATE_USER_PROFILE', payload: { userId: string, profileData: Partial<UserProfileData> } }
   | { type: 'LOGOUT' }
   | { type: 'CLEAR_MESSAGES' };
 
@@ -66,6 +67,10 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
         email: action.payload.email,
         password: action.payload.password,
         status: 'pending',
+        skills: [],
+        bio: '',
+        github: '',
+        linkedin: ''
       };
       return {
         ...baseState,
@@ -92,10 +97,12 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
           members: [state.currentUser],
         };
         const updatedUser = { ...state.currentUser, teamId: newTeam.id };
+        const updatedUsers = state.users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
+
         return {
           ...baseState,
           teams: [...state.teams, newTeam],
-          users: state.users.map((u) => (u.id === updatedUser.id ? updatedUser : u)),
+          users: updatedUsers,
           currentUser: updatedUser,
           successMessage: 'Team created successfully!'
         };
@@ -108,17 +115,25 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
             if (teamToJoin) {
                 const updatedUser = { ...state.currentUser, teamId: teamToJoin.id };
                 const updatedTeam = { ...teamToJoin, members: [...teamToJoin.members, updatedUser] };
+                 const updatedUsers = state.users.map(u => u.id === updatedUser.id ? updatedUser : u);
+                const updatedTeams = state.teams.map(t => t.id === updatedTeam.id ? updatedTeam : t);
+                
+                // Update members array in all teams
+                updatedTeams.forEach(team => {
+                    team.members = team.members.map(member => updatedUsers.find(u => u.id === member.id) || member);
+                });
+
                 return {
                     ...baseState,
-                    teams: state.teams.map(t => t.id === updatedTeam.id ? updatedTeam : t),
-                    users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u),
+                    teams: updatedTeams,
+                    users: updatedUsers,
                     currentUser: updatedUser,
                     successMessage: `Successfully joined team: ${teamToJoin.name}`
                 };
             }
             return { ...state, authError: 'Invalid join code.' };
         }
-        return { ...state, authError: 'You are already in a team.' };
+        return { ...state, authError: 'You are already in a team or not logged in.' };
     }
     case 'SUBMIT_PROJECT': {
         const user = state.currentUser;
@@ -156,6 +171,10 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
             email: action.payload.email,
             password: action.payload.password,
             status: 'approved',
+            skills: [],
+            bio: '',
+            github: '',
+            linkedin: ''
         };
         return { ...baseState, users: [...state.users, newUser], successMessage: 'Student registered and approved successfully!' };
     }
@@ -219,6 +238,31 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
             }
         }
         return { ...state, authError: 'Could not score project.' };
+    }
+    case 'UPDATE_USER_PROFILE': {
+        const { userId, profileData } = action.payload;
+        const updatedUsers = state.users.map(u => 
+            u.id === userId ? { ...u, ...profileData } : u
+        );
+        const updatedCurrentUser = state.currentUser?.id === userId 
+            ? { ...state.currentUser, ...profileData } 
+            : state.currentUser;
+
+        // Also update the user inside any team they are a member of
+        const updatedTeams = state.teams.map(team => ({
+            ...team,
+            members: team.members.map(member => 
+                member.id === userId ? { ...member, ...profileData } : member
+            )
+        }));
+
+        return {
+            ...baseState,
+            users: updatedUsers,
+            currentUser: updatedCurrentUser,
+            teams: updatedTeams,
+            successMessage: 'Profile updated successfully!'
+        };
     }
     case 'LOGOUT': {
       const { users, teams, projects, judges } = state;
