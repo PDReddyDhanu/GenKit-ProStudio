@@ -42,7 +42,13 @@ const webSearch = ai.defineTool(
         inputSchema: z.object({
             query: z.string()
         }),
-        outputSchema: FetchGuidanceInfoOutputSchema,
+        outputSchema: z.object({
+            results: z.array(z.object({
+                title: z.string(),
+                link: z.string(),
+                snippet: z.string()
+            }))
+        }),
     },
     async (input) => {
         const searchResult = await search({ query: input.query });
@@ -82,7 +88,15 @@ const fetchGuidanceInfoFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await prompt(input);
-    return output!;
+    
+    // The model might not call the tool if it thinks it doesn't need to.
+    // If the tool is not called, we can call it manually.
+    if (!output || !output.results || output.results.length === 0) {
+        const toolResponse = await webSearch({ query: `${input.category} ${input.query}` });
+        return toolResponse;
+    }
+
+    return output;
   }
 );
 
