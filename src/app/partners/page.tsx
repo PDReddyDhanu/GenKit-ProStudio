@@ -25,14 +25,6 @@ const partners = [
         dataAiHint: 'IBM logo'
     },
     {
-        name: 'J.P. Morgan',
-        logo: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/J.P._Morgan_logo_2008.svg',
-        description: 'A global leader in financial services, offering solutions to corporations, governments and individuals.',
-        website: 'https://www.jpmorgan.com/',
-        tier: 'Platinum',
-        dataAiHint: 'JPMorgan logo'
-    },
-    {
         name: 'Infosys',
         logo: 'https://upload.wikimedia.org/wikipedia/commons/9/95/Infosys_logo.svg',
         description: 'A global leader in next-generation digital services and consulting.',
@@ -57,28 +49,12 @@ const partners = [
         dataAiHint: 'SAP logo'
     },
     {
-        name: 'Tech Mahindra',
-        logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/Tech_Mahindra_New_Logo.svg',
-        description: 'A multinational company specializing in digital transformation, consulting and business re-engineering services.',
-        website: 'https://www.techmahindra.com/',
-        tier: 'Gold',
-        dataAiHint: 'Tech Mahindra logo'
-    },
-    {
         name: 'Cisco',
         logo: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg',
         description: 'A worldwide leader in IT and networking that helps companies of all sizes transform how people connect.',
         website: 'https://www.cisco.com/',
         tier: 'Gold',
         dataAiHint: 'Cisco logo'
-    },
-    {
-        name: 'EPAM',
-        logo: 'https://upload.wikimedia.org/wikipedia/commons/f/fe/Epam_logo.svg',
-        description: 'A leading digital transformation services and product engineering company.',
-        website: 'https://www.epam.com/',
-        tier: 'Silver',
-        dataAiHint: 'EPAM logo'
     },
     {
         name: 'Infosys Springboard',
@@ -89,30 +65,6 @@ const partners = [
         dataAiHint: 'Infosys Springboard logo'
     },
     {
-        name: 'Eduskills',
-        logo: 'https://media.licdn.com/dms/image/D560BAQGw3a32TzGE6w/company-logo_200_200/0/1689230567246/eduskills_foundation_logo?e=2147483647&v=beta&t=Z1eO2sYw8z6q4c8J1kFp3sR-0fB5n8XlP-xKjJ4gY8w',
-        description: 'A non-profit organization that enables a skilled and employable workforce in India.',
-        website: 'https://eduskillsfoundation.org/',
-        tier: 'Silver',
-        dataAiHint: 'Eduskills logo'
-    },
-    {
-        name: 'Internshala',
-        logo: 'https://upload.wikimedia.org/wikipedia/en/2/2b/Internshala_logo.svg',
-        description: 'An internship and online training platform, helping students to find internships with organisations in India.',
-        website: 'https://internshala.com/',
-        tier: 'Silver',
-        dataAiHint: 'Internshala logo'
-    },
-    {
-        name: 'Qlik',
-        logo: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Qlik_Logo.svg',
-        description: 'A software company specializing in data visualization, business intelligence, and data analytics.',
-        website: 'https://www.qlik.com/',
-        tier: 'Silver',
-        dataAiHint: 'Qlik logo'
-    },
-    {
         name: 'Oracle',
         logo: 'https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg',
         description: 'A multinational computer technology corporation, known for its database software and technology.',
@@ -121,52 +73,12 @@ const partners = [
         dataAiHint: 'Oracle logo'
     },
     {
-        name: 'Talentio',
-        logo: 'https://www.talentio.in/assets/images/logo/talentio-logo.png',
-        description: 'A platform that helps companies hire the best tech talent with its skills-based assessment platform.',
-        website: 'https://www.talentio.in/',
-        tier: 'Bronze',
-        dataAiHint: 'Talentio logo'
-    },
-    {
-        name: 'TASK',
-        logo: 'https://www.task.telangana.gov.in/assets/images/task_logo_new_2.png',
-        description: 'Telangana Academy for Skill and Knowledge, enhancing employability quotient of youth in Telangana.',
-        website: 'https://www.task.telangana.gov.in/',
-        tier: 'Bronze',
-        dataAiHint: 'TASK logo'
-    },
-    {
-        name: 'Virtusa',
-        logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/Virtusa_Logo.svg',
-        description: 'A global provider of digital business strategy, digital engineering, and IT services and solutions.',
-        website: 'https://www.virtusa.com/',
-        tier: 'Bronze',
-        dataAiHint: 'Virtusa logo'
-    },
-    {
         name: 'AWS',
         logo: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg',
         description: 'Amazon Web Services offers reliable, scalable, and inexpensive cloud computing services.',
         website: 'https://aws.amazon.com/',
         tier: 'Bronze',
         dataAiHint: 'AWS logo'
-    },
-    {
-        name: 'VJIT Photography Club',
-        logo: 'https://vjit.ac.in/wp-content/uploads/2023/12/vjit-logo-1.png',
-        description: 'The official photography and videography club of Vidya Jyothi Institute of Technology.',
-        website: 'https://vjit.ac.in/campus-life-vjit/student-clubs/photography-club/',
-        tier: 'Community',
-        dataAiHint: 'camera lens'
-    },
-    {
-        name: 'Instacks',
-        logo: 'https://www.instacks.com/images/instacks-logo.svg',
-        description: 'A community for developers and tech enthusiasts to learn, share, and grow together.',
-        website: 'https://www.instacks.com/',
-        tier: 'Community',
-        dataAiHint: 'community people'
     }
 ];
 
