@@ -77,7 +77,7 @@ export function Header() {
                     <NavLink href="/teams">Team Finder</NavLink>
                     <NavLink href="/leaderboard">Leaderboard</NavLink>
                     <NavLink href="/results">Results</NavLink>
-                    <NavLink href="/sponsors">Sponsors</NavLink>
+                    <NavLink href="/sponsors">Partners</NavLink>
                     <NavLink href="/admin">Admin</NavLink>
                 </nav>
                 <div className="flex items-center gap-4">

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const sponsors = [
+const partners = [
     {
         name: 'Cognizant',
         logo: 'https://placehold.co/300x150.png',
@@ -173,33 +173,33 @@ const tierStyles = {
     Community: 'border-green-500'
 };
 
-const SponsorCard = ({ sponsor }: { sponsor: typeof sponsors[0] }) => (
-    <Card className={`text-center flex flex-col items-center border-2 transition-transform hover:scale-105 ${tierStyles[sponsor.tier as keyof typeof tierStyles]}`}>
+const PartnerCard = ({ partner }: { partner: typeof partners[0] }) => (
+    <Card className={`text-center flex flex-col items-center border-2 transition-transform hover:scale-105 ${tierStyles[partner.tier as keyof typeof tierStyles]}`}>
         <CardHeader className="w-full">
              <div className="relative w-full h-24 mb-4">
                  <Image 
-                    src={sponsor.logo} 
-                    alt={`${sponsor.name} logo`} 
+                    src={partner.logo} 
+                    alt={`${partner.name} logo`} 
                     layout="fill" 
                     objectFit="contain" 
-                    data-ai-hint={sponsor.dataAiHint}
+                    data-ai-hint={partner.dataAiHint}
                  />
             </div>
-            <CardTitle className="font-headline text-2xl">{sponsor.name}</CardTitle>
-            <p className="font-semibold text-secondary">{sponsor.tier} Sponsor</p>
+            <CardTitle className="font-headline text-2xl">{partner.name}</CardTitle>
+            <p className="font-semibold text-secondary">{partner.tier} Partner</p>
         </CardHeader>
         <CardContent className="flex-grow flex flex-col items-center">
-            <p className="text-muted-foreground mb-4 flex-grow">{sponsor.description}</p>
-            <Link href={sponsor.website} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+            <p className="text-muted-foreground mb-4 flex-grow">{partner.description}</p>
+            <Link href={partner.website} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
                 Visit Website
             </Link>
         </CardContent>
     </Card>
 );
 
-export default function SponsorsPage() {
-    // Sort sponsors by tier
-    const sortedSponsors = [...sponsors].sort((a, b) => {
+export default function PartnersPage() {
+    // Sort partners by tier
+    const sortedPartners = [...partners].sort((a, b) => {
         const tierOrder = { Platinum: 0, Gold: 1, Silver: 2, Bronze: 3, Community: 4 };
         return tierOrder[a.tier as keyof typeof tierOrder] - tierOrder[b.tier as keyof typeof tierOrder];
     });
@@ -208,16 +208,16 @@ export default function SponsorsPage() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
             <section className="text-center mb-16">
                 <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter mb-4 font-headline">
-                    Our Sponsors
+                    Our Partners
                 </h1>
                 <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground">
-                    This event is made possible by the generous support of our sponsors.
+                    This event is made possible by the generous support of our partners.
                 </p>
             </section>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {sortedSponsors.map(sponsor => (
-                    <SponsorCard key={sponsor.name} sponsor={sponsor} />
+                {sortedPartners.map(partner => (
+                    <PartnerCard key={partner.name} partner={partner} />
                 ))}
             </div>
         </div>
