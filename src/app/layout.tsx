@@ -6,6 +6,7 @@ import { HackathonProvider } from '@/context/HackathonProvider';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Toaster } from '@/components/ui/toaster';
+import IntroAnimation from '@/components/IntroAnimation';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -24,6 +25,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={cn("font-body antialiased", inter.variable, spaceGrotesk.variable)}>
         <HackathonProvider>
+          <IntroAnimation />
           <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8">
