@@ -17,9 +17,7 @@ const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export function Footer() {
   return (
     <footer className="w-full border-t py-8">
-      <div className="container mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 sm:flex-row sm:px-6 lg:px-8">
-        <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} HackSprint. All rights reserved.</p>
-        
+      <div className="container mx-auto flex max-w-7xl flex-col items-center justify-center gap-6 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-4">
             <p className="text-sm font-medium text-muted-foreground">Connect with Me</p>
             <div className="flex items-center gap-4">
@@ -45,11 +43,7 @@ export function Footer() {
                 </Link>
             </div>
         </div>
-
-        <Link href="https://github.com/Firebase-GenAI/HACKATHON-APP" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <Github className="h-5 w-5" />
-            <span className="text-sm">View on GitHub</span>
-        </Link>
+         <p className="text-sm text-muted-foreground text-center">&copy; 2025 HackSprint. (Dhanunjay Reddy) All rights reserved.</p>
       </div>
     </footer>
   );
