@@ -4,6 +4,7 @@ import { generateProjectIdea as generateProjectIdeaFlow, GenerateProjectIdeaInpu
 import { suggestThemes as suggestThemesFlow, SuggestThemesInput } from '@/ai/flows/ai-project-idea-suggestions';
 import { aiCodeReviewForSubmissions as aiCodeReviewFlow, AiCodeReviewForSubmissionsInput } from '@/ai/flows/ai-code-review-for-submissions';
 import { generateProjectSummary as generateProjectSummaryFlow, ProjectSummaryInput } from '@/ai/flows/project-summary-for-judges';
+import { fetchGuidanceInfo as fetchGuidanceInfoFlow, FetchGuidanceInfoInput, GuidanceInfo } from '@/ai/flows/fetch-guidance-info';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore';
 
@@ -46,6 +47,17 @@ export async function getAiProjectSummary(input: ProjectSummaryInput): Promise<s
         return "Failed to get AI project summary. Please try again.";
     }
 }
+
+export async function fetchGuidanceInfo(input: FetchGuidanceInfoInput): Promise<GuidanceInfo[]> {
+    try {
+        const result = await fetchGuidanceInfoFlow(input);
+        return result.results;
+    } catch (error) {
+        console.error("Error fetching guidance info:", error);
+        throw new Error("Failed to fetch guidance information.");
+    }
+}
+
 
 // Announcements Actions
 export async function postAnnouncement(message: string) {
