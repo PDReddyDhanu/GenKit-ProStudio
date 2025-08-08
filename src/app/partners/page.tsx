@@ -175,7 +175,7 @@ const tierStyles = {
 
 const PartnerCard = ({ partner, index }: { partner: typeof partners[0], index: number }) => (
     <Card 
-      className={`text-center flex flex-col items-center border-2 transition-all duration-300 transform-gpu animate-slow-float ${tierStyles[partner.tier as keyof typeof tierStyles]}`}
+      className={`text-center flex flex-col items-center border-2 transition-all duration-300 transform-gpu animate-card-in ${tierStyles[partner.tier as keyof typeof tierStyles]}`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
         <CardHeader className="w-full">
