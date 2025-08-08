@@ -42,16 +42,17 @@ const webSearch = ai.defineTool(
         inputSchema: z.object({
             query: z.string()
         }),
-        outputSchema: z.any(),
+        outputSchema: FetchGuidanceInfoOutputSchema,
     },
     async (input) => {
         const searchResult = await search({ query: input.query });
         // Map the search results to the expected format
-        return searchResult.map(res => ({
+        const results = searchResult.map(res => ({
             title: res.title,
             link: res.url,
             snippet: res.snippet
         }));
+        return { results };
     }
 );
 
@@ -63,7 +64,7 @@ const prompt = ai.definePrompt({
   tools: [webSearch],
   prompt: `You are a helpful assistant that provides users with real-time information about hackathons, tech news, jobs, and internships.
   
-  Based on the user's query and selected category, perform a web search to find the most relevant and up-to-date information.
+  Based on the user's query and selected category, perform a web search using the webSearch tool to find the most relevant and up-to-date information.
   
   Category: {{{category}}}
   User Query: {{{query}}}
