@@ -48,7 +48,7 @@ export default function IntroAnimation() {
                     HackSprint
                 </h1>
                 <p className="text-sm text-gray-400 mt-4 opacity-0 animate-credits-fade-in">
-                    developed by Dhanunjay Reddy
+                    Developed By Dhanunjay Reddy Palakolanu
                 </p>
             </div>
         </div>
