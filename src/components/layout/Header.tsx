@@ -73,7 +73,6 @@ export function Header() {
                     <span className="font-bold text-lg font-headline">HackSprint</span>
                 </Link>
                 <nav className="hidden md:flex items-center gap-4">
-                    <NavLink href="/guidance">Guidance</NavLink>
                     <NavLink href="/teams">Teams</NavLink>
                     <NavLink href="/gallery">Showcase</NavLink>
                     <NavLink href="/leaderboard">Leaderboard</NavLink>
