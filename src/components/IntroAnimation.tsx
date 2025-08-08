@@ -31,7 +31,7 @@ export default function IntroAnimation() {
     return (
         <div 
             className={cn(
-                "fixed inset-0 z-[200] flex flex-col items-center justify-center bg-gray-900 overflow-hidden transition-opacity duration-1000",
+                "fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#0a0a14] overflow-hidden transition-opacity duration-1000",
                 isVisible ? 'opacity-100' : 'opacity-0'
             )}
         >
@@ -40,9 +40,9 @@ export default function IntroAnimation() {
             <div className="absolute inset-0 animate-lightning-flash opacity-0" style={{ animationDelay: '3.5s' }}></div>
             
             <div className="z-10 text-center animate-title-reveal">
-                <Trophy className="h-16 w-16 mx-auto mb-4 text-primary" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))' }}/>
+                <Trophy className="h-16 w-16 mx-auto mb-4 text-primary" style={{ filter: 'drop-shadow(0 0 15px hsl(var(--primary)))' }}/>
                 <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-white font-headline"
-                    style={{ textShadow: '0 0 10px rgba(255,255,255,0.5), 0 0 20px rgba(192, 192, 255, 0.5)'}}
+                    style={{ textShadow: '0 0 10px rgba(255,255,255,0.7), 0 0 25px rgba(192, 192, 255, 0.6)'}}
                 >
                     Welcome to HackSprint
                 </h1>
