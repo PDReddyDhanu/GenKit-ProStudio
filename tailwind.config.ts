@@ -108,12 +108,16 @@ export default {
             '0%, 100%': { transform: 'translateY(0) rotate(-1deg)' },
             '50%': { transform: 'translateY(-10px) rotate(1deg)' },
         },
-        'lightning-flash': {
-            '0%, 100%': { opacity: '0', background: '#fff' },
-            '5%, 15%': { opacity: '0.6', background: 'hsl(var(--primary))' },
-            '10%, 20%': { opacity: '0' },
-            '50%, 60%': { opacity: '0.4', background: 'hsl(var(--secondary))' },
-            '55%, 65%': { opacity: '0' },
+        'electric-bg': {
+            '0%, 100%': { 'background-position': '0 0' },
+            '50%': { 'background-position': '10px 10px' },
+        },
+        'electric-glitch': {
+            '0%': { 'text-shadow': '1px 1px hsl(var(--secondary)), -1px -1px hsl(var(--accent))', transform: 'translate(0, 0)', opacity: 1 },
+            '25%': { 'text-shadow': '2px 2px hsl(var(--secondary)), -2px -2px hsl(var(--accent))', transform: 'translate(-1px, 1px)', opacity: 0.8 },
+            '50%': { 'text-shadow': '1px -1px hsl(var(--secondary)), -1px 1px hsl(var(--accent))', transform: 'translate(1px, -1px)', opacity: 1 },
+            '75%': { 'text-shadow': '-2px 1px hsl(var(--secondary)), 2px -1px hsl(var(--accent))', transform: 'translate(1px, 1px)', opacity: 0.7 },
+            '100%': { 'text-shadow': '1px 1px hsl(var(--secondary)), -1px -1px hsl(var(--accent))', transform: 'translate(0, 0)', opacity: 1 },
         },
         'text-reveal': {
             '0%': { opacity: '0', transform: 'scale(0.8)' },
@@ -133,7 +137,8 @@ export default {
         'slide-in-down': 'slide-in-down 0.5s ease-in-out forwards',
         'card-in': 'card-in 0.6s ease-out forwards',
         'slow-float': 'slow-float 8s ease-in-out infinite',
-        'lightning-flash': 'lightning-flash 4s linear forwards',
+        'electric-bg': 'electric-bg 0.1s linear infinite',
+        'electric-glitch': 'electric-glitch 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite',
         'text-reveal': 'text-reveal 4s ease-out forwards',
         'icon-glow': 'icon-glow 2s ease-in-out infinite alternate',
       },

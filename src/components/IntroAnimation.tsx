@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Trophy } from 'lucide-react';
+import { Bot } from 'lucide-react';
 
 export default function IntroAnimation() {
     const [isVisible, setIsVisible] = useState(true);
@@ -35,13 +35,13 @@ export default function IntroAnimation() {
                 isVisible ? 'opacity-100' : 'opacity-0'
             )}
         >
-            {/* Lightning Effect */}
-            <div className="absolute inset-0 animate-lightning-flash opacity-0"></div>
+            {/* Background static/glitch effect */}
+            <div className="absolute inset-0 z-0 opacity-10 animate-electric-bg"></div>
 
             {/* Title and Icon */}
             <div className="z-10 flex flex-col items-center justify-center animate-text-reveal">
-                <Trophy className="h-24 w-24 text-primary animate-icon-glow" />
-                <h1 className="mt-4 text-5xl md:text-6xl font-extrabold tracking-tighter text-center bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent font-headline">
+                <Bot className="h-24 w-24 text-primary animate-icon-glow" />
+                <h1 className="mt-4 text-5xl md:text-6xl font-extrabold tracking-tighter text-center font-headline animate-electric-glitch bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent">
                     Welcome to HackSprint
                 </h1>
             </div>
