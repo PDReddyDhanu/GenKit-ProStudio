@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+import PageIntro from '@/components/PageIntro';
+import { BarChart } from 'lucide-react';
 
 export default function Leaderboard() {
     const { state } = useHackathon();
     const { projects, teams } = state;
+    const [showIntro, setShowIntro] = useState(true);
 
     const leaderboardData = useMemo(() => {
         return projects
@@ -20,6 +23,10 @@ export default function Leaderboard() {
             .sort((a, b) => b.score - a.score)
             .slice(0, 10);
     }, [projects, teams]);
+
+    if (showIntro) {
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<BarChart className="w-full h-full" />} title="Leaderboard" description="Track team progress in real-time." />;
+    }
 
     return (
         <div className="container max-w-6xl mx-auto py-12 animate-fade-in">

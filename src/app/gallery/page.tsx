@@ -1,14 +1,20 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import { Github } from 'lucide-react';
+import { Github, GalleryVertical } from 'lucide-react';
+import PageIntro from '@/components/PageIntro';
 
 export default function ProjectGallery() {
     const { state } = useHackathon();
     const { projects, teams } = state;
+    const [showIntro, setShowIntro] = useState(true);
+    
+    if (showIntro) {
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<GalleryVertical className="w-full h-full" />} title="Project Showcase" description="A gallery of all submitted projects to celebrate the work." />;
+    }
 
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-fade-in">

@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Project } from '@/lib/types';
 import JudgingDashboard from './_components/JudgingDashboard';
 import { AuthMessage } from '@/components/AuthMessage';
+import PageIntro from '@/components/PageIntro';
+import { Scale } from 'lucide-react';
 
 export default function JudgePortal() {
     const { state, dispatch } = useHackathon();
@@ -16,11 +18,16 @@ export default function JudgePortal() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+    const [showIntro, setShowIntro] = useState(true);
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
         dispatch({ type: 'LOGIN_JUDGE', payload: { email, password } });
     };
+
+    if (showIntro) {
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Scale className="w-full h-full" />} title="Judge Portal" description="Evaluate submissions and decide the winners." />;
+    }
 
     if (!currentJudge) {
         return (

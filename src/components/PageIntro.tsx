@@ -1,11 +1,16 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Lightbulb } from 'lucide-react';
 
-export default function GuidanceIntro({ onFinished }: { onFinished: () => void }) {
+interface PageIntroProps {
+    onFinished: () => void;
+    icon: React.ReactNode;
+    title: string;
+    description: string;
+}
+
+export default function PageIntro({ onFinished, icon, title, description }: PageIntroProps) {
     const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
@@ -31,14 +36,16 @@ export default function GuidanceIntro({ onFinished }: { onFinished: () => void }
             )}
         >
             <div className="z-10 text-center animate-slow-zoom-in">
-                <Lightbulb className="h-16 w-16 mx-auto mb-4 text-primary animate-trophy-shine" style={{ filter: 'drop-shadow(0 0 20px hsl(var(--primary)))' }}/>
+                <div className="h-16 w-16 mx-auto mb-4 text-primary animate-trophy-shine" style={{ filter: 'drop-shadow(0 0 20px hsl(var(--primary)))' }}>
+                    {icon}
+                </div>
                 <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400 font-headline animate-title-reveal"
                     style={{ textShadow: '0 0 10px rgba(255,255,255,0.7), 0 0 25px rgba(192, 192, 255, 0.6)'}}
                 >
-                    Guidance Hub
+                    {title}
                 </h1>
                 <p className="text-sm text-gray-400 mt-4 opacity-0 animate-credits-fade-in">
-                    Your AI-powered career and hackathon coach.
+                    {description}
                 </p>
             </div>
         </div>

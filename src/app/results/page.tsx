@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { generateCertificate } from '@/lib/pdf';
 import { cn } from '@/lib/utils';
 import type { Project, Team, User } from '@/lib/types';
+import PageIntro from '@/components/PageIntro';
 
 interface Winner {
     project: Project;
@@ -57,6 +58,7 @@ const WinnerCard = ({ winner, rank }: { winner: Winner, rank: number }) => {
 export default function Results() {
     const { state } = useHackathon();
     const { projects, teams } = state;
+    const [showIntro, setShowIntro] = useState(true);
 
     const winners: Winner[] = useMemo(() => {
         return projects
@@ -68,6 +70,10 @@ export default function Results() {
                 team: teams.find(t => t.id === p.teamId)
             }));
     }, [projects, teams]);
+
+    if (showIntro) {
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Trophy className="w-full h-full" />} title="Final Results" description="Announcing the winners of the hackathon." />;
+    }
 
     return (
         <div className="container max-w-6xl mx-auto py-12 animate-fade-in">

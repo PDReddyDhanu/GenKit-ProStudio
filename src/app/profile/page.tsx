@@ -9,13 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { User, Github, Linkedin, Pencil } from 'lucide-react';
+import { User, Github, Linkedin, Pencil, UserCircle } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
+import PageIntro from '@/components/PageIntro';
 
 export default function ProfilePage() {
     const { state, dispatch } = useHackathon();
     const { currentUser } = state;
     const { toast } = useToast();
+    const [showIntro, setShowIntro] = useState(true);
 
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(currentUser?.name || '');
@@ -24,9 +26,22 @@ export default function ProfilePage() {
     const [github, setGithub] = useState(currentUser?.github || '');
     const [linkedin, setLinkedin] = useState(currentUser?.linkedin || '');
 
+    const handleIntroFinish = () => {
+        if (!currentUser) {
+            // Stay on intro if not logged in, as the main page just shows an auth message.
+            // Or we could have a state to show auth message directly.
+            // For now, just proceed.
+        }
+        setShowIntro(false);
+    };
+
+    if (showIntro) {
+        return <PageIntro onFinished={handleIntroFinish} icon={<UserCircle className="w-full h-full" />} title="Your Profile" description="Manage your personal details and skills." />;
+    }
+
     if (!currentUser) {
         return (
-            <div className="container max-w-md mx-auto py-12">
+            <div className="container max-w-md mx-auto py-12 animate-fade-in">
                  <Card>
                     <CardHeader>
                         <CardTitle className="text-center">Profile Page</CardTitle>

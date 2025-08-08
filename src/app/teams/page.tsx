@@ -8,12 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import PageIntro from '@/components/PageIntro';
 
 export default function TeamFinder() {
     const { state, dispatch } = useHackathon();
     const { teams, currentUser } = state;
     const { toast } = useToast();
     const [joinCode, setJoinCode] = useState('');
+    const [showIntro, setShowIntro] = useState(true);
 
     const handleJoinTeam = (e: React.FormEvent, code: string) => {
         e.preventDefault();
@@ -33,6 +35,10 @@ export default function TeamFinder() {
             });
         }
     };
+
+    if (showIntro) {
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Users className="w-full h-full" />} title="Team Finder" description="Find a team or recruit new members." />;
+    }
 
     return (
         <div className="container max-w-6xl mx-auto py-12 animate-fade-in">

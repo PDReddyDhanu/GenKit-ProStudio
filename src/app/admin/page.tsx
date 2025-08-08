@@ -10,17 +10,24 @@ import AdminDashboard from './_components/AdminDashboard';
 import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
+import PageIntro from '@/components/PageIntro';
+import { Shield } from 'lucide-react';
 
 export default function AdminPortal() {
     const { state, dispatch } = useHackathon();
     const { currentAdmin } = state;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showIntro, setShowIntro] = useState(true);
 
     const handleAdminLogin = (e: React.FormEvent) => {
         e.preventDefault();
         dispatch({ type: 'ADMIN_LOGIN', payload: { email, password } });
     };
+
+    if (showIntro) {
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Shield className="w-full h-full" />} title="Admin Portal" description="Manage the hackathon, users, and announcements." />;
+    }
 
     if (!currentAdmin) {
         return (

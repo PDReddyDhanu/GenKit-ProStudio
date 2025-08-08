@@ -1,6 +1,11 @@
+"use client";
+
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
+import PageIntro from '@/components/PageIntro';
+import { Handshake } from 'lucide-react';
 
 const partners = [
     {
@@ -202,6 +207,12 @@ const PartnerCard = ({ partner, index }: { partner: typeof partners[0], index: n
 );
 
 export default function PartnersPage() {
+    const [showIntro, setShowIntro] = useState(true);
+
+    if (showIntro) {
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Handshake className="w-full h-full" />} title="Our Partners" description="This event is made possible by the generous support of our partners." />;
+    }
+
     // Sort partners by tier
     const sortedPartners = [...partners].sort((a, b) => {
         const tierOrder = { Platinum: 0, Gold: 1, Silver: 2, Bronze: 3, Community: 4 };
