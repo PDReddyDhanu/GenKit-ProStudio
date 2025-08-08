@@ -4,7 +4,7 @@ import { BarChart, FileText, Github, Lightbulb, Trophy, Users } from "lucide-rea
 import Link from "next/link";
 
 const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => (
-    <Card className="text-center flex flex-col items-center border-border/60 transition-all duration-300 transform-gpu animate-slow-float">
+    <Card className="text-center flex flex-col items-center border-border/60 transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]">
         <CardHeader>
             <div className="mb-4 text-primary">{icon}</div>
             <CardTitle className="font-headline">{title}</CardTitle>
@@ -37,7 +37,7 @@ export default function Home() {
 
         <section className="py-24">
             <h2 className="text-3xl font-bold text-center mb-12 font-headline">Key Features</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 [perspective:1000px]">
                 <FeatureCard
                     icon={<Users className="w-12 h-12" />}
                     title="Team Formation"
