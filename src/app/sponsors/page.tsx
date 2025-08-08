@@ -4,60 +4,173 @@ import Link from 'next/link';
 
 const sponsors = [
     {
-        name: 'TechCorp',
+        name: 'Cognizant',
         logo: 'https://placehold.co/300x150.png',
-        description: 'Pioneering the future of technology with cutting-edge solutions.',
-        website: '#',
+        description: 'A multinational technology company providing business consulting, IT, and outsourcing services.',
+        website: 'https://www.cognizant.com/',
         tier: 'Platinum',
-        dataAiHint: 'technology circuit'
+        dataAiHint: 'Cognizant logo'
     },
     {
-        name: 'Innovate Inc.',
+        name: 'IBM',
         logo: 'https://placehold.co/300x150.png',
-        description: 'Driving innovation through creative software and hardware.',
-        website: '#',
+        description: 'A global technology corporation producing and selling computer hardware, middleware, and software.',
+        website: 'https://www.ibm.com',
+        tier: 'Platinum',
+        dataAiHint: 'IBM logo'
+    },
+    {
+        name: 'J.P. Morgan',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'A global leader in financial services, offering solutions to corporations, governments and individuals.',
+        website: 'https://www.jpmorgan.com/',
+        tier: 'Platinum',
+        dataAiHint: 'JPMorgan logo'
+    },
+    {
+        name: 'Infosys',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'A global leader in next-generation digital services and consulting.',
+        website: 'https://www.infosys.com/',
         tier: 'Gold',
-        dataAiHint: 'lightbulb gears'
+        dataAiHint: 'Infosys logo'
     },
     {
-        name: 'DevSolutions',
+        name: 'Salesforce',
         logo: 'https://placehold.co/300x150.png',
-        description: 'Providing robust development tools for modern programmers.',
-        website: '#',
+        description: 'A cloud-based software company specializing in customer relationship management (CRM) service.',
+        website: 'https://www.salesforce.com/',
         tier: 'Gold',
-        dataAiHint: 'code screen'
+        dataAiHint: 'Salesforce logo'
     },
     {
-        name: 'CloudScale',
+        name: 'SAP',
         logo: 'https://placehold.co/300x150.png',
-        description: 'Scalable cloud infrastructure for applications of any size.',
-        website: '#',
+        description: 'A multinational software corporation that develops enterprise software to manage business operations.',
+        website: 'https://www.sap.com/',
+        tier: 'Gold',
+        dataAiHint: 'SAP logo'
+    },
+    {
+        name: 'Tech Mahindra',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'A multinational company specializing in digital transformation, consulting and business re-engineering services.',
+        website: 'https://www.techmahindra.com/',
+        tier: 'Gold',
+        dataAiHint: 'Tech Mahindra logo'
+    },
+    {
+        name: 'Cisco',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'A worldwide leader in IT and networking that helps companies of all sizes transform how people connect.',
+        website: 'https://www.cisco.com/',
+        tier: 'Gold',
+        dataAiHint: 'Cisco logo'
+    },
+    {
+        name: 'EPAM',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'A leading digital transformation services and product engineering company.',
+        website: 'https://www.epam.com/',
         tier: 'Silver',
-        dataAiHint: 'cloud server'
+        dataAiHint: 'EPAM logo'
     },
     {
-        name: 'DataWeavers',
+        name: 'Infosys Springboard',
         logo: 'https://placehold.co/300x150.png',
-        description: 'Interpreting complex data to provide actionable insights.',
-        website: '#',
+        description: 'A digital learning platform by Infosys, providing a plethora of courses for students and professionals.',
+        website: 'https://www.infosys.com/springboard/',
         tier: 'Silver',
-        dataAiHint: 'data chart'
+        dataAiHint: 'Infosys Springboard logo'
     },
     {
-        name: 'StartupFuel',
+        name: 'Eduskills',
         logo: 'https://placehold.co/300x150.png',
-        description: 'Providing the seed funding that gets great ideas off the ground.',
-        website: '#',
+        description: 'A non-profit organization that enables a skilled and employable workforce in India.',
+        website: 'https://eduskillsfoundation.org/',
+        tier: 'Silver',
+        dataAiHint: 'Eduskills logo'
+    },
+    {
+        name: 'Internshala',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'An internship and online training platform, helping students to find internships with organisations in India.',
+        website: 'https://internshala.com/',
+        tier: 'Silver',
+        dataAiHint: 'Internshala logo'
+    },
+    {
+        name: 'Qlik',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'A software company specializing in data visualization, business intelligence, and data analytics.',
+        website: 'https://www.qlik.com/',
+        tier: 'Silver',
+        dataAiHint: 'Qlik logo'
+    },
+    {
+        name: 'Oracle',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'A multinational computer technology corporation, known for its database software and technology.',
+        website: 'https://www.oracle.com/',
+        tier: 'Silver',
+        dataAiHint: 'Oracle logo'
+    },
+    {
+        name: 'Talentio',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'A platform that helps companies hire the best tech talent with its skills-based assessment platform.',
+        website: 'https://www.talentio.in/',
         tier: 'Bronze',
-        dataAiHint: 'rocket launch'
+        dataAiHint: 'Talentio logo'
     },
+    {
+        name: 'TASK',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'Telangana Academy for Skill and Knowledge, enhancing employability quotient of youth in Telangana.',
+        website: 'https://www.task.telangana.gov.in/',
+        tier: 'Bronze',
+        dataAiHint: 'TASK logo'
+    },
+    {
+        name: 'Virtusa',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'A global provider of digital business strategy, digital engineering, and IT services and solutions.',
+        website: 'https://www.virtusa.com/',
+        tier: 'Bronze',
+        dataAiHint: 'Virtusa logo'
+    },
+    {
+        name: 'AWS',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'Amazon Web Services offers reliable, scalable, and inexpensive cloud computing services.',
+        website: 'https://aws.amazon.com/',
+        tier: 'Bronze',
+        dataAiHint: 'AWS logo'
+    },
+    {
+        name: 'VJIT Photography Club',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'The official photography and videography club of Vidya Jyothi Institute of Technology.',
+        website: 'https://vjit.ac.in/campus-life-vjit/student-clubs/photography-club/',
+        tier: 'Community',
+        dataAiHint: 'camera lens'
+    },
+    {
+        name: 'Instacks',
+        logo: 'https://placehold.co/300x150.png',
+        description: 'A community for developers and tech enthusiasts to learn, share, and grow together.',
+        website: '#',
+        tier: 'Community',
+        dataAiHint: 'community people'
+    }
 ];
 
 const tierStyles = {
     Platinum: 'border-primary shadow-lg shadow-primary/20',
     Gold: 'border-yellow-500',
     Silver: 'border-gray-400',
-    Bronze: 'border-yellow-700'
+    Bronze: 'border-yellow-700',
+    Community: 'border-green-500'
 };
 
 const SponsorCard = ({ sponsor }: { sponsor: typeof sponsors[0] }) => (
@@ -85,6 +198,12 @@ const SponsorCard = ({ sponsor }: { sponsor: typeof sponsors[0] }) => (
 );
 
 export default function SponsorsPage() {
+    // Sort sponsors by tier
+    const sortedSponsors = [...sponsors].sort((a, b) => {
+        const tierOrder = { Platinum: 0, Gold: 1, Silver: 2, Bronze: 3, Community: 4 };
+        return tierOrder[a.tier as keyof typeof tierOrder] - tierOrder[b.tier as keyof typeof tierOrder];
+    });
+
     return (
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
             <section className="text-center mb-16">
@@ -96,8 +215,8 @@ export default function SponsorsPage() {
                 </p>
             </section>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {sponsors.map(sponsor => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {sortedSponsors.map(sponsor => (
                     <SponsorCard key={sponsor.name} sponsor={sponsor} />
                 ))}
             </div>
