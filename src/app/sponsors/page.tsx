@@ -173,8 +173,11 @@ const tierStyles = {
     Community: 'border-green-500'
 };
 
-const PartnerCard = ({ partner }: { partner: typeof partners[0] }) => (
-    <Card className={`text-center flex flex-col items-center border-2 transition-transform hover:scale-105 ${tierStyles[partner.tier as keyof typeof tierStyles]}`}>
+const PartnerCard = ({ partner, index }: { partner: typeof partners[0], index: number }) => (
+    <Card 
+      className={`text-center flex flex-col items-center border-2 transition-all duration-300 transform-gpu hover:scale-105 hover:shadow-xl animate-card-in ${tierStyles[partner.tier as keyof typeof tierStyles]}`}
+      style={{ animationDelay: `${index * 100}ms` }}
+    >
         <CardHeader className="w-full">
              <div className="relative w-full h-24 mb-4">
                  <Image 
@@ -217,8 +220,8 @@ export default function PartnersPage() {
             </section>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {sortedPartners.map(partner => (
-                    <PartnerCard key={partner.name} partner={partner} />
+                {sortedPartners.map((partner, index) => (
+                    <PartnerCard key={partner.name} partner={partner} index={index} />
                 ))}
             </div>
         </div>

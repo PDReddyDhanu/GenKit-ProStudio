@@ -16,10 +16,14 @@ export default function ProjectGallery() {
             
             {projects.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {projects.map(project => {
+                    {projects.map((project, index) => {
                         const team = teams.find(t => t.id === project.teamId);
                         return (
-                            <Card key={project.id} className="flex flex-col">
+                            <Card 
+                                key={project.id} 
+                                className="flex flex-col transition-all duration-300 transform-gpu hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 animate-card-in"
+                                style={{ animationDelay: `${index * 100}ms` }}
+                            >
                                 <CardHeader>
                                     <CardTitle className="font-headline">{project.name}</CardTitle>
                                     <CardDescription>by {team?.name || 'Unknown Team'}</CardDescription>

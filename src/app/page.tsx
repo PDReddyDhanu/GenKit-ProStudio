@@ -4,7 +4,7 @@ import { BarChart, FileText, Github, Lightbulb, Trophy, Users } from "lucide-rea
 import Link from "next/link";
 
 const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => (
-    <Card className="text-center flex flex-col items-center border-border/60 hover:border-primary/50 transition-colors duration-300">
+    <Card className="text-center flex flex-col items-center border-border/60 transition-all duration-300 transform-gpu hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 animate-card-in">
         <CardHeader>
             <div className="mb-4 text-primary">{icon}</div>
             <CardTitle className="font-headline">{title}</CardTitle>
@@ -19,13 +19,13 @@ export default function Home() {
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
         <section className="text-center">
-            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent font-headline">
+            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent font-headline animate-slide-in-down">
                 Welcome to HackSprint
             </h1>
-            <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
+            <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
                 Your all-in-one platform for managing internal college hackathons. From registration to results, we&apos;ve got you covered.
             </p>
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
                 <Button size="lg" asChild>
                     <Link href="/student">Get Started as Student</Link>
                 </Button>
