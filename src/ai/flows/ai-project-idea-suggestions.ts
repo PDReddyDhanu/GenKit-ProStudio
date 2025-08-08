@@ -28,7 +28,7 @@ const prompt = ai.definePrompt({
   input: {schema: SuggestThemesInputSchema},
   output: {schema: SuggestThemesOutputSchema},
   prompt: `You are a helpful assistant that suggests themes for hackathon project ideas. 
-Given the user's query, suggest three relevant themes.
+Given the user's query, suggest three relevant themes. For example, if the user provides "Animal forest", you could suggest "Wildlife Conservation Tech", "Interactive Nature Experiences", and "Gamified Environmental Education".
 
 Query: {{{$input}}}
 
