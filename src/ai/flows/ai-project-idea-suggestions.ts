@@ -27,13 +27,11 @@ const prompt = ai.definePrompt({
   name: 'suggestThemesPrompt',
   input: {schema: SuggestThemesInputSchema},
   output: {schema: SuggestThemesOutputSchema},
-  prompt: `You are a helpful assistant that suggests themes for hackathon project ideas. 
-Given the user's query, suggest three relevant themes. For example, if the user provides "Animal forest", you could suggest "Wildlife Conservation Tech", "Interactive Nature Experiences", and "Gamified Environmental Education".
+  prompt: `You are an expert at generating hackathon themes. Your task is to generate exactly three creative and relevant hackathon themes based *directly* on the user's input. The themes must be closely related to the provided query. For example, if the user provides "Animal forest", you could suggest "Wildlife Conservation Tech", "Interactive Nature Experiences", and "Gamified Environmental Education".
 
-Query: {{{$input}}}
+User's Interest: {{{$input}}}
 
-Respond in JSON format.
-Themes:`, // Ensure response is in JSON format
+Respond in the required JSON format.`,
 });
 
 const suggestThemesFlow = ai.defineFlow(
