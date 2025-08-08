@@ -15,6 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { ThemeToggle } from './ThemeToggle';
 
 interface Announcement {
     id: string;
@@ -105,6 +106,8 @@ export function Header() {
                             </div>
                         </SheetContent>
                     </Sheet>
+                    
+                    <ThemeToggle />
 
                     {state.currentUser ? (
                         <div className="flex items-center gap-2">
