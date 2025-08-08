@@ -12,12 +12,12 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateProjectIdeaInputSchema = z.object({
-  theme: z.string().describe('The theme to generate a project idea for.'),
+  theme: z.string().describe('A user-provided interest or theme to generate a project idea for.'),
 });
 export type GenerateProjectIdeaInput = z.infer<typeof GenerateProjectIdeaInputSchema>;
 
 const GenerateProjectIdeaOutputSchema = z.object({
-  idea: z.string().describe('A creative and concise hackathon project idea.'),
+  idea: z.string().describe('A creative and concise hackathon project idea with a title and description.'),
 });
 export type GenerateProjectIdeaOutput = z.infer<typeof GenerateProjectIdeaOutputSchema>;
 
@@ -29,7 +29,7 @@ const prompt = ai.definePrompt({
   name: 'generateProjectIdeaPrompt',
   input: {schema: GenerateProjectIdeaInputSchema},
   output: {schema: GenerateProjectIdeaOutputSchema},
-  prompt: `Generate a creative and concise hackathon project idea based on the theme: "{{{theme}}}". The idea should be suitable for a 24-48 hour hackathon. Provide a short project name and a one-sentence description. For example: "Project: EchoLearn. Description: An AI-powered app that listens to lectures and generates summarized study notes."`,
+  prompt: `Generate a creative and concise hackathon project idea based on the user's interest: "{{{theme}}}". The idea should be suitable for a 24-48 hour hackathon. Provide a short project name and a one-sentence description. For example, if the user interest is "animal conservation", you might suggest: "Project: WildTrack. Description: An app that uses citizen-submitted photos to track and map local wildlife populations."`,
   config: {
     temperature: 0.8,
     maxOutputTokens: 100,
