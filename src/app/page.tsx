@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => (
     <Card className="text-center flex flex-col items-center border-border/60 transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]">
-        <CardHeader>
+        <CardHeader className="items-center">
             <div className="mb-4 text-primary">{icon}</div>
             <CardTitle className="font-headline">{title}</CardTitle>
         </CardHeader>
@@ -38,15 +38,10 @@ export default function Home() {
         <section className="py-24">
             <h2 className="text-3xl font-bold text-center mb-12 font-headline">Key Features</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 [perspective:1000px]">
-                <FeatureCard
+                 <FeatureCard
                     icon={<Users className="w-12 h-12" />}
                     title="Team Formation"
                     description="Easily register, create, and join teams to start collaborating."
-                />
-                 <FeatureCard
-                    icon={<Users className="w-12 h-12" />}
-                    title="Team Finder"
-                    description="Discover teams or recruit members based on skills and interests."
                 />
                 <FeatureCard
                     icon={<Lightbulb className="w-12 h-12" />}
@@ -58,10 +53,20 @@ export default function Home() {
                     title="Project Submissions"
                     description="Seamlessly submit your projects with GitHub repository integration."
                 />
+                <FeatureCard
+                    icon={<BarChart className="w-12 h-12" />}
+                    title="Live Leaderboard"
+                    description="Track team progress in real-time with our dynamic leaderboard."
+                />
                  <FeatureCard
                     icon={<FileText className="w-12 h-12" />}
                     title="AI Code Review"
                     description="Get instant, AI-powered feedback on your code submissions."
+                />
+                 <FeatureCard
+                    icon={<Trophy className="w-12 h-12" />}
+                    title="Project Showcase"
+                    description="A gallery of all submitted projects to celebrate the work."
                 />
                 <FeatureCard
                     icon={<Trophy className="w-12 h-12" />}
@@ -69,14 +74,9 @@ export default function Home() {
                     description="A dedicated portal for judges to score projects, enhanced with AI summaries."
                 />
                 <FeatureCard
-                    icon={<BarChart className="w-12 h-12" />}
-                    title="Live Leaderboard"
-                    description="Track team progress in real-time with our dynamic leaderboard."
-                />
-                 <FeatureCard
-                    icon={<Trophy className="w-12 h-12" />}
-                    title="Project Showcase"
-                    description="A gallery of all submitted projects to celebrate the work."
+                    icon={<Users className="w-12 h-12" />}
+                    title="Team Finder"
+                    description="Discover teams or recruit members based on skills and interests."
                 />
             </div>
         </section>
