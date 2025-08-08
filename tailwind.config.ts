@@ -104,30 +104,6 @@ export default {
             '0%': { transform: 'translateY(30px) scale(0.95)', opacity: '0' },
             '100%': { transform: 'translateY(0) scale(1)', opacity: '1' },
         },
-        'slow-float': {
-            '0%, 100%': { transform: 'translateY(0) rotate(-1deg)' },
-            '50%': { transform: 'translateY(-10px) rotate(1deg)' },
-        },
-        'electric-bg': {
-            '0%, 100%': { 'background-position': '0 0' },
-            '50%': { 'background-position': '10px 10px' },
-        },
-        'electric-glitch': {
-            '0%': { 'text-shadow': '1px 1px hsl(var(--secondary)), -1px -1px hsl(var(--accent))', transform: 'translate(0, 0)', opacity: 1 },
-            '25%': { 'text-shadow': '2px 2px hsl(var(--secondary)), -2px -2px hsl(var(--accent))', transform: 'translate(-1px, 1px)', opacity: 0.8 },
-            '50%': { 'text-shadow': '1px -1px hsl(var(--secondary)), -1px 1px hsl(var(--accent))', transform: 'translate(1px, -1px)', opacity: 1 },
-            '75%': { 'text-shadow': '-2px 1px hsl(var(--secondary)), 2px -1px hsl(var(--accent))', transform: 'translate(1px, 1px)', opacity: 0.7 },
-            '100%': { 'text-shadow': '1px 1px hsl(var(--secondary)), -1px -1px hsl(var(--accent))', transform: 'translate(0, 0)', opacity: 1 },
-        },
-        'text-reveal': {
-            '0%': { opacity: '0', transform: 'scale(0.8)' },
-            '40%': { opacity: '0', transform: 'scale(0.9)' },
-            '100%': { opacity: '1', transform: 'scale(1)' },
-        },
-        'icon-glow': {
-            '0%, 100%': { filter: 'drop-shadow(0 0 5px hsl(var(--primary)))' },
-            '50%': { filter: 'drop-shadow(0 0 20px hsl(var(--accent)))' },
-        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -136,11 +112,6 @@ export default {
         'slide-in-up': 'slide-in-up 0.5s ease-in-out forwards',
         'slide-in-down': 'slide-in-down 0.5s ease-in-out forwards',
         'card-in': 'card-in 0.6s ease-out forwards',
-        'slow-float': 'slow-float 8s ease-in-out infinite',
-        'electric-bg': 'electric-bg 0.1s linear infinite',
-        'electric-glitch': 'electric-glitch 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite',
-        'text-reveal': 'text-reveal 4s ease-out forwards',
-        'icon-glow': 'icon-glow 2s ease-in-out infinite alternate',
       },
     },
   },
