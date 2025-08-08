@@ -27,16 +27,13 @@ export const generateCertificate = async (teamName: string, projectName: string,
     const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 256, color: { dark: '#262626', light: '#00000000' }});
     const performance = getPerformanceDetails(averageScore);
 
-    // Subtle gradient background
-    const grad = doc.context2d.createLinearGradient(0, 0, pageWidth, pageHeight);
-    grad.addColorStop(0, '#f5f3ff'); // Very light violet
-    grad.addColorStop(1, '#fef2f2'); // Very light red
-    doc.setFillColor(grad);
+    // Subtle background color
+    doc.setFillColor('#F8F7FF'); // A very light, almost white lavender
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
     
     // Corner flourishes for a classic look
     const cornerSize = 30;
-    doc.setDrawColor('#a78bfa'); // Muted purple from primary palette
+    doc.setDrawColor('#A78BFA'); // Muted purple from primary palette
     doc.setLineWidth(0.5);
     // Top-left
     doc.line(10, 10 + cornerSize, 10, 10);
