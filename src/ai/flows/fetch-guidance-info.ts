@@ -45,7 +45,13 @@ const webSearch = ai.defineTool(
         outputSchema: z.any(),
     },
     async (input) => {
-        return await search(input.query);
+        const searchResult = await search(input.query);
+        // Map the search results to the expected format
+        return searchResult.map(res => ({
+            title: res.title,
+            link: res.url,
+            snippet: res.snippet
+        }));
     }
 );
 
