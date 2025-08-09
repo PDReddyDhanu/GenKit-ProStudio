@@ -251,5 +251,3 @@ const StudentPortal: React.FC = () => {
 };
 
 export default StudentPortal;
-
-    
