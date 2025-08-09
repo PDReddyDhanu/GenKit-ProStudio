@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
 import { Shield } from 'lucide-react';
+import DataManagement from './_components/DataManagement';
 
 export default function AdminPortal() {
     const { state, dispatch } = useHackathon();
@@ -61,15 +62,19 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue="management" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="management">User Management</TabsTrigger>
                     <TabsTrigger value="announcements">Announcements</TabsTrigger>
+                    <TabsTrigger value="data">Data & Reset</TabsTrigger>
                 </TabsList>
                 <TabsContent value="management" className="mt-6">
                     <AdminDashboard />
                 </TabsContent>
                 <TabsContent value="announcements" className="mt-6">
                     <Announcements />
+                </TabsContent>
+                <TabsContent value="data" className="mt-6">
+                    <DataManagement />
                 </TabsContent>
             </Tabs>
         </div>

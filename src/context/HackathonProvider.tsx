@@ -31,6 +31,7 @@ type Action =
   | { type: 'LOGIN_JUDGE'; payload: { email: string; password: string } }
   | { type: 'SCORE_PROJECT'; payload: { projectId: string; scores: Score[] } }
   | { type: 'UPDATE_USER_PROFILE', payload: { userId: string, profileData: Partial<UserProfileData> } }
+  | { type: 'RESET_HACKATHON' }
   | { type: 'LOGOUT' }
   | { type: 'CLEAR_MESSAGES' };
 
@@ -263,6 +264,17 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
             teams: updatedTeams,
             successMessage: 'Profile updated successfully!'
         };
+    }
+    case 'RESET_HACKATHON': {
+      if (state.currentAdmin) {
+        return {
+            ...defaultState,
+            currentAdmin: true,
+            isInitialized: true,
+            successMessage: "Hackathon data has been reset successfully."
+        };
+      }
+      return { ...state, authError: "Only admins can reset the hackathon."};
     }
     case 'LOGOUT': {
       const { users, teams, projects, judges } = state;
