@@ -44,6 +44,7 @@ const generateProjectIdeaFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
+    // The output from the prompt is already the structured object we need.
     return output!;
   }
 );
