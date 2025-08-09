@@ -35,7 +35,6 @@ const StudentPortal: React.FC = () => {
     const [projectDesc, setProjectDesc] = useState('');
     const [githubUrl, setGithubUrl] = useState('');
     const [ideaTheme, setIdeaTheme] = useState('');
-    const [apiKey, setApiKey] = useState('');
     const [generatedIdea, setGeneratedIdea] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
 
@@ -88,13 +87,13 @@ const StudentPortal: React.FC = () => {
     };
 
     const handleGenerateIdea = async () => {
-        if (!ideaTheme || !apiKey) {
-            setGeneratedIdea("Please provide an interest and your API key.");
+        if (!ideaTheme) {
+            setGeneratedIdea("Please provide an interest or theme.");
             return;
         }
         setIsGenerating(true);
         setGeneratedIdea('');
-        const idea = await generateProjectIdea(ideaTheme, apiKey);
+        const idea = await generateProjectIdea(ideaTheme);
         setGeneratedIdea(idea);
         setIsGenerating(false);
     }
@@ -193,10 +192,6 @@ const StudentPortal: React.FC = () => {
                         <div className="space-y-4 mb-6 p-4 border border-dashed border-dark-border rounded-lg">
                             <h4 className="font-semibold text-lg">Suggest an Idea</h4>
                             <div className='space-y-2'>
-                                <Label htmlFor="apiKey">Your Gemini API Key</Label>
-                                <Input id="apiKey" type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="Enter your Gemini API Key" />
-                            </div>
-                            <div className='space-y-2'>
                                 <Label htmlFor="ideaTheme">Describe your interests (e.g., "AI in Healthcare")</Label>
                                 <div className="flex gap-2">
                                      <Input id="ideaTheme" value={ideaTheme} onChange={e => setIdeaTheme(e.target.value)} placeholder="Sustainable Tech" />
@@ -254,5 +249,3 @@ const StudentPortal: React.FC = () => {
 };
 
 export default StudentPortal;
-
-    

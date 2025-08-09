@@ -1,11 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 
-export const generateProjectIdea = async (theme: string, apiKey: string): Promise<string> => {
-    if (!apiKey) {
-        return "API Key is not configured. Please enter your API Key.";
-    }
+export const generateProjectIdea = async (theme: string): Promise<string> => {
     try {
-        const ai = new GoogleGenAI(apiKey);
+        const ai = new GoogleGenAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY as string);
         const model = ai.getGenerativeModel({ model: "gemini-1.5-flash"});
 
         const prompt = `Generate a creative and concise hackathon project idea based on the theme: "${theme}". The idea should be suitable for a 24-48 hour hackathon. Provide a short project name and a one-sentence description. For example: "Project: EchoLearn. Description: An AI-powered app that listens to lectures and generates summarized study notes."`;
@@ -23,5 +20,3 @@ export const generateProjectIdea = async (theme: string, apiKey: string): Promis
         return "Failed to generate an idea. Please try again.";
     }
 };
-
-    
