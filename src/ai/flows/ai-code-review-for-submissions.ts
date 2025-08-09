@@ -16,7 +16,7 @@ const AiCodeReviewForSubmissionsInputSchema = z.object({
 export type AiCodeReviewForSubmissionsInput = z.infer<typeof AiCodeReviewForSubmissionsInputSchema>;
 
 const AiCodeReviewForSubmissionsOutputSchema = z.object({
-  review: z.string().describe('The AI-generated code review.'),
+  review: z.string().describe('The AI-generated code review in plain text.'),
 });
 export type AiCodeReviewForSubmissionsOutput = z.infer<typeof AiCodeReviewForSubmissionsOutputSchema>;
 
@@ -29,8 +29,11 @@ const prompt = ai.definePrompt({
   input: {schema: AiCodeReviewForSubmissionsInputSchema},
   output: {schema: AiCodeReviewForSubmissionsOutputSchema},
   prompt: `You are an AI code review assistant. You are provided with a GitHub repository URL.
-  You will review the code in the repository and provide a summary of the code quality, identify potential issues, and provide recommendations for improvement.
-  \n  GitHub URL: {{{githubUrl}}}`,
+You will review the code in the repository and provide a summary of the code quality, identify potential issues, and provide recommendations for improvement.
+
+IMPORTANT: Your entire response must be in plain text. Do not use any markdown formatting (like **, #, or *). Use simple line breaks to structure your response.
+
+GitHub URL: {{{githubUrl}}}`,
 });
 
 const aiCodeReviewForSubmissionsFlow = ai.defineFlow(
