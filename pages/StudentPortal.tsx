@@ -6,7 +6,6 @@ import { Label } from '../components/ui/Label';
 import { Card } from '../components/ui/Card';
 import { Textarea } from '../components/ui/Textarea';
 import { Team, Project } from '../types';
-import { generateProjectIdea } from '../services/geminiService';
 
 const AuthMessage = ({ message, type }: { message: string | null, type: 'success' | 'error' }) => {
     if (!message) return null;
@@ -34,11 +33,7 @@ const StudentPortal: React.FC = () => {
     const [projectName, setProjectName] = useState('');
     const [projectDesc, setProjectDesc] = useState('');
     const [githubUrl, setGithubUrl] = useState('');
-    const [ideaTheme, setIdeaTheme] = useState('');
-    const [apiKey, setApiKey] = useState('');
-    const [generatedIdea, setGeneratedIdea] = useState('');
-    const [isGenerating, setIsGenerating] = useState(false);
-
+    
     useEffect(() => {
         if(authError || successMessage){
             const timer = setTimeout(() => {
@@ -86,15 +81,6 @@ const StudentPortal: React.FC = () => {
         e.preventDefault();
         dispatch({ type: 'SUBMIT_PROJECT', payload: { name: projectName, description: projectDesc, githubUrl } });
     };
-
-    const handleGenerateIdea = async () => {
-        if (!ideaTheme) return;
-        setIsGenerating(true);
-        setGeneratedIdea('');
-        const idea = await generateProjectIdea(ideaTheme, apiKey);
-        setGeneratedIdea(idea);
-        setIsGenerating(false);
-    }
 
     if (!currentUser) {
         return (
@@ -187,28 +173,6 @@ const StudentPortal: React.FC = () => {
                         <p className="text-medium-text mb-1">Share this code to invite members: </p>
                         <p className="font-mono text-2xl text-brand-accent bg-dark-bg p-2 rounded-md inline-block mb-6">{currentTeam.joinCode}</p>
                         
-                        <div className="space-y-4 mb-6 p-4 border border-dashed border-dark-border rounded-lg">
-                            <h4 className="font-semibold text-lg">Need an Idea?</h4>
-                            <div className='space-y-2'>
-                                <Label htmlFor="apiKey">Your Gemini API Key</Label>
-                                <Input id="apiKey" type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="Enter your key here" />
-                            </div>
-                            <div className='space-y-2'>
-                                <Label htmlFor="ideaTheme">Enter a theme (e.g., "AI in Healthcare")</Label>
-                                <div className="flex gap-2">
-                                     <Input id="ideaTheme" value={ideaTheme} onChange={e => setIdeaTheme(e.target.value)} placeholder="Sustainable Tech" />
-                                     <Button onClick={handleGenerateIdea} disabled={isGenerating || !apiKey}>
-                                        {isGenerating ? 'Generating...' : 'Generate Idea'}
-                                     </Button>
-                                </div>
-                            </div>
-                            {generatedIdea && (
-                                <div className="bg-dark-bg p-3 rounded-md text-medium-text animate-fade-in">
-                                    <p className="font-mono">{generatedIdea}</p>
-                                </div>
-                            )}
-                        </div>
-
                         <h3 className="text-2xl font-bold mb-4 border-t border-dark-border pt-6">Submit Your Project</h3>
                         <form onSubmit={handleSubmitProject} className="space-y-4">
                             <div>
