@@ -18,7 +18,7 @@ const ProjectSummaryInputSchema = z.object({
 export type ProjectSummaryInput = z.infer<typeof ProjectSummaryInputSchema>;
 
 const ProjectSummaryOutputSchema = z.object({
-  summary: z.string().describe('A short summary of the project.'),
+  summary: z.string().describe('A medium-detail summary of the project.'),
 });
 export type ProjectSummaryOutput = z.infer<typeof ProjectSummaryOutputSchema>;
 
@@ -32,13 +32,18 @@ const prompt = ai.definePrompt({
   output: {schema: ProjectSummaryOutputSchema},
   prompt: `You are an AI assistant that summarizes hackathon projects for judges.
 
-  Given the project name, description, and GitHub URL, generate a concise summary that highlights the project's core idea and key features.
+  Based on the project name, description, and GitHub URL, generate a medium-length summary (3-4 sentences).
+
+  The summary should cover:
+  1. The core problem the project solves.
+  2. The main functionality or solution provided.
+  3. The potential impact or target audience.
 
   Project Name: {{{projectName}}}
   Project Description: {{{projectDescription}}}
   GitHub URL: {{{githubUrl}}}
 
-  Summary: `,
+  Generate the summary:`,
 });
 
 const generateProjectSummaryFlow = ai.defineFlow(
