@@ -16,45 +16,78 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 
 export default function DataManagement() {
     const { state, dispatch } = useHackathon();
-    const { users, teams, projects } = state;
+    const { users, teams, projects, judges } = state;
 
     const handleReset = () => {
         dispatch({ type: 'RESET_HACKATHON' });
     };
 
+    const handleResetJudges = () => {
+        dispatch({ type: 'RESET_JUDGES' });
+    };
+
     return (
         <div className="space-y-8">
-            <Card className="border-destructive">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 font-headline"><AlertTriangle className="text-destructive"/> Reset Hackathon Data</CardTitle>
-                    <CardDescription>This will permanently delete all users, teams, projects, and judges. This action cannot be undone.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="destructive">Reset All Hackathon Data</Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action is permanent and will delete all hackathon data, including all user accounts, teams, project submissions, and judging scores.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleReset}>Yes, Reset Everything</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <Card className="border-destructive">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 font-headline"><AlertTriangle className="text-destructive"/> Reset Hackathon Data</CardTitle>
+                        <CardDescription>This will permanently delete all users, teams, projects, and judges. This action cannot be undone.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive">Reset All Hackathon Data</Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action is permanent and will delete all hackathon data, including all user accounts, teams, project submissions, and judging scores.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleReset}>Yes, Reset Everything</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 font-headline"><Trash2 className="text-primary"/> Reset Judges Data</CardTitle>
+                        <CardDescription>This will permanently delete all registered judges and their associated scores from all projects.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="outline">Reset All Judges Data</Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure you want to reset judges?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action will delete all judge accounts and remove their scores from the projects. Student and project data will not be affected.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleResetJudges}>Yes, Reset Judges</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </CardContent>
+                </Card>
+            </div>
+            
 
             <Card>
                 <CardHeader>

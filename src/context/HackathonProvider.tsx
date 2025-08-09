@@ -32,6 +32,7 @@ type Action =
   | { type: 'SCORE_PROJECT'; payload: { projectId: string; scores: Score[] } }
   | { type: 'UPDATE_USER_PROFILE', payload: { userId: string, profileData: Partial<UserProfileData> } }
   | { type: 'RESET_HACKATHON' }
+  | { type: 'RESET_JUDGES' }
   | { type: 'LOGOUT' }
   | { type: 'CLEAR_MESSAGES' };
 
@@ -275,6 +276,24 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
         };
       }
       return { ...state, authError: "Only admins can reset the hackathon."};
+    }
+    case 'RESET_JUDGES': {
+        if (state.currentAdmin) {
+            // Remove scores from all projects
+            const projectsWithResetScores = state.projects.map(p => ({
+                ...p,
+                scores: [],
+                averageScore: 0
+            }));
+            return {
+                ...baseState,
+                judges: [],
+                currentJudge: null,
+                projects: projectsWithResetScores,
+                successMessage: "All judge data has been reset successfully."
+            };
+        }
+        return { ...state, authError: "Only admins can reset judge data." };
     }
     case 'LOGOUT': {
       const { users, teams, projects, judges } = state;
