@@ -44,6 +44,6 @@ const generateProjectIdeaFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return {idea: output!.idea!};
+    return output!;
   }
 );
