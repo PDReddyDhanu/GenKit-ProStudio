@@ -23,3 +23,5 @@ export const generateProjectIdea = async (theme: string, apiKey: string): Promis
         return "Failed to generate an idea. Please try again.";
     }
 };
+
+    
