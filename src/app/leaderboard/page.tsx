@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -70,16 +71,22 @@ export default function Leaderboard() {
                                 cursor={{ strokeDasharray: '3 3' }} 
                                 content={
                                     <ChartTooltipContent
-                                        labelKey="name"
-                                        formatter={(value, name, props) => (
-                                            <>
-                                                <div className="flex items-center gap-2">
-                                                    <div style={{ backgroundColor: props.payload.fill, width: '10px', height: '10px', borderRadius: '50%' }} />
-                                                    <span className="font-bold">{props.payload.name}</span>
-                                                </div>
-                                                <span className="text-right">Score: {props.payload.score} / 10</span>
-                                            </>
-                                        )}
+                                        hideIndicator
+                                        formatter={(value, name, props) => {
+                                            if (props.payload) {
+                                                const { name, score, fill } = props.payload;
+                                                return (
+                                                    <div className="w-full">
+                                                        <div className="flex items-center gap-2">
+                                                            <div style={{ backgroundColor: fill, width: '10px', height: '10px', borderRadius: '50%' }} />
+                                                            <span className="font-bold">{name}</span>
+                                                        </div>
+                                                        <span className="text-right w-full block mt-1">Score: {score} / 10</span>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        }}
                                     />
                                 }
                             />
