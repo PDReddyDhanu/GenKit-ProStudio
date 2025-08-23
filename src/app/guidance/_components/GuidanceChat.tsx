@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Send, Bot, User, Loader, Sparkles } from 'lucide-react';
 import { getGuidance } from '@/app/actions';
+import { marked } from 'marked';
 
 interface Message {
   sender: 'user' | 'bot';
@@ -64,10 +65,14 @@ export default function GuidanceChat() {
             <div key={index} className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : ''}`}>
               {msg.sender === 'bot' && <Bot className="h-8 w-8 text-primary" />}
               <div className={`p-3 rounded-lg max-w-prose ${msg.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                <div
-                    className="prose prose-sm text-foreground max-w-none"
-                    dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br />') }}
-                />
+                {msg.sender === 'bot' ? (
+                     <div
+                        className="prose prose-sm dark:prose-invert text-foreground max-w-none"
+                        dangerouslySetInnerHTML={{ __html: marked(msg.text) as string }}
+                    />
+                ) : (
+                    <p>{msg.text}</p>
+                )}
               </div>
               {msg.sender === 'user' && <User className="h-8 w-8 text-secondary" />}
             </div>
