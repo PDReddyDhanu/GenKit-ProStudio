@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, Menu, LogOut } from 'lucide-react';
+import { Trophy, Rss, Menu, LogOut, Building2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -130,6 +130,8 @@ export function Header() {
                                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleChangeCollege}><Building2 className="mr-2 h-4 w-4" />Change College</DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={handleLogout} className="text-red-500">
                                         <LogOut className="mr-2 h-4 w-4" />
                                         Logout
@@ -137,7 +139,21 @@ export function Header() {
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         ) : state.currentJudge ? (
-                            <Button variant="secondary" onClick={handleLogout}>Logout</Button>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost">Judge: {state.currentJudge.name.split(' ')[0]}</Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuLabel>Judge Menu</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={handleChangeCollege}><Building2 className="mr-2 h-4 w-4" />Change College</DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        Logout
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         ): state.currentAdmin ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -146,7 +162,8 @@ export function Header() {
                                 <DropdownMenuContent>
                                     <DropdownMenuLabel>Admin Actions</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={handleChangeCollege}>Change College</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleChangeCollege}><Building2 className="mr-2 h-4 w-4" />Change College</DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={handleLogout} className="text-red-500">
                                         <LogOut className="mr-2 h-4 w-4" />
                                         Logout
@@ -196,17 +213,19 @@ export function Header() {
                                     {state.currentUser ? (
                                         <div className="flex flex-col gap-2">
                                            <Button variant="ghost" asChild><Link href="/profile" onClick={closeMobileMenu}>Profile</Link></Button>
+                                           <Button variant="outline" onClick={() => {handleChangeCollege(); closeMobileMenu();}}>Change College</Button>
                                             <Button variant="secondary" onClick={handleLogout}>Logout</Button>
                                         </div>
                                     ) : state.currentJudge ? (
                                         <div className="flex flex-col gap-2">
                                              <span className="text-sm text-muted-foreground text-center py-2">Judge: {state.currentJudge.name}</span>
+                                             <Button variant="outline" onClick={() => {handleChangeCollege(); closeMobileMenu();}}>Change College</Button>
                                              <Button variant="secondary" onClick={handleLogout}>Logout</Button>
                                         </div>
                                     ): state.currentAdmin ? (
                                          <div className="flex flex-col gap-2">
                                             <span className="text-sm text-muted-foreground text-center py-2">Welcome, Admin</span>
-                                            <Button variant="outline" onClick={handleChangeCollege}>Change College</Button>
+                                            <Button variant="outline" onClick={() => {handleChangeCollege(); closeMobileMenu();}}>Change College</Button>
                                             <Button variant="secondary" onClick={handleLogout}>Logout</Button>
                                         </div>
                                     ) : (
@@ -228,5 +247,3 @@ export function Header() {
         </header>
     );
 };
-
-    
