@@ -135,7 +135,7 @@ export default {
         },
         'stars': {
           from: { backgroundPosition: '0 0' },
-          to: { backgroundPosition: '0 4000px' },
+          to: { backgroundPosition: '0 200px' },
         }
       },
       animation: {
@@ -151,7 +151,7 @@ export default {
         'trophy-shine': 'trophy-shine 2s ease-in-out infinite',
         'credits-fade-in': 'credits-fade-in 4s ease-out forwards',
         'slow-float': 'slow-float 12s ease-in-out infinite',
-        'stars': 'stars 200s linear infinite',
+        'stars': 'stars 10s linear infinite',
       },
     },
   },

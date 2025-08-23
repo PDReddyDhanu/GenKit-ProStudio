@@ -33,6 +33,8 @@ body {
     --chart-4: 200 98% 45%;
     --chart-5: 210 88% 55%;
     --radius: 0.5rem;
+    --star-color: hsl(var(--primary));
+    --star-bg: hsl(var(--background));
   }
   .dark {
     --background: 222 8% 10%;
@@ -59,6 +61,8 @@ body {
     --chart-3: 30 100% 48%;
     --chart-4: 200 98% 45%;
     --chart-5: 210 88% 55%;
+    --star-color: hsl(var(--secondary));
+    --star-bg: #0c0f17;
   }
 }
 
@@ -68,25 +72,17 @@ body {
   }
   body {
     @apply bg-background text-foreground animate-stars;
-     background-color: hsl(var(--background));
     /* Starfield effect */
     --star-size-1: 1px;
     --star-size-2: 2px;
     --star-size-3: 3px;
-    --star-color: hsl(var(--muted-foreground));
-    --star-bg: transparent;
 
     background-image: 
-      radial-gradient(var(--star-size-3) var(--star-size-3) at 25px 25px, var(--star-color) 1%, var(--star-bg)),
-      radial-gradient(var(--star-size-2) var(--star-size-2) at 50px 100px, var(--star-color) 1%, var(--star-bg)),
-      radial-gradient(var(--star-size-1) var(--star-size-1) at 100px 75px, var(--star-color) 1%, var(--star-bg));
+      radial-gradient(var(--star-size-3) var(--star-size-3) at 25px 25px, var(--star-color), var(--star-bg)),
+      radial-gradient(var(--star-size-2) var(--star-size-2) at 50px 100px, var(--star-color), var(--star-bg)),
+      radial-gradient(var(--star-size-1) var(--star-size-1) at 100px 75px, var(--star-color), var(--star-bg));
     background-repeat: repeat;
     background-size: 200px 200px;
-  }
-
-  .dark body {
-    background-color: #0c0f17; /* A deep navy blue for the dark theme */
-    --star-color: #555;
-    --star-bg: transparent;
+    background-color: var(--star-bg);
   }
 }
