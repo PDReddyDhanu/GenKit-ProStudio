@@ -1,57 +1,31 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { postAnnouncement, getAnnouncements } from '@/app/actions';
+import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader, Rss } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-
-interface Announcement {
-    id: string;
-    message: string;
-    timestamp: {
-        seconds: number;
-        nanoseconds: number;
-    };
-}
+import { Announcement } from '@/lib/types';
 
 export default function Announcements() {
+    const { state, dispatch } = useHackathon();
+    const { announcements } = state;
     const [message, setMessage] = useState('');
-    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isFetching, setIsFetching] = useState(true);
-    const { toast } = useToast();
 
-    useEffect(() => {
-        const fetchAnnouncements = async () => {
-            setIsFetching(true);
-            const data = await getAnnouncements();
-            setAnnouncements(data as Announcement[]);
-            setIsFetching(false);
-        };
-        fetchAnnouncements();
-    }, []);
-
-    const handlePostAnnouncement = async (e: React.FormEvent) => {
+    const handlePostAnnouncement = (e: React.FormEvent) => {
         e.preventDefault();
         if (!message.trim()) return;
 
         setIsLoading(true);
-        const result = await postAnnouncement(message);
-        if (result.success) {
-            toast({ title: 'Success', description: 'Announcement posted successfully.' });
-            setMessage('');
-            // Refresh announcements
-            const data = await getAnnouncements();
-            setAnnouncements(data as Announcement[]);
-        } else {
-            toast({ title: 'Error', description: result.error, variant: 'destructive' });
-        }
+        dispatch({ type: 'POST_ANNOUNCEMENT', payload: message });
+        setMessage('');
         setIsLoading(false);
     };
+
+    const sortedAnnouncements = [...announcements].sort((a, b) => b.timestamp - a.timestamp);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -82,17 +56,13 @@ export default function Announcements() {
                     <CardDescription>A log of all past announcements.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {isFetching ? (
-                        <div className="flex justify-center items-center h-48">
-                            <Loader className="animate-spin text-primary" />
-                        </div>
-                    ) : announcements.length > 0 ? (
+                    {sortedAnnouncements.length > 0 ? (
                         <ul className="space-y-4 h-96 overflow-y-auto pr-2">
-                            {announcements.map(ann => (
+                            {sortedAnnouncements.map(ann => (
                                 <li key={ann.id} className="p-3 bg-muted/50 rounded-md">
                                     <p className="text-sm text-foreground">{ann.message}</p>
                                     <p className="text-xs text-muted-foreground mt-2">
-                                        {formatDistanceToNow(new Date(ann.timestamp.seconds * 1000), { addSuffix: true })}
+                                        {formatDistanceToNow(new Date(ann.timestamp), { addSuffix: true })}
                                     </p>
                                 </li>
                             ))}

@@ -46,9 +46,16 @@ export interface Score {
   comment: string;
 }
 
+export interface Announcement {
+  id: string;
+  message: string;
+  timestamp: number;
+}
+
 export interface HackathonData {
     users: User[];
     teams: Team[];
     projects: Project[];
     judges: Judge[];
+    announcements: Announcement[];
 }

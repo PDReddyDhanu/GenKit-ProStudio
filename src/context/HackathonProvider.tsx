@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useReducer, useContext, ReactNode, useEffect, useCallback } from 'react';
-import { User, Team, Project, Judge, Score, UserProfileData, HackathonData } from '../lib/types';
+import { User, Team, Project, Judge, Score, UserProfileData, HackathonData, Announcement } from '../lib/types';
 import { JUDGING_RUBRIC } from '../lib/constants';
 import { useToast } from '@/hooks/use-toast';
 
@@ -40,6 +40,7 @@ interface HackathonState {
   teams: Team[];
   projects: Project[];
   judges: Judge[];
+  announcements: Announcement[];
   currentUser: User | null;
   currentJudge: Judge | null;
   currentAdmin: boolean;
@@ -67,6 +68,7 @@ type Action =
   | { type: 'ADMIN_REGISTER_STUDENT'; payload: { name: string; email: string; password: string } }
   | { type: 'SCORE_PROJECT'; payload: { projectId: string; judgeId: string; scores: Score[] } }
   | { type: 'UPDATE_PROFILE'; payload: { userId: string, profileData: Partial<UserProfileData> } }
+  | { type: 'POST_ANNOUNCEMENT'; payload: string }
   | { type: 'RESET_HACKATHON' }
   | { type: 'RESET_JUDGES' };
 
@@ -76,6 +78,7 @@ const defaultState: HackathonState = {
   teams: [],
   projects: [],
   judges: [],
+  announcements: [],
   currentUser: null,
   currentJudge: null,
   currentAdmin: false,
@@ -257,6 +260,19 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
         };
     }
 
+    case 'POST_ANNOUNCEMENT': {
+      const newAnnouncement: Announcement = {
+        id: `ann-${Date.now()}`,
+        message: action.payload,
+        timestamp: Date.now(),
+      };
+      return {
+        ...state,
+        announcements: [...state.announcements, newAnnouncement],
+        successMessage: 'Announcement posted successfully.',
+      };
+    }
+
     case 'RESET_HACKATHON': {
         return {
             ...defaultState,
@@ -283,7 +299,6 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
 const HackathonContext = createContext<{
   state: HackathonState;
   dispatch: React.Dispatch<Action>;
-  refreshData: () => Promise<void>;
 } | undefined>(undefined);
 
 export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -300,12 +315,6 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
     dispatch({ type: 'HYDRATE_STATE', payload: getInitialState() });
   }, []);
 
-
-  const refreshData = useCallback(async () => {
-    // This function can now be a no-op since localStorage syncs, or can force a re-read.
-    // For simplicity, we'll let the existing effects handle it.
-  }, []);
-
   useEffect(() => {
     // This effect handles showing toast notifications for success/error messages
     if (state.successMessage) {
@@ -320,7 +329,7 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
 
 
   return (
-    <HackathonContext.Provider value={{ state, dispatch, refreshData }}>
+    <HackathonContext.Provider value={{ state, dispatch }}>
       {(!state.isInitialized && state.isLoading) ? <div className="h-screen w-full flex items-center justify-center bg-background"><p>Loading HackSprint...</p></div> : children}
     </HackathonContext.Provider>
   );

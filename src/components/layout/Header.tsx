@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Trophy, Rss, Menu, X } from 'lucide-react';
-import { getAnnouncements } from '@/app/actions';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -16,14 +15,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ThemeToggle } from './ThemeToggle';
+import { Announcement } from '@/lib/types';
 
-interface Announcement {
-    id: string;
-    message: string;
-    timestamp: {
-        seconds: number;
-    };
-}
 
 const NavLink = ({ href, children, onClick }: { href: string; children: React.ReactNode; onClick?: () => void }) => {
     const pathname = usePathname();
@@ -37,23 +30,19 @@ const NavLink = ({ href, children, onClick }: { href: string; children: React.Re
 
 export function Header() {
     const { state, dispatch } = useHackathon();
+    const { announcements } = state;
     const router = useRouter();
-    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [hasUnread, setHasUnread] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    useEffect(() => {
-        async function fetchAnnouncements() {
-            const data = await getAnnouncements() as Announcement[];
-            setAnnouncements(data);
+    const sortedAnnouncements = [...announcements].sort((a, b) => b.timestamp - a.timestamp);
 
-            const lastViewed = localStorage.getItem('lastViewedAnnouncement');
-            if (data.length > 0 && data[0].id !== lastViewed) {
-                setHasUnread(true);
-            }
+    useEffect(() => {
+        const lastViewed = localStorage.getItem('lastViewedAnnouncement');
+        if (sortedAnnouncements.length > 0 && sortedAnnouncements[0].id !== lastViewed) {
+            setHasUnread(true);
         }
-        fetchAnnouncements();
-    }, []);
+    }, [sortedAnnouncements]);
 
     const handleLogout = () => {
         dispatch({ type: 'LOGOUT' });
@@ -63,8 +52,8 @@ export function Header() {
     
     const handleAnnouncementsOpen = () => {
         setHasUnread(false);
-        if (announcements.length > 0) {
-            localStorage.setItem('lastViewedAnnouncement', announcements[0].id);
+        if (sortedAnnouncements.length > 0) {
+            localStorage.setItem('lastViewedAnnouncement', sortedAnnouncements[0].id);
         }
     };
     
@@ -103,11 +92,11 @@ export function Header() {
                                 <SheetTitle>Announcements</SheetTitle>
                             </SheetHeader>
                             <div className="py-4 space-y-4">
-                                {announcements.length > 0 ? announcements.map(ann => (
+                                {sortedAnnouncements.length > 0 ? sortedAnnouncements.map(ann => (
                                     <div key={ann.id} className="p-3 bg-muted rounded-md">
                                         <p className="text-sm text-foreground">{ann.message}</p>
                                         <p className="text-xs text-muted-foreground mt-2">
-                                            {formatDistanceToNow(new Date(ann.timestamp.seconds * 1000), { addSuffix: true })}
+                                            {formatDistanceToNow(new Date(ann.timestamp), { addSuffix: true })}
                                         </p>
                                     </div>
                                 )) : <p className="text-muted-foreground text-center pt-8">No announcements yet.</p>}
