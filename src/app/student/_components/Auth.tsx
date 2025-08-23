@@ -8,24 +8,45 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { registerStudent } from '@/app/actions';
+import { Loader } from 'lucide-react';
+import { User } from '@/lib/types';
 
 export default function Auth() {
-    const { dispatch } = useHackathon();
+    const { dispatch, state } = useHackathon();
+    const { users } = state;
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleRegister = (e: React.FormEvent) => {
+    const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch({ type: 'REGISTER_STUDENT', payload: { name, email, password } });
-        setName('');
-        setEmail('');
-        setPassword('');
+        setIsLoading(true);
+        const result = await registerStudent({ name, email, password });
+        if (result.success) {
+            dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
+            setName('');
+            setEmail('');
+            setPassword('');
+        } else {
+            dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
+        }
+        setIsLoading(false);
     };
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch({ type: 'LOGIN_STUDENT', payload: { email, password } });
+        const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+        if (user) {
+            if (user.status === 'pending') {
+                dispatch({ type: 'SET_AUTH_ERROR', payload: 'Your account is pending approval by an admin.' });
+            } else {
+                dispatch({ type: 'LOGIN_STUDENT', payload: user as User });
+            }
+        } else {
+            dispatch({ type: 'SET_AUTH_ERROR', payload: 'Invalid email or password.' });
+        }
     }
 
     const onTabChange = () => {
@@ -52,17 +73,19 @@ export default function Auth() {
                             <form onSubmit={handleRegister} className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="name">Full Name</Label>
-                                    <Input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required />
+                                    <Input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required disabled={isLoading} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="email">Email Address</Label>
-                                    <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                                    <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
                                 </div>
                                  <div className="space-y-2">
                                     <Label htmlFor="password">Password</Label>
-                                    <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+                                    <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading}/>
                                 </div>
-                                <Button type="submit" className="w-full">Register</Button>
+                                <Button type="submit" className="w-full" disabled={isLoading}>
+                                    {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Registering...</> : 'Register'}
+                                </Button>
                             </form>
                         </CardContent>
                     </Card>

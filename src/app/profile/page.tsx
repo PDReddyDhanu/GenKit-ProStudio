@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,30 +8,35 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { User, Github, Linkedin, Pencil, UserCircle } from 'lucide-react';
+import { User, Github, Linkedin, Pencil, UserCircle, Loader } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
+import { updateUserProfile } from '@/app/actions';
 
 export default function ProfilePage() {
-    const { state, dispatch } = useHackathon();
+    const { state, dispatch, refreshData } = useHackathon();
     const { currentUser } = state;
-    const { toast } = useToast();
     const [showIntro, setShowIntro] = useState(true);
 
     const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [name, setName] = useState(currentUser?.name || '');
-    const [skills, setSkills] = useState(currentUser?.skills?.join(', ') || 'React, Node.js, Python');
-    const [bio, setBio] = useState(currentUser?.bio || 'Passionate developer eager to build innovative solutions.');
+    const [skills, setSkills] = useState(currentUser?.skills?.join(', ') || '');
+    const [bio, setBio] = useState(currentUser?.bio || '');
     const [github, setGithub] = useState(currentUser?.github || '');
     const [linkedin, setLinkedin] = useState(currentUser?.linkedin || '');
 
+    useEffect(() => {
+      if(currentUser) {
+        setName(currentUser.name);
+        setSkills(currentUser.skills?.join(', ') || '');
+        setBio(currentUser.bio || '');
+        setGithub(currentUser.github || '');
+        setLinkedin(currentUser.linkedin || '');
+      }
+    }, [currentUser])
+
     const handleIntroFinish = () => {
-        if (!currentUser) {
-            // Stay on intro if not logged in, as the main page just shows an auth message.
-            // Or we could have a state to show auth message directly.
-            // For now, just proceed.
-        }
         setShowIntro(false);
     };
 
@@ -55,26 +60,28 @@ export default function ProfilePage() {
         )
     }
 
-    const handleSaveProfile = (e: React.FormEvent) => {
+    const handleSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch({
-            type: 'UPDATE_USER_PROFILE',
-            payload: {
-                userId: currentUser.id,
-                profileData: {
-                    name,
-                    skills: skills.split(',').map(s => s.trim()).filter(Boolean),
-                    bio,
-                    github,
-                    linkedin
-                }
+        setIsSaving(true);
+        const result = await updateUserProfile({
+            userId: currentUser.id,
+            profileData: {
+                name,
+                skills: skills.split(',').map(s => s.trim()).filter(Boolean),
+                bio,
+                github,
+                linkedin
             }
         });
-        setIsEditing(false);
-        toast({
-            title: 'Profile Updated',
-            description: 'Your profile has been saved successfully.'
-        });
+
+        if (result.success) {
+            await refreshData();
+            dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
+            setIsEditing(false);
+        } else {
+            dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
+        }
+        setIsSaving(false);
     };
 
     return (
@@ -116,7 +123,9 @@ export default function ProfilePage() {
                                 <Input id="linkedin" type="url" placeholder="https://linkedin.com/in/username" value={linkedin} onChange={e => setLinkedin(e.target.value)} />
                             </div>
                             <div className="flex gap-4">
-                                <Button type="submit">Save Changes</Button>
+                                <Button type="submit" disabled={isSaving}>
+                                    {isSaving ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : 'Save Changes'}
+                                </Button>
                                 <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
                             </div>
                         </form>

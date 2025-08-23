@@ -6,16 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { User } from '@/lib/types';
+import { approveStudent } from '@/app/actions';
 
 interface PendingApprovalsProps {
     users: User[];
 }
 
 export default function PendingApprovals({ users }: PendingApprovalsProps) {
-    const { dispatch } = useHackathon();
+    const { refreshData, dispatch } = useHackathon();
 
-    const handleApproveStudent = (userId: string) => {
-        dispatch({ type: 'ADMIN_APPROVE_STUDENT', payload: { userId } });
+    const handleApproveStudent = async (userId: string) => {
+        const result = await approveStudent({ userId });
+        if (result.success) {
+            dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
+            await refreshData();
+        } else {
+            dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
+        }
     }
 
     return (

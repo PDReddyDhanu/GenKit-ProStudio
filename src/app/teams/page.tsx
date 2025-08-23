@@ -7,31 +7,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, Users } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import PageIntro from '@/components/PageIntro';
+import { joinTeam } from '@/app/actions';
+import { User as UserType } from '@/lib/types';
 
 export default function TeamFinder() {
-    const { state, dispatch } = useHackathon();
+    const { state, dispatch, refreshData } = useHackathon();
     const { teams, currentUser } = state;
-    const { toast } = useToast();
     const [joinCode, setJoinCode] = useState('');
     const [showIntro, setShowIntro] = useState(true);
 
-    const handleJoinTeam = (e: React.FormEvent, code: string) => {
+    const handleJoinTeam = async (e: React.FormEvent, code: string) => {
         e.preventDefault();
         if (currentUser && !currentUser.teamId) {
-            dispatch({ type: 'JOIN_TEAM', payload: { joinCode: code } });
+            const result = await joinTeam({ joinCode: code, userId: currentUser.id });
+            if (result.success) {
+                dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
+                await refreshData();
+            } else {
+                 dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
+            }
         } else if (currentUser?.teamId) {
-            toast({
-                title: 'Already in a team',
-                description: "You can't join another team.",
-                variant: 'destructive'
+            dispatch({
+                type: 'SET_AUTH_ERROR',
+                payload: "You are already in a team."
             });
         } else {
-             toast({
-                title: 'Please log in',
-                description: "You need to be logged in as a student to join a team.",
-                variant: 'destructive'
+             dispatch({
+                type: 'SET_AUTH_ERROR',
+                payload: "You need to be logged in as a student to join a team."
             });
         }
     };
@@ -72,13 +76,13 @@ export default function TeamFinder() {
                             <CardHeader>
                                 <CardTitle className="font-headline">{team.name}</CardTitle>
                                 <CardDescription className="flex items-center gap-2">
-                                    <Users className="h-4 w-4" /> {team.members.length} member(s)
+                                    <Users className="h-4 w-4" /> {(team.members as UserType[]).length} member(s)
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex-grow">
                                 <h4 className="font-semibold mb-2 text-sm">Members:</h4>
                                 <ul className="space-y-1">
-                                    {team.members.map(member => (
+                                    {(team.members as UserType[]).map(member => (
                                         <li key={member.id} className="flex items-center gap-2 text-muted-foreground text-sm">
                                             <User className="h-4 w-4" /> {member.name}
                                         </li>

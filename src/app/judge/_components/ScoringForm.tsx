@@ -7,11 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
-import { Project, Score } from '@/lib/types';
+import { Project, Score, Team, User } from '@/lib/types';
 import { JUDGING_RUBRIC } from '@/lib/constants';
 import Link from 'next/link';
 import { ArrowLeft, Bot, Loader } from 'lucide-react';
-import { getAiProjectSummary } from '@/app/actions';
+import { getAiProjectSummary, scoreProject } from '@/app/actions';
 
 interface ScoringFormProps {
     project: Project;
@@ -19,13 +19,14 @@ interface ScoringFormProps {
 }
 
 export default function ScoringForm({ project, onBack }: ScoringFormProps) {
-    const { state, dispatch } = useHackathon();
+    const { state, dispatch, refreshData } = useHackathon();
     const { currentJudge, teams } = state;
 
     const [scores, setScores] = useState<Record<string, number>>({});
     const [comments, setComments] = useState<Record<string, string>>({});
     const [aiSummary, setAiSummary] = useState('');
     const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
     useEffect(() => {
         const initialScores: Record<string, number> = {};
@@ -66,17 +67,26 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
         }
     };
 
-    const handleSubmitScores = (e: React.FormEvent) => {
+    const handleSubmitScores = async (e: React.FormEvent) => {
         e.preventDefault();
         if (project && currentJudge) {
+            setIsSubmitting(true);
             const projectScores: Score[] = JUDGING_RUBRIC.map(criteria => ({
                 judgeId: currentJudge.id,
                 criteria: criteria.id,
                 value: scores[criteria.id] || 0,
                 comment: comments[criteria.id] || '',
             }));
-            dispatch({ type: 'SCORE_PROJECT', payload: { projectId: project.id, scores: projectScores } });
-            onBack();
+            const result = await scoreProject({ projectId: project.id, judgeId: currentJudge.id, scores: projectScores });
+            
+            if (result.success) {
+                dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
+                await refreshData();
+                onBack();
+            } else {
+                dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
+            }
+            setIsSubmitting(false);
         }
     };
     
@@ -88,7 +98,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-3xl font-headline">{project.name}</CardTitle>
-                    <CardDescription className="text-lg text-secondary">by {team?.name}</CardDescription>
+                    <CardDescription className="text-lg text-secondary">by {(team?.name as string) || 'Unknown Team'}</CardDescription>
                     <p className="text-muted-foreground pt-2">{project.description}</p>
                     <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline pt-2 block">View on GitHub</Link>
                 </CardHeader>
@@ -134,7 +144,9 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
                                 />
                             </div>
                         ))}
-                        <Button type="submit" className="w-full">Submit Score</Button>
+                        <Button type="submit" className="w-full" disabled={isSubmitting}>
+                            {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Submitting...</> : 'Submit Score'}
+                        </Button>
                     </form>
                 </CardContent>
             </Card>

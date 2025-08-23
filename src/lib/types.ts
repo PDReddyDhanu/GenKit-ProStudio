@@ -18,7 +18,7 @@ export interface Team {
   id: string;
   name: string;
   joinCode: string;
-  members: User[];
+  members: string[] | User[]; // Store User IDs in Firestore, but can be populated with User objects
   projectId?: string;
 }
 
@@ -44,4 +44,11 @@ export interface Score {
   criteria: string;
   value: number; // e.g., 1-10
   comment: string;
+}
+
+export interface HackathonData {
+    users: User[];
+    teams: Team[];
+    projects: Project[];
+    judges: Judge[];
 }

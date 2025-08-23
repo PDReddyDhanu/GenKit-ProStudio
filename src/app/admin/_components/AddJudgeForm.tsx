@@ -6,19 +6,30 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { addJudge } from '@/app/actions';
+import { Loader } from 'lucide-react';
 
 export default function AddJudgeForm() {
-    const { dispatch } = useHackathon();
+    const { refreshData, dispatch } = useHackathon();
     const [judgeName, setJudgeName] = useState('');
     const [judgeEmail, setJudgeEmail] = useState('');
     const [judgePassword, setJudgePassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     
-    const handleAddJudge = (e: React.FormEvent) => {
+    const handleAddJudge = async (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch({ type: 'ADMIN_ADD_JUDGE', payload: { name: judgeName, email: judgeEmail, password: judgePassword } });
-        setJudgeName('');
-        setJudgeEmail('');
-        setJudgePassword('');
+        setIsLoading(true);
+        const result = await addJudge({ name: judgeName, email: judgeEmail, password: judgePassword });
+        if (result.success) {
+            dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
+            setJudgeName('');
+            setJudgeEmail('');
+            setJudgePassword('');
+            await refreshData();
+        } else {
+            dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
+        }
+        setIsLoading(false);
     };
 
     return (
@@ -41,7 +52,9 @@ export default function AddJudgeForm() {
                         <Label htmlFor="judge-password">Password</Label>
                         <Input id="judge-password" type="password" value={judgePassword} onChange={e => setJudgePassword(e.target.value)} required />
                     </div>
-                    <Button type="submit" className="w-full">Add Judge</Button>
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Adding...</> : 'Add Judge'}
+                    </Button>
                 </form>
             </CardContent>
         </Card>

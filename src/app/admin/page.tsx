@@ -23,7 +23,11 @@ export default function AdminPortal() {
 
     const handleAdminLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch({ type: 'ADMIN_LOGIN', payload: { email, password } });
+        if (email.toLowerCase() === 'hacksprint@admin.com' && password === 'hack123') {
+             dispatch({ type: 'ADMIN_LOGIN' });
+        } else {
+            dispatch({ type: 'SET_AUTH_ERROR', payload: 'Invalid admin credentials.' });
+        }
     };
 
     if (showIntro) {
