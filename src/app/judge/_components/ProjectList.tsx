@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -13,9 +14,10 @@ interface ProjectListProps {
 
 export default function ProjectList({ onSelectProject }: ProjectListProps) {
     const { state } = useHackathon();
-    const { projects, teams, currentJudge } = state;
+    const { projects, teams } = state.collegeData;
+    const { currentJudge } = state;
 
-    if (projects.length === 0) {
+    if (!projects || projects.length === 0) {
         return (
             <Card>
                 <CardContent className="pt-6">
@@ -46,3 +48,4 @@ export default function ProjectList({ onSelectProject }: ProjectListProps) {
         </div>
     );
 }
+
