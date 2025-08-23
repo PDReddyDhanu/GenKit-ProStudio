@@ -18,9 +18,11 @@ export default function CollegeLogin() {
 
     const filteredColleges = useMemo(() => {
         if (!searchQuery) return [];
-        return COLLEGES.filter(college =>
+        // Use a Set to ensure uniqueness
+        const uniqueColleges = new Set(COLLEGES.filter(college =>
             college.toLowerCase().includes(searchQuery.toLowerCase())
-        ).slice(0, 100); // Limit to 100 results for performance
+        ));
+        return Array.from(uniqueColleges).slice(0, 100); // Limit to 100 results for performance
     }, [searchQuery]);
 
     const handleProceed = () => {
@@ -72,9 +74,9 @@ export default function CollegeLogin() {
                             <Card className="absolute top-full mt-2 w-full z-10 shadow-lg">
                                 <ScrollArea className="h-72">
                                     <div className="p-2">
-                                    {filteredColleges.map(college => (
+                                    {filteredColleges.map((college, index) => (
                                         <div
-                                            key={college}
+                                            key={`${college}-${index}`}
                                             onMouseDown={() => handleSelectCollege(college)}
                                             className="p-2 hover:bg-accent rounded-md cursor-pointer text-sm"
                                         >
