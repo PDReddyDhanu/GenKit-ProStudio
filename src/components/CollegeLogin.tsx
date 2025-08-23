@@ -5,38 +5,34 @@ import React, { useState, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Building2, Trophy } from 'lucide-react';
-import { STATES } from '@/lib/colleges';
+import { Input } from '@/components/ui/input';
+import { Building2, Trophy, Search } from 'lucide-react';
+import { COLLEGES } from '@/lib/colleges';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function CollegeLogin() {
     const { dispatch } = useHackathon();
-    const [selectedState, setSelectedState] = useState('');
-    const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     const [selectedCollege, setSelectedCollege] = useState('');
-    const [error, setError] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
 
-    const districts = useMemo(() => {
-        return selectedState ? Object.keys(STATES[selectedState as keyof typeof STATES] || {}) : [];
-    }, [selectedState]);
-
-    const colleges = useMemo(() => {
-        if (selectedState && selectedDistrict) {
-            const stateData = STATES[selectedState as keyof typeof STATES];
-            const districtData = stateData[selectedDistrict as keyof typeof stateData]
-            return districtData || [];
-        }
-        return [];
-    }, [selectedState, selectedDistrict]);
+    const filteredColleges = useMemo(() => {
+        if (!searchQuery) return [];
+        return COLLEGES.filter(college =>
+            college.toLowerCase().includes(searchQuery.toLowerCase())
+        ).slice(0, 100); // Limit to 100 results for performance
+    }, [searchQuery]);
 
     const handleProceed = () => {
-        if (!selectedCollege) {
-            setError('Please select a state, district, and college to continue.');
-            return;
-        }
-        setError('');
+        if (!selectedCollege) return;
         dispatch({ type: 'SELECT_COLLEGE', payload: selectedCollege });
     };
+
+    const handleSelectCollege = (college: string) => {
+        setSelectedCollege(college);
+        setSearchQuery(college);
+        setIsFocused(false);
+    }
 
     return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background animate-fade-in">
@@ -48,55 +44,48 @@ export default function CollegeLogin() {
                 <p className="text-muted-foreground mt-2">Your All-in-One Hackathon Platform</p>
             </div>
 
-            <Card className="w-full max-w-md mx-auto animate-slide-in-up">
+            <Card className="w-full max-w-lg mx-auto animate-slide-in-up">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 font-headline">
-                        <Building2 className="text-primary" /> Select Your College
+                        <Building2 className="text-primary" /> Find Your College
                     </CardTitle>
-                    <CardDescription>Choose your college to enter the hackathon portal.</CardDescription>
+                    <CardDescription>Search for your college to enter the hackathon portal.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-4">
-                        <Select onValueChange={(value) => { setSelectedState(value); setSelectedDistrict(''); setSelectedCollege(''); }} value={selectedState}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a state..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.keys(STATES).map(state => (
-                                    <SelectItem key={state} value={state}>
-                                        {state}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="space-y-4 relative">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input
+                                placeholder="Start typing your college name..."
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setSelectedCollege('');
+                                }}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={() => setTimeout(() => setIsFocused(false), 150)} // Delay to allow click on results
+                                className="pl-10"
+                            />
+                        </div>
 
-                         <Select onValueChange={(value) => { setSelectedDistrict(value); setSelectedCollege(''); }} value={selectedDistrict} disabled={!selectedState}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a district..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {districts.map(district => (
-                                    <SelectItem key={district} value={district}>
-                                        {district}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        {isFocused && filteredColleges.length > 0 && (
+                            <Card className="absolute top-full mt-2 w-full z-10 shadow-lg">
+                                <ScrollArea className="h-72">
+                                    <div className="p-2">
+                                    {filteredColleges.map(college => (
+                                        <div
+                                            key={college}
+                                            onMouseDown={() => handleSelectCollege(college)}
+                                            className="p-2 hover:bg-accent rounded-md cursor-pointer text-sm"
+                                        >
+                                            {college}
+                                        </div>
+                                    ))}
+                                    </div>
+                                </ScrollArea>
+                            </Card>
+                        )}
 
-                        <Select onValueChange={setSelectedCollege} value={selectedCollege} disabled={!selectedDistrict}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a college..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {colleges.map(college => (
-                                    <SelectItem key={college} value={college}>
-                                        {college}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        {error && <p className="text-sm text-destructive">{error}</p>}
                         <Button onClick={handleProceed} className="w-full" disabled={!selectedCollege}>
                             Proceed to Hackathon
                         </Button>
