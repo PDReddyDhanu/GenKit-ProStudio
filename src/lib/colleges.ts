@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 
-=======
->>>>>>> 0b5af0a1ad7f994fd8c35fcc7f805c964d81605e
 export const STATES = {
     "Telangana": {
         "Medchal-Malkajgiri": [
@@ -21,10 +18,6 @@ export const STATES = {
             "Malla Reddy Engineering College",
             "St. Peter's Engineering College",
             "Nalla Malla Reddy Engineering College"
-<<<<<<< HEAD
-=======
-            // Removed "Medchal" as it's a place name, not a college
->>>>>>> 0b5af0a1ad7f994fd8c35fcc7f805c964d81605e
         ],
         "Hyderabad": [
             "Chaitanya Bharathi Institute of Technology",
@@ -299,7 +292,6 @@ export const STATES = {
         ]
     },
     "Andhra Pradesh": {
-        // ... (keeping the Andhra Pradesh data as is)
         "Markapur Rural": ["A1 Global Institute of Engineering and Technology"],
         "Gudlavalleru": ["AANM and VVRSR Polytechnic", "Gudlavalleru Engineering College"],
         "Somanapalle": ["ABR College of Engineering and Technology"],
@@ -364,7 +356,6 @@ export const STATES = {
             "Visakha Institute of Engineering and Technology",
             "Wellfare Institute of Science Technology and Management",
             "Yalamarty College of Polytechnic"
-<<<<<<< HEAD
         ],
         "Badvel" : [
             "Acharya College of Engineering"
@@ -1053,10 +1044,6 @@ export const STATES = {
         "Tadipatri": [
             "Sir CV Raman Institute of Technology and Sciences"
         ]
-=======
-        ]
-        // ... (rest of Andhra Pradesh data remains the same)
->>>>>>> 0b5af0a1ad7f994fd8c35fcc7f805c964d81605e
     }
 };
 
