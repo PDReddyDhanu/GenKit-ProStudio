@@ -17,16 +17,6 @@ import { useEffect, useState } from 'react';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 
-// Since metadata needs to be static, we can't use hooks here. 
-// However, we'll manage the title dynamically in the AppWrapper if needed.
-// export const metadata: Metadata = {
-//   title: 'HackSprint - Hackathon Management',
-//   description: 'A comprehensive SaaS platform to streamline the management of internal college hackathons.',
-//   icons: {
-//     icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>"
-//   }
-// };
-
 function AppWrapper({ children }: { children: React.ReactNode }) {
     const { state } = useHackathon();
     const { selectedCollege, isInitialized } = state;
