@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -6,7 +7,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, Menu } from 'lucide-react';
+import { Trophy, Rss, Menu, LogOut } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -16,7 +17,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ThemeToggle } from './ThemeToggle';
-import { Announcement } from '@/lib/types';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 
 const NavLink = ({ href, children, onClick }: { href: string; children: React.ReactNode; onClick?: () => void }) => {
@@ -31,7 +39,7 @@ const NavLink = ({ href, children, onClick }: { href: string; children: React.Re
 
 export function Header() {
     const { state, dispatch } = useHackathon();
-    const { announcements } = state;
+    const { announcements } = state.collegeData;
     const router = useRouter();
     const [hasUnread, setHasUnread] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -50,6 +58,11 @@ export function Header() {
         setIsMobileMenuOpen(false);
         router.push('/');
     };
+
+    const handleChangeCollege = () => {
+        dispatch({ type: 'SELECT_COLLEGE', payload: "" }); // Effectively logs out from the college
+        router.push('/');
+    }
     
     const handleAnnouncementsOpen = () => {
         setHasUnread(false);
@@ -109,20 +122,37 @@ export function Header() {
 
                     <div className="hidden sm:flex items-center gap-2">
                         {state.currentUser ? (
-                            <>
-                               <Button variant="ghost" size="sm" asChild><Link href="/profile">Profile</Link></Button>
-                                <Button variant="secondary" onClick={handleLogout}>Logout</Button>
-                            </>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost">Welcome, {state.currentUser.name.split(' ')[0]}</Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        Logout
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         ) : state.currentJudge ? (
-                            <>
-                                 <span className="text-sm text-muted-foreground hidden sm:inline">Judge: {state.currentJudge.name}</span>
-                                 <Button variant="secondary" onClick={handleLogout}>Logout</Button>
-                            </>
+                            <Button variant="secondary" onClick={handleLogout}>Logout</Button>
                         ): state.currentAdmin ? (
-                             <>
-                                <span className="text-sm text-muted-foreground hidden sm:inline">Welcome, Admin</span>
-                                <Button variant="secondary" onClick={handleLogout}>Logout</Button>
-                            </>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost">Admin Menu</Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuLabel>Admin Actions</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={handleChangeCollege}>Change College</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        Logout
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         ) : (
                             <>
                                 <Button variant="secondary" asChild>
@@ -176,6 +206,7 @@ export function Header() {
                                     ): state.currentAdmin ? (
                                          <div className="flex flex-col gap-2">
                                             <span className="text-sm text-muted-foreground text-center py-2">Welcome, Admin</span>
+                                            <Button variant="outline" onClick={handleChangeCollege}>Change College</Button>
                                             <Button variant="secondary" onClick={handleLogout}>Logout</Button>
                                         </div>
                                     ) : (
@@ -197,3 +228,5 @@ export function Header() {
         </header>
     );
 };
+
+    

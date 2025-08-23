@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -14,7 +15,8 @@ import { Judge, User } from '@/lib/types';
 
 export default function JudgePortal() {
     const { state, dispatch } = useHackathon();
-    const { currentJudge, judges } = state;
+    const { currentJudge } = state;
+    const { judges } = state.collegeData;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showIntro, setShowIntro] = useState(true);
@@ -61,3 +63,5 @@ export default function JudgePortal() {
 
     return <JudgingDashboard />;
 }
+
+    

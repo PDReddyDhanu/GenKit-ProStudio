@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -21,7 +22,7 @@ const chartConfig = {
 
 export default function Leaderboard() {
     const { state } = useHackathon();
-    const { projects, teams } = state;
+    const { projects, teams } = state.collegeData;
     const [showIntro, setShowIntro] = useState(true);
 
     const leaderboardData = useMemo(() => {
@@ -42,7 +43,7 @@ export default function Leaderboard() {
 
     return (
         <div className="container max-w-6xl mx-auto py-12 animate-fade-in">
-            <h1 className="text-4xl font-bold text-center mb-8 font-headline">Live Leaderboard</h1>
+            <h1 className="text-4xl font-bold text-center mb-8 font-headline">Live Leaderboard for {state.selectedCollege}</h1>
             <Card>
                 <CardHeader className="items-center pb-0">
                     <CardTitle>Top Teams</CardTitle>
@@ -106,3 +107,5 @@ export default function Leaderboard() {
         </div>
     );
 };
+
+    

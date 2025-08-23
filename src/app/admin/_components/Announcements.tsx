@@ -1,17 +1,17 @@
+
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader, Rss } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { Announcement } from '@/lib/types';
 
 export default function Announcements() {
     const { state, dispatch } = useHackathon();
-    const { announcements } = state;
+    const { announcements } = state.collegeData;
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -78,3 +78,5 @@ export default function Announcements() {
         </div>
     );
 }
+
+    

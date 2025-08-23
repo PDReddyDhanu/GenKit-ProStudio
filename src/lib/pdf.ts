@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import jsPDF from 'jspdf';
@@ -13,7 +14,7 @@ const getPerformanceDetails = (score: number) => {
     return { descriptor: 'Did Not Meet Expectations', remarks: 'Failed' };
 };
 
-export const generateCertificate = async (teamName: string, projectName: string, teamMembers: string[], projectId: string, averageScore: number) => {
+export const generateCertificate = async (teamName: string, projectName: string, teamMembers: string[], projectId: string, averageScore: number, collegeName: string) => {
     const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
@@ -52,50 +53,57 @@ export const generateCertificate = async (teamName: string, projectName: string,
     doc.setFont("helvetica", 'bold');
     doc.setFontSize(30);
     doc.setTextColor('#B95000'); // Darker Amber/Brown
-    doc.text('CERTIFICATE OF ACHIEVEMENT', pageWidth / 2, 40, { align: 'center' });
+    doc.text('CERTIFICATE OF ACHIEVEMENT', pageWidth / 2, 35, { align: 'center' });
+
+    // College Name
+    doc.setFont("helvetica", 'normal');
+    doc.setFontSize(14);
+    doc.setTextColor('#404040');
+    doc.text(`From the HackSprint event held at`, pageWidth / 2, 45, { align: 'center' });
+    doc.setFont("helvetica", 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor('#039BE5');
+    doc.text(collegeName, pageWidth / 2, 53, { align: 'center' });
+
 
     doc.setFont("helvetica", 'normal');
     doc.setFontSize(14);
     doc.setTextColor("#404040"); 
-    doc.text('This is to certify that the team', pageWidth / 2, 55, { align: 'center' });
+    doc.text('This is to certify that the team', pageWidth / 2, 65, { align: 'center' });
 
     // Team Name
     doc.setFontSize(36);
     doc.setFont("helvetica", 'bold');
     doc.setTextColor("#FFC200"); // Firebase Amber
-    doc.text(teamName, pageWidth / 2, 75, { align: 'center' });
+    doc.text(teamName, pageWidth / 2, 80, { align: 'center' });
     
     // Project Info
     doc.setFontSize(14);
     doc.setFont("helvetica", 'normal');
     doc.setTextColor("#404040");
-    doc.text(`has demonstrated exceptional skill and collaboration in the project`, pageWidth / 2, 90, { align: 'center' });
+    doc.text(`has demonstrated exceptional skill and collaboration in the project`, pageWidth / 2, 95, { align: 'center' });
     doc.setFontSize(20);
     doc.setFont("helvetica", 'italic');
     doc.setTextColor("#039BE5"); // Firebase Blue
-    doc.text(`"${projectName}"`, pageWidth / 2, 102, { align: 'center' });
-    doc.setFontSize(14);
-    doc.setFont("helvetica", 'normal');
-    doc.setTextColor("#404040");
-    doc.text(`during the HackSprint event.`, pageWidth / 2, 112, { align: 'center' });
+    doc.text(`"${projectName}"`, pageWidth / 2, 107, { align: 'center' });
     
     // Performance Details
     doc.setFontSize(12);
     doc.setFont("helvetica", 'normal');
     doc.setTextColor("#404040");
     const performanceText = `Awarded with a performance rating of "${performance.descriptor}" and a final score of ${averageScore.toFixed(2)} / 10.`;
-    doc.text(performanceText, pageWidth / 2, 125, { align: 'center' });
+    doc.text(performanceText, pageWidth / 2, 120, { align: 'center' });
 
     // Team Members
     doc.setFontSize(12);
     doc.setFont("helvetica", 'bold');
     doc.setTextColor("#262626"); 
-    doc.text('AWARDED TO', pageWidth / 2, 145, { align: 'center' });
+    doc.text('AWARDED TO', pageWidth / 2, 140, { align: 'center' });
     const membersText = teamMembers.join('  •  ');
     doc.setFontSize(12);
     doc.setFont("helvetica", 'normal');
     doc.setTextColor("#404040");
-    doc.text(membersText, pageWidth / 2, 153, { align: 'center', maxWidth: pageWidth - 80 });
+    doc.text(membersText, pageWidth / 2, 148, { align: 'center', maxWidth: pageWidth - 80 });
 
     const signatureX = pageWidth / 4 + 20;
     const dateX = pageWidth * 3 / 4 - 20;
@@ -140,3 +148,5 @@ export const generateCertificate = async (teamName: string, projectName: string,
     
     doc.save(`Certificate-${teamName.replace(/\s/g, '_')}.pdf`);
 };
+
+    

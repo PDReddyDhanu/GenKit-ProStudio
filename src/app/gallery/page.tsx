@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -9,7 +10,7 @@ import PageIntro from '@/components/PageIntro';
 
 export default function ProjectGallery() {
     const { state } = useHackathon();
-    const { projects, teams } = state;
+    const { projects, teams } = state.collegeData;
     const [showIntro, setShowIntro] = useState(true);
     
     if (showIntro) {
@@ -18,7 +19,7 @@ export default function ProjectGallery() {
 
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-fade-in">
-            <h1 className="text-4xl font-bold text-center mb-12 font-headline">Project Showcase</h1>
+            <h1 className="text-4xl font-bold text-center mb-12 font-headline">Project Showcase for {state.selectedCollege}</h1>
             
             {projects.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 [perspective:1000px]">
@@ -60,3 +61,5 @@ export default function ProjectGallery() {
         </div>
     );
 }
+
+    

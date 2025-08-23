@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -22,7 +23,7 @@ import Link from 'next/link';
 
 export default function DataManagement() {
     const { state, dispatch } = useHackathon();
-    const { users, teams, projects, judges } = state;
+    const { users, teams, projects, judges } = state.collegeData;
 
     const handleReset = () => {
         dispatch({ type: 'RESET_HACKATHON' });
@@ -38,18 +39,18 @@ export default function DataManagement() {
                  <Card className="border-destructive">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 font-headline"><AlertTriangle className="text-destructive"/> Reset Hackathon Data</CardTitle>
-                        <CardDescription>This will permanently delete all users, teams, projects, and judges. This action cannot be undone.</CardDescription>
+                        <CardDescription>This will permanently delete all users, teams, projects, and judges for the selected college. This action cannot be undone.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="destructive">Reset All Hackathon Data</Button>
+                                <Button variant="destructive" disabled={!state.selectedCollege}>Reset College Data</Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        This action is permanent and will delete all hackathon data, including all user accounts, teams, project submissions, and judging scores.
+                                        This action is permanent and will delete all hackathon data for <strong>{state.selectedCollege}</strong>, including all user accounts, teams, project submissions, and judging scores.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -64,18 +65,18 @@ export default function DataManagement() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 font-headline"><Trash2 className="text-primary"/> Reset Judges Data</CardTitle>
-                        <CardDescription>This will permanently delete all registered judges and their associated scores from all projects.</CardDescription>
+                        <CardDescription>This will permanently delete all registered judges and their associated scores from all projects for the selected college.</CardDescription>
                     </CardHeader>
                     <CardContent>
                          <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="outline">Reset All Judges Data</Button>
+                                <Button variant="outline" disabled={!state.selectedCollege}>Reset Judges Data</Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Are you sure you want to reset judges?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        This action will delete all judge accounts and remove their scores from the projects. Student and project data will not be affected.
+                                        This action will delete all judge accounts and remove their scores from projects for <strong>{state.selectedCollege}</strong>. Student and project data will not be affected.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -177,3 +178,5 @@ export default function DataManagement() {
         </div>
     );
 }
+
+    

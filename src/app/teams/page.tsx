@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -12,7 +13,8 @@ import { User as UserType } from '@/lib/types';
 
 export default function TeamFinder() {
     const { state, dispatch } = useHackathon();
-    const { teams, currentUser } = state;
+    const { teams } = state.collegeData;
+    const { currentUser } = state;
     const [joinCode, setJoinCode] = useState('');
     const [showIntro, setShowIntro] = useState(true);
 
@@ -100,3 +102,5 @@ export default function TeamFinder() {
         </div>
     );
 }
+
+    

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -15,15 +16,15 @@ interface Winner {
     team?: Team;
 }
 
-const WinnerCard = ({ winner, rank }: { winner: Winner, rank: number }) => {
+const WinnerCard = ({ winner, rank, collegeName }: { winner: Winner, rank: number, collegeName: string | null }) => {
     const [isGenerating, setIsGenerating] = useState(false);
 
     const handleDownloadCertificate = async () => {
-        if (winner.team && winner.project && !isGenerating) {
+        if (winner.team && winner.project && !isGenerating && collegeName) {
             setIsGenerating(true);
             try {
                 const teamMembers = winner.team.members.map((m: User) => m.name);
-                await generateCertificate(winner.team.name, winner.project.name, teamMembers, winner.project.id, winner.project.averageScore);
+                await generateCertificate(winner.team.name, winner.project.name, teamMembers, winner.project.id, winner.project.averageScore, collegeName);
             } catch (error) {
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
@@ -57,7 +58,8 @@ const WinnerCard = ({ winner, rank }: { winner: Winner, rank: number }) => {
 
 export default function Results() {
     const { state } = useHackathon();
-    const { projects, teams } = state;
+    const { projects, teams } = state.collegeData;
+    const { selectedCollege } = state;
     const [showIntro, setShowIntro] = useState(true);
 
     const winners: Winner[] = useMemo(() => {
@@ -77,23 +79,23 @@ export default function Results() {
 
     return (
         <div className="container max-w-6xl mx-auto py-12 animate-fade-in">
-            <h1 className="text-4xl font-bold text-center mb-8 font-headline">Final Results & Showcase</h1>
+            <h1 className="text-4xl font-bold text-center mb-8 font-headline">Final Results for {selectedCollege}</h1>
             
             {winners.length > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
                     {winners[1] && (
                         <div className="mt-8 lg:mt-16 animate-slide-in-up" style={{ animationDelay: '200ms'}}>
-                            <WinnerCard winner={winners[1]} rank={2} />
+                            <WinnerCard winner={winners[1]} rank={2} collegeName={selectedCollege} />
                         </div>
                     )}
                     {winners[0] && (
                         <div className="animate-slide-in-up">
-                             <WinnerCard winner={winners[0]} rank={1} />
+                             <WinnerCard winner={winners[0]} rank={1} collegeName={selectedCollege} />
                         </div>
                     )}
                     {winners[2] && (
                          <div className="mt-8 lg:mt-24 animate-slide-in-up" style={{ animationDelay: '400ms'}}>
-                           <WinnerCard winner={winners[2]} rank={3} />
+                           <WinnerCard winner={winners[2]} rank={3} collegeName={selectedCollege} />
                         </div>
                     )}
                 </div>
@@ -107,3 +109,5 @@ export default function Results() {
         </div>
     );
 }
+
+    

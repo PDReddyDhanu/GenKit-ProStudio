@@ -1,8 +1,8 @@
+
 "use client";
 
 import React, { useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import AddJudgeForm from './AddJudgeForm';
 import AddStudentForm from './AddStudentForm';
 import PendingApprovals from './PendingApprovals';
@@ -10,7 +10,7 @@ import UserLists from './UserLists';
 
 export default function AdminDashboard() {
     const { state } = useHackathon();
-    const { users, judges } = state;
+    const { users, judges } = state.collegeData;
 
     const { pendingUsers, approvedUsers } = useMemo(() => {
         const pending = users.filter(u => u.status === 'pending');
@@ -31,3 +31,5 @@ export default function AdminDashboard() {
         </div>
     );
 }
+
+    

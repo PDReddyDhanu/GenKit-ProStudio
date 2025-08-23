@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo } from 'react';
@@ -28,7 +29,8 @@ export default function CertificateVerifyPage() {
     const params = useParams<{ projectId: string }>();
     const projectId = params.projectId;
     const { state } = useHackathon();
-    const { projects, teams } = state;
+    const { projects, teams } = state.collegeData;
+    const collegeName = state.selectedCollege;
 
     const { project, team, rank, performance } = useMemo(() => {
         const currentProject = projects.find(p => p.id === projectId);
@@ -57,7 +59,7 @@ export default function CertificateVerifyPage() {
                     <CardHeader className="text-center">
                         <CheckCircle className="h-16 w-16 mx-auto text-green-400" />
                         <CardTitle className="text-3xl mt-4 text-green-300 font-headline">Certificate Verified</CardTitle>
-                        <CardDescription>This certificate is authentic and has been issued by HackSprint.</CardDescription>
+                        <CardDescription>This certificate is authentic and has been issued by HackSprint for {collegeName}.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4 bg-muted/50 p-6 rounded-md">
                         {rank && (
@@ -104,3 +106,5 @@ export default function CertificateVerifyPage() {
         </div>
     );
 };
+
+    

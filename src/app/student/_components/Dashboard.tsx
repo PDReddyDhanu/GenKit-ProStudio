@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useHackathon } from '@/context/HackathonProvider';
@@ -9,10 +10,11 @@ import { AuthMessage } from '@/components/AuthMessage';
 
 export default function Dashboard() {
     const { state } = useHackathon();
-    const { currentUser, teams, projects } = state;
+    const { currentUser } = state;
+    const { teams, projects } = state.collegeData;
 
     const currentTeam: Team | undefined = teams.find(t => t.id === currentUser?.teamId);
-    const currentProject: Project | undefined = projects.find(p => p.id === currentTeam?.projectId);
+    const currentProject: Project | undefined = projects.find(p => p.teamId === currentTeam?.id);
 
     return (
         <div className="py-12 animate-slide-in-up">
@@ -27,3 +29,5 @@ export default function Dashboard() {
         </div>
     );
 }
+
+    

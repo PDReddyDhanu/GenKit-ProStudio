@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -12,7 +13,7 @@ import { User } from '@/lib/types';
 
 export default function Auth() {
     const { dispatch, state } = useHackathon();
-    const { users } = state;
+    const { users } = state.collegeData;
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -102,3 +103,5 @@ export default function Auth() {
         </div>
     );
 }
+
+    
