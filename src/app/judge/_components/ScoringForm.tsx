@@ -11,7 +11,7 @@ import { Project, Score, Team, User } from '@/lib/types';
 import { JUDGING_RUBRIC } from '@/lib/constants';
 import Link from 'next/link';
 import { ArrowLeft, Bot, Loader } from 'lucide-react';
-import { getAiProjectSummary, scoreProject } from '@/app/actions';
+import { getAiProjectSummary } from '@/app/actions';
 
 interface ScoringFormProps {
     project: Project;
@@ -19,14 +19,13 @@ interface ScoringFormProps {
 }
 
 export default function ScoringForm({ project, onBack }: ScoringFormProps) {
-    const { state, dispatch, refreshData } = useHackathon();
+    const { state, dispatch } = useHackathon();
     const { currentJudge, teams } = state;
 
     const [scores, setScores] = useState<Record<string, number>>({});
     const [comments, setComments] = useState<Record<string, string>>({});
     const [aiSummary, setAiSummary] = useState('');
     const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     
     useEffect(() => {
         const initialScores: Record<string, number> = {};
@@ -67,26 +66,17 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
         }
     };
 
-    const handleSubmitScores = async (e: React.FormEvent) => {
+    const handleSubmitScores = (e: React.FormEvent) => {
         e.preventDefault();
         if (project && currentJudge) {
-            setIsSubmitting(true);
             const projectScores: Score[] = JUDGING_RUBRIC.map(criteria => ({
                 judgeId: currentJudge.id,
                 criteria: criteria.id,
                 value: scores[criteria.id] || 0,
                 comment: comments[criteria.id] || '',
             }));
-            const result = await scoreProject({ projectId: project.id, judgeId: currentJudge.id, scores: projectScores });
-            
-            if (result.success) {
-                dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
-                await refreshData();
-                onBack();
-            } else {
-                dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
-            }
-            setIsSubmitting(false);
+            dispatch({ type: 'SCORE_PROJECT', payload: { projectId: project.id, judgeId: currentJudge.id, scores: projectScores } });
+            onBack();
         }
     };
     
@@ -144,9 +134,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
                                 />
                             </div>
                         ))}
-                        <Button type="submit" className="w-full" disabled={isSubmitting}>
-                            {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Submitting...</> : 'Submit Score'}
-                        </Button>
+                        <Button type="submit" className="w-full">Submit Score</Button>
                     </form>
                 </CardContent>
             </Card>

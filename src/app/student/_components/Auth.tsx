@@ -8,8 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { registerStudent } from '@/app/actions';
-import { Loader } from 'lucide-react';
 import { User } from '@/lib/types';
 
 export default function Auth() {
@@ -18,21 +16,13 @@ export default function Auth() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
 
-    const handleRegister = async (e: React.FormEvent) => {
+    const handleRegister = (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
-        const result = await registerStudent({ name, email, password });
-        if (result.success) {
-            dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
-            setName('');
-            setEmail('');
-            setPassword('');
-        } else {
-            dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
-        }
-        setIsLoading(false);
+        dispatch({ type: 'REGISTER_STUDENT', payload: { name, email, password } });
+        setName('');
+        setEmail('');
+        setPassword('');
     };
 
     const handleLogin = (e: React.FormEvent) => {
@@ -73,19 +63,17 @@ export default function Auth() {
                             <form onSubmit={handleRegister} className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="name">Full Name</Label>
-                                    <Input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required disabled={isLoading} />
+                                    <Input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="email">Email Address</Label>
-                                    <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
+                                    <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
                                 </div>
                                  <div className="space-y-2">
                                     <Label htmlFor="password">Password</Label>
-                                    <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading}/>
+                                    <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
                                 </div>
-                                <Button type="submit" className="w-full" disabled={isLoading}>
-                                    {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Registering...</> : 'Register'}
-                                </Button>
+                                <Button type="submit" className="w-full">Register</Button>
                             </form>
                         </CardContent>
                     </Card>

@@ -6,47 +6,25 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { createTeam, joinTeam } from '@/app/actions';
-import { Loader } from 'lucide-react';
 
 export default function TeamManagement() {
-    const { state, dispatch, refreshData } = useHackathon();
+    const { state, dispatch } = useHackathon();
     const { currentUser } = state;
     const [teamName, setTeamName] = useState('');
     const [joinCode, setJoinCode] = useState('');
-    const [isCreating, setIsCreating] = useState(false);
-    const [isJoining, setIsJoining] = useState(false);
 
-    const handleCreateTeam = async (e: React.FormEvent) => {
+    const handleCreateTeam = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!teamName || !currentUser) return;
-        
-        setIsCreating(true);
-        const result = await createTeam({ teamName, userId: currentUser.id });
-        if (result.success) {
-            dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
-            await refreshData();
-            // Refetch current user from updated state
-            // This is tricky without a full session management. For now, we rely on refreshData
-        } else {
-            dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
+        if (currentUser) {
+            dispatch({ type: 'CREATE_TEAM', payload: { teamName, userId: currentUser.id } });
         }
-        setIsCreating(false);
     };
 
-    const handleJoinTeam = async (e: React.FormEvent) => {
+    const handleJoinTeam = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!joinCode || !currentUser) return;
-
-        setIsJoining(true);
-        const result = await joinTeam({ joinCode, userId: currentUser.id });
-        if (result.success) {
-            dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
-            await refreshData();
-        } else {
-            dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
+        if (currentUser) {
+            dispatch({ type: 'JOIN_TEAM', payload: { joinCode, userId: currentUser.id } });
         }
-        setIsJoining(false);
     };
 
     return (
@@ -62,9 +40,7 @@ export default function TeamManagement() {
                             <Label htmlFor="teamName">Team Name</Label>
                             <Input id="teamName" type="text" value={teamName} onChange={e => setTeamName(e.target.value)} required />
                         </div>
-                        <Button type="submit" className="w-full" disabled={isCreating}>
-                             {isCreating ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Creating...</> : 'Create Team'}
-                        </Button>
+                        <Button type="submit" className="w-full">Create Team</Button>
                     </form>
                 </CardContent>
             </Card>
@@ -79,9 +55,7 @@ export default function TeamManagement() {
                             <Label htmlFor="joinCode">Team Join Code</Label>
                             <Input id="joinCode" type="text" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} required />
                         </div>
-                        <Button type="submit" variant="secondary" className="w-full" disabled={isJoining}>
-                             {isJoining ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Joining...</> : 'Join Team'}
-                        </Button>
+                        <Button type="submit" variant="secondary" className="w-full">Join Team</Button>
                     </form>
                 </CardContent>
             </Card>

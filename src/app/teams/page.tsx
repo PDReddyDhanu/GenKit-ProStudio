@@ -8,25 +8,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User, Users } from 'lucide-react';
 import PageIntro from '@/components/PageIntro';
-import { joinTeam } from '@/app/actions';
 import { User as UserType } from '@/lib/types';
 
 export default function TeamFinder() {
-    const { state, dispatch, refreshData } = useHackathon();
+    const { state, dispatch } = useHackathon();
     const { teams, currentUser } = state;
     const [joinCode, setJoinCode] = useState('');
     const [showIntro, setShowIntro] = useState(true);
 
-    const handleJoinTeam = async (e: React.FormEvent, code: string) => {
+    const handleJoinTeam = (e: React.FormEvent, code: string) => {
         e.preventDefault();
         if (currentUser && !currentUser.teamId) {
-            const result = await joinTeam({ joinCode: code, userId: currentUser.id });
-            if (result.success) {
-                dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
-                await refreshData();
-            } else {
-                 dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
-            }
+            dispatch({ type: 'JOIN_TEAM', payload: { joinCode: code, userId: currentUser.id } });
         } else if (currentUser?.teamId) {
             dispatch({
                 type: 'SET_AUTH_ERROR',

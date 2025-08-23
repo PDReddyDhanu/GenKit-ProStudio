@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import type { Team, User } from '@/lib/types';
-import { generateProjectIdea, submitProject } from '@/app/actions';
+import type { Team } from '@/lib/types';
+import { generateProjectIdea } from '@/app/actions';
 import { Loader } from 'lucide-react';
 
 interface ProjectSubmissionProps {
@@ -16,26 +16,17 @@ interface ProjectSubmissionProps {
 }
 
 export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
-    const { dispatch, refreshData } = useHackathon();
+    const { dispatch } = useHackathon();
     const [projectName, setProjectName] = useState('');
     const [projectDesc, setProjectDesc] = useState('');
     const [githubUrl, setGithubUrl] = useState('');
     const [ideaTheme, setIdeaTheme] = useState('');
     const [generatedIdea, setGeneratedIdea] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmitProject = async (e: React.FormEvent) => {
+    const handleSubmitProject = (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
-        const result = await submitProject({ name: projectName, description: projectDesc, githubUrl, teamId: team.id });
-        if(result.success) {
-            dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.message });
-            await refreshData();
-        } else {
-            dispatch({ type: 'SET_AUTH_ERROR', payload: result.message });
-        }
-        setIsSubmitting(false);
+        dispatch({ type: 'SUBMIT_PROJECT', payload: { name: projectName, description: projectDesc, githubUrl, teamId: team.id } });
     };
 
     const handleGenerateIdea = async () => {
@@ -102,9 +93,7 @@ export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
                             <Label htmlFor="githubUrl">GitHub Repository URL</Label>
                             <Input id="githubUrl" type="url" value={githubUrl} onChange={e => setGithubUrl(e.target.value)} required />
                         </div>
-                        <Button type="submit" className="w-full" disabled={isSubmitting}>
-                            {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Project'}
-                        </Button>
+                        <Button type="submit" className="w-full">Submit Project</Button>
                     </form>
                 </CardContent>
             </Card>

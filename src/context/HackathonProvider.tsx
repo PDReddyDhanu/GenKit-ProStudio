@@ -3,8 +3,37 @@
 import React, { createContext, useReducer, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { User, Team, Project, Judge, Score, UserProfileData, HackathonData } from '../lib/types';
 import { JUDGING_RUBRIC } from '../lib/constants';
-import * as actions from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+
+// --- Helper Functions for localStorage ---
+const getInitialState = (): HackathonState => {
+    if (typeof window === 'undefined') {
+        return defaultState;
+    }
+    try {
+        const serializedState = localStorage.getItem('hackathonState');
+        if (serializedState === null) {
+            return defaultState;
+        }
+        const storedState = JSON.parse(serializedState);
+        // Ensure all default keys are present
+        return { ...defaultState, ...storedState, isInitialized: true, isLoading: false };
+    } catch (error) {
+        console.error("Could not load state from localStorage", error);
+        return defaultState;
+    }
+};
+
+const saveState = (state: HackathonState) => {
+    try {
+        const stateToSave = { ...state, isInitialized: true, isLoading: false };
+        const serializedState = JSON.stringify(stateToSave);
+        localStorage.setItem('hackathonState', serializedState);
+    } catch (error) {
+        console.error("Could not save state to localStorage", error);
+    }
+};
+
 
 interface HackathonState {
   users: User[];
@@ -22,15 +51,25 @@ interface HackathonState {
 
 type Action =
   | { type: 'HYDRATE_STATE'; payload: Partial<HackathonState> }
-  | { type: 'SET_INITIAL_DATA'; payload: HackathonData }
-  | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'LOGIN_STUDENT'; payload: User }
   | { type: 'LOGIN_JUDGE'; payload: Judge }
   | { type: 'ADMIN_LOGIN' }
   | { type: 'LOGOUT' }
   | { type: 'SET_AUTH_ERROR'; payload: string }
   | { type: 'SET_SUCCESS_MESSAGE'; payload: string }
-  | { type: 'CLEAR_MESSAGES' };
+  | { type: 'CLEAR_MESSAGES' }
+  | { type: 'REGISTER_STUDENT'; payload: { name: string; email: string; password: string } }
+  | { type: 'CREATE_TEAM'; payload: { teamName: string; userId: string } }
+  | { type: 'JOIN_TEAM'; payload: { joinCode: string; userId: string } }
+  | { type: 'SUBMIT_PROJECT'; payload: { name: string; description: string; githubUrl: string, teamId: string } }
+  | { type: 'ADD_JUDGE'; payload: { name: string; email: string; password: string } }
+  | { type: 'APPROVE_STUDENT'; payload: { userId: string } }
+  | { type: 'ADMIN_REGISTER_STUDENT'; payload: { name: string; email: string; password: string } }
+  | { type: 'SCORE_PROJECT'; payload: { projectId: string; judgeId: string; scores: Score[] } }
+  | { type: 'UPDATE_PROFILE'; payload: { userId: string, profileData: Partial<UserProfileData> } }
+  | { type: 'RESET_HACKATHON' }
+  | { type: 'RESET_JUDGES' };
+
 
 const defaultState: HackathonState = {
   users: [],
@@ -51,31 +90,7 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
 
   switch (action.type) {
     case 'HYDRATE_STATE':
-        return { ...state, ...action.payload, isInitialized: true };
-
-    case 'SET_INITIAL_DATA': {
-        const { users, teams, projects, judges } = action.payload;
-
-        const augmentedProjects = projects.map(project => {
-            const projectScores = project.scores || [];
-            const uniqueJudges = new Set(projectScores.map(s => s.judgeId));
-            const totalPossibleScore = uniqueJudges.size * JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
-            const totalScore = projectScores.reduce((sum, score) => sum + score.value, 0);
-            const averageScore = totalPossibleScore > 0 ? (totalScore / totalPossibleScore) * 10 : 0;
-            return { ...project, averageScore };
-        });
-        
-        // Augment teams with full member objects
-        const augmentedTeams = teams.map(team => ({
-            ...team,
-            members: team.members.map(memberId => users.find(u => u.id === memberId)).filter(Boolean) as User[]
-        }));
-
-        return { ...state, users, teams: augmentedTeams, projects: augmentedProjects, judges, isLoading: false };
-    }
-    
-    case 'SET_LOADING':
-        return { ...state, isLoading: action.payload };
+        return { ...state, ...action.payload, isInitialized: true, isLoading: false };
 
     case 'CLEAR_MESSAGES':
         return { ...state, authError: null, successMessage: null };
@@ -89,7 +104,7 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
     case 'ADMIN_LOGIN':
         return { ...baseState, currentAdmin: true, currentUser: null, currentJudge: null, successMessage: 'Admin login successful!' };
 
-    case 'SET_AUTH_Error':
+    case 'SET_AUTH_ERROR':
         return { ...state, authError: action.payload };
 
     case 'SET_SUCCESS_MESSAGE':
@@ -104,6 +119,162 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
             successMessage: "You have been logged out."
         }
     }
+    case 'REGISTER_STUDENT': {
+        const { name, email, password } = action.payload;
+        if (state.users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+            return { ...state, authError: "A user with this email already exists." };
+        }
+        const newUser: User = {
+            id: `user-${Date.now()}`,
+            name, email: email.toLowerCase(), password,
+            status: 'pending',
+            skills: [],
+            bio: '',
+            github: '',
+            linkedin: ''
+        };
+        return { ...state, users: [...state.users, newUser], successMessage: "Registration successful! Your account is pending admin approval." };
+    }
+     case 'ADMIN_REGISTER_STUDENT': {
+        const { name, email, password } = action.payload;
+        if (state.users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+            return { ...state, authError: "A user with this email already exists." };
+        }
+        const newUser: User = {
+            id: `user-${Date.now()}`,
+            name, email, password,
+            status: 'approved', // Directly approved
+            skills: [],
+            bio: '',
+            github: '',
+            linkedin: ''
+        };
+        return { ...state, users: [...state.users, newUser], successMessage: `${name} has been registered and approved.` };
+    }
+    case 'APPROVE_STUDENT': {
+        return {
+            ...state,
+            users: state.users.map(u => u.id === action.payload.userId ? { ...u, status: 'approved' } : u),
+            successMessage: "Student approved successfully."
+        };
+    }
+    case 'CREATE_TEAM': {
+        const { teamName, userId } = action.payload;
+        const newTeam: Team = {
+            id: `team-${Date.now()}`,
+            name: teamName,
+            joinCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+            members: [state.users.find(u => u.id === userId)!],
+            projectId: ""
+        };
+        return {
+            ...state,
+            teams: [...state.teams, newTeam],
+            users: state.users.map(u => u.id === userId ? { ...u, teamId: newTeam.id } : u),
+            currentUser: { ...state.currentUser!, teamId: newTeam.id },
+            successMessage: "Team created successfully!"
+        };
+    }
+
+    case 'JOIN_TEAM': {
+        const { joinCode, userId } = action.payload;
+        const teamToJoin = state.teams.find(t => t.joinCode === joinCode);
+        if (!teamToJoin) {
+            return { ...state, authError: "Invalid join code." };
+        }
+        if ((teamToJoin.members as User[]).some(m => m.id === userId)) {
+             return { ...state, authError: "You are already in this team." };
+        }
+        return {
+            ...state,
+            teams: state.teams.map(t => t.id === teamToJoin.id ? { ...t, members: [...t.members, state.users.find(u => u.id === userId)!] } : t),
+            users: state.users.map(u => u.id === userId ? { ...u, teamId: teamToJoin.id } : u),
+            currentUser: { ...state.currentUser!, teamId: teamToJoin.id },
+            successMessage: `Successfully joined team: ${teamToJoin.name}`
+        };
+    }
+
+    case 'SUBMIT_PROJECT': {
+        const { name, description, githubUrl, teamId } = action.payload;
+        const newProject: Project = {
+            id: `proj-${Date.now()}`,
+            teamId, name, description, githubUrl,
+            scores: [],
+            averageScore: 0
+        };
+        return {
+            ...state,
+            projects: [...state.projects, newProject],
+            teams: state.teams.map(t => t.id === teamId ? { ...t, projectId: newProject.id } : t),
+            successMessage: "Project submitted successfully!"
+        };
+    }
+
+    case 'ADD_JUDGE': {
+        const { name, email, password } = action.payload;
+        if (!email.toLowerCase().endsWith('@judge.com')) {
+            return { ...state, authError: 'Judge email must end with @judge.com' };
+        }
+        if (state.judges.find(j => j.email.toLowerCase() === email.toLowerCase())) {
+            return { ...state, authError: 'A judge with this email already exists.' };
+        }
+        const newJudge: Judge = {
+            id: `judge-${Date.now()}`,
+            name, email, password
+        };
+        return { ...state, judges: [...state.judges, newJudge], successMessage: "Judge added successfully!" };
+    }
+    
+    case 'SCORE_PROJECT': {
+        const { projectId, judgeId, scores } = action.payload;
+        const projects = state.projects.map(p => {
+            if (p.id === projectId) {
+                const otherScores = p.scores.filter(s => s.judgeId !== judgeId);
+                const newScores = [...otherScores, ...scores];
+                
+                const uniqueJudges = new Set(newScores.map(s => s.judgeId));
+                const totalPossibleScore = uniqueJudges.size * JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
+                const totalScore = newScores.reduce((sum, score) => sum + score.value, 0);
+                const averageScore = totalPossibleScore > 0 ? (totalScore / totalPossibleScore) * 10 : 0;
+                
+                return { ...p, scores: newScores, averageScore };
+            }
+            return p;
+        });
+        return { ...state, projects, successMessage: "Scores submitted successfully." };
+    }
+
+    case 'UPDATE_PROFILE': {
+        const { userId, profileData } = action.payload;
+        const updatedUsers = state.users.map(u => u.id === userId ? { ...u, ...profileData } : u);
+        const updatedCurrentUser = state.currentUser?.id === userId ? { ...state.currentUser, ...profileData } : state.currentUser;
+        
+        return {
+            ...state,
+            users: updatedUsers,
+            currentUser: updatedCurrentUser,
+            successMessage: "Profile updated successfully."
+        };
+    }
+
+    case 'RESET_HACKATHON': {
+        return {
+            ...defaultState,
+            isInitialized: true,
+            isLoading: false,
+            successMessage: "All hackathon data has been reset."
+        };
+    }
+
+    case 'RESET_JUDGES': {
+         return {
+            ...state,
+            judges: [],
+            projects: state.projects.map(p => ({ ...p, scores: [], averageScore: 0})),
+            successMessage: "All judges and their scores have been reset."
+        };
+    }
+
     default:
       return state;
   }
@@ -116,26 +287,24 @@ const HackathonContext = createContext<{
 } | undefined>(undefined);
 
 export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(hackathonReducer, defaultState);
+  const [state, dispatch] = useReducer(hackathonReducer, defaultState, getInitialState);
   const { toast } = useToast();
 
-  const refreshData = useCallback(async () => {
-    dispatch({ type: 'SET_LOADING', payload: true });
-    try {
-        const data = await actions.getHackathonData();
-        dispatch({ type: 'SET_INITIAL_DATA', payload: data });
-    } catch (error) {
-        console.error("Failed to fetch latest data", error);
-        dispatch({ type: 'SET_AUTH_ERROR', payload: "Could not connect to the database."})
-    } finally {
-        dispatch({ type: 'SET_LOADING', payload: false });
+   useEffect(() => {
+    if (state.isInitialized) {
+      saveState(state);
     }
+  }, [state]);
+  
+  useEffect(() => {
+    dispatch({ type: 'HYDRATE_STATE', payload: getInitialState() });
   }, []);
 
-  useEffect(() => {
-    // This effect runs once on mount to get the initial data.
-    refreshData();
-  }, [refreshData]);
+
+  const refreshData = useCallback(async () => {
+    // This function can now be a no-op since localStorage syncs, or can force a re-read.
+    // For simplicity, we'll let the existing effects handle it.
+  }, []);
 
   useEffect(() => {
     // This effect handles showing toast notifications for success/error messages
@@ -152,7 +321,7 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   return (
     <HackathonContext.Provider value={{ state, dispatch, refreshData }}>
-      {state.isLoading ? <div className="h-screen w-full flex items-center justify-center bg-background"><p>Loading HackSprint...</p></div> : children}
+      {(!state.isInitialized && state.isLoading) ? <div className="h-screen w-full flex items-center justify-center bg-background"><p>Loading HackSprint...</p></div> : children}
     </HackathonContext.Provider>
   );
 };
