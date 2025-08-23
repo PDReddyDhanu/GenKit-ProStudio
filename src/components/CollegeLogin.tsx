@@ -1,22 +1,36 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, Trophy } from 'lucide-react';
-import { COLLEGES } from '@/lib/colleges';
+import { STATES } from '@/lib/colleges';
 
 export default function CollegeLogin() {
     const { dispatch } = useHackathon();
+    const [selectedState, setSelectedState] = useState('');
+    const [selectedDistrict, setSelectedDistrict] = useState('');
     const [selectedCollege, setSelectedCollege] = useState('');
     const [error, setError] = useState('');
 
+    const districts = useMemo(() => {
+        return selectedState ? Object.keys(STATES[selectedState as keyof typeof STATES] || {}) : [];
+    }, [selectedState]);
+
+    const colleges = useMemo(() => {
+        if (selectedState && selectedDistrict) {
+            const stateData = STATES[selectedState as keyof typeof STATES];
+            return stateData[selectedDistrict as keyof typeof stateData] || [];
+        }
+        return [];
+    }, [selectedState, selectedDistrict]);
+
     const handleProceed = () => {
         if (!selectedCollege) {
-            setError('Please select a college to continue.');
+            setError('Please select a state, district, and college to continue.');
             return;
         }
         setError('');
@@ -42,20 +56,47 @@ export default function CollegeLogin() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        <Select onValueChange={setSelectedCollege} value={selectedCollege}>
+                        <Select onValueChange={(value) => { setSelectedState(value); setSelectedDistrict(''); setSelectedCollege(''); }}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a state..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {Object.keys(STATES).map(state => (
+                                    <SelectItem key={state} value={state}>
+                                        {state}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                         <Select onValueChange={(value) => { setSelectedDistrict(value); setSelectedCollege(''); }} value={selectedDistrict} disabled={!selectedState}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a district..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {districts.map(district => (
+                                    <SelectItem key={district} value={district}>
+                                        {district}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <Select onValueChange={setSelectedCollege} value={selectedCollege} disabled={!selectedDistrict}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a college..." />
                             </SelectTrigger>
                             <SelectContent>
-                                {COLLEGES.map(college => (
+                                {colleges.map(college => (
                                     <SelectItem key={college} value={college}>
                                         {college}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
+
                         {error && <p className="text-sm text-destructive">{error}</p>}
-                        <Button onClick={handleProceed} className="w-full">
+                        <Button onClick={handleProceed} className="w-full" disabled={!selectedCollege}>
                             Proceed to Hackathon
                         </Button>
                     </div>
