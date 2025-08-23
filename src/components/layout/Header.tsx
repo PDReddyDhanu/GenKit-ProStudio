@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -5,7 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, Menu, X } from 'lucide-react';
+import { Trophy, Rss, Menu } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -22,7 +23,7 @@ const NavLink = ({ href, children, onClick }: { href: string; children: React.Re
     const pathname = usePathname();
     const isActive = pathname === href;
     return (
-        <Link href={href} onClick={onClick} className={`block sm:inline-block text-sm font-medium transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+        <Link href={href} onClick={onClick} className={`block sm:inline-block text-sm font-medium transition-colors ${isActive ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'}`}>
             {children}
         </Link>
     );
@@ -124,7 +125,7 @@ export function Header() {
                             </>
                         ) : (
                             <>
-                                <Button variant="ghost" asChild>
+                                <Button variant="secondary" asChild>
                                     <Link href="/student">Student Portal</Link>
                                 </Button>
                                 <Button variant="default" asChild>
@@ -179,7 +180,7 @@ export function Header() {
                                         </div>
                                     ) : (
                                         <div className="flex flex-col gap-2">
-                                            <Button variant="ghost" asChild>
+                                            <Button variant="secondary" asChild>
                                                 <Link href="/student" onClick={closeMobileMenu}>Student Portal</Link>
                                             </Button>
                                             <Button variant="default" asChild>
