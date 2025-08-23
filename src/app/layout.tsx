@@ -33,18 +33,16 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
     const [showIntro, setShowIntro] = useState(true);
 
     useEffect(() => {
-      // The IntroAnimation component controls its own duration.
-      // After it finishes, we can proceed. This timeout simulates that.
-      const timer = setTimeout(() => {
-          if (isInitialized) {
-              setShowIntro(false);
-          }
-      }, 4000); // Should match the duration in IntroAnimation
+      if (isInitialized) {
+        const timer = setTimeout(() => {
+            setShowIntro(false);
+        }, 4000); // Should match the duration in IntroAnimation
 
-      return () => clearTimeout(timer);
+        return () => clearTimeout(timer);
+      }
     }, [isInitialized]);
 
-    if (showIntro || !isInitialized) {
+    if (!isInitialized || showIntro) {
         return <IntroAnimation />;
     }
     

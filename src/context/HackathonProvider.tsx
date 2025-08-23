@@ -14,20 +14,20 @@ const getInitialState = (): HackathonState => {
     try {
         const serializedState = localStorage.getItem('hackathonState');
         if (serializedState === null) {
-            return defaultState;
+            return { ...defaultState, isInitialized: true, isLoading: false };
         }
         const storedState = JSON.parse(serializedState);
         // Ensure all default keys are present
         return { ...defaultState, ...storedState, isInitialized: true, isLoading: false };
     } catch (error) {
         console.error("Could not load state from localStorage", error);
-        return defaultState;
+        return { ...defaultState, isInitialized: true, isLoading: false };
     }
 };
 
 const saveState = (state: HackathonState) => {
     try {
-        const stateToSave = { ...state, isInitialized: true, isLoading: false };
+        const stateToSave = { ...state, isLoading: false }; // Never save isLoading as true
         const serializedState = JSON.stringify(stateToSave);
         localStorage.setItem('hackathonState', serializedState);
     } catch (error) {
@@ -310,17 +310,18 @@ const HackathonContext = createContext<{
 } | undefined>(undefined);
 
 export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(hackathonReducer, defaultState, getInitialState);
+  const [state, dispatch] = useReducer(hackathonReducer, defaultState);
   const { toast } = useToast();
 
    useEffect(() => {
     if (state.isInitialized) {
       saveState(state);
     }
-  }, [state]);
+  }, [state.isInitialized, state]);
   
   useEffect(() => {
-    dispatch({ type: 'HYDRATE_STATE', payload: getInitialState() });
+    const initialState = getInitialState();
+    dispatch({ type: 'HYDRATE_STATE', payload: initialState });
   }, []);
 
   useEffect(() => {
