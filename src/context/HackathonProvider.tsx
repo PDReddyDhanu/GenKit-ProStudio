@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useReducer, useContext, ReactNode, useEffect, useCallback } from 'react';
@@ -44,6 +45,7 @@ interface HackathonState {
   currentUser: User | null;
   currentJudge: Judge | null;
   currentAdmin: boolean;
+  selectedCollege: string | null;
   authError: string | null;
   successMessage: string | null;
   isInitialized: boolean;
@@ -70,7 +72,8 @@ type Action =
   | { type: 'UPDATE_PROFILE'; payload: { userId: string, profileData: Partial<UserProfileData> } }
   | { type: 'POST_ANNOUNCEMENT'; payload: string }
   | { type: 'RESET_HACKATHON' }
-  | { type: 'RESET_JUDGES' };
+  | { type: 'RESET_JUDGES' }
+  | { type: 'SELECT_COLLEGE'; payload: string };
 
 
 const defaultState: HackathonState = {
@@ -82,6 +85,7 @@ const defaultState: HackathonState = {
   currentUser: null,
   currentJudge: null,
   currentAdmin: false,
+  selectedCollege: null,
   authError: null,
   successMessage: null,
   isInitialized: false,
@@ -97,6 +101,9 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
 
     case 'CLEAR_MESSAGES':
         return { ...state, authError: null, successMessage: null };
+    
+    case 'SELECT_COLLEGE':
+        return { ...state, selectedCollege: action.payload, successMessage: `Welcome, ${action.payload}!` };
 
     case 'LOGIN_STUDENT':
         return { ...baseState, currentUser: action.payload, currentJudge: null, currentAdmin: false, successMessage: 'Login successful!' };
@@ -276,6 +283,7 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
     case 'RESET_HACKATHON': {
         return {
             ...defaultState,
+            selectedCollege: state.selectedCollege, // Keep the selected college
             isInitialized: true,
             isLoading: false,
             successMessage: "All hackathon data has been reset."
@@ -330,7 +338,7 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   return (
     <HackathonContext.Provider value={{ state, dispatch }}>
-      {(!state.isInitialized && state.isLoading) ? <div className="h-screen w-full flex items-center justify-center bg-background"><p>Loading HackSprint...</p></div> : children}
+      {children}
     </HackathonContext.Provider>
   );
 };
