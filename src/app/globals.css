@@ -68,5 +68,26 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+     background-color: hsl(var(--background));
+    /* Starfield effect */
+    --star-size-1: 1px;
+    --star-size-2: 2px;
+    --star-size-3: 3px;
+    --star-color: hsl(var(--muted-foreground));
+    --star-bg: transparent;
+
+    background-image: 
+      radial-gradient(var(--star-size-3) var(--star-size-3) at 25px 25px, var(--star-color) 1%, var(--star-bg)),
+      radial-gradient(var(--star-size-2) var(--star-size-2) at 50px 100px, var(--star-color) 1%, var(--star-bg)),
+      radial-gradient(var(--star-size-1) var(--star-size-1) at 100px 75px, var(--star-color) 1%, var(--star-bg));
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    animation: stars 200s linear infinite;
+  }
+
+  .dark body {
+    background-color: #0c0f17; /* A deep navy blue for the dark theme */
+    --star-color: #555;
+    --star-bg: transparent;
   }
 }

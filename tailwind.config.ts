@@ -133,6 +133,10 @@ export default {
           '50%': { transform: 'translateY(-10px) rotateX(5deg) rotateY(-5deg)' },
           '100%': { transform: 'translateY(0) rotateX(0) rotateY(0)' },
         },
+        'stars': {
+          '0%': { 'background-position': '0 0' },
+          '100%': { 'background-position': '0 4000px' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -147,6 +151,7 @@ export default {
         'trophy-shine': 'trophy-shine 2s ease-in-out infinite',
         'credits-fade-in': 'credits-fade-in 4s ease-out forwards',
         'slow-float': 'slow-float 12s ease-in-out infinite',
+        'stars': 'stars 200s linear infinite',
       },
     },
   },
