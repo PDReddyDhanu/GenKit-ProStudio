@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -20,7 +21,8 @@ interface ScoringFormProps {
 
 export default function ScoringForm({ project, onBack }: ScoringFormProps) {
     const { state, dispatch } = useHackathon();
-    const { currentJudge, teams } = state;
+    const { currentJudge } = state;
+    const { teams } = state.collegeData;
 
     const [scores, setScores] = useState<Record<string, number>>({});
     const [comments, setComments] = useState<Record<string, string>>({});
