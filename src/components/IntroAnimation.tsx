@@ -5,11 +5,37 @@ import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Trophy } from 'lucide-react';
 
+interface ConfettiParticle {
+    id: number;
+    style: React.CSSProperties;
+    colorClass: string;
+}
+
 export default function IntroAnimation() {
     const [isVisible, setIsVisible] = useState(true);
     const [isFinished, setIsFinished] = useState(false);
+    const [particles, setParticles] = useState<ConfettiParticle[]>([]);
 
     useEffect(() => {
+        // Generate particles only on the client-side
+        const generateParticles = () => {
+            const newParticles: ConfettiParticle[] = Array.from({ length: 100 }).map((_, i) => ({
+                id: i,
+                style: {
+                    left: `${Math.random() * 100}%`,
+                    width: `${Math.random() * 8 + 5}px`,
+                    height: `${Math.random() * 8 + 5}px`,
+                    animationDelay: `${Math.random() * 4}s`,
+                    animationDuration: `${Math.random() * 3 + 2}s`,
+                    opacity: Math.random(),
+                },
+                colorClass: i % 2 === 0 ? 'bg-primary' : 'bg-secondary',
+            }));
+            setParticles(newParticles);
+        };
+        
+        generateParticles();
+
         const timer = setTimeout(() => {
             setIsVisible(false);
         }, 4000); // Total duration of the animation
@@ -36,32 +62,11 @@ export default function IntroAnimation() {
             )}
         >
             <div className="absolute inset-0 pointer-events-none">
-                {Array.from({ length: 50 }).map((_, i) => (
+                {particles.map((p) => (
                     <div 
-                        key={i}
-                        className="absolute bg-primary rounded-full animate-confetti-rain"
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            width: `${Math.random() * 8 + 5}px`,
-                            height: `${Math.random() * 8 + 5}px`,
-                            animationDelay: `${Math.random() * 4}s`,
-                            animationDuration: `${Math.random() * 3 + 2}s`,
-                            opacity: Math.random(),
-                        }}
-                    ></div>
-                ))}
-                 {Array.from({ length: 50 }).map((_, i) => (
-                    <div 
-                        key={i}
-                        className="absolute bg-secondary rounded-full animate-confetti-rain"
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            width: `${Math.random() * 8 + 5}px`,
-                            height: `${Math.random() * 8 + 5}px`,
-                            animationDelay: `${Math.random() * 4}s`,
-                            animationDuration: `${Math.random() * 3 + 2}s`,
-                            opacity: Math.random(),
-                        }}
+                        key={p.id}
+                        className={cn("absolute rounded-full animate-confetti-rain", p.colorClass)}
+                        style={p.style}
                     ></div>
                 ))}
             </div>
