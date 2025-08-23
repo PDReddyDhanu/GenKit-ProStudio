@@ -23,7 +23,8 @@ export default function CollegeLogin() {
     const colleges = useMemo(() => {
         if (selectedState && selectedDistrict) {
             const stateData = STATES[selectedState as keyof typeof STATES];
-            return stateData[selectedDistrict as keyof typeof stateData] || [];
+            const districtData = stateData[selectedDistrict as keyof typeof stateData]
+            return districtData || [];
         }
         return [];
     }, [selectedState, selectedDistrict]);
@@ -56,7 +57,7 @@ export default function CollegeLogin() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        <Select onValueChange={(value) => { setSelectedState(value); setSelectedDistrict(''); setSelectedCollege(''); }}>
+                        <Select onValueChange={(value) => { setSelectedState(value); setSelectedDistrict(''); setSelectedCollege(''); }} value={selectedState}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select a state..." />
                             </SelectTrigger>
