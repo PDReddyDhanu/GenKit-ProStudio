@@ -33,6 +33,10 @@ export default function DataManagement() {
         dispatch({ type: 'RESET_JUDGES' });
     };
 
+    const handleRemoveStudent = (userId: string) => {
+        dispatch({ type: 'REMOVE_STUDENT', payload: { userId } });
+    }
+
     return (
         <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -93,6 +97,7 @@ export default function DataManagement() {
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">All Students ({users.length})</CardTitle>
+                    <CardDescription>View and manage all registered students.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-96">
@@ -102,6 +107,7 @@ export default function DataManagement() {
                                     <TableHead>Name</TableHead>
                                     <TableHead>Email</TableHead>
                                     <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Action</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -109,7 +115,14 @@ export default function DataManagement() {
                                     <TableRow key={user.id}>
                                         <TableCell className="font-medium">{user.name}</TableCell>
                                         <TableCell>{user.email}</TableCell>
-                                        <TableCell>{user.status}</TableCell>
+                                        <TableCell>
+                                            <span className={`px-2 py-1 text-xs rounded-full ${user.status === 'approved' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
+                                                {user.status}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                             <Button variant="destructive" size="sm" onClick={() => handleRemoveStudent(user.id)}>Remove</Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>

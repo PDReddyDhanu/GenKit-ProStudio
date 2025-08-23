@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -62,7 +63,7 @@ export default function AdminPortal() {
 
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-slide-in-up">
-            <h1 className="text-4xl font-bold mb-8 font-headline">Admin Dashboard</h1>
+            <h1 className="text-4xl font-bold mb-8 font-headline">Admin Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
             <AuthMessage />
 
              <Tabs defaultValue="management" className="w-full">

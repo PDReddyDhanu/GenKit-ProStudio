@@ -40,17 +40,19 @@ const getInitialState = (): HackathonState => {
 
 const saveState = (state: HackathonState) => {
     try {
-        const globalState = {
+        // Save only non-sensitive global state
+        const globalStateToSave = {
             currentAdmin: state.currentAdmin,
             selectedCollege: state.selectedCollege,
-            // Don't save user/judge objects at the global level to avoid staleness
-            currentUser: state.currentUser ? { id: state.currentUser.id, type: 'student' } : null,
-            currentJudge: state.currentJudge ? { id: state.currentJudge.id, type: 'judge' } : null,
+            // Persist a reference to the logged-in user, not the full object
+            currentUser: state.currentUser ? { id: state.currentUser.id } : null,
+            currentJudge: state.currentJudge ? { id: state.currentJudge.id } : null,
         };
 
-        const serializedGlobalState = JSON.stringify(globalState);
+        const serializedGlobalState = JSON.stringify(globalStateToSave);
         localStorage.setItem('hackathonGlobalState', serializedGlobalState);
 
+        // Save the data for the selected college
         if (state.selectedCollege) {
             const serializedCollegeState = JSON.stringify(state.collegeData);
             localStorage.setItem(`hackathonState_${state.selectedCollege}`, serializedCollegeState);
@@ -97,6 +99,7 @@ type Action =
   | { type: 'ADD_JUDGE'; payload: { name: string; email: string; password: string } }
   | { type: 'APPROVE_STUDENT'; payload: { userId: string } }
   | { type: 'ADMIN_REGISTER_STUDENT'; payload: { name: string; email: string; password: string } }
+  | { type: 'REMOVE_STUDENT'; payload: { userId: string } }
   | { type: 'SCORE_PROJECT'; payload: { projectId: string; judgeId: string; scores: Score[] } }
   | { type: 'UPDATE_PROFILE'; payload: { userId: string, profileData: Partial<UserProfileData> } }
   | { type: 'POST_ANNOUNCEMENT'; payload: string }
@@ -122,26 +125,36 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
 
   switch (action.type) {
     case 'HYDRATE_STATE': {
-      let currentUser: User | null = null;
-      let currentJudge: Judge | null = null;
-      const storedUser = action.payload.currentUser as any;
+        const { selectedCollege } = action.payload;
+        let collegeData = defaultCollegeData;
+        let currentUser: User | null = null;
+        let currentJudge: Judge | null = null;
 
-      if (storedUser && action.payload.collegeData) {
-        if(storedUser.type === 'student'){
-          currentUser = action.payload.collegeData.users?.find(u => u.id === storedUser.id) || null;
-        } else if (storedUser.type === 'judge') {
-          currentJudge = action.payload.collegeData.judges?.find(j => j.id === storedUser.id) || null;
+        if (selectedCollege) {
+            const serializedCollegeState = localStorage.getItem(`hackathonState_${selectedCollege}`);
+            collegeData = serializedCollegeState ? JSON.parse(serializedCollegeState) : defaultCollegeData;
         }
-      }
-      
-      return { 
-          ...state, 
-          ...action.payload, 
-          currentUser,
-          currentJudge,
-          isInitialized: true, 
-          isLoading: false 
-      };
+        
+        // Re-hydrate the current user/judge object from the newly loaded collegeData
+        const storedUserRef = action.payload.currentUser as { id: string } | null;
+        if (storedUserRef) {
+            currentUser = collegeData.users?.find(u => u.id === storedUserRef.id) || null;
+        }
+
+        const storedJudgeRef = action.payload.currentJudge as { id: string } | null;
+        if (storedJudgeRef) {
+            currentJudge = collegeData.judges?.find(j => j.id === storedJudgeRef.id) || null;
+        }
+        
+        return { 
+            ...state, 
+            ...action.payload, 
+            collegeData,
+            currentUser,
+            currentJudge,
+            isInitialized: true, 
+            isLoading: false 
+        };
     }
 
     case 'CLEAR_MESSAGES':
@@ -159,7 +172,7 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
             isLoading: false,
             selectedCollege: action.payload,
             collegeData: collegeData,
-            successMessage: `Welcome to ${action.payload}!`
+            successMessage: action.payload ? `Welcome to ${action.payload}!` : null
         };
     }
 
@@ -227,6 +240,29 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
             ...state,
             collegeData: { ...state.collegeData, users: newUsers },
             successMessage: "Student approved successfully."
+        };
+    }
+    case 'REMOVE_STUDENT': {
+        const { userId } = action.payload;
+        const studentToRemove = state.collegeData.users.find(u => u.id === userId);
+        if (!studentToRemove) return state;
+
+        // Filter out the student
+        const newUsers = state.collegeData.users.filter(u => u.id !== userId);
+
+        // If the student was in a team, remove them from the team
+        const newTeams = state.collegeData.teams.map(team => {
+            if (team.id === studentToRemove.teamId) {
+                const updatedMembers = (team.members as User[]).filter(member => member.id !== userId);
+                return { ...team, members: updatedMembers };
+            }
+            return team;
+        });
+
+        return {
+            ...state,
+            collegeData: { ...state.collegeData, users: newUsers, teams: newTeams },
+            successMessage: `Student ${studentToRemove.name} has been removed.`
         };
     }
     case 'CREATE_TEAM': {
@@ -426,5 +462,3 @@ export const useHackathon = () => {
   }
   return context;
 };
-
-    

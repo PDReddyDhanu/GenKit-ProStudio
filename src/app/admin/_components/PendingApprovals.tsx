@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { User } from '@/lib/types';
+import { X } from 'lucide-react';
 
 interface PendingApprovalsProps {
     users: User[];
@@ -16,6 +18,9 @@ export default function PendingApprovals({ users }: PendingApprovalsProps) {
 
     const handleApproveStudent = (userId: string) => {
         dispatch({ type: 'APPROVE_STUDENT', payload: { userId } });
+    }
+     const handleRemoveStudent = (userId: string) => {
+        dispatch({ type: 'REMOVE_STUDENT', payload: { userId } });
     }
 
     return (
@@ -33,7 +38,12 @@ export default function PendingApprovals({ users }: PendingApprovalsProps) {
                                     <p className="font-semibold">{user.name}</p>
                                     <p className="text-sm text-muted-foreground">{user.email}</p>
                                 </div>
-                                <Button size="sm" onClick={() => handleApproveStudent(user.id)}>Approve</Button>
+                                <div className="flex items-center gap-2">
+                                    <Button size="sm" onClick={() => handleApproveStudent(user.id)}>Approve</Button>
+                                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleRemoveStudent(user.id)}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         )) : <p className="text-muted-foreground text-center pt-8">No pending student approvals.</p>}
                     </div>
