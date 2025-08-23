@@ -5,7 +5,6 @@ export const STATES = {
         "Medchal-Malkajgiri": [
             "Vidya Jyothi Institute of Technology",
             "VNR Vignana Jyothi Institute of Engineering and Technology",
-            "CVR College of Engineering",
             "CMR College of Engineering & Technology",
             "Institute of Aeronautical Engineering",
             "Malla Reddy College of Engineering and Technology",
@@ -13,9 +12,14 @@ export const STATES = {
             "MLR Institute of Technology",
             "Guru Nanak Institutions Technical Campus",
             "Geethanjali College of Engineering and Technology",
-            "KG Reddy College of Engineering and Technology",
             "Kommuri Pratap Reddy Institute of Technology",
-            "Sphoorthy Engineering College"
+            "ACE Engineering College",
+            "CMR Technical Campus",
+            "Narasimha Reddy Engineering College",
+            "Malla Reddy Engineering College",
+            "St. Peter's Engineering College",
+            "Nalla Malla Reddy Engineering College",
+            "Medchal"
         ],
         "Hyderabad": [
             "Chaitanya Bharathi Institute of Technology",
@@ -26,9 +30,13 @@ export const STATES = {
             "International Institute of Information Technology, Hyderabad (IIIT-H)",
             "Muffakham Jah College of Engineering and Technology",
             "Deccan College of Engineering and Technology",
-            "Stanley College of Engineering and Technology for Women"
+            "Stanley College of Engineering and Technology for Women",
+            "Bhojreddy Engineering College for Women",
+            "JNTUH College of Engineering Hyderabad",
+            "Lords Institute of Engineering and Technology"
         ],
         "Ranga Reddy": [
+            "CVR College of Engineering",
             "Mahatma Gandhi Institute of Technology",
             "Gokaraju Rangaraju Institute of Engineering and Technology",
             "Vardhaman College of Engineering",
@@ -37,26 +45,59 @@ export const STATES = {
             "Sri Indu College of Engineering and Technology",
             "Vignan Institute of Technology and Science",
             "Keshav Memorial Institute of Technology",
-            "TKR College of Engineering and Technology"
+            "TKR College of Engineering and Technology",
+            "Sphoorthy Engineering College",
+            "KG Reddy College of Engineering and Technology",
+            "Sreyas Institute of Engineering and Technology",
+            "Vidya Jyothi Institute of Technology",
+            "Neil Gogte Institute of Technology",
+            "Methodist College of Engineering and Technology",
+            "Swami Vivekananda Institute of Technology"
         ],
         "Warangal": [
             "Kakatiya Institute of Technology & Science",
             "SR University",
             "Vaagdevi College of Engineering",
-            "National Institute of Technology, Warangal (NITW)"
+            "National Institute of Technology, Warangal (NITW)",
+            "SR Engineering College",
+            "Vaagdevi Engineering College",
+            "Ramappa Engineering College",
+            "Jayamukhi Institute of Technological Sciences",
+            "Vinuthna Institute of Technology and Science",
+            "Chaitanya Institute of Technology and Science",
+            "Balaji Institute of Technology & Science"
         ],
         "Karimnagar": [
-            "JNTU Manthani"
+            "JNTU Manthani",
+            "Jyothishmathi Institute of Technology and Science",
+            "Vaageswari College of Engineering"
         ],
         "Nalgonda": [
-            "Mahatma Gandhi University"
+            "Mahatma Gandhi University",
+            "Nalgonda Institute of Technology and Science"
         ],
         "Khammam": [
-            "Khammam Institute of Technology & Science"
+            "Khammam Institute of Technology & Science",
+            "Swaraj India Institute of Technology"
         ],
         "Sangareddy": [
             "Gitam University",
-            "IIT Hyderabad"
+            "IIT Hyderabad",
+            "Anurag Engineering College",
+            "TRR College of Engineering"
+        ],
+        "Adilabad": [
+            "Rajiv Gandhi University of Knowledge Technologies, Basar"
+        ],
+        "Nizamabad": [
+            "Arkay College of Engineering and Technology",
+            "Kakatiya Institute of Technology for Women"
+        ],
+        "Mahbubnagar": [
+            "Jayaprakash Narayan College of Engineering"
+        ],
+        "Siddipet": [
+            "Indur Institute of Engineering and Technology"
         ]
     },
     "Andhra Pradesh": {
