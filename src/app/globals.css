@@ -67,7 +67,7 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground animate-stars;
      background-color: hsl(var(--background));
     /* Starfield effect */
     --star-size-1: 1px;
@@ -82,7 +82,6 @@ body {
       radial-gradient(var(--star-size-1) var(--star-size-1) at 100px 75px, var(--star-color) 1%, var(--star-bg));
     background-repeat: repeat;
     background-size: 200px 200px;
-    animation: stars 200s linear infinite;
   }
 
   .dark body {

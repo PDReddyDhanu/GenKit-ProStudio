@@ -134,8 +134,8 @@ export default {
           '100%': { transform: 'translateY(0) rotateX(0) rotateY(0)' },
         },
         'stars': {
-          '0%': { 'background-position': '0 0' },
-          '100%': { 'background-position': '0 4000px' },
+          from: { backgroundPosition: '0 0' },
+          to: { backgroundPosition: '0 4000px' },
         }
       },
       animation: {
