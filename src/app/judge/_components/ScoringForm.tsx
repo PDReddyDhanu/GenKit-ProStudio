@@ -88,7 +88,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
             <Card>
                 <CardHeader>
                     <CardTitle className="text-3xl font-headline">{project.name}</CardTitle>
-                    <CardDescription className="text-lg text-secondary">by {(team?.name as string) || 'Unknown Team'}</CardDescription>
+                    <CardDescription className="text-lg text-primary">by {(team?.name as string) || 'Unknown Team'}</CardDescription>
                     <p className="text-muted-foreground pt-2">{project.description}</p>
                     <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline pt-2 block">View on GitHub</Link>
                 </CardHeader>

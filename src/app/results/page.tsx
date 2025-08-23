@@ -35,8 +35,8 @@ const WinnerCard = ({ winner, rank }: { winner: Winner, rank: number }) => {
 
     if (!winner || !winner.team || !winner.project) return null;
 
-    const podiumClass = rank === 1 ? 'border-yellow-400' : rank === 2 ? 'border-gray-400' : 'border-yellow-700';
-    const trophyColor = rank === 1 ? 'text-yellow-400' : rank === 2 ? 'text-gray-400' : 'text-yellow-700';
+    const podiumClass = rank === 1 ? 'border-amber-400' : rank === 2 ? 'border-slate-400' : 'border-orange-400';
+    const trophyColor = rank === 1 ? 'text-amber-400' : rank === 2 ? 'text-slate-400' : 'text-orange-400';
     const rankText = rank === 1 ? '1st' : rank === 2 ? '2nd' : '3rd';
 
     return (
