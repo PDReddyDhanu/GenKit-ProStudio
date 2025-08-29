@@ -200,9 +200,12 @@ export async function postAnnouncement(collegeId: string, message: string) {
 
 // --- Student ---
 
-export async function selectHackathonForStudent(collegeId: string, userId: string, hackathonId: string) {
+export async function selectHackathonForStudent(collegeId: string, userId: string, hackathonId: string | null) {
     await updateDoc(doc(db, `colleges/${collegeId}/users`, userId), { hackathonId: hackathonId, teamId: null }); // Also reset teamId when changing hackathons
-    return { successMessage: "Hackathon selected successfully!" };
+    if (hackathonId) {
+        return { successMessage: "Hackathon selected successfully!" };
+    }
+    return {};
 }
 
 export async function createTeam(collegeId: string, hackathonId: string, teamName: string, user: User) {

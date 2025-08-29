@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader } from 'lucide-react';
+import { Loader, ArrowLeft } from 'lucide-react';
 
 export default function TeamManagement() {
-    const { state, api } = useHackathon();
+    const { state, api, dispatch } = useHackathon();
     const { currentUser, selectedHackathonId } = state;
     const [teamName, setTeamName] = useState('');
     const [joinCode, setJoinCode] = useState('');
@@ -41,42 +41,56 @@ export default function TeamManagement() {
         }
     };
 
+    const handleGoBack = () => {
+        if (currentUser) {
+            // This is a UI action, so we can dispatch directly to clear the selection
+             dispatch({ type: 'SET_SELECTED_HACKATHON', payload: null });
+             // Also clear the user's hackathonId from their profile so they can choose again
+             api.selectHackathonForStudent(currentUser.id, null);
+        }
+    }
+
     return (
-        <div className="container max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="font-headline">Create a New Team</CardTitle>
-                    <CardDescription>Assemble your squad and get ready to build.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleCreateTeam} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="teamName">Team Name</Label>
-                            <Input id="teamName" type="text" value={teamName} onChange={e => setTeamName(e.target.value)} required disabled={isCreating} />
-                        </div>
-                        <Button type="submit" className="w-full" disabled={isCreating}>
-                            {isCreating ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Creating...</> : 'Create Team'}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="font-headline">Join an Existing Team</CardTitle>
-                    <CardDescription>Already have a team? Enter the code to join.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleJoinTeam} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="joinCode">Team Join Code</Label>
-                            <Input id="joinCode" type="text" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} required disabled={isJoining} />
-                        </div>
-                        <Button type="submit" variant="secondary" className="w-full" disabled={isJoining}>
-                             {isJoining ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Joining...</> : 'Join Team'}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
+        <div className="container max-w-4xl mx-auto">
+             <Button variant="ghost" onClick={handleGoBack} className="mb-4">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Hackathons
+            </Button>
+            <div className="grid md:grid-cols-2 gap-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">Create a New Team</CardTitle>
+                        <CardDescription>Assemble your squad and get ready to build.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleCreateTeam} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="teamName">Team Name</Label>
+                                <Input id="teamName" type="text" value={teamName} onChange={e => setTeamName(e.target.value)} required disabled={isCreating} />
+                            </div>
+                            <Button type="submit" className="w-full" disabled={isCreating}>
+                                {isCreating ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Creating...</> : 'Create Team'}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">Join an Existing Team</CardTitle>
+                        <CardDescription>Already have a team? Enter the code to join.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleJoinTeam} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="joinCode">Team Join Code</Label>
+                                <Input id="joinCode" type="text" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} required disabled={isJoining} />
+                            </div>
+                            <Button type="submit" variant="secondary" className="w-full" disabled={isJoining}>
+                                 {isJoining ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Joining...</> : 'Join Team'}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }
