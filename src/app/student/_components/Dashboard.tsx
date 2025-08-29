@@ -16,25 +16,18 @@ export default function Dashboard() {
 
     const currentHackathonTeams = useMemo(() => {
         if (!selectedHackathonId) return [];
-        // The teams array from state is already filtered by the provider for the selected hackathon
-        return teams;
+        return teams.filter(t => t.hackathonId === selectedHackathonId);
     }, [teams, selectedHackathonId]);
-
-    const currentHackathonProjects = useMemo(() => {
-        if (!selectedHackathonId) return [];
-        // The projects array from state is already filtered by the provider for the selected hackathon
-        return projects;
-    }, [projects, selectedHackathonId]);
 
     const currentTeam = useMemo(() => {
         if (!currentUser?.teamId) return undefined;
         return currentHackathonTeams.find(t => t.id === currentUser.teamId);
     }, [currentHackathonTeams, currentUser]);
-    
+
     const currentProject = useMemo(() => {
         if (!currentTeam?.id) return undefined;
-        return currentHackathonProjects.find(p => p.teamId === currentTeam.id);
-    }, [currentHackathonProjects, currentTeam]);
+        return projects.find(p => p.teamId === currentTeam.id && p.hackathonId === selectedHackathonId);
+    }, [projects, currentTeam, selectedHackathonId]);
 
 
     return (
