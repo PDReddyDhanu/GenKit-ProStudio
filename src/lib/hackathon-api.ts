@@ -313,4 +313,3 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
     await updateDoc(projectRef, { scores: newScores, averageScore });
     return { successMessage: "Scores submitted successfully." };
 }
-
