@@ -64,7 +64,7 @@ export async function loginJudge(collegeId: string, { email, password }: any) {
 
 export async function loginAdmin({ email, password }: any) {
     // This is a simplified, client-side check. 
-    // It does not involve Firebase Auth for the admin role.
+    // It does not involve Firebase Auth for the admin role to keep it simple.
     if (email !== 'hacksprint@admin.com' || password !== 'hack123') {
         throw new Error('Invalid admin credentials.');
     }
@@ -88,15 +88,24 @@ export async function addJudge(collegeId: string, { name, email, password }: any
     // This flow creates a user but since we don't store the admin's auth credentials,
     // we can't sign them back in. The local state management will keep them logged in UI-wise.
     try {
-        const judgeCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const tempAuth = auth; // Use the existing auth instance
+        const currentUser = tempAuth.currentUser; // Store current user if any
+
+        const judgeCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
         const judge: Judge = { 
             id: judgeCredential.user.uid,
             name, 
             email,
         };
         await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
-         // Sign out the newly created judge so the admin session isn't disrupted
-        await firebaseSignOut(auth);
+        
+        // After creating the judge, sign them out and restore the original auth state if possible.
+        // This is a workaround for client-side limitations.
+        await firebaseSignOut(tempAuth);
+        
+        // A robust solution would re-authenticate the admin here, but we can't without storing creds.
+        // The app relies on the local state to keep the admin "logged in".
+
         return { successMessage: 'Judge added successfully! They can log in with the provided credentials.' };
     } catch (error: any) {
          // Attempt to sign out to clear any partial auth state
@@ -114,8 +123,11 @@ export async function approveStudent(collegeId: string, userId: string) {
 }
 
 export async function registerAndApproveStudent(collegeId: string, { name, email, password }: any) {
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+     try {
+        const tempAuth = auth;
+        const currentUser = tempAuth.currentUser;
+
+        const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
         const newUser: User = {
             id: userCredential.user.uid,
             name,
@@ -124,7 +136,8 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             skills: [], bio: '', github: '', linkedin: ''
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
-        await firebaseSignOut(auth);
+        await firebaseSignOut(tempAuth);
+
         return { successMessage: `${name} has been registered and approved.` };
     } catch(error: any) {
         await firebaseSignOut(auth).catch(() => {});
