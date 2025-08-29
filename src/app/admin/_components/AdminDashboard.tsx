@@ -10,7 +10,7 @@ import UserLists from './UserLists';
 
 export default function AdminDashboard() {
     const { state } = useHackathon();
-    const { users, judges } = state.collegeData;
+    const { users, judges } = state;
 
     const { pendingUsers, approvedUsers } = useMemo(() => {
         const pending = users.filter(u => u.status === 'pending');
@@ -31,5 +31,3 @@ export default function AdminDashboard() {
         </div>
     );
 }
-
-    

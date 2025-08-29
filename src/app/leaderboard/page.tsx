@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -22,7 +21,7 @@ const chartConfig = {
 
 export default function Leaderboard() {
     const { state } = useHackathon();
-    const { projects, teams } = state.collegeData;
+    const { projects, teams } = state;
     const [showIntro, setShowIntro] = useState(true);
 
     const leaderboardData = useMemo(() => {
@@ -107,5 +106,3 @@ export default function Leaderboard() {
         </div>
     );
 };
-
-    

@@ -1,12 +1,13 @@
 
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useHackathon } from '@/context/HackathonProvider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Loader } from 'lucide-react';
 import type { Project, Team } from '@/lib/types';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const getPerformanceDetails = (score: number) => {
     const roundedScore = Math.round(score);
@@ -25,36 +26,83 @@ const getRankSuffix = (rankNum: number | null) => {
     return 'th';
 };
 
+interface VerificationData {
+    project?: Project;
+    team?: Team;
+    rank?: number | null;
+    performance?: { descriptor: string; remarks: string };
+    collegeName?: string | null;
+}
+
 export default function CertificateVerifyPage() {
     const params = useParams<{ projectId: string }>();
     const projectId = params.projectId;
-    const { state } = useHackathon();
-    const { projects, teams } = state.collegeData;
-    const collegeName = state.selectedCollege;
+    const [data, setData] = useState<VerificationData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const { project, team, rank, performance } = useMemo(() => {
-        const currentProject = projects.find(p => p.id === projectId);
-        if (!currentProject) {
-            return { project: undefined, team: undefined, rank: undefined, performance: undefined };
-        }
-        
-        const currentTeam = teams.find(t => t.id === currentProject.teamId);
+    useEffect(() => {
+        if (!projectId) return;
 
-        const sortedWinners = [...projects]
-            .filter(p => p.averageScore > 0)
-            .sort((a, b) => b.averageScore - a.averageScore);
-        
-        const projectRank = sortedWinners.findIndex(p => p.id === projectId) + 1;
-        const perfDetails = getPerformanceDetails(currentProject.averageScore);
+        const fetchCertificateData = async () => {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const collegeId = urlParams.get('college');
 
-        return { project: currentProject, team: currentTeam, rank: projectRank > 0 ? projectRank : null, performance: perfDetails };
-    }, [projectId, projects, teams]);
+                if (!collegeId) {
+                    throw new Error("College information is missing from the verification link.");
+                }
+
+                const projectDoc = await getDoc(doc(db, `colleges/${collegeId}/projects/${projectId}`));
+                if (!projectDoc.exists()) {
+                    throw new Error("Project not found.");
+                }
+                const project = { id: projectDoc.id, ...projectDoc.data() } as Project;
+
+                const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/teams/${project.teamId}`));
+                if (!teamDoc.exists()) {
+                    throw new Error("Team not found.");
+                }
+                const team = { id: teamDoc.id, ...teamDoc.data() } as Team;
+
+                // This is a simplified ranking. A real-world scenario would be more complex.
+                const rank = null; // Ranking logic would need all projects, so we'll omit it here for simplicity.
+                const performance = getPerformanceDetails(project.averageScore);
+
+                setData({ project, team, rank, performance, collegeName: collegeId });
+
+            } catch (err: any) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCertificateData();
+    }, [projectId]);
+
+    const { project, team, rank, performance, collegeName } = data || {};
 
     return (
         <div className="container max-w-2xl mx-auto py-12 animate-fade-in">
             <h1 className="text-4xl font-bold text-center mb-8 font-headline">Certificate Verification</h1>
             
-            {project && team && performance ? (
+            {isLoading ? (
+                 <Card>
+                    <CardContent className="pt-6 text-center flex items-center justify-center space-x-2">
+                        <Loader className="h-8 w-8 animate-spin text-primary" />
+                        <p>Verifying certificate...</p>
+                    </CardContent>
+                </Card>
+            ) : error || !project || !team || !performance ? (
+                 <Card className="border-2 border-red-500">
+                    <CardContent className="pt-6 text-center">
+                        <XCircle className="h-16 w-16 mx-auto text-red-400" />
+                        <h2 className="text-3xl font-bold mt-4 text-red-300 font-headline">Verification Failed</h2>
+                        <p className="text-muted-foreground mt-1 px-4">{error || 'This certificate is invalid or could not be found.'}</p>
+                    </CardContent>
+                </Card>
+            ) : (
                 <Card className="border-2 border-green-500">
                     <CardHeader className="text-center">
                         <CheckCircle className="h-16 w-16 mx-auto text-green-400" />
@@ -94,17 +142,7 @@ export default function CertificateVerifyPage() {
                         </div>
                     </CardContent>
                 </Card>
-            ) : (
-                <Card className="border-2 border-red-500">
-                    <CardContent className="pt-6 text-center">
-                        <XCircle className="h-16 w-16 mx-auto text-red-400" />
-                        <h2 className="text-3xl font-bold mt-4 text-red-300 font-headline">Verification Failed</h2>
-                        <p className="text-muted-foreground mt-1 px-4">This certificate is invalid or could not be found. The hackathon data may not be available in this browser.</p>
-                    </CardContent>
-                </Card>
             )}
         </div>
     );
 };
-
-    

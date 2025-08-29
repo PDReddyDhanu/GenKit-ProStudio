@@ -7,31 +7,32 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Users } from 'lucide-react';
+import { User, Users, Loader } from 'lucide-react';
 import PageIntro from '@/components/PageIntro';
 import { User as UserType } from '@/lib/types';
+import { AuthMessage } from '@/components/AuthMessage';
 
 export default function TeamFinder() {
-    const { state, dispatch } = useHackathon();
-    const { teams } = state.collegeData;
+    const { state, api, dispatch } = useHackathon();
+    const { teams } = state;
     const { currentUser } = state;
     const [joinCode, setJoinCode] = useState('');
     const [showIntro, setShowIntro] = useState(true);
+    const [isJoining, setIsJoining] = useState<string | null>(null); // Track joining by team ID/code
 
-    const handleJoinTeam = (e: React.FormEvent, code: string) => {
+    const handleJoinTeam = async (e: React.FormEvent, code: string, teamId: string) => {
         e.preventDefault();
         if (currentUser && !currentUser.teamId) {
-            dispatch({ type: 'JOIN_TEAM', payload: { joinCode: code, userId: currentUser.id } });
+            setIsJoining(teamId);
+            try {
+                await api.joinTeam(code, currentUser);
+            } finally {
+                setIsJoining(null);
+            }
         } else if (currentUser?.teamId) {
-            dispatch({
-                type: 'SET_AUTH_ERROR',
-                payload: "You are already in a team."
-            });
+            dispatch({ type: 'SET_AUTH_ERROR', payload: "You are already in a team." });
         } else {
-             dispatch({
-                type: 'SET_AUTH_ERROR',
-                payload: "You need to be logged in as a student to join a team."
-            });
+            dispatch({ type: 'SET_AUTH_ERROR', payload: "You need to be logged in as a student to join a team." });
         }
     };
 
@@ -42,14 +43,14 @@ export default function TeamFinder() {
     return (
         <div className="container max-w-6xl mx-auto py-12 animate-fade-in">
             <h1 className="text-4xl font-bold text-center mb-12 font-headline">Team Finder</h1>
-            
+            <AuthMessage />
             <Card className="mb-8">
                 <CardHeader>
                     <CardTitle>Join a Team by Code</CardTitle>
                     <CardDescription>Already have a team code? Enter it here to join instantly.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                     <form onSubmit={(e) => handleJoinTeam(e, joinCode)} className="flex items-center gap-4">
+                     <form onSubmit={(e) => handleJoinTeam(e, joinCode, 'form-join')} className="flex items-center gap-4">
                         <Label htmlFor="joinCode" className="sr-only">Join Code</Label>
                         <Input 
                             id="joinCode" 
@@ -57,8 +58,11 @@ export default function TeamFinder() {
                             value={joinCode} 
                             onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                             className="max-w-xs"
+                            disabled={!!isJoining}
                         />
-                        <Button type="submit">Join Team</Button>
+                        <Button type="submit" disabled={!joinCode || !!isJoining}>
+                            {isJoining === 'form-join' ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Joining...</> : 'Join Team'}
+                        </Button>
                     </form>
                 </CardContent>
             </Card>
@@ -71,13 +75,13 @@ export default function TeamFinder() {
                             <CardHeader>
                                 <CardTitle className="font-headline">{team.name}</CardTitle>
                                 <CardDescription className="flex items-center gap-2">
-                                    <Users className="h-4 w-4" /> {(team.members as UserType[]).length} member(s)
+                                    <Users className="h-4 w-4" /> {team.members.length} member(s)
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex-grow">
                                 <h4 className="font-semibold mb-2 text-sm">Members:</h4>
                                 <ul className="space-y-1">
-                                    {(team.members as UserType[]).map(member => (
+                                    {team.members.map(member => (
                                         <li key={member.id} className="flex items-center gap-2 text-muted-foreground text-sm">
                                             <User className="h-4 w-4" /> {member.name}
                                         </li>
@@ -85,8 +89,8 @@ export default function TeamFinder() {
                                 </ul>
                             </CardContent>
                             <div className="p-6 pt-0">
-                                <Button className="w-full" onClick={(e) => handleJoinTeam(e, team.joinCode)}>
-                                    Join "{team.name}"
+                                <Button className="w-full" onClick={(e) => handleJoinTeam(e, team.joinCode, team.id)} disabled={!!isJoining}>
+                                    {isJoining === team.id ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Joining...</> : `Join "${team.name}"`}
                                 </Button>
                             </div>
                         </Card>
@@ -102,5 +106,3 @@ export default function TeamFinder() {
         </div>
     );
 }
-
-    

@@ -7,14 +7,20 @@ import TeamManagement from './TeamManagement';
 import ProjectSubmission from './ProjectSubmission';
 import ProjectView from './ProjectView';
 import { AuthMessage } from '@/components/AuthMessage';
+import { useMemo } from 'react';
 
 export default function Dashboard() {
     const { state } = useHackathon();
-    const { currentUser } = state;
-    const { teams, projects } = state.collegeData;
+    const { currentUser, teams, projects } = state;
 
-    const currentTeam: Team | undefined = teams.find(t => t.id === currentUser?.teamId);
-    const currentProject: Project | undefined = projects.find(p => p.teamId === currentTeam?.id);
+    const currentTeam = useMemo(() => {
+        return teams.find(t => t.id === currentUser?.teamId);
+    }, [teams, currentUser]);
+
+    const currentProject = useMemo(() => {
+        if (!currentTeam) return undefined;
+        return projects.find(p => p.teamId === currentTeam.id);
+    }, [projects, currentTeam]);
 
     return (
         <div className="py-12 animate-slide-in-up">
@@ -29,5 +35,3 @@ export default function Dashboard() {
         </div>
     );
 }
-
-    

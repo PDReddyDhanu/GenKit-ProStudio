@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -8,12 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { User, Github, Linkedin, Pencil, UserCircle } from 'lucide-react';
+import { User, Github, Linkedin, Pencil, UserCircle, Loader } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
 
 export default function ProfilePage() {
-    const { state, dispatch } = useHackathon();
+    const { state, api } = useHackathon();
     const { currentUser } = state;
     const [showIntro, setShowIntro] = useState(true);
 
@@ -23,6 +24,7 @@ export default function ProfilePage() {
     const [bio, setBio] = useState(currentUser?.bio || '');
     const [github, setGithub] = useState(currentUser?.github || '');
     const [linkedin, setLinkedin] = useState(currentUser?.linkedin || '');
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
       if(currentUser) {
@@ -58,22 +60,21 @@ export default function ProfilePage() {
         )
     }
 
-    const handleSaveProfile = (e: React.FormEvent) => {
+    const handleSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch({
-            type: 'UPDATE_PROFILE',
-            payload: {
-                userId: currentUser.id,
-                profileData: {
-                    name,
-                    skills: skills.split(',').map(s => s.trim()).filter(Boolean),
-                    bio,
-                    github,
-                    linkedin
-                }
-            }
-        });
-        setIsEditing(false);
+        setIsSaving(true);
+        try {
+            await api.updateProfile(currentUser.id, {
+                name,
+                skills: skills.split(',').map(s => s.trim()).filter(Boolean),
+                bio,
+                github,
+                linkedin
+            });
+            setIsEditing(false);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -96,27 +97,29 @@ export default function ProfilePage() {
                         <form onSubmit={handleSaveProfile} className="space-y-6">
                             <div className="space-y-2">
                                 <Label htmlFor="name">Full Name</Label>
-                                <Input id="name" value={name} onChange={e => setName(e.target.value)} />
+                                <Input id="name" value={name} onChange={e => setName(e.target.value)} disabled={isSaving} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="skills">Skills (comma-separated)</Label>
-                                <Input id="skills" value={skills} onChange={e => setSkills(e.target.value)} />
+                                <Input id="skills" value={skills} onChange={e => setSkills(e.target.value)} disabled={isSaving} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="bio">Short Bio</Label>
-                                <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} />
+                                <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} disabled={isSaving} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="github">GitHub Profile URL</Label>
-                                <Input id="github" type="url" placeholder="https://github.com/username" value={github} onChange={e => setGithub(e.target.value)} />
+                                <Input id="github" type="url" placeholder="https://github.com/username" value={github} onChange={e => setGithub(e.target.value)} disabled={isSaving} />
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="linkedin">LinkedIn Profile URL</Label>
-                                <Input id="linkedin" type="url" placeholder="https://linkedin.com/in/username" value={linkedin} onChange={e => setLinkedin(e.target.value)} />
+                                <Input id="linkedin" type="url" placeholder="https://linkedin.com/in/username" value={linkedin} onChange={e => setLinkedin(e.target.value)} disabled={isSaving} />
                             </div>
                             <div className="flex gap-4">
-                                <Button type="submit">Save Changes</Button>
-                                <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                                <Button type="submit" disabled={isSaving}>
+                                    {isSaving ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : 'Save Changes'}
+                                </Button>
+                                <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancel</Button>
                             </div>
                         </form>
                     ) : (

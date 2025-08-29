@@ -13,10 +13,10 @@ interface UserListsProps {
 }
 
 export default function UserLists({ approvedStudents, judges }: UserListsProps) {
-    const { dispatch } = useHackathon();
+    const { api } = useHackathon();
 
-    const handleRemoveStudent = (userId: string) => {
-        dispatch({ type: 'REMOVE_STUDENT', payload: { userId } });
+    const handleRemoveStudent = async (userId: string) => {
+        await api.removeStudent(userId);
     };
 
     return (

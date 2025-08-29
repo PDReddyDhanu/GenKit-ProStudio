@@ -14,13 +14,13 @@ interface PendingApprovalsProps {
 }
 
 export default function PendingApprovals({ users }: PendingApprovalsProps) {
-    const { dispatch } = useHackathon();
+    const { api } = useHackathon();
 
-    const handleApproveStudent = (userId: string) => {
-        dispatch({ type: 'APPROVE_STUDENT', payload: { userId } });
+    const handleApproveStudent = async (userId: string) => {
+        await api.approveStudent(userId);
     }
-     const handleRemoveStudent = (userId: string) => {
-        dispatch({ type: 'REMOVE_STUDENT', payload: { userId } });
+     const handleRemoveStudent = async (userId: string) => {
+        await api.removeStudent(userId);
     }
 
     return (

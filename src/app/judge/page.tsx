@@ -10,24 +10,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import JudgingDashboard from './_components/JudgingDashboard';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
-import { Scale } from 'lucide-react';
-import { Judge, User } from '@/lib/types';
+import { Scale, Loader } from 'lucide-react';
 
 export default function JudgePortal() {
-    const { state, dispatch } = useHackathon();
+    const { state, api } = useHackathon();
     const { currentJudge } = state;
-    const { judges } = state.collegeData;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showIntro, setShowIntro] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        const judge = judges.find(j => j.email.toLowerCase() === email.toLowerCase() && j.password === password);
-        if (judge) {
-            dispatch({ type: 'LOGIN_JUDGE', payload: judge });
-        } else {
-            dispatch({ type: 'SET_AUTH_ERROR', payload: 'Invalid judge email or password.' });
+        setIsLoading(true);
+        try {
+            await api.loginJudge({ email, password });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -47,13 +46,15 @@ export default function JudgePortal() {
                             <AuthMessage />
                             <div className="space-y-2">
                                 <Label htmlFor="login-email">Judge Email</Label>
-                                <Input id="login-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="judge@judge.com" />
+                                <Input id="login-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="judge@judge.com" disabled={isLoading} />
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="login-password">Password</Label>
-                                <Input id="login-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+                                <Input id="login-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} />
                             </div>
-                            <Button type="submit" className="w-full">Login</Button>
+                            <Button type="submit" className="w-full" disabled={isLoading}>
+                               {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Logging in...</> : 'Login'}
+                            </Button>
                         </form>
                     </CardContent>
                 </Card>
@@ -63,5 +64,3 @@ export default function JudgePortal() {
 
     return <JudgingDashboard />;
 }
-
-    

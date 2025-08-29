@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -17,24 +17,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle, Trash2, Loader } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 
 export default function DataManagement() {
-    const { state, dispatch } = useHackathon();
-    const { users, teams, projects, judges } = state.collegeData;
+    const { state, api } = useHackathon();
+    const { users, teams, projects } = state;
+    const [isResetting, setIsResetting] = useState(false);
 
-    const handleReset = () => {
-        dispatch({ type: 'RESET_HACKATHON' });
+    const handleReset = async () => {
+        setIsResetting(true);
+        try {
+            await api.resetHackathon();
+        } finally {
+            setIsResetting(false);
+        }
     };
 
-    const handleResetJudges = () => {
-        dispatch({ type: 'RESET_JUDGES' });
-    };
-
-    const handleRemoveStudent = (userId: string) => {
-        dispatch({ type: 'REMOVE_STUDENT', payload: { userId } });
+    const handleRemoveStudent = async (userId: string) => {
+        await api.removeStudent(userId);
     }
 
     return (
@@ -48,7 +50,9 @@ export default function DataManagement() {
                     <CardContent>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="destructive" disabled={!state.selectedCollege}>Reset College Data</Button>
+                                <Button variant="destructive" disabled={!state.selectedCollege || isResetting}>
+                                    {isResetting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Resetting...</> : 'Reset College Data'}
+                                </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
@@ -65,35 +69,8 @@ export default function DataManagement() {
                         </AlertDialog>
                     </CardContent>
                 </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 font-headline"><Trash2 className="text-primary"/> Reset Judges Data</CardTitle>
-                        <CardDescription>This will permanently delete all registered judges and their associated scores from all projects for the selected college.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="outline" disabled={!state.selectedCollege}>Reset Judges Data</Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure you want to reset judges?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action will delete all judge accounts and remove their scores from projects for <strong>{state.selectedCollege}</strong>. Student and project data will not be affected.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleResetJudges}>Yes, Reset Judges</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </CardContent>
-                </Card>
             </div>
             
-
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">All Students ({users.length})</CardTitle>
@@ -191,5 +168,3 @@ export default function DataManagement() {
         </div>
     );
 }
-
-    

@@ -1,8 +1,7 @@
 
-
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
@@ -38,29 +37,31 @@ const NavLink = ({ href, children, onClick }: { href: string; children: React.Re
 };
 
 export function Header() {
-    const { state, dispatch } = useHackathon();
-    const { announcements } = state.collegeData;
+    const { state, api, dispatch } = useHackathon();
+    const { announcements } = state;
     const router = useRouter();
     const [hasUnread, setHasUnread] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const sortedAnnouncements = [...announcements].sort((a, b) => b.timestamp - a.timestamp);
 
-    useEffect(() => {
+    // This effect is now just for presentation, as real-time updates handle data
+    React.useEffect(() => {
         const lastViewed = localStorage.getItem('lastViewedAnnouncement');
         if (sortedAnnouncements.length > 0 && sortedAnnouncements[0].id !== lastViewed) {
             setHasUnread(true);
         }
     }, [sortedAnnouncements]);
 
-    const handleLogout = () => {
-        dispatch({ type: 'LOGOUT' });
+    const handleLogout = async () => {
+        await api.signOut();
         setIsMobileMenuOpen(false);
         router.push('/');
     };
 
     const handleChangeCollege = () => {
-        dispatch({ type: 'SELECT_COLLEGE', payload: "" }); // Effectively logs out from the college
+        dispatch({ type: 'SET_SELECTED_COLLEGE', payload: null });
+        localStorage.removeItem('selectedCollege');
         router.push('/');
     }
     
@@ -81,11 +82,11 @@ export function Header() {
                     <span className="font-bold text-lg font-headline">HackSprint</span>
                 </Link>
                 
-                {/* Desktop Navigation */}
                 <nav className="hidden md:flex items-center gap-4">
                     <NavLink href="/guidance">Guidance</NavLink>
+                    <NavLink href="/showcase">Showcase</NavLink>
                     <NavLink href="/teams">Teams</NavLink>
-                    <NavLink href="/gallery">Showcase</NavLink>
+                    <NavLink href="/gallery">Gallery</NavLink>
                     <NavLink href="/leaderboard">Leaderboard</NavLink>
                     <NavLink href="/results">Results</NavLink>
                     <NavLink href="/partners">Partners</NavLink>
@@ -181,7 +182,6 @@ export function Header() {
                         )}
                     </div>
                     
-                    {/* Mobile Menu Trigger */}
                     <div className="md:hidden">
                         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                             <SheetTrigger asChild>
@@ -201,8 +201,9 @@ export function Header() {
                                 </SheetHeader>
                                 <nav className="flex flex-col gap-4 py-8">
                                     <NavLink href="/guidance" onClick={closeMobileMenu}>Guidance</NavLink>
+                                    <NavLink href="/showcase" onClick={closeMobileMenu}>Showcase</NavLink>
                                     <NavLink href="/teams" onClick={closeMobileMenu}>Teams</NavLink>
-                                    <NavLink href="/gallery" onClick={closeMobileMenu}>Showcase</NavLink>
+                                    <NavLink href="/gallery" onClick={closeMobileMenu}>Gallery</NavLink>
                                     <NavLink href="/leaderboard" onClick={closeMobileMenu}>Leaderboard</NavLink>
                                     <NavLink href="/results" onClick={closeMobileMenu}>Results</NavLink>
                                     <NavLink href="/partners" onClick={closeMobileMenu}>Partners</NavLink>

@@ -58,8 +58,7 @@ const WinnerCard = ({ winner, rank, collegeName }: { winner: Winner, rank: numbe
 
 export default function Results() {
     const { state } = useHackathon();
-    const { projects, teams } = state.collegeData;
-    const { selectedCollege } = state;
+    const { projects, teams, selectedCollege } = state;
     const [showIntro, setShowIntro] = useState(true);
 
     const winners: Winner[] = useMemo(() => {
@@ -109,5 +108,3 @@ export default function Results() {
         </div>
     );
 }
-
-    

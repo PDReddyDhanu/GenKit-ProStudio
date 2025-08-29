@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -16,17 +17,23 @@ interface ProjectSubmissionProps {
 }
 
 export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
-    const { dispatch } = useHackathon();
+    const { api } = useHackathon();
     const [projectName, setProjectName] = useState('');
     const [projectDesc, setProjectDesc] = useState('');
     const [githubUrl, setGithubUrl] = useState('');
     const [ideaTheme, setIdeaTheme] = useState('');
     const [generatedIdea, setGeneratedIdea] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmitProject = (e: React.FormEvent) => {
+    const handleSubmitProject = async (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch({ type: 'SUBMIT_PROJECT', payload: { name: projectName, description: projectDesc, githubUrl, teamId: team.id } });
+        setIsSubmitting(true);
+        try {
+            await api.submitProject({ name: projectName, description: projectDesc, githubUrl, teamId: team.id });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleGenerateIdea = async () => {
@@ -83,17 +90,19 @@ export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
                     <form onSubmit={handleSubmitProject} className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="projectName">Project Name</Label>
-                            <Input id="projectName" value={projectName} onChange={e => setProjectName(e.target.value)} required />
+                            <Input id="projectName" value={projectName} onChange={e => setProjectName(e.target.value)} required disabled={isSubmitting} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="projectDesc">Project Description</Label>
-                            <Textarea id="projectDesc" value={projectDesc} onChange={e => setProjectDesc(e.target.value)} required />
+                            <Textarea id="projectDesc" value={projectDesc} onChange={e => setProjectDesc(e.target.value)} required disabled={isSubmitting} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="githubUrl">GitHub Repository URL</Label>
-                            <Input id="githubUrl" type="url" value={githubUrl} onChange={e => setGithubUrl(e.target.value)} required />
+                            <Input id="githubUrl" type="url" value={githubUrl} onChange={e => setGithubUrl(e.target.value)} required disabled={isSubmitting} />
                         </div>
-                        <Button type="submit" className="w-full">Submit Project</Button>
+                        <Button type="submit" className="w-full" disabled={isSubmitting}>
+                           {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Project'}
+                        </Button>
                     </form>
                 </CardContent>
             </Card>

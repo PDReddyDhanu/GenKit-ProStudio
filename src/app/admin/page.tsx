@@ -12,22 +12,24 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield } from 'lucide-react';
+import { Shield, Loader } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 
 export default function AdminPortal() {
-    const { state, dispatch } = useHackathon();
+    const { state, api } = useHackathon();
     const { currentAdmin } = state;
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('hacksprint@admin.com');
+    const [password, setPassword] = useState('hack123');
     const [showIntro, setShowIntro] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleAdminLogin = (e: React.FormEvent) => {
+    const handleAdminLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (email.toLowerCase() === 'hacksprint@admin.com' && password === 'hack123') {
-             dispatch({ type: 'ADMIN_LOGIN' });
-        } else {
-            dispatch({ type: 'SET_AUTH_ERROR', payload: 'Invalid admin credentials.' });
+        setIsLoading(true);
+        try {
+            await api.loginAdmin({ email, password });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -47,13 +49,15 @@ export default function AdminPortal() {
                             <AuthMessage />
                             <div className="space-y-2">
                                 <Label htmlFor="admin-email">Admin Email</Label>
-                                <Input id="admin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                                <Input id="admin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="admin-password">Password</Label>
-                                <Input id="admin-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+                                <Input id="admin-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} />
                             </div>
-                            <Button type="submit" className="w-full">Login</Button>
+                            <Button type="submit" className="w-full" disabled={isLoading}>
+                                {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Logging in...</> : 'Login'}
+                            </Button>
                         </form>
                     </CardContent>
                 </Card>

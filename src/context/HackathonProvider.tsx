@@ -1,78 +1,20 @@
 
 "use client";
 
-import React, { createContext, useReducer, useContext, ReactNode, useEffect } from 'react';
-import { User, Team, Project, Judge, Score, UserProfileData, Announcement, HackathonData } from '../lib/types';
-import { JUDGING_RUBRIC } from '../lib/constants';
+import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import { User, Team, Project, Judge, Announcement, HackathonData, UserProfileData } from '../lib/types';
 import { useToast } from '@/hooks/use-toast';
-
-// --- Helper Functions for localStorage ---
-const getInitialState = (): HackathonState => {
-    if (typeof window === 'undefined') {
-        return defaultState;
-    }
-    try {
-        const serializedState = localStorage.getItem('hackathonGlobalState');
-        const storedState = serializedState ? JSON.parse(serializedState) : {};
-
-        const selectedCollege = storedState.selectedCollege || null;
-        let collegeData: HackathonData = defaultCollegeData;
-
-        if (selectedCollege) {
-            const serializedCollegeState = localStorage.getItem(`hackathonState_${selectedCollege}`);
-            if (serializedCollegeState) {
-                collegeData = JSON.parse(serializedCollegeState);
-            }
-        }
-        
-        return { 
-            ...defaultState, 
-            ...storedState, 
-            collegeData,
-            isInitialized: true, 
-            isLoading: false,
-        };
-    } catch (error) {
-        console.error("Could not load state from localStorage", error);
-        return { ...defaultState, isInitialized: true, isLoading: false };
-    }
-};
-
-const saveState = (state: HackathonState) => {
-    try {
-        // Save only non-sensitive global state
-        const globalStateToSave = {
-            currentAdmin: state.currentAdmin,
-            selectedCollege: state.selectedCollege,
-            // Persist a reference to the logged-in user, not the full object
-            currentUser: state.currentUser ? { id: state.currentUser.id } : null,
-            currentJudge: state.currentJudge ? { id: state.currentJudge.id } : null,
-        };
-
-        const serializedGlobalState = JSON.stringify(globalStateToSave);
-        localStorage.setItem('hackathonGlobalState', serializedGlobalState);
-
-        // Save the data for the selected college
-        if (state.selectedCollege) {
-            const serializedCollegeState = JSON.stringify(state.collegeData);
-            localStorage.setItem(`hackathonState_${state.selectedCollege}`, serializedCollegeState);
-        }
-
-    } catch (error) {
-        console.error("Could not save state to localStorage", error);
-    }
-};
-
-const defaultCollegeData: HackathonData = {
-    users: [],
-    teams: [],
-    projects: [],
-    judges: [],
-    announcements: [],
-};
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth, db } from '@/lib/firebase';
+import { collection, onSnapshot, doc, getDoc, where, query, getDocs } from 'firebase/firestore';
+import * as hackathonApi from '@/lib/hackathon-api';
 
 interface HackathonState {
-  collegeData: HackathonData;
+  users: User[];
+  teams: Team[];
+  projects: Project[];
+  judges: Judge[];
+  announcements: Announcement[];
   currentUser: User | null;
   currentJudge: Judge | null;
   currentAdmin: boolean;
@@ -83,33 +25,12 @@ interface HackathonState {
   isLoading: boolean;
 }
 
-type Action =
-  | { type: 'HYDRATE_STATE'; payload: Partial<HackathonState> }
-  | { type: 'LOGIN_STUDENT'; payload: User }
-  | { type: 'LOGIN_JUDGE'; payload: Judge }
-  | { type: 'ADMIN_LOGIN' }
-  | { type: 'LOGOUT' }
-  | { type: 'SET_AUTH_ERROR'; payload: string }
-  | { type: 'SET_SUCCESS_MESSAGE'; payload: string }
-  | { type: 'CLEAR_MESSAGES' }
-  | { type: 'REGISTER_STUDENT'; payload: { name: string; email: string; password: string } }
-  | { type: 'CREATE_TEAM'; payload: { teamName: string; userId: string } }
-  | { type: 'JOIN_TEAM'; payload: { joinCode: string; userId: string } }
-  | { type: 'SUBMIT_PROJECT'; payload: { name: string; description: string; githubUrl: string, teamId: string } }
-  | { type: 'ADD_JUDGE'; payload: { name: string; email: string; password: string } }
-  | { type: 'APPROVE_STUDENT'; payload: { userId: string } }
-  | { type: 'ADMIN_REGISTER_STUDENT'; payload: { name: string; email: string; password: string } }
-  | { type: 'REMOVE_STUDENT'; payload: { userId: string } }
-  | { type: 'SCORE_PROJECT'; payload: { projectId: string; judgeId: string; scores: Score[] } }
-  | { type: 'UPDATE_PROFILE'; payload: { userId: string, profileData: Partial<UserProfileData> } }
-  | { type: 'POST_ANNOUNCEMENT'; payload: string }
-  | { type: 'RESET_HACKATHON' }
-  | { type: 'RESET_JUDGES' }
-  | { type: 'SELECT_COLLEGE'; payload: string };
-
-
 const defaultState: HackathonState = {
-  collegeData: defaultCollegeData,
+  users: [],
+  teams: [],
+  projects: [],
+  judges: [],
+  announcements: [],
   currentUser: null,
   currentJudge: null,
   currentAdmin: false,
@@ -120,305 +41,50 @@ const defaultState: HackathonState = {
   isLoading: true,
 };
 
+type Action =
+  | { type: 'SET_DATA'; payload: Partial<HackathonState> }
+  | { type: 'SET_USER'; payload: User | null }
+  | { type: 'SET_JUDGE'; payload: Judge | null }
+  | { type: 'SET_ADMIN'; payload: boolean }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_INITIALIZED'; payload: boolean }
+  | { type: 'SET_SELECTED_COLLEGE'; payload: string | null }
+  | { type: 'SET_AUTH_ERROR'; payload: string | null }
+  | { type: 'SET_SUCCESS_MESSAGE'; payload: string | null }
+  | { type: 'CLEAR_MESSAGES' };
+
 function hackathonReducer(state: HackathonState, action: Action): HackathonState {
-  const baseState = { ...state, authError: null, successMessage: null };
-
-  switch (action.type) {
-    case 'HYDRATE_STATE': {
-        const { selectedCollege } = action.payload;
-        let collegeData = defaultCollegeData;
-        let currentUser: User | null = null;
-        let currentJudge: Judge | null = null;
-
-        if (selectedCollege) {
-            const serializedCollegeState = localStorage.getItem(`hackathonState_${selectedCollege}`);
-            collegeData = serializedCollegeState ? JSON.parse(serializedCollegeState) : defaultCollegeData;
-        }
-        
-        // Re-hydrate the current user/judge object from the newly loaded collegeData
-        const storedUserRef = action.payload.currentUser as { id: string } | null;
-        if (storedUserRef) {
-            currentUser = collegeData.users?.find(u => u.id === storedUserRef.id) || null;
-        }
-
-        const storedJudgeRef = action.payload.currentJudge as { id: string } | null;
-        if (storedJudgeRef) {
-            currentJudge = collegeData.judges?.find(j => j.id === storedJudgeRef.id) || null;
-        }
-        
-        return { 
-            ...state, 
-            ...action.payload, 
-            collegeData,
-            currentUser,
-            currentJudge,
-            isInitialized: true, 
-            isLoading: false 
-        };
+    switch (action.type) {
+        case 'SET_DATA':
+            return { ...state, ...action.payload };
+        case 'SET_USER':
+            return { ...state, currentUser: action.payload, currentJudge: null, currentAdmin: false, isLoading: false };
+        case 'SET_JUDGE':
+            return { ...state, currentJudge: action.payload, currentUser: null, currentAdmin: false, isLoading: false };
+        case 'SET_ADMIN':
+            return { ...state, currentAdmin: action.payload, currentUser: null, currentJudge: null, isLoading: false };
+        case 'SET_LOADING':
+            return { ...state, isLoading: action.payload };
+        case 'SET_INITIALIZED':
+            return { ...state, isInitialized: action.payload };
+        case 'SET_SELECTED_COLLEGE':
+            return { ...state, selectedCollege: action.payload, isLoading: !!action.payload };
+        case 'SET_AUTH_ERROR':
+            return { ...state, authError: action.payload };
+        case 'SET_SUCCESS_MESSAGE':
+            return { ...state, successMessage: action.payload };
+        case 'CLEAR_MESSAGES':
+            return { ...state, authError: null, successMessage: null };
+        default:
+            return state;
     }
-
-    case 'CLEAR_MESSAGES':
-        return { ...state, authError: null, successMessage: null };
-    
-    case 'SELECT_COLLEGE': {
-        if (typeof window === 'undefined') return state;
-        
-        const serializedCollegeState = localStorage.getItem(`hackathonState_${action.payload}`);
-        const collegeData = serializedCollegeState ? JSON.parse(serializedCollegeState) : defaultCollegeData;
-
-        return { 
-            ...defaultState, // Reset most of the state
-            isInitialized: true,
-            isLoading: false,
-            selectedCollege: action.payload,
-            collegeData: collegeData,
-            successMessage: action.payload ? `Welcome to ${action.payload}!` : null
-        };
-    }
-
-    case 'LOGIN_STUDENT':
-        return { ...baseState, currentUser: action.payload, currentJudge: null, currentAdmin: false, successMessage: 'Login successful!' };
-    
-    case 'LOGIN_JUDGE':
-        return { ...baseState, currentJudge: action.payload, currentUser: null, currentAdmin: false, successMessage: 'Login successful!' };
-
-    case 'ADMIN_LOGIN':
-        return { ...baseState, currentAdmin: true, currentUser: null, currentJudge: null, successMessage: 'Admin login successful!' };
-
-    case 'SET_AUTH_ERROR':
-        return { ...state, authError: action.payload };
-
-    case 'SET_SUCCESS_MESSAGE':
-        return { ...state, successMessage: action.payload };
-    
-    case 'LOGOUT': {
-      return {
-            ...state,
-            currentUser: null,
-            currentJudge: null,
-            currentAdmin: false,
-            successMessage: "You have been logged out."
-        }
-    }
-    case 'REGISTER_STUDENT': {
-        const { name, email, password } = action.payload;
-        if (state.collegeData.users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-            return { ...state, authError: "A user with this email already exists." };
-        }
-        const newUser: User = {
-            id: `user-${Date.now()}`,
-            name, email: email.toLowerCase(), password,
-            status: 'pending',
-            skills: [],
-            bio: '',
-            github: '',
-            linkedin: ''
-        };
-        const newCollegeData = { ...state.collegeData, users: [...state.collegeData.users, newUser] };
-        return { ...state, collegeData: newCollegeData, successMessage: "Registration successful! Your account is pending admin approval." };
-    }
-     case 'ADMIN_REGISTER_STUDENT': {
-        const { name, email, password } = action.payload;
-        if (state.collegeData.users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-            return { ...state, authError: "A user with this email already exists." };
-        }
-        const newUser: User = {
-            id: `user-${Date.now()}`,
-            name, email, password,
-            status: 'approved', // Directly approved
-            skills: [],
-            bio: '',
-            github: '',
-            linkedin: ''
-        };
-        const newCollegeData = { ...state.collegeData, users: [...state.collegeData.users, newUser] };
-        return { ...state, collegeData: newCollegeData, successMessage: `${name} has been registered and approved.` };
-    }
-    case 'APPROVE_STUDENT': {
-        const newUsers = state.collegeData.users.map(u => u.id === action.payload.userId ? { ...u, status: 'approved' } : u)
-        return {
-            ...state,
-            collegeData: { ...state.collegeData, users: newUsers },
-            successMessage: "Student approved successfully."
-        };
-    }
-    case 'REMOVE_STUDENT': {
-        const { userId } = action.payload;
-        const studentToRemove = state.collegeData.users.find(u => u.id === userId);
-        if (!studentToRemove) return state;
-
-        // Filter out the student
-        const newUsers = state.collegeData.users.filter(u => u.id !== userId);
-
-        // If the student was in a team, remove them from the team
-        const newTeams = state.collegeData.teams.map(team => {
-            if (team.id === studentToRemove.teamId) {
-                const updatedMembers = (team.members as User[]).filter(member => member.id !== userId);
-                return { ...team, members: updatedMembers };
-            }
-            return team;
-        });
-
-        return {
-            ...state,
-            collegeData: { ...state.collegeData, users: newUsers, teams: newTeams },
-            successMessage: `Student ${studentToRemove.name} has been removed.`
-        };
-    }
-    case 'CREATE_TEAM': {
-        const { teamName, userId } = action.payload;
-        if (!state.currentUser) return state;
-
-        const newTeam: Team = {
-            id: `team-${Date.now()}`,
-            name: teamName,
-            joinCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
-            members: [state.currentUser],
-            projectId: ""
-        };
-        
-        const newTeams = [...state.collegeData.teams, newTeam];
-        const newUsers = state.collegeData.users.map(u => u.id === userId ? { ...u, teamId: newTeam.id } : u);
-
-        return {
-            ...state,
-            collegeData: { ...state.collegeData, teams: newTeams, users: newUsers },
-            currentUser: { ...state.currentUser, teamId: newTeam.id },
-            successMessage: "Team created successfully!"
-        };
-    }
-
-    case 'JOIN_TEAM': {
-        const { joinCode, userId } = action.payload;
-        if(!state.currentUser) return state;
-
-        const teamToJoin = state.collegeData.teams.find(t => t.joinCode === joinCode);
-        if (!teamToJoin) {
-            return { ...state, authError: "Invalid join code." };
-        }
-        if ((teamToJoin.members as User[]).some(m => m.id === userId)) {
-             return { ...state, authError: "You are already in this team." };
-        }
-        
-        const newTeams = state.collegeData.teams.map(t => t.id === teamToJoin.id ? { ...t, members: [...t.members, state.currentUser!] } : t);
-        const newUsers = state.collegeData.users.map(u => u.id === userId ? { ...u, teamId: teamToJoin.id } : u);
-
-        return {
-            ...state,
-            collegeData: { ...state.collegeData, teams: newTeams, users: newUsers },
-            currentUser: { ...state.currentUser, teamId: teamToJoin.id },
-            successMessage: `Successfully joined team: ${teamToJoin.name}`
-        };
-    }
-
-    case 'SUBMIT_PROJECT': {
-        const { name, description, githubUrl, teamId } = action.payload;
-        const newProject: Project = {
-            id: `proj-${Date.now()}`,
-            teamId, name, description, githubUrl,
-            scores: [],
-            averageScore: 0
-        };
-        const newProjects = [...state.collegeData.projects, newProject];
-        const newTeams = state.collegeData.teams.map(t => t.id === teamId ? { ...t, projectId: newProject.id } : t);
-
-        return {
-            ...state,
-            collegeData: { ...state.collegeData, projects: newProjects, teams: newTeams },
-            successMessage: "Project submitted successfully!"
-        };
-    }
-
-    case 'ADD_JUDGE': {
-        const { name, email, password } = action.payload;
-        if (!email.toLowerCase().endsWith('@judge.com')) {
-            return { ...state, authError: 'Judge email must end with @judge.com' };
-        }
-        if (state.collegeData.judges.find(j => j.email.toLowerCase() === email.toLowerCase())) {
-            return { ...state, authError: 'A judge with this email already exists.' };
-        }
-        const newJudge: Judge = {
-            id: `judge-${Date.now()}`,
-            name, email, password
-        };
-        const newJudges = [...state.collegeData.judges, newJudge];
-        return { ...state, collegeData: { ...state.collegeData, judges: newJudges }, successMessage: "Judge added successfully!" };
-    }
-    
-    case 'SCORE_PROJECT': {
-        const { projectId, judgeId, scores } = action.payload;
-        const newProjects = state.collegeData.projects.map(p => {
-            if (p.id === projectId) {
-                const otherScores = p.scores.filter(s => s.judgeId !== judgeId);
-                const newScores = [...otherScores, ...scores];
-                
-                const uniqueJudges = new Set(newScores.map(s => s.judgeId));
-                const totalPossibleScore = uniqueJudges.size * JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
-                const totalScore = newScores.reduce((sum, score) => sum + score.value, 0);
-                const averageScore = totalPossibleScore > 0 ? (totalScore / totalPossibleScore) * 10 : 0;
-                
-                return { ...p, scores: newScores, averageScore };
-            }
-            return p;
-        });
-        return { ...state, collegeData: { ...state.collegeData, projects: newProjects }, successMessage: "Scores submitted successfully." };
-    }
-
-    case 'UPDATE_PROFILE': {
-        const { userId, profileData } = action.payload;
-        const updatedUsers = state.collegeData.users.map(u => u.id === userId ? { ...u, ...profileData } : u);
-        const updatedCurrentUser = state.currentUser?.id === userId ? { ...state.currentUser, ...profileData } : state.currentUser;
-        
-        return {
-            ...state,
-            collegeData: { ...state.collegeData, users: updatedUsers },
-            currentUser: updatedCurrentUser,
-            successMessage: "Profile updated successfully."
-        };
-    }
-
-    case 'POST_ANNOUNCEMENT': {
-      const newAnnouncement: Announcement = {
-        id: `ann-${Date.now()}`,
-        message: action.payload,
-        timestamp: Date.now(),
-      };
-      const newAnnouncements = [...state.collegeData.announcements, newAnnouncement];
-      return {
-        ...state,
-        collegeData: { ...state.collegeData, announcements: newAnnouncements },
-        successMessage: 'Announcement posted successfully.',
-      };
-    }
-
-    case 'RESET_HACKATHON': {
-        return {
-            ...state,
-            collegeData: defaultCollegeData,
-            successMessage: "All hackathon data for this college has been reset."
-        };
-    }
-
-    case 'RESET_JUDGES': {
-         return {
-            ...state,
-            collegeData: {
-                ...state.collegeData,
-                judges: [],
-                projects: state.collegeData.projects.map(p => ({ ...p, scores: [], averageScore: 0})),
-            },
-            successMessage: "All judges and their scores have been reset."
-        };
-    }
-
-    default:
-      return state;
-  }
 }
+
 
 const HackathonContext = createContext<{
   state: HackathonState;
   dispatch: React.Dispatch<Action>;
+  api: typeof hackathonApi;
 } | undefined>(undefined);
 
 export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -426,30 +92,96 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
   const { toast } = useToast();
 
    useEffect(() => {
-    if (state.isInitialized) {
-      saveState(state);
-    }
-  }, [state]);
-  
-  useEffect(() => {
-    const initialState = getInitialState();
-    dispatch({ type: 'HYDRATE_STATE', payload: initialState });
-  }, []);
+        if (state.successMessage) {
+            toast({ title: 'Success', description: state.successMessage });
+            dispatch({ type: 'CLEAR_MESSAGES' });
+        }
+        if (state.authError) {
+            toast({ title: 'Error', description: state.authError, variant: 'destructive' });
+            dispatch({ type: 'CLEAR_MESSAGES' });
+        }
+    }, [state.successMessage, state.authError, toast]);
 
-  useEffect(() => {
-    if (state.successMessage) {
-        toast({ title: 'Success', description: state.successMessage });
-        dispatch({ type: 'CLEAR_MESSAGES' });
-    }
-    if (state.authError) {
-        toast({ title: 'Error', description: state.authError, variant: 'destructive' });
-        dispatch({ type: 'CLEAR_MESSAGES' });
-    }
-  }, [state.successMessage, state.authError, toast]);
+    useEffect(() => {
+        const storedCollege = localStorage.getItem('selectedCollege');
+        if (storedCollege) {
+            dispatch({ type: 'SET_SELECTED_COLLEGE', payload: storedCollege });
+        } else {
+            dispatch({ type: 'SET_INITIALIZED', payload: true });
+            dispatch({ type: 'SET_LOADING', payload: false });
+        }
+    }, []);
 
+    useEffect(() => {
+        if (!state.selectedCollege) return;
+        localStorage.setItem('selectedCollege', state.selectedCollege);
+
+        const collections = ['users', 'teams', 'projects', 'judges', 'announcements'];
+        const unsubscribes = collections.map(col => 
+            onSnapshot(collection(db, `colleges/${state.selectedCollege}/${col}`), (snapshot) => {
+                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                dispatch({ type: 'SET_DATA', payload: { [col]: data } });
+            })
+        );
+        
+        const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Check if admin
+                if (user.email === 'hacksprint@admin.com') {
+                    dispatch({ type: 'SET_ADMIN', payload: true });
+                } else {
+                    // Check if judge
+                    const judgeDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/judges`, user.uid));
+                    if (judgeDoc.exists()) {
+                        dispatch({ type: 'SET_JUDGE', payload: { id: judgeDoc.id, ...judgeDoc.data() } as Judge });
+                    } else {
+                        // Assume student
+                        const userDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/users`, user.uid));
+                        if (userDoc.exists()) {
+                            dispatch({ type: 'SET_USER', payload: { id: userDoc.id, ...userDoc.data() } as User });
+                        } else {
+                            // User exists in Auth but not in DB for this college, log them out from this context
+                            dispatch({ type: 'SET_USER', payload: null });
+                        }
+                    }
+                }
+            } else {
+                dispatch({ type: 'SET_USER', payload: null });
+                dispatch({ type: 'SET_JUDGE', payload: null });
+                dispatch({ type: 'SET_ADMIN', payload: false });
+            }
+             if(!state.isInitialized) {
+                dispatch({ type: 'SET_INITIALIZED', payload: true });
+                dispatch({ type: 'SET_LOADING', payload: false });
+            }
+        });
+
+        return () => {
+            unsubscribes.forEach(unsub => unsub());
+            unsubscribeAuth();
+        };
+
+    }, [state.selectedCollege, state.isInitialized]);
+
+  const apiWithDispatch = Object.keys(hackathonApi).reduce((acc, key) => {
+        const fn = (hackathonApi as any)[key];
+        (acc as any)[key] = async (...args: any[]) => {
+            try {
+                const result = await fn(state.selectedCollege!, ...args);
+                if (result?.successMessage) {
+                    dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage });
+                }
+                return result;
+            } catch (error: any) {
+                dispatch({ type: 'SET_AUTH_ERROR', payload: error.message });
+                throw error;
+            }
+        };
+        return acc;
+    }, {} as typeof hackathonApi);
 
   return (
-    <HackathonContext.Provider value={{ state, dispatch }}>
+    <HackathonContext.Provider value={{ state, dispatch, api: apiWithDispatch }}>
       {children}
     </HackathonContext.Provider>
   );

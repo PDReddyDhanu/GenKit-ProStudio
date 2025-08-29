@@ -10,19 +10,22 @@ import { Loader, Rss } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function Announcements() {
-    const { state, dispatch } = useHackathon();
-    const { announcements } = state.collegeData;
+    const { state, api } = useHackathon();
+    const { announcements } = state;
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const handlePostAnnouncement = (e: React.FormEvent) => {
+    const handlePostAnnouncement = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!message.trim()) return;
 
         setIsLoading(true);
-        dispatch({ type: 'POST_ANNOUNCEMENT', payload: message });
-        setMessage('');
-        setIsLoading(false);
+        try {
+            await api.postAnnouncement(message);
+            setMessage('');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const sortedAnnouncements = [...announcements].sort((a, b) => b.timestamp - a.timestamp);
@@ -42,6 +45,7 @@ export default function Announcements() {
                             onChange={(e) => setMessage(e.target.value)}
                             rows={5}
                             required
+                            disabled={isLoading}
                         />
                         <Button type="submit" className="w-full" disabled={isLoading}>
                             {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Posting...</> : 'Post Announcement'}
@@ -78,5 +82,3 @@ export default function Announcements() {
         </div>
     );
 }
-
-    

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import jsPDF from 'jspdf';
@@ -24,7 +23,8 @@ export const generateCertificate = async (teamName: string, projectName: string,
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     
-    const verificationUrl = `${window.location.origin}/verify/${projectId}`;
+    // Pass college name in URL for verification
+    const verificationUrl = `${window.location.origin}/verify/${projectId}?college=${encodeURIComponent(collegeName)}`;
     const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 256, color: { dark: '#262626', light: '#00000000' }});
     const performance = getPerformanceDetails(averageScore);
 
@@ -64,7 +64,6 @@ export const generateCertificate = async (teamName: string, projectName: string,
     doc.setFontSize(16);
     doc.setTextColor('#039BE5');
     doc.text(collegeName, pageWidth / 2, 53, { align: 'center' });
-
 
     doc.setFont("helvetica", 'normal');
     doc.setFontSize(14);
@@ -148,5 +147,3 @@ export const generateCertificate = async (teamName: string, projectName: string,
     
     doc.save(`Certificate-${teamName.replace(/\s/g, '_')}.pdf`);
 };
-
-    

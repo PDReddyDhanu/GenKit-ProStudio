@@ -9,7 +9,7 @@ export interface UserProfileData {
 export interface User extends UserProfileData {
   id: string;
   email: string;
-  password: string; // WARNING: In a real app, never store plaintext passwords
+  // password is not stored in Firestore record for security
   teamId?: string;
   status: 'pending' | 'approved';
 }
@@ -18,14 +18,14 @@ export interface Team {
   id: string;
   name: string;
   joinCode: string;
-  members: string[] | User[]; // Store User IDs in Firestore, but can be populated with User objects
+  members: User[];
   projectId?: string;
 }
 
 export interface Project {
   id: string;
   teamId: string;
-  name: string;
+  name:string;
   description: string;
   githubUrl: string;
   scores: Score[];
@@ -36,7 +36,7 @@ export interface Judge {
   id: string;
   name: string;
   email: string;
-  password: string; // WARNING: In a real app, never store plaintext passwords
+  // password is not stored in Firestore record for security
 }
 
 export interface Score {

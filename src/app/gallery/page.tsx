@@ -10,7 +10,7 @@ import PageIntro from '@/components/PageIntro';
 
 export default function ProjectGallery() {
     const { state } = useHackathon();
-    const { projects, teams } = state.collegeData;
+    const { projects, teams } = state;
     const [showIntro, setShowIntro] = useState(true);
     
     if (showIntro) {
@@ -61,5 +61,3 @@ export default function ProjectGallery() {
         </div>
     );
 }
-
-    

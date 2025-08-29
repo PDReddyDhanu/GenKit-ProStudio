@@ -18,16 +18,15 @@ export default function CollegeLogin() {
 
     const filteredColleges = useMemo(() => {
         if (!searchQuery) return [];
-        // Use a Set to ensure uniqueness
         const uniqueColleges = new Set(COLLEGES.filter(college =>
             college.toLowerCase().includes(searchQuery.toLowerCase())
         ));
-        return Array.from(uniqueColleges).slice(0, 100); // Limit to 100 results for performance
+        return Array.from(uniqueColleges).slice(0, 100);
     }, [searchQuery]);
 
     const handleProceed = () => {
         if (!selectedCollege) return;
-        dispatch({ type: 'SELECT_COLLEGE', payload: selectedCollege });
+        dispatch({ type: 'SET_SELECTED_COLLEGE', payload: selectedCollege });
     };
 
     const handleSelectCollege = (college: string) => {
@@ -65,7 +64,7 @@ export default function CollegeLogin() {
                                     setSelectedCollege('');
                                 }}
                                 onFocus={() => setIsFocused(true)}
-                                onBlur={() => setTimeout(() => setIsFocused(false), 150)} // Delay to allow click on results
+                                onBlur={() => setTimeout(() => setIsFocused(false), 150)}
                                 className="pl-10"
                             />
                         </div>

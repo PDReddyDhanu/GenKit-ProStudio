@@ -14,7 +14,7 @@ interface ProjectListProps {
 
 export default function ProjectList({ onSelectProject }: ProjectListProps) {
     const { state } = useHackathon();
-    const { projects, teams } = state.collegeData;
+    const { projects, teams } = state;
     const { currentJudge } = state;
 
     if (!projects || projects.length === 0) {
@@ -48,4 +48,3 @@ export default function ProjectList({ onSelectProject }: ProjectListProps) {
         </div>
     );
 }
-

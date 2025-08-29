@@ -1,7 +1,6 @@
 
 "use client";
 
-import type { Metadata } from 'next';
 import './globals.css';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import { cn } from '@/lib/utils';
@@ -13,27 +12,37 @@ import IntroAnimation from '@/components/IntroAnimation';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import CollegeLogin from '@/components/CollegeLogin';
 import { useEffect, useState } from 'react';
+import { Loader } from 'lucide-react';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 
 function AppWrapper({ children }: { children: React.ReactNode }) {
     const { state } = useHackathon();
-    const { selectedCollege, isInitialized } = state;
+    const { selectedCollege, isInitialized, isLoading } = state;
     const [showIntro, setShowIntro] = useState(true);
 
     useEffect(() => {
       if (isInitialized) {
         const timer = setTimeout(() => {
             setShowIntro(false);
-        }, 4000); // Should match the duration in IntroAnimation
+        }, 2000);
 
         return () => clearTimeout(timer);
       }
     }, [isInitialized]);
 
-    if (!isInitialized || showIntro) {
+    if (!isInitialized || (showIntro && !selectedCollege)) {
         return <IntroAnimation />;
+    }
+
+    if (isLoading && selectedCollege) {
+         return (
+            <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-background">
+                <Loader className="w-12 h-12 animate-spin text-primary" />
+                <p className="mt-4 text-muted-foreground">Loading {selectedCollege} data...</p>
+            </div>
+        )
     }
     
     if (!selectedCollege) {
