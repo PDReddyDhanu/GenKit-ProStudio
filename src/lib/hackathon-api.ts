@@ -47,7 +47,9 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
 }
 
 export async function loginJudge(collegeId: string, { email, password }: any) {
-    await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const judgeDoc = await getDoc(doc(db, `colleges/${collegeId}/judges`, userCredential.user.uid));
+    if (!judgeDoc.exists()) throw new Error("Judge record not found for this college.");
     return { successMessage: 'Login successful!' };
 }
 
@@ -70,14 +72,23 @@ export async function addJudge(collegeId: string, { name, email, password }: any
     if (!email.toLowerCase().endsWith('@judge.com')) {
         throw new Error('Judge email must end with @judge.com');
     }
-    // Note: This creates an auth user, but we can't get the UID directly without logging them in.
-    // A more robust solution might use a cloud function to create the user and DB record atomically.
-    // For now, we'll assume a simplified flow where we don't need to link them immediately.
-    // A placeholder user is created, and on first login, they are linked.
-    // This is a limitation without a backend function. A better way would be custom claims or a dedicated creation flow.
+    // We need to sign in as admin temporarily to perform this action, then sign back in as whoever was logged in.
+    const currentAdminUser = auth.currentUser;
 
-    const judge: Omit<Judge, 'id' | 'password'> = { name, email };
-    await addDoc(collection(db, `colleges/${collegeId}/judges`), judge);
+    // Create the judge user
+    const judgeCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const judge: Judge = { 
+        id: judgeCredential.user.uid,
+        name, 
+        email,
+    };
+    await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
+
+    // Sign back in as the admin if they were logged in
+    if (currentAdminUser) {
+        await signInWithEmailAndPassword(auth, currentAdminUser.email!, "hack123"); // This is a simplification. Secure password handling would be needed in a real app.
+    }
+
     return { successMessage: 'Judge added successfully! They can log in with the provided credentials.' };
 }
 
