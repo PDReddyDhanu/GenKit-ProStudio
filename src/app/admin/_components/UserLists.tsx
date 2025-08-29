@@ -13,10 +13,15 @@ interface UserListsProps {
 }
 
 export default function UserLists({ approvedStudents, judges }: UserListsProps) {
-    const { api } = useHackathon();
+    const { api, state } = useHackathon();
+    const { currentJudge } = state;
 
     const handleRemoveStudent = async (userId: string) => {
         await api.removeStudent(userId);
+    };
+
+    const handleRemoveJudge = async (judgeId: string) => {
+        await api.removeJudge(judgeId);
     };
 
     return (
@@ -53,9 +58,19 @@ export default function UserLists({ approvedStudents, judges }: UserListsProps) 
                     <ScrollArea className="h-96 pr-4">
                         <div className="space-y-2">
                             {judges.length > 0 ? judges.map(judge => (
-                                <div key={judge.id} className="p-2 bg-muted/50 rounded-md">
-                                    <p className="font-semibold text-sm">{judge.name}</p>
-                                    <p className="text-xs text-muted-foreground">{judge.email}</p>
+                                <div key={judge.id} className="p-2 bg-muted/50 rounded-md flex justify-between items-center">
+                                    <div>
+                                        <p className="font-semibold text-sm">{judge.name}</p>
+                                        <p className="text-xs text-muted-foreground">{judge.email}</p>
+                                    </div>
+                                    <Button 
+                                        variant="destructive" 
+                                        size="sm" 
+                                        onClick={() => handleRemoveJudge(judge.id)}
+                                        disabled={currentJudge?.id === judge.id}
+                                    >
+                                        Remove
+                                    </Button>
                                 </div>
                             )) : <p className="text-muted-foreground text-center pt-8">No judges have been added yet.</p>}
                         </div>

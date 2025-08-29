@@ -63,8 +63,6 @@ export async function loginJudge(collegeId: string, { email, password }: any) {
 }
 
 export async function loginAdmin({ email, password }: any) {
-    // This is a simplified, client-side check. 
-    // It does not involve Firebase Auth for the admin role to keep it simple.
     if (email !== 'hacksprint@admin.com' || password !== 'hack123') {
         throw new Error('Invalid admin credentials.');
     }
@@ -84,13 +82,9 @@ export async function addJudge(collegeId: string, { name, email, password }: any
         throw new Error('Judge email must end with @judge.com');
     }
     
-    // NOTE: This is a client-side workaround. A secure production app would use a Cloud Function.
-    // This flow creates a user but since we don't store the admin's auth credentials,
-    // we can't sign them back in. The local state management will keep them logged in UI-wise.
     try {
-        const tempAuth = auth; // Use the existing auth instance
-        const currentUser = tempAuth.currentUser; // Store current user if any
-
+        const tempAuth = auth;
+        
         const judgeCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
         const judge: Judge = { 
             id: judgeCredential.user.uid,
@@ -99,22 +93,23 @@ export async function addJudge(collegeId: string, { name, email, password }: any
         };
         await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
         
-        // After creating the judge, sign them out and restore the original auth state if possible.
-        // This is a workaround for client-side limitations.
         await firebaseSignOut(tempAuth);
-        
-        // A robust solution would re-authenticate the admin here, but we can't without storing creds.
-        // The app relies on the local state to keep the admin "logged in".
 
         return { successMessage: 'Judge added successfully! They can log in with the provided credentials.' };
     } catch (error: any) {
-         // Attempt to sign out to clear any partial auth state
         await firebaseSignOut(auth).catch(() => {});
         if (error.code === 'auth/email-already-in-use') {
             throw new Error('This email is already in use. Please use a different email.');
         }
         throw new Error('Failed to create judge account.');
     }
+}
+
+export async function removeJudge(collegeId: string, judgeId: string) {
+    await deleteDoc(doc(db, `colleges/${collegeId}/judges`, judgeId));
+    // Note: This does not delete the Firebase Auth user. A secure implementation
+    // would use a Cloud Function to handle this deletion.
+    return { successMessage: "Judge removed successfully." };
 }
 
 export async function approveStudent(collegeId: string, userId: string) {
@@ -125,7 +120,6 @@ export async function approveStudent(collegeId: string, userId: string) {
 export async function registerAndApproveStudent(collegeId: string, { name, email, password }: any) {
      try {
         const tempAuth = auth;
-        const currentUser = tempAuth.currentUser;
 
         const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
         const newUser: User = {
@@ -150,11 +144,9 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
 
 
 export async function removeStudent(collegeId: string, userId: string) {
-    // This is complex. Deleting a Firebase Auth user is a privileged operation.
-    // We can't do it from the client-side SDK directly for security reasons.
-    // This requires a Cloud Function or Admin SDK.
-    // For this implementation, we'll just delete the Firestore record.
     const userDoc = await getDoc(doc(db, `colleges/${collegeId}/users`, userId));
+    if (!userDoc.exists()) return { successMessage: "Student already removed." };
+    
     const user = userDoc.data() as User;
 
     if (user.teamId) {
@@ -162,7 +154,12 @@ export async function removeStudent(collegeId: string, userId: string) {
         if (teamDoc.exists()) {
             const team = teamDoc.data() as Team;
             const updatedMembers = team.members.filter((m: any) => m.id !== userId);
-            await updateDoc(teamDoc.ref, { members: updatedMembers });
+            if (updatedMembers.length > 0) {
+                await updateDoc(teamDoc.ref, { members: updatedMembers });
+            } else {
+                // If the team is empty after removing the member, delete the team
+                await deleteDoc(teamDoc.ref);
+            }
         }
     }
     
@@ -181,8 +178,6 @@ export async function postAnnouncement(collegeId: string, message: string) {
 }
 
 export async function resetHackathon(collegeId: string) {
-    // VERY DANGEROUS - Requires a backend function for security.
-    // Simulating by clearing collections.
     const collections = ['users', 'teams', 'projects', 'judges', 'announcements'];
     for (const col of collections) {
         const q = query(collection(db, `colleges/${collegeId}/${col}`));
