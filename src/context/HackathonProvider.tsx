@@ -62,6 +62,13 @@ type Action =
 function hackathonReducer(state: HackathonState, action: Action): HackathonState {
     switch (action.type) {
         case 'SET_DATA':
+             if (action.payload.users) {
+                // If users data is updated, check if currentUser needs an update
+                const updatedCurrentUser = action.payload.users.find(u => u.id === state.currentUser?.id);
+                if (updatedCurrentUser) {
+                    return { ...state, ...action.payload, currentUser: updatedCurrentUser };
+                }
+            }
             return { ...state, ...action.payload };
         case 'SET_USER':
             const user = action.payload;
@@ -154,30 +161,13 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
         localStorage.setItem('selectedCollege', state.selectedCollege);
         
         // Listen to top-level collections
-        const topLevelCollections = ['users', 'judges', 'announcements', 'hackathons'];
+        const topLevelCollections = ['users', 'judges', 'announcements', 'hackathons', 'teams', 'projects'];
         const unsubscribes = topLevelCollections.map(col => 
             onSnapshot(collection(db, `colleges/${state.selectedCollege}/${col}`), (snapshot) => {
                 const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 dispatch({ type: 'SET_DATA', payload: { [col]: data } });
             }, (error) => console.error(`Error fetching ${col}:`, error))
         );
-
-        // Listen to sub-collections within the selected hackathon
-        let teamUnsubscribe: (() => void) | null = null;
-        let projectUnsubscribe: (() => void) | null = null;
-        if (state.selectedHackathonId) {
-            teamUnsubscribe = onSnapshot(collection(db, `colleges/${state.selectedCollege}/hackathons/${state.selectedHackathonId}/teams`), (snapshot) => {
-                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                dispatch({ type: 'SET_DATA', payload: { teams: data }});
-            });
-             projectUnsubscribe = onSnapshot(collection(db, `colleges/${state.selectedCollege}/hackathons/${state.selectedHackathonId}/projects`), (snapshot) => {
-                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                dispatch({ type: 'SET_DATA', payload: { projects: data }});
-            });
-        } else {
-            // Clear teams and projects if no hackathon is selected
-             dispatch({ type: 'SET_DATA', payload: { teams: [], projects: [] }});
-        }
         
         const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
             if (user && state.selectedCollege) {
@@ -208,12 +198,10 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
 
         return () => {
             unsubscribes.forEach(unsub => unsub());
-            if (teamUnsubscribe) teamUnsubscribe();
-            if (projectUnsubscribe) projectUnsubscribe();
             unsubscribeAuth();
         };
 
-    }, [state.selectedCollege, state.selectedHackathonId]);
+    }, [state.selectedCollege]);
 
     const apiWithDispatch = Object.keys(hackathonApi).reduce((acc, key) => {
         const fnName = key as keyof typeof hackathonApi;

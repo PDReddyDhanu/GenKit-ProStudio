@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useHackathon } from '@/context/HackathonProvider';
@@ -14,18 +13,14 @@ export default function Dashboard() {
     const { state } = useHackathon();
     const { currentUser, teams, projects, selectedHackathonId } = state;
 
-    const currentHackathonTeams = useMemo(() => {
-        if (!selectedHackathonId) return [];
-        return teams.filter(t => t.hackathonId === selectedHackathonId);
-    }, [teams, selectedHackathonId]);
-
     const currentTeam = useMemo(() => {
-        if (!currentUser?.teamId) return undefined;
-        return currentHackathonTeams.find(t => t.id === currentUser.teamId);
-    }, [currentHackathonTeams, currentUser]);
+        if (!currentUser?.teamId || !selectedHackathonId) return undefined;
+        // Search all teams for the current user's team ID, ensuring it matches the selected hackathon.
+        return teams.find(t => t.id === currentUser.teamId && t.hackathonId === selectedHackathonId);
+    }, [teams, currentUser, selectedHackathonId]);
 
     const currentProject = useMemo(() => {
-        if (!currentTeam?.id) return undefined;
+        if (!currentTeam?.id || !selectedHackathonId) return undefined;
         return projects.find(p => p.teamId === currentTeam.id && p.hackathonId === selectedHackathonId);
     }, [projects, currentTeam, selectedHackathonId]);
 

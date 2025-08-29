@@ -10,9 +10,9 @@ export interface User extends UserProfileData {
   id: string;
   email: string;
   // password is not stored in Firestore record for security
-  teamId?: string;
+  teamId?: string | null;
   status: 'pending' | 'approved';
-  hackathonId?: string; // To track which hackathon the student is part of
+  hackathonId?: string | null; // To track which hackathon the student is part of
 }
 
 export interface Hackathon {

@@ -167,7 +167,7 @@ export async function removeStudent(collegeId: string, userId: string) {
     const user = userDoc.data() as User;
 
     if (user.teamId && user.hackathonId) {
-        const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/hackathons/${user.hackathonId}/teams`, user.teamId));
+        const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/teams`, user.teamId));
         if (teamDoc.exists()) {
             const team = teamDoc.data() as Team;
             const updatedMembers = team.members.filter((m: any) => m.id !== userId);
@@ -223,13 +223,13 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
         hackathonId,
         projectId: ""
     };
-    const teamRef = await addDoc(collection(db, `colleges/${collegeId}/hackathons/${hackathonId}/teams`), newTeam);
+    const teamRef = await addDoc(collection(db, `colleges/${collegeId}/teams`), newTeam);
     await updateDoc(doc(db, `colleges/${collegeId}/users`, user.id), { teamId: teamRef.id });
     return { successMessage: "Team created successfully!" };
 }
 
 export async function joinTeam(collegeId: string, hackathonId: string, joinCode: string, user: User) {
-    const q = query(collection(db, `colleges/${collegeId}/hackathons/${hackathonId}/teams`), where("joinCode", "==", joinCode));
+    const q = query(collection(db, `colleges/${collegeId}/teams`), where("joinCode", "==", joinCode), where("hackathonId", "==", hackathonId));
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
         throw new Error("Invalid join code for this hackathon.");
@@ -250,7 +250,7 @@ export async function joinTeam(collegeId: string, hackathonId: string, joinCode:
 
 export async function leaveTeam(collegeId: string, hackathonId: string, teamId: string, userId: string) {
     const userRef = doc(db, `colleges/${collegeId}/users`, userId);
-    const teamRef = doc(db, `colleges/${collegeId}/hackathons/${hackathonId}/teams`, teamId);
+    const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
 
     const teamDoc = await getDoc(teamRef);
     if (teamDoc.exists()) {
@@ -279,8 +279,8 @@ export async function submitProject(collegeId: string, hackathonId: string, { na
         scores: [],
         averageScore: 0,
     };
-    const projectRef = await addDoc(collection(db, `colleges/${collegeId}/hackathons/${hackathonId}/projects`), newProject);
-    await updateDoc(doc(db, `colleges/${collegeId}/hackathons/${hackathonId}/teams`, teamId), { projectId: projectRef.id });
+    const projectRef = await addDoc(collection(db, `colleges/${collegeId}/projects`), newProject);
+    await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { projectId: projectRef.id });
     return { successMessage: "Project submitted successfully!" };
 }
 
@@ -291,7 +291,7 @@ export async function updateProfile(collegeId: string, userId: string, profileDa
 
 // --- Judge ---
 export async function scoreProject(collegeId: string, hackathonId: string, projectId: string, judgeId: string, scores: Score[]) {
-    const projectRef = doc(db, `colleges/${collegeId}/hackathons/${hackathonId}/projects`, projectId);
+    const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
     const projectDoc = await getDoc(projectRef);
     const project = projectDoc.data() as Project;
 
