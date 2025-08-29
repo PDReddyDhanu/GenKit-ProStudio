@@ -34,6 +34,7 @@ export async function registerStudent(collegeId: string, { name, email, password
         linkedin: '',
     };
     await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
+    await firebaseSignOut(auth); // Sign out immediately after registration
     return { successMessage: 'Registration successful! Your account is pending admin approval.' };
 }
 
