@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader, ArrowLeft } from 'lucide-react';
 
 export default function TeamManagement() {
-    const { state, api, dispatch } = useHackathon();
+    const { state, api } = useHackathon();
     const { currentUser, selectedHackathonId } = state;
     const [teamName, setTeamName] = useState('');
     const [joinCode, setJoinCode] = useState('');
@@ -43,9 +43,6 @@ export default function TeamManagement() {
 
     const handleGoBack = () => {
         if (currentUser) {
-            // This is a UI action, so we can dispatch directly to clear the selection
-             dispatch({ type: 'SET_SELECTED_HACKATHON', payload: null });
-             // Also clear the user's hackathonId from their profile so they can choose again
              api.selectHackathonForStudent(currentUser.id, null);
         }
     }
