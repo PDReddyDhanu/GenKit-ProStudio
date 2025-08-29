@@ -15,10 +15,12 @@ export default function Dashboard() {
     const { currentUser, teams, projects, selectedHackathonId } = state;
 
     const currentHackathonTeams = useMemo(() => {
+        if (!selectedHackathonId) return [];
         return teams.filter(t => t.hackathonId === selectedHackathonId);
     }, [teams, selectedHackathonId]);
 
     const currentHackathonProjects = useMemo(() => {
+        if (!selectedHackathonId) return [];
         return projects.filter(p => p.hackathonId === selectedHackathonId);
     }, [projects, selectedHackathonId]);
 
