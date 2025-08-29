@@ -1,12 +1,12 @@
 
 "use client";
 
-import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
-import { User, Team, Project, Judge, Announcement, HackathonData, UserProfileData } from '../lib/types';
+import React, { createContext, useContext, ReactNode, useEffect, useReducer } from 'react';
+import { User, Team, Project, Judge, Announcement } from '../lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { collection, onSnapshot, doc, getDoc, where, query, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import * as hackathonApi from '@/lib/hackathon-api';
 
 interface HackathonState {
@@ -68,7 +68,17 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
         case 'SET_INITIALIZED':
             return { ...state, isInitialized: action.payload };
         case 'SET_SELECTED_COLLEGE':
-            return { ...state, selectedCollege: action.payload, isLoading: !!action.payload };
+            const college = action.payload;
+            if (college && state.selectedCollege !== college) {
+                // Reset data when college changes
+                return {
+                    ...defaultState,
+                    selectedCollege: college,
+                    isInitialized: state.isInitialized,
+                    successMessage: `Welcome to ${college}!`,
+                };
+            }
+            return { ...state, selectedCollege: college, isLoading: !!college };
         case 'SET_AUTH_ERROR':
             return { ...state, authError: action.payload };
         case 'SET_SUCCESS_MESSAGE':
@@ -114,6 +124,8 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
 
     useEffect(() => {
         if (!state.selectedCollege) return;
+        
+        dispatch({ type: 'SET_LOADING', payload: true });
         localStorage.setItem('selectedCollege', state.selectedCollege);
 
         const collections = ['users', 'teams', 'projects', 'judges', 'announcements'];
@@ -121,27 +133,26 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
             onSnapshot(collection(db, `colleges/${state.selectedCollege}/${col}`), (snapshot) => {
                 const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 dispatch({ type: 'SET_DATA', payload: { [col]: data } });
+            }, (error) => {
+                console.error(`Error fetching ${col}:`, error);
+                dispatch({ type: 'SET_AUTH_ERROR', payload: `Could not load ${col} data.`})
             })
         );
         
         const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Check if admin
                 if (user.email === 'hacksprint@admin.com') {
                     dispatch({ type: 'SET_ADMIN', payload: true });
                 } else {
-                    // Check if judge
                     const judgeDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/judges`, user.uid));
                     if (judgeDoc.exists()) {
                         dispatch({ type: 'SET_JUDGE', payload: { id: judgeDoc.id, ...judgeDoc.data() } as Judge });
                     } else {
-                        // Assume student
                         const userDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/users`, user.uid));
                         if (userDoc.exists()) {
                             dispatch({ type: 'SET_USER', payload: { id: userDoc.id, ...userDoc.data() } as User });
                         } else {
-                            // User exists in Auth but not in DB for this college, log them out from this context
-                            dispatch({ type: 'SET_USER', payload: null });
+                           await hackathonApi.signOut();
                         }
                     }
                 }
@@ -152,8 +163,8 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
             }
              if(!state.isInitialized) {
                 dispatch({ type: 'SET_INITIALIZED', payload: true });
-                dispatch({ type: 'SET_LOADING', payload: false });
             }
+            dispatch({ type: 'SET_LOADING', payload: false });
         });
 
         return () => {
@@ -166,15 +177,17 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
   const apiWithDispatch = Object.keys(hackathonApi).reduce((acc, key) => {
         const fn = (hackathonApi as any)[key];
         (acc as any)[key] = async (...args: any[]) => {
+            dispatch({ type: 'CLEAR_MESSAGES' });
             try {
-                const result = await fn(state.selectedCollege!, ...args);
+                // For functions that need it, the first arg is always collegeId
+                const result = await fn(state.selectedCollege, ...args);
                 if (result?.successMessage) {
                     dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage });
                 }
                 return result;
             } catch (error: any) {
                 dispatch({ type: 'SET_AUTH_ERROR', payload: error.message });
-                throw error;
+                throw error; // Re-throw so component logic can catch it if needed
             }
         };
         return acc;
