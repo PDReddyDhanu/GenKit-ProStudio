@@ -84,9 +84,8 @@ export function Header() {
                 
                 <nav className="hidden md:flex items-center gap-4">
                     <NavLink href="/guidance">Guidance</NavLink>
-                    <NavLink href="/showcase">Showcase</NavLink>
-                    <NavLink href="/teams">Teams</NavLink>
                     <NavLink href="/gallery">Gallery</NavLink>
+                    <NavLink href="/teams">Teams</NavLink>
                     <NavLink href="/leaderboard">Leaderboard</NavLink>
                     <NavLink href="/results">Results</NavLink>
                     <NavLink href="/partners">Partners</NavLink>
@@ -201,9 +200,8 @@ export function Header() {
                                 </SheetHeader>
                                 <nav className="flex flex-col gap-4 py-8">
                                     <NavLink href="/guidance" onClick={closeMobileMenu}>Guidance</NavLink>
-                                    <NavLink href="/showcase" onClick={closeMobileMenu}>Showcase</NavLink>
-                                    <NavLink href="/teams" onClick={closeMobileMenu}>Teams</NavLink>
                                     <NavLink href="/gallery" onClick={closeMobileMenu}>Gallery</NavLink>
+                                    <NavLink href="/teams" onClick={closeMobileMenu}>Teams</NavLink>
                                     <NavLink href="/leaderboard" onClick={closeMobileMenu}>Leaderboard</NavLink>
                                     <NavLink href="/results" onClick={closeMobileMenu}>Results</NavLink>
                                     <NavLink href="/partners" onClick={closeMobileMenu}>Partners</NavLink>

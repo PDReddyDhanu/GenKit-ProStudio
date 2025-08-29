@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, FileText, Github, Lightbulb, Trophy, Users } from "lucide-react";
+import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale } from "lucide-react";
 import Link from "next/link";
 
 const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => (
@@ -64,17 +64,17 @@ export default function Home() {
                     description="Get instant, AI-powered feedback on your code submissions."
                 />
                  <FeatureCard
-                    icon={<Trophy className="w-12 h-12" />}
+                    icon={<GalleryVertical className="w-12 h-12" />}
                     title="Project Showcase"
                     description="A gallery of all submitted projects to celebrate the work."
                 />
                 <FeatureCard
-                    icon={<Trophy className="w-12 h-12" />}
+                    icon={<Scale className="w-12 h-12" />}
                     title="Fair Judging"
                     description="A dedicated portal for judges to score projects, enhanced with AI summaries."
                 />
                 <FeatureCard
-                    icon={<Users className="w-12 h-12" />}
+                    icon={<Handshake className="w-12 h-12" />}
                     title="Team Finder"
                     description="Discover teams or recruit members based on skills and interests."
                 />

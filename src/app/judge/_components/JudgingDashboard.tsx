@@ -7,12 +7,6 @@ import { Project } from '@/lib/types';
 import ProjectList from './ProjectList';
 import ScoringForm from './ScoringForm';
 import { AuthMessage } from '@/components/AuthMessage';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-// Import components from admin portal
-import AddStudentForm from '@/app/admin/_components/AddStudentForm';
-import PendingApprovals from '@/app/admin/_components/PendingApprovals';
-import UserLists from '@/app/admin/_components/UserLists';
 
 function JudgingPanel() {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);

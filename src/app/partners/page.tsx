@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -100,8 +101,8 @@ const PartnerCard = ({ partner, index }: { partner: typeof partners[0], index: n
                  <Image 
                     src={partner.logo} 
                     alt={`${partner.name} logo`} 
-                    layout="fill" 
-                    objectFit="contain" 
+                    fill
+                    style={{ objectFit: 'contain' }}
                     data-ai-hint={partner.dataAiHint}
                     unoptimized // Added for SVG compatibility with external sources
                  />
@@ -142,7 +143,7 @@ export default function PartnersPage() {
                 </p>
             </section>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
                 {sortedPartners.map((partner, index) => (
                     <PartnerCard key={partner.name} partner={partner} index={index} />
                 ))}

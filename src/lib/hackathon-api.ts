@@ -63,12 +63,14 @@ export async function loginJudge(collegeId: string, { email, password }: any) {
 }
 
 export async function loginAdmin({ email, password }: any) {
+    // This is a simplified, client-side check. 
+    // It does not involve Firebase Auth for the admin role.
     if (email !== 'hacksprint@admin.com' || password !== 'hack123') {
         throw new Error('Invalid admin credentials.');
     }
-    // Admin login is handled locally in the context provider, not via Firebase Auth
     return { successMessage: 'Admin login successful!', isAdmin: true };
 }
+
 
 export async function signOut() {
     await firebaseSignOut(auth);
@@ -82,28 +84,28 @@ export async function addJudge(collegeId: string, { name, email, password }: any
         throw new Error('Judge email must end with @judge.com');
     }
     
-    // We create a temporary auth instance to create the judge without logging out the admin.
-    // NOTE: This is a client-side workaround. A secure implementation would use a backend Cloud Function.
-    const tempAuth = auth; // In a real scenario, you'd initialize a separate app instance.
-    const currentAdmin = tempAuth.currentUser;
-    
-    const judgeCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
-    const judge: Judge = { 
-        id: judgeCredential.user.uid,
-        name, 
-        email,
-    };
-    await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
-
-    // After creating the judge, we need to log out the temporary session
-    // and restore the admin session if one was active.
-    // This is a simplified flow. A robust solution needs more complex session management.
-    await firebaseSignOut(tempAuth);
-    if (currentAdmin) {
-       // The admin state is handled locally, so no need to re-login here as it would create a session for the admin.
+    // NOTE: This is a client-side workaround. A secure production app would use a Cloud Function.
+    // This flow creates a user but since we don't store the admin's auth credentials,
+    // we can't sign them back in. The local state management will keep them logged in UI-wise.
+    try {
+        const judgeCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const judge: Judge = { 
+            id: judgeCredential.user.uid,
+            name, 
+            email,
+        };
+        await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
+         // Sign out the newly created judge so the admin session isn't disrupted
+        await firebaseSignOut(auth);
+        return { successMessage: 'Judge added successfully! They can log in with the provided credentials.' };
+    } catch (error: any) {
+         // Attempt to sign out to clear any partial auth state
+        await firebaseSignOut(auth).catch(() => {});
+        if (error.code === 'auth/email-already-in-use') {
+            throw new Error('This email is already in use. Please use a different email.');
+        }
+        throw new Error('Failed to create judge account.');
     }
-
-    return { successMessage: 'Judge added successfully! They can log in with the provided credentials.' };
 }
 
 export async function approveStudent(collegeId: string, userId: string) {
@@ -112,22 +114,25 @@ export async function approveStudent(collegeId: string, userId: string) {
 }
 
 export async function registerAndApproveStudent(collegeId: string, { name, email, password }: any) {
-    // Similar to addJudge, this requires careful auth handling.
-    const currentAdmin = auth.currentUser;
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const newUser: User = {
-        id: userCredential.user.uid,
-        name,
-        email,
-        status: 'approved',
-        skills: [], bio: '', github: '', linkedin: ''
-    };
-    await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
-    await firebaseSignOut(auth);
-    if (currentAdmin) {
-        // As before, we don't re-authenticate the admin. State is managed locally.
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const newUser: User = {
+            id: userCredential.user.uid,
+            name,
+            email,
+            status: 'approved',
+            skills: [], bio: '', github: '', linkedin: ''
+        };
+        await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
+        await firebaseSignOut(auth);
+        return { successMessage: `${name} has been registered and approved.` };
+    } catch(error: any) {
+        await firebaseSignOut(auth).catch(() => {});
+         if (error.code === 'auth/email-already-in-use') {
+            throw new Error('This email is already in use. Please use a different email.');
+        }
+        throw new Error('Failed to create student account.');
     }
-    return { successMessage: `${name} has been registered and approved.` };
 }
 
 
