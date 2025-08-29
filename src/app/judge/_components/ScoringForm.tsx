@@ -21,7 +21,7 @@ interface ScoringFormProps {
 
 export default function ScoringForm({ project, onBack }: ScoringFormProps) {
     const { state, api } = useHackathon();
-    const { currentJudge, teams } = state;
+    const { currentJudge, teams, selectedHackathonId } = state;
 
     const [scores, setScores] = useState<Record<string, number>>({});
     const [comments, setComments] = useState<Record<string, string>>({});
@@ -70,7 +70,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
 
     const handleSubmitScores = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (project && currentJudge) {
+        if (project && currentJudge && selectedHackathonId) {
             setIsSubmitting(true);
             const projectScores: Score[] = JUDGING_RUBRIC.map(criteria => ({
                 judgeId: currentJudge.id,
@@ -79,7 +79,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
                 comment: comments[criteria.id] || '',
             }));
             try {
-                await api.scoreProject(project.id, currentJudge.id, projectScores);
+                await api.scoreProject(selectedHackathonId, project.id, currentJudge.id, projectScores);
                 onBack();
             } finally {
                 setIsSubmitting(false);

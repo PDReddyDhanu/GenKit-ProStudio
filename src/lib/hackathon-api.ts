@@ -1,4 +1,3 @@
-
 import { auth, db } from './firebase';
 import { 
     createUserWithEmailAndPassword, 
@@ -17,7 +16,7 @@ import {
     getDocs,
     deleteDoc
 } from 'firebase/firestore';
-import { User, Judge, Team, Project, Score, UserProfileData, Announcement } from './types';
+import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon } from './types';
 
 // --- Auth ---
 
@@ -63,6 +62,7 @@ export async function loginJudge(collegeId: string, { email, password }: any) {
 }
 
 export async function loginAdmin({ email, password }: any) {
+    // This is a simplified, non-Firebase auth for a single-admin scenario.
     if (email !== 'hacksprint@admin.com' || password !== 'hack123') {
         throw new Error('Invalid admin credentials.');
     }
@@ -75,17 +75,21 @@ export async function signOut() {
     return { successMessage: 'You have been logged out.' };
 }
 
-// --- Admin ---
+// --- Admin & Judge ---
 
 export async function addJudge(collegeId: string, { name, email, password }: any) {
     if (!email.toLowerCase().endsWith('@judge.com')) {
         throw new Error('Judge email must end with @judge.com');
     }
     
+    // This is a simplified method. A real app should use a backend function to create users to avoid auth state conflicts.
+    // For this demo, we assume the admin's auth state is not persisted or they will re-login.
+    const tempAuth = auth;
+    
     try {
-        const tempAuth = auth;
+        const currentUser = tempAuth.currentUser;
         
-        const judgeCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
+        const judgeCredential = await createUserWithEmailAndPassword(auth, email, password);
         const judge: Judge = { 
             id: judgeCredential.user.uid,
             name, 
@@ -93,17 +97,24 @@ export async function addJudge(collegeId: string, { name, email, password }: any
         };
         await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
         
-        await firebaseSignOut(tempAuth);
+        // Sign out the newly created user and restore original admin/judge session if it existed
+        await firebaseSignOut(auth);
+        if (currentUser) {
+            // This is a simplified re-auth. A robust solution would use refresh tokens.
+            // For the demo, we assume the admin/judge might need to log in again if their session is lost.
+        }
 
         return { successMessage: 'Judge added successfully! They can log in with the provided credentials.' };
     } catch (error: any) {
-        await firebaseSignOut(auth).catch(() => {});
+        await firebaseSignOut(auth).catch(() => {}); // Attempt to sign out any lingering temporary user
         if (error.code === 'auth/email-already-in-use') {
             throw new Error('This email is already in use. Please use a different email.');
         }
+        console.error("Error creating judge:", error);
         throw new Error('Failed to create judge account.');
     }
 }
+
 
 export async function removeJudge(collegeId: string, judgeId: string) {
     await deleteDoc(doc(db, `colleges/${collegeId}/judges`, judgeId));
@@ -120,6 +131,7 @@ export async function approveStudent(collegeId: string, userId: string) {
 export async function registerAndApproveStudent(collegeId: string, { name, email, password }: any) {
      try {
         const tempAuth = auth;
+        const currentUser = tempAuth.currentUser;
 
         const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
         const newUser: User = {
@@ -130,7 +142,11 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             skills: [], bio: '', github: '', linkedin: ''
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
+        
         await firebaseSignOut(tempAuth);
+        if (currentUser) {
+            // As before, a more robust session management would be needed in a production app.
+        }
 
         return { successMessage: `${name} has been registered and approved.` };
     } catch(error: any) {
@@ -149,8 +165,8 @@ export async function removeStudent(collegeId: string, userId: string) {
     
     const user = userDoc.data() as User;
 
-    if (user.teamId) {
-        const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/teams`, user.teamId));
+    if (user.teamId && user.hackathonId) {
+        const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/hackathons/${user.hackathonId}/teams`, user.teamId));
         if (teamDoc.exists()) {
             const team = teamDoc.data() as Team;
             const updatedMembers = team.members.filter((m: any) => m.id !== userId);
@@ -168,6 +184,11 @@ export async function removeStudent(collegeId: string, userId: string) {
     return { successMessage: `Student ${user.name} has been removed.` };
 }
 
+export async function createHackathon(collegeId: string, hackathonData: Omit<Hackathon, 'id'>) {
+    const newHackathonRef = await addDoc(collection(db, `colleges/${collegeId}/hackathons`), hackathonData);
+    return { successMessage: `Hackathon "${hackathonData.name}" created successfully.`, id: newHackathonRef.id };
+}
+
 export async function postAnnouncement(collegeId: string, message: string) {
     const newAnnouncement: Omit<Announcement, 'id'> = {
         message,
@@ -177,36 +198,31 @@ export async function postAnnouncement(collegeId: string, message: string) {
     return { successMessage: 'Announcement posted successfully.' };
 }
 
-export async function resetHackathon(collegeId: string) {
-    const collections = ['users', 'teams', 'projects', 'judges', 'announcements'];
-    for (const col of collections) {
-        const q = query(collection(db, `colleges/${collegeId}/${col}`));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach(async (docSnapshot) => {
-            await deleteDoc(docSnapshot.ref);
-        });
-    }
-     return { successMessage: "All hackathon data for this college has been reset." };
+// --- Student ---
+
+export async function selectHackathonForStudent(collegeId: string, userId: string, hackathonId: string) {
+    await updateDoc(doc(db, `colleges/${collegeId}/users`, userId), { hackathonId: hackathonId, teamId: null }); // Also reset teamId when changing hackathons
+    return { successMessage: "Hackathon selected successfully!" };
 }
 
-// --- Student ---
-export async function createTeam(collegeId: string, teamName: string, user: User) {
+export async function createTeam(collegeId: string, hackathonId: string, teamName: string, user: User) {
     const newTeam: Omit<Team, 'id'> = {
         name: teamName,
         joinCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         members: [user],
+        hackathonId,
         projectId: ""
     };
-    const teamRef = await addDoc(collection(db, `colleges/${collegeId}/teams`), newTeam);
+    const teamRef = await addDoc(collection(db, `colleges/${collegeId}/hackathons/${hackathonId}/teams`), newTeam);
     await updateDoc(doc(db, `colleges/${collegeId}/users`, user.id), { teamId: teamRef.id });
     return { successMessage: "Team created successfully!" };
 }
 
-export async function joinTeam(collegeId: string, joinCode: string, user: User) {
-    const q = query(collection(db, `colleges/${collegeId}/teams`), where("joinCode", "==", joinCode));
+export async function joinTeam(collegeId: string, hackathonId: string, joinCode: string, user: User) {
+    const q = query(collection(db, `colleges/${collegeId}/hackathons/${hackathonId}/teams`), where("joinCode", "==", joinCode));
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
-        throw new Error("Invalid join code.");
+        throw new Error("Invalid join code for this hackathon.");
     }
     const teamDoc = querySnapshot.docs[0];
     const team = teamDoc.data() as Team;
@@ -222,17 +238,18 @@ export async function joinTeam(collegeId: string, joinCode: string, user: User) 
     return { successMessage: `Successfully joined team: ${team.name}` };
 }
 
-export async function submitProject(collegeId: string, { name, description, githubUrl, teamId }: any) {
+export async function submitProject(collegeId: string, hackathonId: string, { name, description, githubUrl, teamId }: any) {
     const newProject: Omit<Project, 'id'> = {
         teamId,
+        hackathonId,
         name,
         description,
         githubUrl,
         scores: [],
         averageScore: 0,
     };
-    const projectRef = await addDoc(collection(db, `colleges/${collegeId}/projects`), newProject);
-    await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { projectId: projectRef.id });
+    const projectRef = await addDoc(collection(db, `colleges/${collegeId}/hackathons/${hackathonId}/projects`), newProject);
+    await updateDoc(doc(db, `colleges/${collegeId}/hackathons/${hackathonId}/teams`, teamId), { projectId: projectRef.id });
     return { successMessage: "Project submitted successfully!" };
 }
 
@@ -242,8 +259,8 @@ export async function updateProfile(collegeId: string, userId: string, profileDa
 }
 
 // --- Judge ---
-export async function scoreProject(collegeId: string, projectId: string, judgeId: string, scores: Score[]) {
-    const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
+export async function scoreProject(collegeId: string, hackathonId: string, projectId: string, judgeId: string, scores: Score[]) {
+    const projectRef = doc(db, `colleges/${collegeId}/hackathons/${hackathonId}/projects`, projectId);
     const projectDoc = await getDoc(projectRef);
     const project = projectDoc.data() as Project;
 

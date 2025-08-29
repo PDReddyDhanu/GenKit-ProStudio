@@ -23,58 +23,36 @@ import Link from 'next/link';
 
 export default function DataManagement() {
     const { state, api } = useHackathon();
-    const { users, teams, projects } = state;
+    const { users, teams, projects, selectedHackathonId } = state;
     const [isResetting, setIsResetting] = useState(false);
 
     const handleReset = async () => {
-        setIsResetting(true);
-        try {
-            await api.resetHackathon();
-        } finally {
-            setIsResetting(false);
-        }
+        // This functionality needs to be re-scoped for multi-hackathon environment.
+        // For now, it's disabled to prevent accidental deletion of all hackathons.
+        alert("This feature is currently being updated for the new multi-hackathon system.");
+        
+        // setIsResetting(true);
+        // try {
+        //     await api.resetHackathon();
+        // } finally {
+        //     setIsResetting(false);
+        // }
     };
 
     const handleRemoveStudent = async (userId: string) => {
         await api.removeStudent(userId);
     }
+    
+    const hackathonTeams = teams.filter(t => t.hackathonId === selectedHackathonId);
+    const hackathonProjects = projects.filter(p => p.hackathonId === selectedHackathonId);
+
 
     return (
         <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <Card className="border-destructive">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 font-headline"><AlertTriangle className="text-destructive"/> Reset Hackathon Data</CardTitle>
-                        <CardDescription>This will permanently delete all users, teams, projects, and judges for the selected college. This action cannot be undone.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" disabled={!state.selectedCollege || isResetting}>
-                                    {isResetting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Resetting...</> : 'Reset College Data'}
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action is permanent and will delete all hackathon data for <strong>{state.selectedCollege}</strong>, including all user accounts, teams, project submissions, and judging scores.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleReset}>Yes, Reset Everything</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </CardContent>
-                </Card>
-            </div>
-            
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">All Students ({users.length})</CardTitle>
-                    <CardDescription>View and manage all registered students.</CardDescription>
+                    <CardDescription>View and manage all registered students for this college.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-96">
@@ -110,7 +88,7 @@ export default function DataManagement() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline">All Teams ({teams.length})</CardTitle>
+                    <CardTitle className="font-headline">Teams for Current Hackathon ({hackathonTeams.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                      <ScrollArea className="h-96">
@@ -122,7 +100,7 @@ export default function DataManagement() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {teams.map(team => (
+                                {hackathonTeams.map(team => (
                                     <TableRow key={team.id}>
                                         <TableCell className="font-medium">{team.name}</TableCell>
                                         <TableCell>{team.members.map(m => m.name).join(', ')}</TableCell>
@@ -136,7 +114,7 @@ export default function DataManagement() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline">All Projects ({projects.length})</CardTitle>
+                    <CardTitle className="font-headline">Projects for Current Hackathon ({hackathonProjects.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                      <ScrollArea className="h-96">
@@ -149,7 +127,7 @@ export default function DataManagement() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {projects.map(project => (
+                                {hackathonProjects.map(project => (
                                     <TableRow key={project.id}>
                                         <TableCell className="font-medium">{project.name}</TableCell>
                                         <TableCell>{project.description}</TableCell>

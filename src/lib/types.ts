@@ -12,6 +12,16 @@ export interface User extends UserProfileData {
   // password is not stored in Firestore record for security
   teamId?: string;
   status: 'pending' | 'approved';
+  hackathonId?: string; // To track which hackathon the student is part of
+}
+
+export interface Hackathon {
+  id: string;
+  name: string;
+  prizeMoney: string;
+  rules: string;
+  teamSizeLimit: number;
+  deadline: number; // timestamp
 }
 
 export interface Team {
@@ -20,11 +30,13 @@ export interface Team {
   joinCode: string;
   members: User[];
   projectId?: string;
+  hackathonId: string;
 }
 
 export interface Project {
   id: string;
   teamId: string;
+  hackathonId: string;
   name:string;
   description: string;
   githubUrl: string;
@@ -33,7 +45,7 @@ export interface Project {
 }
 
 export interface Judge {
-  id: string;
+  id:string;
   name: string;
   email: string;
   // password is not stored in Firestore record for security
@@ -50,6 +62,7 @@ export interface Announcement {
   id: string;
   message: string;
   timestamp: number;
+  hackathonId?: string; // Optional: scope announcements to a hackathon
 }
 
 export interface HackathonData {
@@ -58,4 +71,5 @@ export interface HackathonData {
     projects: Project[];
     judges: Judge[];
     announcements: Announcement[];
+    hackathons: Hackathon[];
 }

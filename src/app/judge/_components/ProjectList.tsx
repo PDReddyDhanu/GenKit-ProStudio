@@ -9,19 +9,19 @@ import type { Project } from '@/lib/types';
 import { CheckCircle } from 'lucide-react';
 
 interface ProjectListProps {
+    projects: Project[];
     onSelectProject: (project: Project) => void;
 }
 
-export default function ProjectList({ onSelectProject }: ProjectListProps) {
+export default function ProjectList({ projects, onSelectProject }: ProjectListProps) {
     const { state } = useHackathon();
-    const { projects, teams } = state;
-    const { currentJudge } = state;
+    const { teams, currentJudge } = state;
 
     if (!projects || projects.length === 0) {
         return (
             <Card>
                 <CardContent className="pt-6">
-                    <p className="text-muted-foreground text-center">No projects have been submitted yet.</p>
+                    <p className="text-muted-foreground text-center">No projects have been submitted for this hackathon yet.</p>
                 </CardContent>
             </Card>
         );

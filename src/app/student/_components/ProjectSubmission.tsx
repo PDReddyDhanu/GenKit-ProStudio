@@ -17,7 +17,8 @@ interface ProjectSubmissionProps {
 }
 
 export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
-    const { api } = useHackathon();
+    const { api, state } = useHackathon();
+    const { selectedHackathonId } = state;
     const [projectName, setProjectName] = useState('');
     const [projectDesc, setProjectDesc] = useState('');
     const [githubUrl, setGithubUrl] = useState('');
@@ -28,11 +29,13 @@ export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
 
     const handleSubmitProject = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
-        try {
-            await api.submitProject({ name: projectName, description: projectDesc, githubUrl, teamId: team.id });
-        } finally {
-            setIsSubmitting(false);
+        if (selectedHackathonId) {
+            setIsSubmitting(true);
+            try {
+                await api.submitProject(selectedHackathonId, { name: projectName, description: projectDesc, githubUrl, teamId: team.id });
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     };
 

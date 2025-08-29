@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,10 +14,14 @@ import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
 import { Shield, Loader } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
+import JudgingDashboard from '@/app/judge/_components/JudgingDashboard';
+import HackathonManagement from '@/app/judge/_components/HackathonManagement';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 export default function AdminPortal() {
-    const { state, api } = useHackathon();
-    const { currentAdmin } = state;
+    const { state, api, dispatch } = useHackathon();
+    const { currentAdmin, hackathons, selectedHackathonId } = state;
     const [email, setEmail] = useState('hacksprint@admin.com');
     const [password, setPassword] = useState('hack123');
     const [showIntro, setShowIntro] = useState(true);
@@ -32,6 +36,14 @@ export default function AdminPortal() {
             setIsLoading(false);
         }
     };
+    
+    const handleHackathonChange = (hackathonId: string) => {
+        dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId });
+    }
+     const currentHackathon = useMemo(() => {
+        return hackathons.find(h => h.id === selectedHackathonId);
+    }, [hackathons, selectedHackathonId]);
+
 
     if (showIntro) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<Shield className="w-full h-full" />} title="Admin Portal" description="Manage the hackathon, users, and announcements." />;
@@ -67,15 +79,33 @@ export default function AdminPortal() {
 
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-slide-in-up">
-            <h1 className="text-4xl font-bold mb-8 font-headline">Admin Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
+                <h1 className="text-4xl font-bold font-headline">Admin Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
+                <div>
+                     <Select onValueChange={handleHackathonChange} value={selectedHackathonId || ""}>
+                        <SelectTrigger className="w-full sm:w-[280px]">
+                            <SelectValue placeholder="Select a Hackathon to manage" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {hackathons.map(h => (
+                                <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
             <AuthMessage />
 
-             <Tabs defaultValue="management" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+             <Tabs defaultValue="hackathons" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>
                     <TabsTrigger value="announcements">Announcements</TabsTrigger>
                     <TabsTrigger value="data">Data & Reset</TabsTrigger>
                 </TabsList>
+                 <TabsContent value="hackathons" className="mt-6">
+                    <HackathonManagement />
+                </TabsContent>
                 <TabsContent value="management" className="mt-6">
                     <AdminDashboard />
                 </TabsContent>

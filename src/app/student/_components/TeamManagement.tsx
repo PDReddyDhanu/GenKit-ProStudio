@@ -11,7 +11,7 @@ import { Loader } from 'lucide-react';
 
 export default function TeamManagement() {
     const { state, api } = useHackathon();
-    const { currentUser } = state;
+    const { currentUser, selectedHackathonId } = state;
     const [teamName, setTeamName] = useState('');
     const [joinCode, setJoinCode] = useState('');
     const [isCreating, setIsCreating] = useState(false);
@@ -19,10 +19,10 @@ export default function TeamManagement() {
 
     const handleCreateTeam = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (currentUser) {
+        if (currentUser && selectedHackathonId) {
             setIsCreating(true);
             try {
-                await api.createTeam(teamName, currentUser);
+                await api.createTeam(selectedHackathonId, teamName, currentUser);
             } finally {
                 setIsCreating(false);
             }
@@ -31,10 +31,10 @@ export default function TeamManagement() {
 
     const handleJoinTeam = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (currentUser) {
+        if (currentUser && selectedHackathonId) {
             setIsJoining(true);
             try {
-                await api.joinTeam(joinCode, currentUser);
+                await api.joinTeam(selectedHackathonId, joinCode, currentUser);
             } finally {
                 setIsJoining(false);
             }

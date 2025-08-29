@@ -31,7 +31,7 @@ export default function JudgePortal() {
     };
 
     if (showIntro) {
-        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Scale className="w-full h-full" />} title="Judge Portal" description="Evaluate submissions and decide the winners." />;
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Scale className="w-full h-full" />} title="Judge & Admin Portal" description="Evaluate submissions, manage users, and run the event." />;
     }
 
     if (!currentJudge) {
