@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import type { Team } from '@/lib/types';
 import { generateProjectIdea } from '@/app/actions';
-import { Loader } from 'lucide-react';
+import { Loader, ArrowLeft } from 'lucide-react';
 
 interface ProjectSubmissionProps {
     team: Team;
@@ -18,7 +18,7 @@ interface ProjectSubmissionProps {
 
 export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
     const { api, state } = useHackathon();
-    const { selectedHackathonId } = state;
+    const { selectedHackathonId, currentUser } = state;
     const [projectName, setProjectName] = useState('');
     const [projectDesc, setProjectDesc] = useState('');
     const [githubUrl, setGithubUrl] = useState('');
@@ -26,6 +26,7 @@ export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
     const [generatedIdea, setGeneratedIdea] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLeaving, setIsLeaving] = useState(false);
 
     const handleSubmitProject = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,8 +58,24 @@ export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
         }
     };
 
+    const handleLeaveTeam = async () => {
+        if (currentUser && selectedHackathonId) {
+            setIsLeaving(true);
+            try {
+                await api.leaveTeam(selectedHackathonId, team.id, currentUser.id);
+            } finally {
+                setIsLeaving(false);
+            }
+        }
+    }
+
     return (
         <div className="container max-w-3xl mx-auto">
+            <div className="flex justify-start mb-4">
+                <Button variant="ghost" onClick={handleLeaveTeam} disabled={isLeaving}>
+                    {isLeaving ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Leaving...</> : <><ArrowLeft className="mr-2 h-4 w-4" /> Back to Team Selection</>}
+                </Button>
+            </div>
             <Card>
                 <CardHeader>
                     <CardTitle className="text-3xl font-bold font-headline">Team: {team.name}</CardTitle>

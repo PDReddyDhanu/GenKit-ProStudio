@@ -248,6 +248,27 @@ export async function joinTeam(collegeId: string, hackathonId: string, joinCode:
     return { successMessage: `Successfully joined team: ${team.name}` };
 }
 
+export async function leaveTeam(collegeId: string, hackathonId: string, teamId: string, userId: string) {
+    const userRef = doc(db, `colleges/${collegeId}/users`, userId);
+    const teamRef = doc(db, `colleges/${collegeId}/hackathons/${hackathonId}/teams`, teamId);
+
+    const teamDoc = await getDoc(teamRef);
+    if (teamDoc.exists()) {
+        const team = teamDoc.data() as Team;
+        const updatedMembers = team.members.filter(m => m.id !== userId);
+
+        if (updatedMembers.length === 0) {
+            // If the team is empty after leaving, delete the team
+            await deleteDoc(teamRef);
+        } else {
+            await updateDoc(teamRef, { members: updatedMembers });
+        }
+    }
+    
+    await updateDoc(userRef, { teamId: null });
+    return { successMessage: "You have left the team." };
+}
+
 export async function submitProject(collegeId: string, hackathonId: string, { name, description, githubUrl, teamId }: any) {
     const newProject: Omit<Project, 'id'> = {
         teamId,
