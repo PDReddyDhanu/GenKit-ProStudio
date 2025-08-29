@@ -123,6 +123,13 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
     }, []);
 
     useEffect(() => {
+        if (!state.selectedCollege && state.isInitialized) {
+            // If initialized and no college is selected, we are on the college login page.
+            // No need to set up listeners or check auth state.
+            dispatch({ type: 'SET_LOADING', payload: false });
+            return;
+        }
+        
         if (!state.selectedCollege) return;
         
         dispatch({ type: 'SET_LOADING', payload: true });
@@ -141,25 +148,21 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
         
         const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                if (user.email === 'hacksprint@admin.com') {
-                    dispatch({ type: 'SET_ADMIN', payload: true });
+                const judgeDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/judges`, user.uid));
+                if (judgeDoc.exists()) {
+                    dispatch({ type: 'SET_JUDGE', payload: { id: judgeDoc.id, ...judgeDoc.data() } as Judge });
                 } else {
-                    const judgeDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/judges`, user.uid));
-                    if (judgeDoc.exists()) {
-                        dispatch({ type: 'SET_JUDGE', payload: { id: judgeDoc.id, ...judgeDoc.data() } as Judge });
+                    const userDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/users`, user.uid));
+                    if (userDoc.exists()) {
+                        dispatch({ type: 'SET_USER', payload: { id: userDoc.id, ...userDoc.data() } as User });
                     } else {
-                        const userDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/users`, user.uid));
-                        if (userDoc.exists()) {
-                            dispatch({ type: 'SET_USER', payload: { id: userDoc.id, ...userDoc.data() } as User });
-                        } else {
-                           await hackathonApi.signOut();
-                        }
+                        // User exists in auth, but not in this college's DB. Sign them out.
+                        await hackathonApi.signOut();
                     }
                 }
-            } else {
+            } else if (!state.currentAdmin) { // Don't clear user if admin is active (since admin doesn't use Firebase Auth)
                 dispatch({ type: 'SET_USER', payload: null });
                 dispatch({ type: 'SET_JUDGE', payload: null });
-                dispatch({ type: 'SET_ADMIN', payload: false });
             }
              if(!state.isInitialized) {
                 dispatch({ type: 'SET_INITIALIZED', payload: true });
@@ -172,26 +175,46 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
             unsubscribeAuth();
         };
 
-    }, [state.selectedCollege, state.isInitialized]);
+    }, [state.selectedCollege, state.isInitialized, state.currentAdmin]);
 
   const apiWithDispatch = Object.keys(hackathonApi).reduce((acc, key) => {
-        const fn = (hackathonApi as any)[key];
-        (acc as any)[key] = async (...args: any[]) => {
-            dispatch({ type: 'CLEAR_MESSAGES' });
-            try {
-                // For functions that need it, the first arg is always collegeId
-                const result = await fn(state.selectedCollege, ...args);
-                if (result?.successMessage) {
-                    dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage });
+        const fnName = key as keyof typeof hackathonApi;
+        const fn = hackathonApi[fnName];
+
+        if (fnName === 'loginAdmin') {
+            (acc as any)[fnName] = async (credentials: any) => {
+                dispatch({ type: 'CLEAR_MESSAGES' });
+                try {
+                    const result = await fn(credentials); // No collegeId needed for loginAdmin
+                     if (result.isAdmin) {
+                        dispatch({ type: 'SET_ADMIN', payload: true });
+                        dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage as string });
+                    }
+                    return result;
+                } catch (error: any) {
+                    dispatch({ type: 'SET_AUTH_ERROR', payload: error.message });
+                    throw error;
                 }
-                return result;
-            } catch (error: any) {
-                dispatch({ type: 'SET_AUTH_ERROR', payload: error.message });
-                throw error; // Re-throw so component logic can catch it if needed
-            }
-        };
+            };
+        } else {
+            (acc as any)[fnName] = async (...args: any[]) => {
+                dispatch({ type: 'CLEAR_MESSAGES' });
+                try {
+                    // Pass collegeId as the first argument
+                    const result = await (fn as any)(state.selectedCollege, ...args);
+                    if (result?.successMessage) {
+                        dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage });
+                    }
+                    return result;
+                } catch (error: any) {
+                    dispatch({ type: 'SET_AUTH_ERROR', payload: error.message });
+                    throw error;
+                }
+            };
+        }
         return acc;
     }, {} as typeof hackathonApi);
+
 
   return (
     <HackathonContext.Provider value={{ state, dispatch, api: apiWithDispatch }}>

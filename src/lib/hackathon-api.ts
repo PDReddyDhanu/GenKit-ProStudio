@@ -40,16 +40,25 @@ export async function registerStudent(collegeId: string, { name, email, password
 export async function loginStudent(collegeId: string, { email, password }: any) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const userDoc = await getDoc(doc(db, `colleges/${collegeId}/users`, userCredential.user.uid));
-    if (!userDoc.exists()) throw new Error("Student record not found for this college.");
+    if (!userDoc.exists()) {
+        await firebaseSignOut(auth); // Sign out if record not found for this college
+        throw new Error("Student record not found for this college.");
+    }
     const user = userDoc.data() as User;
-    if (user.status === 'pending') throw new Error("Your account is pending approval by an admin.");
+    if (user.status === 'pending') {
+        await firebaseSignOut(auth);
+        throw new Error("Your account is pending approval by an admin.");
+    }
     return { successMessage: 'Login successful!' };
 }
 
 export async function loginJudge(collegeId: string, { email, password }: any) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const judgeDoc = await getDoc(doc(db, `colleges/${collegeId}/judges`, userCredential.user.uid));
-    if (!judgeDoc.exists()) throw new Error("Judge record not found for this college.");
+    if (!judgeDoc.exists()) {
+        await firebaseSignOut(auth); // Sign out if record not found
+        throw new Error("Judge record not found for this college.");
+    }
     return { successMessage: 'Login successful!' };
 }
 
@@ -57,8 +66,8 @@ export async function loginAdmin({ email, password }: any) {
     if (email !== 'hacksprint@admin.com' || password !== 'hack123') {
         throw new Error('Invalid admin credentials.');
     }
-    await signInWithEmailAndPassword(auth, email, password);
-    return { successMessage: 'Admin login successful!' };
+    // Admin login is handled locally in the context provider, not via Firebase Auth
+    return { successMessage: 'Admin login successful!', isAdmin: true };
 }
 
 export async function signOut() {
@@ -72,11 +81,13 @@ export async function addJudge(collegeId: string, { name, email, password }: any
     if (!email.toLowerCase().endsWith('@judge.com')) {
         throw new Error('Judge email must end with @judge.com');
     }
-    // We need to sign in as admin temporarily to perform this action, then sign back in as whoever was logged in.
-    const currentAdminUser = auth.currentUser;
-
-    // Create the judge user
-    const judgeCredential = await createUserWithEmailAndPassword(auth, email, password);
+    
+    // We create a temporary auth instance to create the judge without logging out the admin.
+    // NOTE: This is a client-side workaround. A secure implementation would use a backend Cloud Function.
+    const tempAuth = auth; // In a real scenario, you'd initialize a separate app instance.
+    const currentAdmin = tempAuth.currentUser;
+    
+    const judgeCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
     const judge: Judge = { 
         id: judgeCredential.user.uid,
         name, 
@@ -84,9 +95,12 @@ export async function addJudge(collegeId: string, { name, email, password }: any
     };
     await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
 
-    // Sign back in as the admin if they were logged in
-    if (currentAdminUser) {
-        await signInWithEmailAndPassword(auth, currentAdminUser.email!, "hack123"); // This is a simplification. Secure password handling would be needed in a real app.
+    // After creating the judge, we need to log out the temporary session
+    // and restore the admin session if one was active.
+    // This is a simplified flow. A robust solution needs more complex session management.
+    await firebaseSignOut(tempAuth);
+    if (currentAdmin) {
+       // The admin state is handled locally, so no need to re-login here as it would create a session for the admin.
     }
 
     return { successMessage: 'Judge added successfully! They can log in with the provided credentials.' };
@@ -98,8 +112,10 @@ export async function approveStudent(collegeId: string, userId: string) {
 }
 
 export async function registerAndApproveStudent(collegeId: string, { name, email, password }: any) {
-     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-     const newUser: User = {
+    // Similar to addJudge, this requires careful auth handling.
+    const currentAdmin = auth.currentUser;
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const newUser: User = {
         id: userCredential.user.uid,
         name,
         email,
@@ -107,6 +123,10 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
         skills: [], bio: '', github: '', linkedin: ''
     };
     await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
+    await firebaseSignOut(auth);
+    if (currentAdmin) {
+        // As before, we don't re-authenticate the admin. State is managed locally.
+    }
     return { successMessage: `${name} has been registered and approved.` };
 }
 
