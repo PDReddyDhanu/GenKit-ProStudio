@@ -2,7 +2,6 @@
 "use client";
 
 import { useHackathon } from '@/context/HackathonProvider';
-import { Team, Project } from '@/lib/types';
 import TeamManagement from './TeamManagement';
 import ProjectSubmission from './ProjectSubmission';
 import ProjectView from './ProjectView';
