@@ -1,3 +1,4 @@
+
 import { auth, db } from './firebase';
 import { 
     createUserWithEmailAndPassword, 
@@ -189,6 +190,12 @@ export async function createHackathon(collegeId: string, hackathonData: Omit<Hac
     return { successMessage: `Hackathon "${hackathonData.name}" created successfully.`, id: newHackathonRef.id };
 }
 
+export async function updateHackathon(collegeId: string, hackathonId: string, hackathonData: Partial<Omit<Hackathon, 'id'>>) {
+    await updateDoc(doc(db, `colleges/${collegeId}/hackathons`, hackathonId), hackathonData);
+    return { successMessage: `Hackathon "${hackathonData.name}" updated successfully.` };
+}
+
+
 export async function postAnnouncement(collegeId: string, message: string) {
     const newAnnouncement: Omit<Announcement, 'id'> = {
         message,
@@ -285,3 +292,4 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
     await updateDoc(projectRef, { scores: newScores, averageScore });
     return { successMessage: "Scores submitted successfully." };
 }
+

@@ -1,18 +1,20 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader, CalendarIcon, RefreshCcw, X } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Loader, CalendarIcon, RefreshCcw, X, Pencil } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import type { Hackathon } from '@/lib/types';
 
 const sampleRules = [
     // Sample 1: General Purpose
@@ -47,6 +49,98 @@ const sampleRules = [
     "1. All projects must comply with data privacy standards (like HIPAA, if applicable).\n2. Solutions should address a real-world problem in healthcare or wellness.\n3. Consultation with medical professional mentors is highly recommended.\n4. Prototypes should be user-friendly for patients or healthcare providers."
 ];
 
+
+function EditHackathonDialog({ hackathon, onOpenChange, open }: { hackathon: Hackathon, onOpenChange: (open: boolean) => void, open: boolean }) {
+    const { api } = useHackathon();
+    const [name, setName] = useState(hackathon.name);
+    const [prizeMoney, setPrizeMoney] = useState(hackathon.prizeMoney);
+    const [rules, setRules] = useState(hackathon.rules);
+    const [teamSizeLimit, setTeamSizeLimit] = useState(hackathon.teamSizeLimit);
+    const [deadline, setDeadline] = useState<Date | undefined>(new Date(hackathon.deadline));
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (open) {
+            setName(hackathon.name);
+            setPrizeMoney(hackathon.prizeMoney);
+            setRules(hackathon.rules);
+            setTeamSizeLimit(hackathon.teamSizeLimit);
+            setDeadline(new Date(hackathon.deadline));
+        }
+    }, [open, hackathon]);
+
+    const handleUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!deadline) return;
+        setIsLoading(true);
+        try {
+            await api.updateHackathon(hackathon.id, {
+                name,
+                prizeMoney,
+                rules,
+                teamSizeLimit,
+                deadline: deadline.getTime(),
+            });
+            onOpenChange(false);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Edit Hackathon</DialogTitle>
+                    <DialogDescription>Make changes to the "{hackathon.name}" event.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleUpdate} className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-hackathon-name">Hackathon Name</Label>
+                        <Input id="edit-hackathon-name" value={name} onChange={e => setName(e.target.value)} required disabled={isLoading} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-prize-money">Prize Money</Label>
+                        <Input id="edit-prize-money" value={prizeMoney} onChange={e => setPrizeMoney(e.target.value)} required disabled={isLoading} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="edit-team-size">Max Team Size</Label>
+                        <Input id="edit-team-size" type="number" value={teamSizeLimit} onChange={e => setTeamSizeLimit(Number(e.target.value))} required disabled={isLoading} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-deadline">Submission Deadline</Label>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn("w-full justify-start text-left font-normal", !deadline && "text-muted-foreground")}
+                                    disabled={isLoading}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {deadline ? format(deadline, "PPP") : <span>Pick a date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar mode="single" selected={deadline} onSelect={setDeadline} initialFocus />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-rules">Rules & Regulations</Label>
+                        <Textarea id="edit-rules" value={rules} onChange={e => setRules(e.target.value)} required disabled={isLoading} rows={6} />
+                    </div>
+                     <DialogFooter>
+                        <Button type="submit" disabled={isLoading}>
+                            {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : 'Save Changes'}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+
 export default function HackathonManagement() {
     const { state, api } = useHackathon();
     const { hackathons } = state;
@@ -58,6 +152,8 @@ export default function HackathonManagement() {
     const [deadline, setDeadline] = useState<Date>();
     const [isLoading, setIsLoading] = useState(false);
     const [sampleIndex, setSampleIndex] = useState(-1);
+
+    const [editingHackathon, setEditingHackathon] = useState<Hackathon | null>(null);
 
     const handleCreateHackathon = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -166,15 +262,20 @@ export default function HackathonManagement() {
                     <CardContent className="space-y-4">
                         {hackathons.length > 0 ? (
                             hackathons.map(h => (
-                                <Card key={h.id} className="bg-muted/50">
+                                <Card key={h.id} className="bg-muted/50 flex flex-col">
                                     <CardHeader>
                                         <CardTitle className="text-lg">{h.name}</CardTitle>
                                         <CardDescription>Deadline: {format(new Date(h.deadline), 'PPP')}</CardDescription>
                                     </CardHeader>
-                                    <CardContent>
+                                    <CardContent className="flex-grow">
                                         <p><strong>Prize:</strong> {h.prizeMoney}</p>
                                         <p><strong>Team Limit:</strong> {h.teamSizeLimit}</p>
                                     </CardContent>
+                                     <CardFooter className="bg-muted/80 px-6 py-3">
+                                        <Button variant="outline" size="sm" onClick={() => setEditingHackathon(h)}>
+                                            <Pencil className="mr-2 h-4 w-4"/> Edit
+                                        </Button>
+                                    </CardFooter>
                                 </Card>
                             ))
                         ) : (
@@ -183,6 +284,14 @@ export default function HackathonManagement() {
                     </CardContent>
                 </Card>
             </div>
+            {editingHackathon && (
+                <EditHackathonDialog 
+                    hackathon={editingHackathon} 
+                    open={!!editingHackathon}
+                    onOpenChange={(open) => !open && setEditingHackathon(null)}
+                />
+            )}
         </div>
     );
 }
+
