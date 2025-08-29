@@ -1,7 +1,7 @@
 {
   "build": {
     "env": {
-      "NEXT_PUBLIC_GEMINI_API_KEY": "@gemini-api-key"
+      "NEXT_PUBLIC_GEMINI_API_KEY": "AIzaSyCzyd14-05YK9OMlV-fyBg9re0Fd0LfUcY"
     }
   },
   "buildCommand": "npm run vercel-build",

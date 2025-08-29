@@ -22,8 +22,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 export default function AdminPortal() {
     const { state, api, dispatch } = useHackathon();
     const { currentAdmin, hackathons, selectedHackathonId } = state;
-    const [email, setEmail] = useState('hacksprint@admin.com');
-    const [password, setPassword] = useState('hack123');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [showIntro, setShowIntro] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
 
