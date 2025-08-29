@@ -16,23 +16,26 @@ export default function Dashboard() {
 
     const currentHackathonTeams = useMemo(() => {
         if (!selectedHackathonId) return [];
-        return teams.filter(t => t.hackathonId === selectedHackathonId);
+        // The teams array from state is already filtered by the provider for the selected hackathon
+        return teams;
     }, [teams, selectedHackathonId]);
 
     const currentHackathonProjects = useMemo(() => {
         if (!selectedHackathonId) return [];
-        return projects.filter(p => p.hackathonId === selectedHackathonId);
+        // The projects array from state is already filtered by the provider for the selected hackathon
+        return projects;
     }, [projects, selectedHackathonId]);
 
     const currentTeam = useMemo(() => {
         if (!currentUser?.teamId) return undefined;
         return currentHackathonTeams.find(t => t.id === currentUser.teamId);
     }, [currentHackathonTeams, currentUser]);
-
+    
     const currentProject = useMemo(() => {
         if (!currentTeam?.id) return undefined;
         return currentHackathonProjects.find(p => p.teamId === currentTeam.id);
     }, [currentHackathonProjects, currentTeam]);
+
 
     return (
         <div className="py-12 animate-slide-in-up">
