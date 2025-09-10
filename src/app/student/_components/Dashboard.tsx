@@ -12,8 +12,6 @@ import type { Team, Project, Hackathon } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Countdown } from './Countdown';
 import TeamHub from './TeamHub';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import InvitationsManagement from './InvitationsManagement';
 
 
 function HackathonHeader({ hackathon }: { hackathon: Hackathon }) {
@@ -35,11 +33,6 @@ export default function Dashboard() {
     const currentHackathon = useMemo(() => {
         return hackathons.find(h => h.id === selectedHackathonId);
     }, [hackathons, selectedHackathonId]);
-
-    const userTeams = useMemo(() => {
-        if (!currentUser || !selectedHackathonId) return [];
-        return teams.filter(t => t.creatorId === currentUser.id && t.hackathonId === selectedHackathonId);
-    }, [teams, currentUser, selectedHackathonId]);
 
     const currentTeam = useMemo(() => {
         if (!currentUser?.teamId || !selectedHackathonId) return undefined;
@@ -66,23 +59,7 @@ export default function Dashboard() {
             <div className="py-12 animate-slide-in-up">
                 <AuthMessage />
                 <HackathonHeader hackathon={currentHackathon} />
-                <Tabs defaultValue="join" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="join">Create/Join Team</TabsTrigger>
-                        <TabsTrigger value="invitations">
-                            Manage Invitations
-                            {userTeams.some(t => t.joinRequests && t.joinRequests.length > 0) && (
-                                <span className="ml-2 h-2 w-2 rounded-full bg-primary" />
-                            )}
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="join" className="mt-6">
-                        <TeamManagement />
-                    </TabsContent>
-                    <TabsContent value="invitations" className="mt-6">
-                        <InvitationsManagement teams={userTeams} />
-                    </TabsContent>
-                </Tabs>
+                <TeamManagement />
             </div>
         );
     }

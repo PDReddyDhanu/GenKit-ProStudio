@@ -1,12 +1,12 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, Menu, LogOut, Building2 } from 'lucide-react';
+import { Trophy, Rss, Menu, LogOut, Building2, Users, Check, X, Loader, Inbox } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import type { JoinRequest, Team } from '@/lib/types';
 
 
 const NavLink = ({ href, children, onClick }: { href: string; children: React.ReactNode; onClick?: () => void }) => {
@@ -36,14 +37,83 @@ const NavLink = ({ href, children, onClick }: { href: string; children: React.Re
     );
 };
 
+function RequestNotificationPanel() {
+    const { state, api } = useHackathon();
+    const { currentUser, teams } = state;
+    const [isLoading, setIsLoading] = useState<string | null>(null);
+
+    const userLedTeams = useMemo(() => {
+        if (!currentUser) return [];
+        return teams.filter(t => t.creatorId === currentUser.id);
+    }, [teams, currentUser]);
+
+    const allRequests = useMemo(() => {
+        return userLedTeams.flatMap(team => 
+            (team.joinRequests || []).map(req => ({ ...req, teamName: team.name, teamId: team.id }))
+        );
+    }, [userLedTeams]);
+
+    const handleRequest = async (teamId: string, request: JoinRequest, action: 'accept' | 'reject') => {
+        setIsLoading(`${teamId}-${request.id}-${action}`);
+        try {
+            await api.handleJoinRequest(teamId, request, action);
+        } finally {
+            setIsLoading(null);
+        }
+    };
+
+    return (
+        <Sheet>
+            <SheetTrigger asChild>
+                 <Button variant="ghost" size="icon" className="relative">
+                    <Users className="h-5 w-5" />
+                    {allRequests.length > 0 && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />}
+                    <span className="sr-only">View Join Requests</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent>
+                <SheetHeader>
+                    <SheetTitle>Incoming Join Requests</SheetTitle>
+                </SheetHeader>
+                 <div className="py-4 space-y-4">
+                    {allRequests.length > 0 ? allRequests.map(req => (
+                         <div key={`${req.teamId}-${req.id}`} className="p-3 bg-muted rounded-md">
+                            <p className="font-semibold">{req.name}</p>
+                            <p className="text-sm text-muted-foreground">{req.email}</p>
+                            <p className="text-xs text-primary mt-1">Wants to join: <strong>{req.teamName}</strong></p>
+                            <div className="flex items-center gap-2 mt-3">
+                                <Button size="sm" onClick={() => handleRequest(req.teamId, req, 'accept')} disabled={!!isLoading} className="bg-green-600 hover:bg-green-700 h-8">
+                                    {isLoading === `${req.teamId}-${req.id}-accept` ? <Loader className="animate-spin h-4 w-4"/> : <Check className="h-4 w-4" />}
+                                    <span className="ml-2">Accept</span>
+                                </Button>
+                                <Button variant="destructive" size="sm" onClick={() => handleRequest(req.teamId, req, 'reject')} disabled={!!isLoading} className="h-8">
+                                     {isLoading === `${req.teamId}-${req.id}-reject` ? <Loader className="animate-spin h-4 w-4"/> : <X className="h-4 w-4" />}
+                                      <span className="ml-2">Reject</span>
+                                </Button>
+                            </div>
+                        </div>
+                    )) : (
+                        <div className="text-center py-16">
+                            <Inbox className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <p className="mt-4 text-muted-foreground">You have no pending join requests.</p>
+                        </div>
+                    )}
+                </div>
+            </SheetContent>
+        </Sheet>
+    )
+}
+
 export function Header() {
     const { state, api, dispatch } = useHackathon();
-    const { announcements } = state;
+    const { announcements, currentUser, teams } = state;
     const router = useRouter();
     const [hasUnread, setHasUnread] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const sortedAnnouncements = [...announcements].sort((a, b) => b.timestamp - a.timestamp);
+    const isTeamCreator = useMemo(() => teams.some(t => t.creatorId === currentUser?.id), [teams, currentUser]);
+
 
     // This effect is now just for presentation, as real-time updates handle data
     React.useEffect(() => {
@@ -93,6 +163,8 @@ export function Header() {
                 </nav>
                 
                 <div className="flex items-center gap-2">
+                    {currentUser && isTeamCreator && <RequestNotificationPanel />}
+
                      <Sheet onOpenChange={(open) => open && handleAnnouncementsOpen()}>
                         <SheetTrigger asChild>
                              <Button variant="ghost" size="icon" className="relative">
