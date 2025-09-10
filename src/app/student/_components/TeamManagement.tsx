@@ -34,7 +34,7 @@ export default function TeamManagement() {
         if (currentUser && selectedHackathonId) {
             setIsJoining(true);
             try {
-                await api.joinTeam(selectedHackathonId, joinCode, currentUser);
+                await api.requestToJoinTeamByCode(selectedHackathonId, joinCode, currentUser);
             } finally {
                 setIsJoining(false);
             }
@@ -72,8 +72,8 @@ export default function TeamManagement() {
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline">Join an Existing Team</CardTitle>
-                        <CardDescription>Already have a team? Enter the code to join.</CardDescription>
+                        <CardTitle className="font-headline">Request to Join a Team</CardTitle>
+                        <CardDescription>Enter a team's code to send a join request.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleJoinTeam} className="space-y-4">
@@ -82,7 +82,7 @@ export default function TeamManagement() {
                                 <Input id="joinCode" type="text" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} required disabled={isJoining} />
                             </div>
                             <Button type="submit" variant="secondary" className="w-full" disabled={isJoining}>
-                                 {isJoining ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Joining...</> : 'Join Team'}
+                                 {isJoining ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Sending Request...</> : 'Send Join Request'}
                             </Button>
                         </form>
                     </CardContent>

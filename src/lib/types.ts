@@ -33,11 +33,19 @@ export interface ChatMessage {
   timestamp: number;
 }
 
+export interface JoinRequest {
+    id: string;
+    name: string;
+    email: string;
+}
+
 export interface Team {
   id: string;
   name: string;
+  creatorId: string; // ID of the user who created the team
   joinCode: string;
   members: User[];
+  joinRequests?: JoinRequest[]; // Array of users who requested to join
   projectId?: string;
   hackathonId: string;
   messages?: ChatMessage[];
@@ -83,5 +91,3 @@ export interface HackathonData {
     announcements: Announcement[];
     hackathons: Hackathon[];
 }
-
-    

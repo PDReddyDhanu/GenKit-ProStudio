@@ -16,9 +16,10 @@ import {
     where, 
     getDocs,
     deleteDoc,
-    arrayUnion
+    arrayUnion,
+    arrayRemove
 } from 'firebase/firestore';
-import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage } from './types';
+import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest } from './types';
 
 // --- Auth ---
 
@@ -220,8 +221,10 @@ export async function selectHackathonForStudent(collegeId: string, userId: strin
 export async function createTeam(collegeId: string, hackathonId: string, teamName: string, user: User) {
     const newTeam: Omit<Team, 'id'> = {
         name: teamName,
+        creatorId: user.id,
         joinCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         members: [user],
+        joinRequests: [],
         hackathonId,
         projectId: "",
         messages: [],
@@ -231,24 +234,69 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
     return { successMessage: "Team created successfully!" };
 }
 
-export async function joinTeam(collegeId: string, hackathonId: string, joinCode: string, user: User) {
+export async function requestToJoinTeamByCode(collegeId: string, hackathonId: string, joinCode: string, user: User) {
+    if (user.teamId) {
+        throw new Error("You are already in a team. Leave your current team to join another.");
+    }
+    
     const q = query(collection(db, `colleges/${collegeId}/teams`), where("joinCode", "==", joinCode), where("hackathonId", "==", hackathonId));
     const querySnapshot = await getDocs(q);
+    
     if (querySnapshot.empty) {
         throw new Error("Invalid join code for this hackathon.");
     }
+
     const teamDoc = querySnapshot.docs[0];
-    const team = teamDoc.data() as Team;
+    const teamData = teamDoc.data() as Team;
 
-    if ((team.members as User[]).some(m => m.id === user.id)) {
-        throw new Error("You are already in this team.");
+    if (teamData.members.some(m => m.id === user.id) || teamData.joinRequests?.some(r => r.id === user.id)) {
+        throw new Error("You have already joined or requested to join this team.");
     }
+    
+    const request: JoinRequest = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+    };
 
-    const updatedMembers = [...team.members, user];
-    await updateDoc(teamDoc.ref, { members: updatedMembers });
-    await updateDoc(doc(db, `colleges/${collegeId}/users`, user.id), { teamId: teamDoc.id });
+    await updateDoc(teamDoc.ref, {
+        joinRequests: arrayUnion(request)
+    });
 
-    return { successMessage: `Successfully joined team: ${team.name}` };
+    return { successMessage: `Request sent to join team "${teamData.name}"!` };
+}
+
+export async function handleJoinRequest(collegeId: string, teamId: string, request: JoinRequest, action: 'accept' | 'reject') {
+    const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
+
+    if (action === 'accept') {
+        const userDoc = await getDoc(doc(db, `colleges/${collegeId}/users`, request.id));
+        if(!userDoc.exists()) throw new Error("User trying to join does not exist.");
+
+        await updateDoc(teamRef, {
+            members: arrayUnion(userDoc.data()),
+            joinRequests: arrayRemove(request)
+        });
+        await updateDoc(doc(db, `colleges/${collegeId}/users`, request.id), { teamId: teamId });
+        return { successMessage: `${request.name} has been added to the team.` };
+    } else { // reject
+        await updateDoc(teamRef, {
+            joinRequests: arrayRemove(request)
+        });
+        return { successMessage: `Request from ${request.name} has been rejected.` };
+    }
+}
+
+export async function removeTeammate(collegeId: string, teamId: string, memberToRemove: User) {
+    const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
+    const userRef = doc(db, `colleges/${collegeId}/users`, memberToRemove.id);
+
+    await updateDoc(teamRef, {
+        members: arrayRemove(memberToRemove)
+    });
+    await updateDoc(userRef, { teamId: null });
+
+    return { successMessage: `${memberToRemove.name} has been removed from the team.` };
 }
 
 export async function leaveTeam(collegeId: string, hackathonId: string, teamId: string, userId: string) {
@@ -325,5 +373,3 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
     await updateDoc(projectRef, { scores: newScores, averageScore });
     return { successMessage: "Scores submitted successfully." };
 }
-
-    
