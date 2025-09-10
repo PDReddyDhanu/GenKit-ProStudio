@@ -15,9 +15,10 @@ import {
     query, 
     where, 
     getDocs,
-    deleteDoc
+    deleteDoc,
+    arrayUnion
 } from 'firebase/firestore';
-import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon } from './types';
+import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage } from './types';
 
 // --- Auth ---
 
@@ -222,7 +223,8 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
         joinCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         members: [user],
         hackathonId,
-        projectId: ""
+        projectId: "",
+        messages: [],
     };
     const teamRef = await addDoc(collection(db, `colleges/${collegeId}/teams`), newTeam);
     await updateDoc(doc(db, `colleges/${collegeId}/users`, user.id), { teamId: teamRef.id });
@@ -290,6 +292,15 @@ export async function updateProfile(collegeId: string, userId: string, profileDa
     return { successMessage: "Profile updated successfully." };
 }
 
+export async function postTeamMessage(collegeId: string, teamId: string, message: Omit<ChatMessage, 'id'>) {
+    const newMessage = { ...message, id: doc(collection(db, 'dummy')).id }; // Generate a unique ID locally
+    await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), {
+        messages: arrayUnion(newMessage)
+    });
+    return { successMessage: "Message sent." };
+}
+
+
 // --- Judge ---
 export async function scoreProject(collegeId: string, hackathonId: string, projectId: string, judgeId: string, scores: Score[]) {
     const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
@@ -314,3 +325,5 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
     await updateDoc(projectRef, { scores: newScores, averageScore });
     return { successMessage: "Scores submitted successfully." };
 }
+
+    

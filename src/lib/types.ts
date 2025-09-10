@@ -1,3 +1,4 @@
+
 export interface UserProfileData {
   name: string;
   skills: string[];
@@ -24,6 +25,14 @@ export interface Hackathon {
   deadline: number; // timestamp
 }
 
+export interface ChatMessage {
+  id: string;
+  userId: string;
+  userName: string;
+  text: string;
+  timestamp: number;
+}
+
 export interface Team {
   id: string;
   name: string;
@@ -31,6 +40,7 @@ export interface Team {
   members: User[];
   projectId?: string;
   hackathonId: string;
+  messages?: ChatMessage[];
 }
 
 export interface Project {
@@ -73,3 +83,5 @@ export interface HackathonData {
     announcements: Announcement[];
     hackathons: Hackathon[];
 }
+
+    
