@@ -78,19 +78,7 @@ export default function Dashboard() {
                     )}
                 </main>
                 <aside className="lg:col-span-1 space-y-8">
-                    {currentTeam ? (
-                        <TeamHub team={currentTeam} />
-                    ) : (
-                         <Card>
-                            <CardHeader>
-                                <CardTitle className="font-headline">Join a Team</CardTitle>
-                                <CardDescription>Create or join a team to get started.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-muted-foreground">Once you are on a team, you can collaborate with your members here.</p>
-                            </CardContent>
-                        </Card>
-                    )}
+                    {currentTeam && <TeamHub team={currentTeam} />}
                      <Card>
                         <CardHeader>
                             <CardTitle className="font-headline">Rules & Regulations</CardTitle>
