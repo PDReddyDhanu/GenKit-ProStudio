@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import jsPDF from 'jspdf';
@@ -100,7 +101,12 @@ const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectNa
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
     doc.setTextColor(textColor);
-    doc.text(teamMembers.join('  •  '), pageWidth / 2, 146, { align: 'center', maxWidth: pageWidth - 80 });
+
+    let memberY = 145;
+    teamMembers.forEach(member => {
+        doc.text(member, pageWidth / 2, memberY, { align: 'center' });
+        memberY += 6; 
+    });
 
     // --- Footer Section ---
     const bottomY = pageHeight - 45;
@@ -202,7 +208,12 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
     doc.setTextColor(lightText);
-    doc.text(teamMembers.join('  •  '), pageWidth / 2, 147, { align: 'center', maxWidth: pageWidth - 60 });
+    
+    let memberY = 147;
+    teamMembers.forEach(member => {
+        doc.text(member, pageWidth / 2, memberY, { align: 'center' });
+        memberY += 6;
+    });
     
     // --- Footer Section ---
     const bottomY = pageHeight - 50;
@@ -257,5 +268,7 @@ export const generateCertificate = async (teamName: string, projectName: string,
          doc.save(`Certificate_Participation-${teamName.replace(/\s/g, '_')}.pdf`);
     }
 };
+
+    
 
     
