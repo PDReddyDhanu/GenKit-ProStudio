@@ -26,227 +26,206 @@ const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectNa
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const verificationUrl = `${window.location.origin}/verify/${projectId}?college=${encodeURIComponent(collegeName)}`;
-    const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 256, color: { dark: '#262626', light: '#00000000' }});
-    const performance = getPerformanceDetails(averageScore);
-
-    // Subtle background color
-    doc.setFillColor(255, 251, 235);
+    
+    // --- Colors & Fonts ---
+    const primaryGold = '#FFC107'; // A vibrant gold
+    const darkBlue = '#0D1B2A';
+    const textColor = '#E0E1DD';
+    const bodyTextColor = '#B0B3B8';
+    
+    // --- Background ---
+    doc.setFillColor(darkBlue);
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    // Subtle geometric background pattern
+    doc.setDrawColor(primaryGold);
+    doc.setLineWidth(0.1);
+    for (let i = 0; i < pageWidth; i += 15) {
+        doc.line(i, 0, i - 30, pageHeight);
+    }
+    for (let i = 0; i < pageHeight; i += 15) {
+        doc.line(0, i, pageWidth, i - 30);
+    }
 
-    // Corner flourishes
-    const cornerSize = 30;
-    const rankColors = {
-        1: '#FFC200', // Gold
-        2: '#A0A0A0', // Silver
-        3: '#CD7F32'  // Bronze
-    };
-    const rankColor = rankColors[rank as keyof typeof rankColors];
-    doc.setDrawColor(rankColor);
-    doc.setLineWidth(0.5);
-    // ... corner drawing logic ...
-     // Top-left
-    doc.line(10, 10 + cornerSize, 10, 10);
-    doc.line(10, 10, 10 + cornerSize, 10);
-    // Top-right
-    doc.line(pageWidth - 10, 10 + cornerSize, pageWidth - 10, 10);
-    doc.line(pageWidth - 10, 10, pageWidth - 10 - cornerSize, 10);
-    // Bottom-left
-    doc.line(10, pageHeight - 10 - cornerSize, 10, pageHeight - 10);
-    doc.line(10, pageHeight - 10, 10 + cornerSize, pageHeight - 10);
-    // Bottom-right
-    doc.line(pageWidth - 10, pageHeight - 10 - cornerSize, pageWidth - 10, pageHeight - 10);
-    doc.line(pageWidth - 10, pageHeight - 10, pageWidth - 10 - cornerSize, pageHeight - 10);
+    // --- Main Content ---
+    doc.setFont("times", "bold");
+    doc.setFontSize(38);
+    doc.setTextColor(primaryGold);
+    doc.text('CERTIFICATE OF ACHIEVEMENT', pageWidth / 2, 40, { align: 'center' });
 
-    // Main Title
-    doc.setFont("helvetica", 'bold');
-    doc.setFontSize(30);
-    doc.setTextColor(rankColor);
-    doc.text('CERTIFICATE OF ACHIEVEMENT', pageWidth / 2, 35, { align: 'center' });
-    
-    // Rank
-    doc.setFontSize(24);
-    doc.text(`${getRankSuffix(rank)} Place Winner`, pageWidth / 2, 48, { align: 'center' });
-
-    // College Name
-    doc.setFont("helvetica", 'normal');
-    doc.setFontSize(14);
-    doc.setTextColor('#404040');
-    doc.text(`from the HackSprint event held at ${collegeName}`, pageWidth / 2, 60, { align: 'center' });
-
-    doc.text('This is to certify that the team', pageWidth / 2, 75, { align: 'center' });
-    
-    // Team Name
-    doc.setFontSize(36);
-    doc.setFont("helvetica", 'bold');
-    doc.setTextColor("#039BE5"); // Blue for contrast
-    doc.text(teamName, pageWidth / 2, 90, { align: 'center' });
-
-    // Project Info
-    doc.setFontSize(14);
-    doc.setFont("helvetica", 'normal');
-    doc.setTextColor("#404040");
-    doc.text(`has demonstrated exceptional skill in the project`, pageWidth / 2, 105, { align: 'center' });
-    doc.setFontSize(20);
-    doc.setFont("helvetica", 'italic');
-    doc.setTextColor("#262626");
-    doc.text(`"${projectName}"`, pageWidth / 2, 117, { align: 'center' });
-
-    // Performance
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
-    doc.setFont("helvetica", 'normal');
-    doc.setTextColor("#404040");
-    const performanceText = `Awarded with a performance rating of "${performance.descriptor}" and a final score of ${averageScore.toFixed(2)} / 10.`;
-    doc.text(performanceText, pageWidth / 2, 130, { align: 'center' });
+    doc.setTextColor(textColor);
+    doc.text('This certificate is proudly awarded to', pageWidth / 2, 55, { align: 'center' });
+
+    doc.setFont("times", "bold");
+    doc.setFontSize(32);
+    doc.setTextColor(textColor);
+    doc.text(teamName, pageWidth / 2, 75, { align: 'center' });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text('for their exceptional work on the project', pageWidth / 2, 85, { align: 'center' });
+
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(22);
+    doc.setTextColor(primaryGold);
+    doc.text(`"${projectName}"`, pageWidth / 2, 98, { align: 'center' });
     
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(textColor);
+    doc.text(`at the hackathon held by ${collegeName}.`, pageWidth / 2, 110, { align: 'center' });
+
     // Team Members
-    doc.setFontSize(12);
-    doc.setFont("helvetica", 'bold');
-    doc.setTextColor("#262626");
-    doc.text('AWARDED TO', pageWidth / 2, 145, { align: 'center' });
-    const membersText = teamMembers.join('  •  ');
-    doc.setFontSize(12);
-    doc.setFont("helvetica", 'normal');
-    doc.setTextColor("#404040");
-    doc.text(membersText, pageWidth / 2, 153, { align: 'center', maxWidth: pageWidth - 80 });
-
-    // Signatures, Date, QR
-    const signatureX = pageWidth / 4 + 20;
-    const dateX = pageWidth * 3 / 4 - 20;
-    const bottomY = pageHeight - 40;
-    // ... signature, date, qr logic ...
-    // Signature
-    doc.setFont("helvetica", 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor("#B95000");
-    doc.text('J. Hackerton', signatureX, bottomY, { align: 'center' });
-    doc.setDrawColor("#FFC200"); // Firebase Amber
-    doc.setLineWidth(0.3);
-    doc.line(signatureX - 30, bottomY + 2, signatureX + 30, bottomY + 2);
-    doc.setFont("helvetica", 'normal');
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.setTextColor("#404040");
-    doc.text('HackSprint Committee Lead', signatureX, bottomY + 8, { align: 'center' });
+    doc.setTextColor(primaryGold);
+    doc.text('TEAM MEMBERS', pageWidth / 2, 130, { align: 'center' });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(bodyTextColor);
+    doc.text(teamMembers.join('  •  '), pageWidth / 2, 138, { align: 'center', maxWidth: pageWidth - 60 });
+
+    // --- Footer Section ---
+    const bottomY = pageHeight - 50;
+
+    // Signature
+    doc.setFont("times", "italic");
+    doc.setFontSize(16);
+    doc.setTextColor(textColor);
+    doc.text('J. Hackerton', pageWidth / 4, bottomY);
+    doc.setDrawColor(primaryGold);
+    doc.setLineWidth(0.2);
+    doc.line(pageWidth / 4 - 20, bottomY + 2, pageWidth / 4 + 20, bottomY + 2);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(bodyTextColor);
+    doc.text('HackSprint Committee Lead', pageWidth / 4, bottomY + 7, { align: 'center' });
+
+    // QR Code for verification
+    const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 200, color: { dark: primaryGold, light: '#00000000' }});
+    doc.addImage(qrCodeDataUrl, 'PNG', pageWidth / 2 - 15, bottomY - 18, 30, 30);
+    doc.setFontSize(8);
+    doc.text('Verify Authenticity', pageWidth / 2, bottomY + 18, { align: 'center' });
 
     // Date
-    doc.setFont("helvetica", 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor("#B95000");
-    doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), dateX, bottomY, { align: 'center' });
-    doc.setDrawColor("#FFC200");
-    doc.setLineWidth(0.3);
-    doc.line(dateX - 30, bottomY + 2, dateX + 30, bottomY + 2);
-    doc.setFont("helvetica", 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor("#404040");
-    doc.text('Date of Issue', dateX, bottomY + 8, { align: 'center' });
-    
-    // QR Code Area
-    const qrCodeSize = 30;
-    const qrCodeX = pageWidth - qrCodeSize - 15;
-    const qrCodeY = pageHeight - qrCodeSize - 15;
-    
-    doc.addImage(qrCodeDataUrl, 'PNG', qrCodeX, qrCodeY, qrCodeSize, qrCodeSize);
+    doc.setFont("times", "italic");
+    doc.setFontSize(16);
+    doc.setTextColor(textColor);
+    doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth * 3 / 4, bottomY);
+    doc.line(pageWidth * 3 / 4 - 20, bottomY + 2, pageWidth * 3 / 4 + 20, bottomY + 2);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor("#78716c");
-    doc.text('Verify authenticity', qrCodeX + qrCodeSize/2, qrCodeY + qrCodeSize + 4, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setTextColor(bodyTextColor);
+    doc.text('Date of Issue', pageWidth * 3 / 4, bottomY + 7, { align: 'center' });
+    
+    // --- Rank Badge ---
+    const rankBadgeSize = 30;
+    doc.setFillColor(primaryGold);
+    doc.circle(pageWidth - rankBadgeSize - 5, rankBadgeSize + 5, rankBadgeSize / 2, 'F');
+    doc.setFont("times", "bold");
+    doc.setFontSize(24);
+    doc.setTextColor(darkBlue);
+    doc.text(getRankSuffix(rank), pageWidth - rankBadgeSize - 5, rankBadgeSize + 8, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text('Place', pageWidth - rankBadgeSize - 5, rankBadgeSize + 14, { align: 'center' });
+
 };
 
 const generateParticipantCertificate = async (doc: jsPDF, teamName: string, projectName: string, teamMembers: string[], projectId: string, collegeName: string) => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const verificationUrl = `${window.location.origin}/verify/${projectId}?college=${encodeURIComponent(collegeName)}`;
-    const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 256, color: { dark: '#262626', light: '#00000000' }});
+    
+    // --- Colors & Fonts ---
+    const primaryBlue = '#007BFF';
+    const darkText = '#333333';
+    const lightText = '#6c757d';
+    const backgroundColor = '#FFFFFF';
+    const accentColor = '#F4F7FC';
 
-    // Background and border
-    doc.setFillColor(248, 250, 252);
+    // --- Background & Border ---
+    doc.setFillColor(backgroundColor);
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
-    doc.setDrawColor('#039BE5'); // Primary Blue
-    doc.setLineWidth(1.5);
-    doc.rect(5, 5, pageWidth - 10, pageHeight - 10);
-    
-    // Main Title
-    doc.setFont("helvetica", 'bold');
-    doc.setFontSize(30);
-    doc.setTextColor('#1E3A8A');
-    doc.text('CERTIFICATE OF PARTICIPATION', pageWidth / 2, 40, { align: 'center' });
 
-    // College Name
-    doc.setFont("helvetica", 'normal');
-    doc.setFontSize(14);
-    doc.setTextColor('#404040');
-    doc.text(`From the HackSprint event held at ${collegeName}`, pageWidth / 2, 55, { align: 'center' });
+    // Decorative wave border
+    doc.setFillColor(accentColor);
+    doc.rect(0, 0, pageWidth, 30, 'F');
+    doc.rect(0, pageHeight - 30, pageWidth, 30, 'F');
 
-    doc.text('This is to proudly certify the participation of team', pageWidth / 2, 75, { align: 'center' });
-
-    // Team Name
+    // --- Main Content ---
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(32);
-    doc.setFont("helvetica", 'bold');
-    doc.setTextColor("#039BE5");
-    doc.text(teamName, pageWidth / 2, 90, { align: 'center' });
+    doc.setTextColor(primaryBlue);
+    doc.text('CERTIFICATE OF PARTICIPATION', pageWidth / 2, 50, { align: 'center' });
 
-    // Project Info
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.setTextColor(darkText);
+    doc.text('This certificate is presented to', pageWidth / 2, 65, { align: 'center' });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(28);
+    doc.text(teamName, pageWidth / 2, 85, { align: 'center' });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text('for their successful participation and project submission in the HackSprint event', pageWidth / 2, 95, { align: 'center', maxWidth: pageWidth - 80 });
+    doc.text(`held at ${collegeName}.`, pageWidth / 2, 102, { align: 'center' });
+
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    doc.setFont("helvetica", 'normal');
-    doc.setTextColor("#404040");
-    doc.text(`who successfully submitted the project`, pageWidth / 2, 105, { align: 'center' });
-    doc.setFontSize(20);
-    doc.setFont("helvetica", 'italic');
-    doc.setTextColor("#111827");
-    doc.text(`"${projectName}"`, pageWidth / 2, 117, { align: 'center' });
+    doc.setTextColor(darkText);
+    doc.text('Project:', pageWidth / 2, 120, { align: 'center' });
     
-    // Team Members
-    doc.setFontSize(12);
-    doc.setFont("helvetica", 'bold');
-    doc.setTextColor("#111827");
-    doc.text('PARTICIPANTS', pageWidth / 2, 140, { align: 'center' });
-    const membersText = teamMembers.join('  •  ');
-    doc.setFontSize(12);
-    doc.setFont("helvetica", 'normal');
-    doc.setTextColor("#404040");
-    doc.text(membersText, pageWidth / 2, 148, { align: 'center', maxWidth: pageWidth - 80 });
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(18);
+    doc.setTextColor(primaryBlue);
+    doc.text(`"${projectName}"`, pageWidth / 2, 128, { align: 'center' });
 
-    // Signatures, Date, QR
-    const signatureX = pageWidth / 4 + 20;
-    const dateX = pageWidth * 3 / 4 - 20;
-    const bottomY = pageHeight - 40;
-    // ... signature, date, qr logic ...
-    // Signature
-    doc.setFont("helvetica", 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor("#1E3A8A");
-    doc.text('J. Hackerton', signatureX, bottomY, { align: 'center' });
-    doc.setDrawColor("#039BE5");
-    doc.setLineWidth(0.3);
-    doc.line(signatureX - 30, bottomY + 2, signatureX + 30, bottomY + 2);
-    doc.setFont("helvetica", 'normal');
+    // Team Members
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.setTextColor("#404040");
-    doc.text('HackSprint Committee Lead', signatureX, bottomY + 8, { align: 'center' });
+    doc.setTextColor(darkText);
+    doc.text('PARTICIPANTS', pageWidth / 2, 145, { align: 'center' });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(lightText);
+    doc.text(teamMembers.join('  •  '), pageWidth / 2, 152, { align: 'center', maxWidth: pageWidth - 60 });
+    
+    // --- Footer Section ---
+    const bottomY = pageHeight - 45;
+
+    // Signature
+    doc.setFont("times", "italic");
+    doc.setFontSize(14);
+    doc.setTextColor(darkText);
+    doc.text('J. Hackerton', pageWidth / 4, bottomY);
+    doc.setDrawColor(primaryBlue);
+    doc.setLineWidth(0.2);
+    doc.line(pageWidth / 4 - 30, bottomY + 2, pageWidth / 4 + 30, bottomY + 2);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(lightText);
+    doc.text('HackSprint Committee Lead', pageWidth / 4, bottomY + 7, { align: 'center' });
 
     // Date
-    doc.setFont("helvetica", 'bold');
+    doc.setFont("times", "italic");
     doc.setFontSize(14);
-    doc.setTextColor("#1E3A8A");
-    doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), dateX, bottomY, { align: 'center' });
-    doc.setDrawColor("#039BE5");
-    doc.setLineWidth(0.3);
-    doc.line(dateX - 30, bottomY + 2, dateX + 30, bottomY + 2);
-    doc.setFont("helvetica", 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor("#404040");
-    doc.text('Date of Issue', dateX, bottomY + 8, { align: 'center' });
-    
-    // QR Code Area
-    const qrCodeSize = 25;
-    const qrCodeX = pageWidth - qrCodeSize - 15;
-    const qrCodeY = pageHeight - qrCodeSize - 15;
-    
-    doc.addImage(qrCodeDataUrl, 'PNG', qrCodeX, qrCodeY, qrCodeSize, qrCodeSize);
+    doc.setTextColor(darkText);
+    doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth * 3 / 4, bottomY);
+    doc.line(pageWidth * 3 / 4 - 30, bottomY + 2, pageWidth * 3 / 4 + 30, bottomY + 2);
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(lightText);
+    doc.text('Date of Issue', pageWidth * 3 / 4, bottomY + 7, { align: 'center' });
+
+    // QR Code
+    const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 200, color: { dark: darkText, light: '#00000000' }});
+    doc.addImage(qrCodeDataUrl, 'PNG', pageWidth / 2 - 12.5, bottomY - 15, 25, 25);
     doc.setFontSize(8);
-    doc.setTextColor("#78716c");
-    doc.text('Verify participation', qrCodeX + qrCodeSize/2, qrCodeY + qrCodeSize + 4, { align: 'center' });
+    doc.text('Verify authenticity', pageWidth / 2, bottomY + 15, { align: 'center' });
+
 };
 
 export const generateCertificate = async (teamName: string, projectName: string, teamMembers: string[], projectId: string, averageScore: number, collegeName: string, rank?: number) => {
@@ -264,3 +243,5 @@ export const generateCertificate = async (teamName: string, projectName: string,
          doc.save(`Certificate_Participation-${teamName.replace(/\s/g, '_')}.pdf`);
     }
 };
+
+    
