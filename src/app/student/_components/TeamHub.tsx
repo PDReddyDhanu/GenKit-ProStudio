@@ -57,7 +57,7 @@ export default function TeamHub({ team }: TeamHubProps) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <h4 className="font-semibold mb-3">Members ({team.members.length}/{team.members.length})</h4>
+                    <h4 className="font-semibold mb-3">Members ({team.members.length}/{state.hackathons.find(h => h.id === state.selectedHackathonId)?.teamSizeLimit})</h4>
                     <ul className="space-y-3">
                         {team.members.map(member => (
                             <li key={member.id} className="flex justify-between items-center p-2 bg-muted/50 rounded-md">
@@ -68,7 +68,7 @@ export default function TeamHub({ team }: TeamHubProps) {
                                     {member.skills && member.skills.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mt-2 pl-6">
                                             {member.skills.map(skill => (
-                                                <Badge key={skill} variant="secondary">{skill}</Badge>
+                                                <Badge key={skill} variant="outline">{skill}</Badge>
                                             ))}
                                         </div>
                                     )}

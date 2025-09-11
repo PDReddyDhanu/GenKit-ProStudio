@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useHackathon } from '@/context/HackathonProvider';
@@ -83,7 +82,7 @@ export default function Dashboard() {
                         <CardHeader>
                             <CardTitle className="font-headline">Rules & Regulations</CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-6">
                             <p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentHackathon.rules}</p>
                         </CardContent>
                     </Card>
