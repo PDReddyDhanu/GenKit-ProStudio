@@ -214,7 +214,6 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
         creatorId: user.id,
         joinCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         members: [{ id: user.id, name: user.name, email: user.email, skills: user.skills, bio: user.bio, github: user.github, linkedin: user.linkedin, status: user.status }],
-        joinRequests: [],
         hackathonId,
         projectId: "",
         messages: [],
@@ -223,7 +222,15 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
     return { successMessage: "Team created successfully!", teamId: teamRef.id };
 }
 
-export async function requestToJoinTeamByCode(collegeId: string, hackathonId: string, joinCode: string, user: User) {
+export async function joinTeamByCode(collegeId: string, hackathonId: string, joinCode: string, user: User) {
+    const hackathonDocRef = doc(db, `colleges/${collegeId}/hackathons`, hackathonId);
+    const hackathonDoc = await getDoc(hackathonDocRef);
+    if (!hackathonDoc.exists()) {
+        throw new Error("Hackathon not found.");
+    }
+    const hackathon = hackathonDoc.data() as Hackathon;
+    const teamSizeLimit = hackathon.teamSizeLimit;
+
     // Check if user is already on a team for this hackathon
     const userTeamsQuery = query(
         collection(db, `colleges/${collegeId}/teams`), 
@@ -245,21 +252,17 @@ export async function requestToJoinTeamByCode(collegeId: string, hackathonId: st
     const teamDoc = querySnapshot.docs[0];
     const teamData = teamDoc.data() as Team;
 
-    if (teamData.joinRequests?.some(r => r.id === user.id)) {
-        throw new Error("You have already requested to join this team.");
+    if (teamData.members.length >= teamSizeLimit) {
+        throw new Error(`This team has reached the maximum size of ${teamSizeLimit} members.`);
     }
     
-    const request: JoinRequest = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-    };
+    const memberToAdd = { id: user.id, name: user.name, email: user.email, skills: user.skills, bio: user.bio, github: user.github, linkedin: user.linkedin, status: user.status };
 
     await updateDoc(teamDoc.ref, {
-        joinRequests: arrayUnion(request)
+        members: arrayUnion(memberToAdd)
     });
 
-    return { successMessage: `Request sent to join team "${teamData.name}"!` };
+    return { successMessage: `Successfully joined team "${teamData.name}"!` };
 }
 
 export async function handleJoinRequest(collegeId: string, teamId: string, request: JoinRequest, action: 'accept' | 'reject') {
