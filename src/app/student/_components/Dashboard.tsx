@@ -35,8 +35,12 @@ export default function Dashboard() {
     }, [hackathons, selectedHackathonId]);
 
     const currentTeam = useMemo(() => {
-        if (!currentUser?.teamId || !selectedHackathonId) return undefined;
-        return teams.find(t => t.id === currentUser.teamId && t.hackathonId === selectedHackathonId);
+        if (!currentUser?.id || !selectedHackathonId) return undefined;
+        // Find the team that the user is a member of for the *currently selected* hackathon
+        return teams.find(t => 
+            t.hackathonId === selectedHackathonId && 
+            t.members.some(m => m.id === currentUser.id)
+        );
     }, [teams, currentUser, selectedHackathonId]);
 
     const currentProject = useMemo(() => {

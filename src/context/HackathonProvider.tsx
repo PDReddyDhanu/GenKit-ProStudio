@@ -62,18 +62,16 @@ type Action =
 function hackathonReducer(state: HackathonState, action: Action): HackathonState {
     switch (action.type) {
         case 'SET_DATA':
+            let updatedState = { ...state, ...action.payload };
              if (action.payload.users) {
-                // If users data is updated, check if currentUser needs an update
-                const updatedCurrentUser = action.payload.users.find(u => u.id === state.currentUser?.id);
+                const updatedCurrentUser = action.payload.users.find((u: User) => u.id === state.currentUser?.id);
                 if (updatedCurrentUser) {
-                    return { ...state, ...action.payload, currentUser: updatedCurrentUser };
+                    updatedState.currentUser = updatedCurrentUser;
                 }
             }
-            return { ...state, ...action.payload };
+            return updatedState;
         case 'SET_USER':
-            const user = action.payload;
-            const hackathonId = user ? user.hackathonId : null;
-            return { ...state, currentUser: user, currentJudge: null, currentAdmin: false, isLoading: false, selectedHackathonId: hackathonId || state.selectedHackathonId };
+            return { ...state, currentUser: action.payload, currentJudge: null, currentAdmin: false, isLoading: false };
         case 'SET_JUDGE':
             return { ...state, currentJudge: action.payload, currentUser: null, currentAdmin: false, isLoading: false };
         case 'SET_ADMIN':
@@ -94,9 +92,9 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
             }
             return { ...state, selectedCollege: college, isLoading: !!college };
         case 'SET_SELECTED_HACKATHON':
-             if (action.payload) {
+             if (action.payload && state.selectedCollege) {
                 localStorage.setItem(`selectedHackathon_${state.selectedCollege}`, action.payload);
-            } else {
+            } else if (state.selectedCollege) {
                 localStorage.removeItem(`selectedHackathon_${state.selectedCollege}`);
             }
             return { ...state, selectedHackathonId: action.payload };
@@ -138,8 +136,8 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
     useEffect(() => {
         const storedCollege = localStorage.getItem('selectedCollege');
         if (storedCollege) {
-            const storedHackathon = localStorage.getItem(`selectedHackathon_${storedCollege}`);
             dispatch({ type: 'SET_SELECTED_COLLEGE', payload: storedCollege });
+            const storedHackathon = localStorage.getItem(`selectedHackathon_${storedCollege}`);
             if (storedHackathon) {
                 dispatch({ type: 'SET_SELECTED_HACKATHON', payload: storedHackathon });
             }
@@ -160,7 +158,6 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
         dispatch({ type: 'SET_LOADING', payload: true });
         localStorage.setItem('selectedCollege', state.selectedCollege);
         
-        // Listen to top-level collections
         const topLevelCollections = ['users', 'judges', 'announcements', 'hackathons', 'teams', 'projects'];
         const unsubscribes = topLevelCollections.map(col => 
             onSnapshot(collection(db, `colleges/${state.selectedCollege}/${col}`), (snapshot) => {
@@ -179,10 +176,6 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
                     if (userDoc.exists()) {
                         const userData = { id: userDoc.id, ...userDoc.data() } as User;
                         dispatch({ type: 'SET_USER', payload: userData });
-                        // If user has a hackathonId, set it as selected
-                        if (userData.hackathonId && userData.hackathonId !== state.selectedHackathonId) {
-                            dispatch({ type: 'SET_SELECTED_HACKATHON', payload: userData.hackathonId });
-                        }
                     } else {
                         await hackathonApi.signOut();
                     }
@@ -227,10 +220,6 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
                 const result = await (fn as any)(collegeId, ...args);
                 if (result?.successMessage) {
                     dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage });
-                }
-                 // If a student selects a hackathon, update state
-                if (fnName === 'selectHackathonForStudent') {
-                    dispatch({ type: 'SET_SELECTED_HACKATHON', payload: args[1] });
                 }
 
                 return result;

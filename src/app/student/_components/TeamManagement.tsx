@@ -12,7 +12,7 @@ import BackButton from '@/components/layout/BackButton';
 
 export default function TeamManagement() {
     const { state, api } = useHackathon();
-    const { currentUser, selectedHackathonId, teams } = state;
+    const { currentUser, selectedHackathonId, teams, hackathons } = state;
     const [teamName, setTeamName] = useState('');
     const [joinCode, setJoinCode] = useState('');
     const [isCreating, setIsCreating] = useState(false);
@@ -20,11 +20,22 @@ export default function TeamManagement() {
 
     const pendingRequestTeam = useMemo(() => {
         if (!currentUser) return null;
+        // Find if the user has a join request for ANY team in the currently selected hackathon
         return teams.find(team => 
             team.hackathonId === selectedHackathonId &&
             team.joinRequests?.some(req => req.id === currentUser.id)
         );
     }, [teams, currentUser, selectedHackathonId]);
+
+    // Check if the user is already on a team FOR THIS HACKATHON
+    const isOnTeamInThisHackathon = useMemo(() => {
+        if (!currentUser || !selectedHackathonId) return false;
+        return teams.some(team => 
+            team.hackathonId === selectedHackathonId && 
+            team.members.some(member => member.id === currentUser.id)
+        );
+    }, [teams, currentUser, selectedHackathonId]);
+
 
     const handleCreateTeam = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -49,6 +60,10 @@ export default function TeamManagement() {
             }
         }
     };
+
+    // If already on a team for this hackathon, they shouldn't see this page.
+    // The main Dashboard component should prevent this, but this is a fallback.
+    if (isOnTeamInThisHackathon) return null;
 
     if (pendingRequestTeam) {
         return (
