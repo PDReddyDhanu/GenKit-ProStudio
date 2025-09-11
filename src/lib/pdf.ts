@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import jsPDF from 'jspdf';
@@ -220,12 +221,12 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(darkText);
-    doc.text('PARTICIPANTS', pageWidth / 2, 140, { align: 'center' });
+    doc.text('PARTICIPANTS', pageWidth / 2, 135, { align: 'center' });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
     doc.setTextColor(lightText);
     
-    let memberY = 147;
+    let memberY = 142;
     teamMembers.forEach(member => {
         doc.text(member, pageWidth / 2, memberY, { align: 'center' });
         memberY += 6;
@@ -288,3 +289,4 @@ export const generateCertificate = async (teamName: string, projectName: string,
     
 
     
+
