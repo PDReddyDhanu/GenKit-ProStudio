@@ -3,7 +3,6 @@
 
 import React, { useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 import { Github, GalleryVertical, Award } from 'lucide-react';
 import PageIntro from '@/components/PageIntro';
@@ -13,6 +12,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Image from 'next/image';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function ProjectGallery() {
     const { state } = useHackathon();
@@ -25,50 +26,68 @@ export default function ProjectGallery() {
 
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-fade-in">
-            <h1 className="text-4xl font-bold text-center mb-12 font-headline">Project Showcase for {state.selectedCollege}</h1>
+            <div className="text-center mb-12">
+                <h1 className="text-4xl font-bold text-center mb-2 font-headline">Project Showcase</h1>
+                <p className="text-lg text-muted-foreground">Celebrating the incredible work from {state.selectedCollege}</p>
+            </div>
             
             {projects.length > 0 ? (
                  <TooltipProvider>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 [perspective:1000px]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {projects.map((project, index) => {
                             const team = teams.find(t => t.id === project.teamId);
                             return (
-                                <Card 
+                                <div 
                                     key={project.id} 
-                                    className="flex flex-col transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]"
+                                    className="group relative rounded-lg overflow-hidden shadow-lg animate-card-in"
                                     style={{ animationDelay: `${index * 100}ms` }}
                                 >
-                                    <CardHeader>
-                                        <CardTitle className="font-headline">{project.name}</CardTitle>
-                                        <CardDescription>by {team?.name || 'Unknown Team'}</CardDescription>
-                                        {project.achievements && project.achievements.length > 0 && (
-                                            <div className="flex flex-wrap gap-2 pt-2">
-                                                {project.achievements.map(achievement => (
-                                                    <Tooltip key={achievement}>
-                                                        <TooltipTrigger>
-                                                            <Award className="w-5 h-5 text-yellow-500" />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>{achievement}</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                ))}
+                                    <Image 
+                                        src={`https://picsum.photos/seed/${project.id}/600/400`}
+                                        alt={project.name}
+                                        width={600}
+                                        height={400}
+                                        data-ai-hint="abstract technology"
+                                        className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                                    
+                                    <div className="absolute bottom-0 left-0 p-6 w-full text-white transition-all duration-500 ease-in-out">
+                                        <h3 className="text-xl font-bold font-headline">{project.name}</h3>
+                                        <p className="text-sm text-gray-300">by {team?.name || 'Unknown Team'}</p>
+                                        
+                                        <div className="absolute bottom-full left-0 w-full p-6 bg-black/80 backdrop-blur-sm opacity-0 group-hover:bottom-0 group-hover:opacity-100 transition-all duration-500 ease-in-out overflow-hidden">
+                                            <h3 className="text-xl font-bold font-headline">{project.name}</h3>
+                                            <p className="text-sm text-gray-300">by {team?.name || 'Unknown Team'}</p>
+                                            <p className="mt-4 text-sm text-gray-200 line-clamp-3">{project.description}</p>
+                                            <div className="flex justify-between items-center mt-4">
+                                                <Link 
+                                                    href={project.githubUrl} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer" 
+                                                    className="inline-flex items-center gap-2 text-primary hover:underline"
+                                                >
+                                                    <Github className="h-4 w-4" />
+                                                    View on GitHub
+                                                </Link>
+                                                {project.achievements && project.achievements.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {project.achievements.map(achievement => (
+                                                            <Tooltip key={achievement}>
+                                                                <TooltipTrigger>
+                                                                    <Award className="w-5 h-5 text-yellow-400" />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>{achievement}</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </CardHeader>
-                                    <CardContent className="flex-grow flex flex-col justify-between">
-                                        <p className="text-muted-foreground mb-4">{project.description}</p>
-                                        <Link 
-                                            href={project.githubUrl} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer" 
-                                            className="inline-flex items-center gap-2 text-accent hover:underline mt-auto"
-                                        >
-                                            <Github className="h-4 w-4" />
-                                            View on GitHub
-                                        </Link>
-                                    </CardContent>
-                                </Card>
+                                        </div>
+                                    </div>
+                                </div>
                             );
                         })}
                     </div>
@@ -76,10 +95,15 @@ export default function ProjectGallery() {
             ) : (
                 <Card>
                     <CardContent className="py-16">
-                        <p className="text-center text-muted-foreground text-lg">No projects have been submitted yet. The gallery is waiting!</p>
+                        <div className="text-center text-muted-foreground">
+                            <GalleryVertical className="h-12 w-12 mx-auto" />
+                             <p className="mt-4 text-lg">No projects have been submitted yet.</p>
+                             <p>The gallery is waiting to be filled!</p>
+                        </div>
                     </CardContent>
                 </Card>
             )}
         </div>
     );
 }
+
