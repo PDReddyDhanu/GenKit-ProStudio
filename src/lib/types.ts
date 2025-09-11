@@ -37,12 +37,16 @@ export interface JoinRequest {
     email: string;
 }
 
+export interface TeamMember extends User {
+    role?: string;
+}
+
 export interface Team {
   id: string;
   name: string;
   creatorId: string; // ID of the user who created the team
   joinCode: string;
-  members: User[];
+  members: TeamMember[];
   joinRequests?: JoinRequest[]; // Array of users who requested to join
   projectId?: string;
   hackathonId: string;

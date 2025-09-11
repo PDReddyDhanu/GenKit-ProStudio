@@ -127,22 +127,22 @@ export default function ProfilePage() {
                         <form onSubmit={handleSaveProfile} className="space-y-6">
                             <div className="space-y-2">
                                 <Label htmlFor="name">Full Name</Label>
-                                <Input id="name" value={name} onChange={e => setName(e.target.value)} disabled={isSaving} />
+                                <Input id="name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="skills">Skills (comma-separated)</Label>
-                                <Input id="skills" value={skills} onChange={e => setSkills(e.target.value)} disabled={isSaving} />
+                                <Input id="skills" value={skills} onChange={e => setSkills(e.target.value)} required placeholder="React, Node.js, Python..." disabled={isSaving} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="bio">Short Bio</Label>
-                                <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} disabled={isSaving} />
+                                <Label htmlFor="bio">Short Bio (Optional)</Label>
+                                <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} placeholder="Passionate full-stack developer..." disabled={isSaving} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="github">GitHub Profile URL</Label>
+                                <Label htmlFor="github">GitHub Profile URL (Optional)</Label>
                                 <Input id="github" type="url" placeholder="https://github.com/username" value={github} onChange={e => setGithub(e.target.value)} disabled={isSaving} />
                             </div>
                              <div className="space-y-2">
-                                <Label htmlFor="linkedin">LinkedIn Profile URL</Label>
+                                <Label htmlFor="linkedin">LinkedIn Profile URL (Optional)</Label>
                                 <Input id="linkedin" type="url" placeholder="https://linkedin.com/in/username" value={linkedin} onChange={e => setLinkedin(e.target.value)} disabled={isSaving} />
                             </div>
                             <div className="flex gap-4">

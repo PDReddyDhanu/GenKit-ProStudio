@@ -20,7 +20,7 @@ import {
     arrayUnion,
     arrayRemove
 } from 'firebase/firestore';
-import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest } from './types';
+import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember } from './types';
 
 // --- Auth ---
 
@@ -35,7 +35,6 @@ export async function registerStudent(collegeId: string, { name, email, password
         bio: '',
         github: '',
         linkedin: '',
-        hackathonId: null
     };
     await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
     await firebaseSignOut(auth); // Sign out immediately after registration
@@ -146,7 +145,6 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             email,
             status: 'approved',
             skills: [], bio: '', github: '', linkedin: '',
-            hackathonId: null
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
@@ -172,10 +170,10 @@ export async function removeStudent(collegeId: string, userId: string) {
     
     const user = userDoc.data() as User;
     
-    const teamsQuery = query(collection(db, `colleges/${collegeId}/teams`), where('members', 'array-contains', {id: userId, name: user.name, email: user.email}));
+    const teamsQuery = query(collection(db, `colleges/${collegeId}/teams`), where('members.id', '==', userId));
     const teamsSnapshot = await getDocs(teamsQuery);
 
-    teamsSnapshot.forEach(async (teamDoc) => {
+    for (const teamDoc of teamsSnapshot.docs) {
         const team = teamDoc.data() as Team;
         const updatedMembers = team.members.filter(m => m.id !== userId);
         if (updatedMembers.length > 0) {
@@ -183,7 +181,7 @@ export async function removeStudent(collegeId: string, userId: string) {
         } else {
             await deleteDoc(teamDoc.ref);
         }
-    });
+    }
     
     await deleteDoc(doc(db, `colleges/${collegeId}/users`, userId));
 
@@ -216,24 +214,23 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
         name: teamName,
         creatorId: user.id,
         joinCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
-        members: [{ id: user.id, name: user.name, email: user.email, skills: user.skills, bio: user.bio, github: user.github, linkedin: user.linkedin, status: user.status }],
+        members: [{ ...user, role: 'Leader' }],
         hackathonId,
         projectId: "",
         messages: [],
         joinRequests: [],
     };
     const teamRef = await addDoc(collection(db, `colleges/${collegeId}/teams`), newTeam);
-    await updateDoc(doc(db, `colleges/${collegeId}/users`, user.id), { hackathonId: hackathonId, teamId: teamRef.id });
+    await updateDoc(doc(db, `colleges/${collegeId}/users`, user.id), { teamId: teamRef.id });
 
     return { successMessage: "Team created successfully!", teamId: teamRef.id };
 }
 
 export async function requestToJoinTeamByCode(collegeId: string, hackathonId: string, joinCode: string, user: User) {
-    // Check if user is already on a team for this hackathon
     const userTeamsQuery = query(
         collection(db, `colleges/${collegeId}/teams`), 
         where("hackathonId", "==", hackathonId),
-        where("members", "array-contains", {id: user.id, name: user.name, email: user.email})
+        where("members.id", "==", user.id)
     );
     const userTeamsSnapshot = await getDocs(userTeamsQuery);
     if (!userTeamsSnapshot.empty) {
@@ -254,7 +251,7 @@ export async function requestToJoinTeamByCode(collegeId: string, hackathonId: st
 export async function requestToJoinTeamById(collegeId: string, hackathonId: string, teamId: string, user: User) {
     const userTeamsQuery = query(collection(db, `colleges/${collegeId}/teams`), 
         where('hackathonId', '==', hackathonId), 
-        where('members', 'array-contains', { id: user.id, name: user.name, email: user.email, skills: user.skills, bio: user.bio, github: user.github, linkedin: user.linkedin, status: user.status, hackathonId: user.hackathonId })
+        where('members.id', '==', user.id)
     );
 
     const userTeamsSnapshot = await getDocs(userTeamsQuery);
@@ -300,10 +297,7 @@ export async function handleJoinRequest(collegeId: string, teamId: string, reque
 
     if (action === 'accept') {
         if (teamData.members.length >= hackathon.teamSizeLimit) {
-            // Remove the request even if the team is full
-            await updateDoc(teamRef, {
-                joinRequests: arrayRemove(request)
-            });
+            await updateDoc(teamRef, { joinRequests: arrayRemove(request) });
             throw new Error(`Team has reached its maximum size of ${hackathon.teamSizeLimit} members.`);
         }
         
@@ -311,13 +305,13 @@ export async function handleJoinRequest(collegeId: string, teamId: string, reque
         if(!userDoc.exists()) throw new Error("User trying to join does not exist.");
         
         const userData = userDoc.data() as User;
-        const newMember = {id: userData.id, name: userData.name, email: userData.email, skills: userData.skills, bio: userData.bio, github: userData.github, linkedin: userData.linkedin, status: userData.status, hackathonId: userData.hackathonId };
+        const newMember: TeamMember = { ...userData, role: 'Member' };
 
         await updateDoc(teamRef, {
             members: arrayUnion(newMember),
             joinRequests: arrayRemove(request)
         });
-        await updateDoc(doc(db, `colleges/${collegeId}/users`, request.id), { hackathonId: teamData.hackathonId, teamId: teamId });
+        await updateDoc(doc(db, `colleges/${collegeId}/users`, request.id), { teamId: teamId });
         return { successMessage: `${request.name} has been added to the team.` };
     } else { // reject
         await updateDoc(teamRef, {
@@ -327,21 +321,16 @@ export async function handleJoinRequest(collegeId: string, teamId: string, reque
     }
 }
 
-export async function removeTeammate(collegeId: string, teamId: string, memberToRemove: User) {
+export async function removeTeammate(collegeId: string, teamId: string, memberToRemove: TeamMember) {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
     const userRef = doc(db, `colleges/${collegeId}/users`, memberToRemove.id);
 
-    const memberObject = {
-        id: memberToRemove.id,
-        name: memberToRemove.name,
-        email: memberToRemove.email,
-        skills: memberToRemove.skills,
-        bio: memberToRemove.bio,
-        github: memberToRemove.github,
-        linkedin: memberToRemove.linkedin,
-        status: memberToRemove.status,
-        hackathonId: memberToRemove.hackathonId
-    };
+    const teamDoc = await getDoc(teamRef);
+    if (!teamDoc.exists()) throw new Error("Team not found");
+    const team = teamDoc.data() as Team;
+
+    const memberObject = team.members.find(m => m.id === memberToRemove.id);
+    if (!memberObject) throw new Error("Member not found in team");
 
     await updateDoc(teamRef, {
         members: arrayRemove(memberObject)
@@ -354,29 +343,39 @@ export async function removeTeammate(collegeId: string, teamId: string, memberTo
     return { successMessage: `${memberToRemove.name} has been removed from the team.` };
 }
 
-export async function leaveTeam(collegeId: string, hackathonId: string, teamId: string, userId: string) {
+export async function updateMemberRole(collegeId: string, teamId: string, memberId: string, newRole: string) {
+    const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
+    const teamDoc = await getDoc(teamRef);
+    if (!teamDoc.exists()) throw new Error("Team not found");
+    const team = teamDoc.data() as Team;
+    
+    const updatedMembers = team.members.map(member => {
+        if (member.id === memberId) {
+            return { ...member, role: newRole };
+        }
+        return member;
+    });
+
+    await updateDoc(teamRef, { members: updatedMembers });
+    return { successMessage: "Member role updated." };
+}
+
+export async function leaveTeam(collegeId: string, teamId: string, userId: string) {
     const userRef = doc(db, `colleges/${collegeId}/users`, userId);
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
     
-    const userDoc = await getDoc(userRef);
-    const user = userDoc.data() as User;
-
     const teamDoc = await getDoc(teamRef);
     if (teamDoc.exists()) {
         const team = teamDoc.data() as Team;
-
         const memberObject = team.members.find(m => m.id === userId);
 
-        if (!memberObject) {
-             return { successMessage: "You are not on this team." };
-        }
+        if (!memberObject) return { successMessage: "You are not on this team." };
 
         const updatedMembers = team.members.filter(m => m.id !== userId);
 
         if (updatedMembers.length === 0) {
             await deleteDoc(teamRef);
         } else {
-            // If the creator leaves, assign a new creator
             if (team.creatorId === userId) {
                 await updateDoc(teamRef, { 
                     members: arrayRemove(memberObject),
@@ -388,7 +387,7 @@ export async function leaveTeam(collegeId: string, hackathonId: string, teamId: 
         }
     }
 
-    await updateDoc(userRef, { hackathonId: null, teamId: null });
+    await updateDoc(userRef, { teamId: null });
     
     return { successMessage: "You have left the team." };
 }
@@ -433,16 +432,24 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
 
     const JUDGING_RUBRIC = [
         { id: 'innovation', name: 'Innovation & Originality', max: 10 },
-        { id: 'technical_complexity', name: 'Technical Complexity', max: 10 },
-        { id: 'ui_ux', name: 'UI/UX Design', max: 10 },
-        { id: 'presentation', name: 'Presentation & Pitch', max: 10 },
+        { id: 'technical_complexity', name: 'Technical Complexity & Execution', max: 10 },
+        { id: 'ui_ux', name: 'UI/UX Design & Presentation', max: 10 },
+        { id: 'collaboration', name: 'Team Collaboration', max: 5 },
+        { id: 'problem_solving', name: 'Problem-Solving Approach', max: 5 },
     ];
     
     const uniqueJudges = new Set(newScores.map(s => s.judgeId));
-    const totalPossibleScore = uniqueJudges.size * JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
+    let totalPossibleScore = 0;
+    if (uniqueJudges.size > 0) {
+         totalPossibleScore = uniqueJudges.size * JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
+    }
     const totalScore = newScores.reduce((sum, score) => sum + score.value, 0);
-    const averageScore = totalPossibleScore > 0 ? (totalScore / totalPossibleScore) * 10 : 0;
+    const averageScore = totalPossibleScore > 0 ? (totalScore / uniqueJudges.size) : 0;
+    
+    const maxScore = JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
+    const scaledScore = maxScore > 0 ? (averageScore / maxScore) * 10 : 0;
 
-    await updateDoc(projectRef, { scores: newScores, averageScore });
+
+    await updateDoc(projectRef, { scores: newScores, averageScore: scaledScore });
     return { successMessage: "Scores submitted successfully." };
 }
