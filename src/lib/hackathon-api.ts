@@ -234,7 +234,7 @@ export async function updateHackathon(collegeId: string, hackathonId: string, ha
 
 
 export async function postAnnouncement(collegeId: string, data: Partial<Omit<Announcement, 'id' | 'timestamp'>>) {
-    const newAnnouncement: Omit<Announcement, 'id'> = {
+    const newAnnouncement: Partial<Omit<Announcement, 'id'>> = {
         message: data.message!,
         timestamp: Date.now(),
     };

@@ -175,8 +175,17 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
                     const userDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/users`, user.uid));
                     if (userDoc.exists()) {
                         const userData = { id: userDoc.id, ...userDoc.data() } as User;
-                        dispatch({ type: 'SET_USER', payload: userData });
+                        // IMPORTANT: Only set user if they are approved
+                        if (userData.status === 'approved') {
+                            dispatch({ type: 'SET_USER', payload: userData });
+                        } else {
+                            // If user exists but is not approved, ensure they are signed out on the client
+                             if (state.currentUser) {
+                                dispatch({ type: 'SIGN_OUT_USER' });
+                            }
+                        }
                     } else {
+                        // If no record found in either collection for this college, sign out.
                         await hackathonApi.signOut();
                     }
                 }
