@@ -5,14 +5,15 @@ import React, { useState, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader, UserPlus, Inbox, Check, X, Send } from 'lucide-react';
-import type { Team, JoinRequest } from '@/lib/types';
+import { Loader, UserPlus, Inbox, Check, X, Send, Users, Trash2 } from 'lucide-react';
+import type { Team, JoinRequest, User } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 
 export default function InvitationsManagement() {
     const { state, api } = useHackathon();
-    const { currentUser, teams, hackathons, selectedHackathonId } = state;
-    const [isLoading, setIsLoading] = useState<string | null>(null); // format: "action-teamId-requestId"
+    const { currentUser, teams, hackathons } = state;
+    const [isLoading, setIsLoading] = useState<string | null>(null); // format: "action-teamId-requestId" or "remove-teamId-memberId"
 
     const myCreatedTeams = useMemo(() => {
         if (!currentUser) return [];
@@ -39,42 +40,80 @@ export default function InvitationsManagement() {
         }
     };
     
-    const allRequestsForMyTeams = myCreatedTeams.flatMap(team => 
-        (team.joinRequests || []).map(req => ({ ...req, teamName: team.name, teamId: team.id }))
-    );
+    const handleRemoveMember = async (teamId: string, member: User) => {
+        if (!window.confirm(`Are you sure you want to remove ${member.name} from the team?`)) return;
+        
+        setIsLoading(`remove-${teamId}-${member.id}`);
+        try {
+            await api.removeTeammate(teamId, member);
+        } catch (error) {
+            console.error("Failed to remove member:", error);
+        } finally {
+            setIsLoading(null);
+        }
+    }
+
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline flex items-center gap-2">
-                        <UserPlus className="text-primary"/> Incoming Requests for Your Teams
+                        <UserPlus className="text-primary"/> Manage Your Teams
                     </CardTitle>
-                    <CardDescription>Review requests from students who want to join the teams you lead.</CardDescription>
+                    <CardDescription>Review join requests and manage members for the teams you lead.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-96 pr-4">
-                        <div className="space-y-4">
-                            {allRequestsForMyTeams.length > 0 ? allRequestsForMyTeams.map(req => (
-                                <div key={`${req.teamId}-${req.id}`} className="p-3 bg-muted/50 rounded-md flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                        <div className="space-y-6">
+                            {myCreatedTeams.length > 0 ? myCreatedTeams.map(team => (
+                                <div key={team.id} className="space-y-4">
                                     <div>
-                                        <p className="font-semibold">{req.name}</p>
-                                        <p className="text-sm text-muted-foreground">{req.email}</p>
-                                        <p className="text-xs text-primary mt-1">Wants to join: <strong>{req.teamName}</strong></p>
+                                        <h3 className="font-semibold text-lg text-primary">{team.name}</h3>
+                                        <p className="text-sm text-muted-foreground">{hackathons.find(h => h.id === team.hackathonId)?.name}</p>
                                     </div>
-                                    <div className="flex items-center gap-2 flex-shrink-0">
-                                        <Button size="sm" onClick={() => handleRequest(req.teamId, req, 'accept')} disabled={!!isLoading} className="bg-green-600 hover:bg-green-700">
-                                            {isLoading === `accept-${req.teamId}-${req.id}` ? <Loader className="animate-spin h-4 w-4"/> : <Check className="h-4 w-4" />}
-                                        </Button>
-                                        <Button variant="destructive" size="sm" onClick={() => handleRequest(req.teamId, req, 'reject')} disabled={!!isLoading}>
-                                            {isLoading === `reject-${req.teamId}-${req.id}` ? <Loader className="animate-spin h-4 w-4"/> : <X className="h-4 w-4" />}
-                                        </Button>
+                                    
+                                    {/* Member Management */}
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-sm flex items-center gap-2"><Users className="h-4 w-4"/>Team Members</h4>
+                                        {team.members.map(member => (
+                                            <div key={member.id} className="p-2 bg-muted/20 rounded-md flex justify-between items-center">
+                                                <p className="font-semibold text-sm">{member.name} {member.id === currentUser?.id && '(You)'}</p>
+                                                {currentUser?.id === team.creatorId && member.id !== currentUser?.id && (
+                                                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRemoveMember(team.id, member)} disabled={!!isLoading}>
+                                                        {isLoading === `remove-${team.id}-${member.id}` ? <Loader className="animate-spin h-4 w-4"/> : <Trash2 className="h-4 w-4 text-destructive" />}
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
+
+                                    {/* Request Management */}
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-sm flex items-center gap-2"><Inbox className="h-4 w-4"/>Incoming Requests ({team.joinRequests?.length || 0})</h4>
+                                        {team.joinRequests && team.joinRequests.length > 0 ? team.joinRequests.map(req => (
+                                            <div key={`${team.id}-${req.id}`} className="p-3 bg-muted/50 rounded-md flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                                                <div>
+                                                    <p className="font-semibold">{req.name}</p>
+                                                    <p className="text-sm text-muted-foreground">{req.email}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                    <Button size="sm" onClick={() => handleRequest(team.id, req, 'accept')} disabled={!!isLoading} className="bg-green-600 hover:bg-green-700">
+                                                        {isLoading === `accept-${team.id}-${req.id}` ? <Loader className="animate-spin h-4 w-4"/> : <Check className="h-4 w-4" />}
+                                                    </Button>
+                                                    <Button variant="destructive" size="sm" onClick={() => handleRequest(team.id, req, 'reject')} disabled={!!isLoading}>
+                                                        {isLoading === `reject-${team.id}-${req.id}` ? <Loader className="animate-spin h-4 w-4"/> : <X className="h-4 w-4" />}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )) : <p className="text-xs text-muted-foreground pl-2">No pending requests.</p>}
+                                    </div>
+                                   {myCreatedTeams.length > 1 && <Separator />}
                                 </div>
                             )) : (
                                 <div className="text-center py-16">
                                     <Inbox className="mx-auto h-12 w-12 text-muted-foreground" />
-                                    <p className="mt-4 text-muted-foreground">You have no pending requests for any of your teams.</p>
+                                    <p className="mt-4 text-muted-foreground">You have not created any teams.</p>
                                 </div>
                             )}
                         </div>
@@ -110,3 +149,4 @@ export default function InvitationsManagement() {
         </div>
     );
 }
+
