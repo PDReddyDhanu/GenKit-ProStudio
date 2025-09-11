@@ -18,7 +18,9 @@ import {
     getDocs,
     deleteDoc,
     arrayUnion,
-    arrayRemove
+    arrayRemove,
+    orderBy,
+    limit
 } from 'firebase/firestore';
 import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember } from './types';
 import { JUDGING_RUBRIC } from './constants';
@@ -32,36 +34,24 @@ async function getOrCreateUser(email: string, password: any) {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             return userCredential.user;
         }
-        // Handle cases like wrong password for an existing user if needed, but for creation it's tricky.
-        // For this flow, if user exists but password is wrong, we should probably fail.
-        // But the prompt implies creating if not exists.
-        // A more complex flow might try to sign in first to check.
-
-        // Re-throwing other errors
         throw error;
     }
 }
 
 async function getAuthUser(email: string, password: any) {
     try {
-        // Try to sign in with a wrong password to see if user exists.
         await signInWithEmailAndPassword(auth, email, 'a-deliberately-wrong-password');
-        // This should not be reached if user exists.
     } catch (error: any) {
         if (error.code === 'auth/wrong-password') {
-            // User exists, sign in with correct password
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             return userCredential.user;
         } else if (error.code === 'auth/user-not-found') {
-            // User does not exist, create them
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             return userCredential.user;
         } else {
-            // Other auth errors
             throw error;
         }
     }
-    // Should not happen, but as a fallback
     throw new Error('Unexpected authentication issue');
 }
 
@@ -111,7 +101,6 @@ export async function loginJudge(collegeId: string, { email, password }: any) {
 }
 
 export async function loginAdmin({ email, password }: any) {
-    // This is a simplified, non-Firebase auth for a single-admin scenario.
     if (email !== 'hacksprint@admin.com' || password !== 'hack123') {
         throw new Error('Invalid admin credentials.');
     }
@@ -147,13 +136,10 @@ export async function addJudge(collegeId: string, { name, email, password }: any
         await firebaseSignOut(tempAuth);
         
         if (currentAuthUser && currentAuthUser.email !== email) {
-            // This part is tricky without a proper backend and session management.
-            // A simple re-login of admin might be needed in a real scenario if session is lost.
         }
 
         return { successMessage: 'Judge added successfully! They can log in with the provided credentials.' };
     } catch (error: any) {
-        // Attempt to sign out any lingering temporary user
         if (tempAuth.currentUser && tempAuth.currentUser.email === email) {
             await firebaseSignOut(tempAuth).catch(() => {});
         }
@@ -168,8 +154,6 @@ export async function addJudge(collegeId: string, { name, email, password }: any
 
 export async function removeJudge(collegeId: string, judgeId: string) {
     await deleteDoc(doc(db, `colleges/${collegeId}/judges`, judgeId));
-    // Note: This does not delete the Firebase Auth user. A secure implementation
-    // would use a Cloud Function to handle this deletion.
     return { successMessage: "Judge removed successfully." };
 }
 
@@ -197,7 +181,6 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
         await firebaseSignOut(tempAuth);
 
         if (currentAuthUser && currentAuthUser.email !== email) {
-           // Session handling complexity as noted in addJudge
         }
 
         return { successMessage: `${name} has been registered and approved.` };
@@ -452,6 +435,11 @@ export async function leaveTeam(collegeId: string, teamId: string, userId: strin
 }
 
 export async function submitProject(collegeId: string, hackathonId: string, { name, description, githubUrl, teamId }: any) {
+    const projectsCollection = collection(db, `colleges/${collegeId}/projects`);
+    const q = query(projectsCollection, where("hackathonId", "==", hackathonId), orderBy("submittedAt", "asc"), limit(1));
+    const querySnapshot = await getDocs(q);
+    const isFirstSubmission = querySnapshot.empty;
+    
     const newProject: Omit<Project, 'id'> = {
         teamId,
         hackathonId,
@@ -460,11 +448,16 @@ export async function submitProject(collegeId: string, hackathonId: string, { na
         githubUrl,
         scores: [],
         averageScore: 0,
+        achievements: isFirstSubmission ? ['First Blood'] : [],
+        submittedAt: Date.now(),
     };
-    const projectRef = await addDoc(collection(db, `colleges/${collegeId}/projects`), newProject);
+
+    const projectRef = await addDoc(projectsCollection, newProject);
     await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { projectId: projectRef.id });
+    
     return { successMessage: "Project submitted successfully!" };
 }
+
 
 export async function updateProfile(collegeId: string, userId: string, profileData: Partial<UserProfileData>) {
     await updateDoc(doc(db, `colleges/${collegeId}/users`, userId), profileData);
@@ -491,7 +484,6 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
     const otherJudgesScores = project.scores.filter(s => s.judgeId !== judgeId);
     const newScores = [...otherJudgesScores, ...scores];
 
-    // Recalculate average score based only on team scores
     const teamScores = newScores.filter(s => !s.memberId);
     
     const uniqueJudges = new Set(teamScores.map(s => s.judgeId));
@@ -507,6 +499,21 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
 
     const averageScore = uniqueJudges.size > 0 ? (totalScore / uniqueJudges.size) : 0;
     
-    await updateDoc(projectRef, { scores: newScores, averageScore: averageScore });
+    // --- Achievement Logic ---
+    const newAchievements = new Set(project.achievements || []);
+    scores.forEach(score => {
+        if (score.criteria === 'innovation' && score.value === 10) {
+            newAchievements.add("Innovator's Spark");
+        }
+        if (score.criteria === 'ui_ux' && score.value === 10) {
+            newAchievements.add("Design Virtuoso");
+        }
+    });
+
+    await updateDoc(projectRef, { 
+        scores: newScores, 
+        averageScore: averageScore,
+        achievements: Array.from(newAchievements),
+    });
     return { successMessage: "Scores submitted successfully." };
 }

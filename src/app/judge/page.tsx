@@ -11,10 +11,11 @@ import JudgingDashboard from './_components/JudgingDashboard';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
 import { Scale, Loader } from 'lucide-react';
+import AdminPortal from '@/app/admin/page';
 
 export default function JudgePortal() {
     const { state, api } = useHackathon();
-    const { currentJudge } = state;
+    const { currentJudge, currentAdmin } = state;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showIntro, setShowIntro] = useState(true);
@@ -24,7 +25,11 @@ export default function JudgePortal() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            await api.loginJudge({ email, password });
+            if (email === 'hacksprint@admin.com') {
+                await api.loginAdmin({ email, password });
+            } else {
+                await api.loginJudge({ email, password });
+            }
         } finally {
             setIsLoading(false);
         }
@@ -33,20 +38,24 @@ export default function JudgePortal() {
     if (showIntro) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<Scale className="w-full h-full" />} title="Judge & Admin Portal" description="Evaluate submissions, manage users, and run the event." />;
     }
+    
+    if (currentAdmin) {
+        return <AdminPortal/>
+    }
 
     if (!currentJudge) {
         return (
             <div className="container max-w-md mx-auto py-12 animate-fade-in">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-2xl font-bold text-center font-headline">Judge Login</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-center font-headline">Judge & Admin Login</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleLogin} className="space-y-4">
                             <AuthMessage />
                             <div className="space-y-2">
-                                <Label htmlFor="login-email">Judge Email</Label>
-                                <Input id="login-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="judge@judge.com" disabled={isLoading} />
+                                <Label htmlFor="login-email">Email</Label>
+                                <Input id="login-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="judge@judge.com or admin email" disabled={isLoading} />
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="login-password">Password</Label>

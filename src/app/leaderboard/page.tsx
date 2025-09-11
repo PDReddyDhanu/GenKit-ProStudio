@@ -9,6 +9,12 @@ import { TrendingUp, Trophy, Award, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Project, Team } from '@/lib/types';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 
 interface LeaderboardEntry {
@@ -16,6 +22,7 @@ interface LeaderboardEntry {
     teamName: string;
     projectName: string;
     score: number;
+    achievements?: string[];
 }
 
 const PodiumCard = ({ entry, rank }: { entry: LeaderboardEntry, rank: number }) => {
@@ -58,6 +65,20 @@ const PodiumCard = ({ entry, rank }: { entry: LeaderboardEntry, rank: number }) 
             <CardContent>
                 <p className="text-sm italic text-muted-foreground">for "{entry.projectName}"</p>
                 <p className="text-3xl font-bold mt-2">{entry.score}</p>
+                {entry.achievements && entry.achievements.length > 0 && (
+                     <div className="flex justify-center flex-wrap gap-2 mt-3">
+                        {entry.achievements.map(achievement => (
+                            <Tooltip key={achievement}>
+                                <TooltipTrigger>
+                                    <Award className="w-5 h-5 text-yellow-500" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{achievement}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        ))}
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
@@ -79,6 +100,7 @@ export default function Leaderboard() {
                     teamName: team?.name || 'Unknown Team',
                     projectName: p.name,
                     score: parseFloat(p.averageScore.toFixed(2)),
+                    achievements: p.achievements,
                 };
             });
     }, [projects, teams]);
@@ -92,72 +114,89 @@ export default function Leaderboard() {
 
     return (
         <div className="container max-w-6xl mx-auto py-12 animate-fade-in">
-            <div className="text-center mb-12">
-                <h1 className="text-4xl font-bold text-center mb-2 font-headline">Live Leaderboard for {state.selectedCollege}</h1>
-                <p className="text-muted-foreground">A real-time look at the leading teams.</p>
-            </div>
-            
-            {leaderboardData.length > 0 ? (
-                <div className="space-y-12">
-                    {/* Podium Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
-                        {podium[1] && (
-                            <div className="order-2 lg:order-1">
-                                <PodiumCard entry={podium[1]} rank={2} />
-                            </div>
-                        )}
-                        {podium[0] && (
-                             <div className="order-1 lg:order-2">
-                                <PodiumCard entry={podium[0]} rank={1} />
-                            </div>
-                        )}
-                        {podium[2] && (
-                             <div className="order-3 lg:order-3">
-                                <PodiumCard entry={podium[2]} rank={3} />
-                            </div>
+             <TooltipProvider>
+                <div className="text-center mb-12">
+                    <h1 className="text-4xl font-bold text-center mb-2 font-headline">Live Leaderboard for {state.selectedCollege}</h1>
+                    <p className="text-muted-foreground">A real-time look at the leading teams.</p>
+                </div>
+                
+                {leaderboardData.length > 0 ? (
+                    <div className="space-y-12">
+                        {/* Podium Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
+                            {podium[1] && (
+                                <div className="order-2 lg:order-1">
+                                    <PodiumCard entry={podium[1]} rank={2} />
+                                </div>
+                            )}
+                            {podium[0] && (
+                                 <div className="order-1 lg:order-2">
+                                    <PodiumCard entry={podium[0]} rank={1} />
+                                </div>
+                            )}
+                            {podium[2] && (
+                                 <div className="order-3 lg:order-3">
+                                    <PodiumCard entry={podium[2]} rank={3} />
+                                </div>
+                            )}
+                        </div>
+                        
+                        {/* Rest of the list */}
+                        {restOfList.length > 0 && (
+                            <Card className="animate-slide-in-up" style={{animationDelay: '700ms'}}>
+                                 <CardHeader>
+                                    <CardTitle className="font-headline">Top 10 Teams</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="w-[80px]">Rank</TableHead>
+                                                <TableHead>Team</TableHead>
+                                                <TableHead>Project</TableHead>
+                                                <TableHead>Achievements</TableHead>
+                                                <TableHead className="text-right">Score</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {restOfList.map((entry) => (
+                                                <TableRow key={entry.rank}>
+                                                    <TableCell className="font-bold text-lg">{entry.rank}</TableCell>
+                                                    <TableCell className="font-medium text-primary">{entry.teamName}</TableCell>
+                                                    <TableCell className="text-muted-foreground">{entry.projectName}</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            {entry.achievements?.map(achievement => (
+                                                                <Tooltip key={achievement}>
+                                                                    <TooltipTrigger>
+                                                                        <Award className="w-5 h-5 text-yellow-500" />
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p>{achievement}</p>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            ))}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-bold text-lg">{entry.score}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </CardContent>
+                            </Card>
                         )}
                     </div>
-                    
-                    {/* Rest of the list */}
-                    {restOfList.length > 0 && (
-                        <Card className="animate-slide-in-up" style={{animationDelay: '700ms'}}>
-                             <CardHeader>
-                                <CardTitle className="font-headline">Top 10 Teams</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-[80px]">Rank</TableHead>
-                                            <TableHead>Team</TableHead>
-                                            <TableHead>Project</TableHead>
-                                            <TableHead className="text-right">Score</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {restOfList.map((entry) => (
-                                            <TableRow key={entry.rank}>
-                                                <TableCell className="font-bold text-lg">{entry.rank}</TableCell>
-                                                <TableCell className="font-medium text-primary">{entry.teamName}</TableCell>
-                                                <TableCell className="text-muted-foreground">{entry.projectName}</TableCell>
-                                                <TableCell className="text-right font-bold text-lg">{entry.score}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-            ) : (
-                <Card>
-                    <CardContent className="text-center py-16">
-                        <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground" />
-                        <p className="mt-4 text-muted-foreground text-lg">No scores have been submitted yet.</p>
-                        <p className="text-muted-foreground">The leaderboard will update in real-time as judges submit scores.</p>
-                    </CardContent>
-                </Card>
-            )}
+                ) : (
+                    <Card>
+                        <CardContent className="text-center py-16">
+                            <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <p className="mt-4 text-muted-foreground text-lg">No scores have been submitted yet.</p>
+                            <p className="text-muted-foreground">The leaderboard will update in real-time as judges submit scores.</p>
+                        </CardContent>
+                    </Card>
+                )}
+            </TooltipProvider>
         </div>
     );
 };

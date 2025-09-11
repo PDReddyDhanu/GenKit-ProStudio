@@ -5,8 +5,14 @@ import React, { useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import { Github, GalleryVertical } from 'lucide-react';
+import { Github, GalleryVertical, Award } from 'lucide-react';
 import PageIntro from '@/components/PageIntro';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function ProjectGallery() {
     const { state } = useHackathon();
@@ -22,35 +28,51 @@ export default function ProjectGallery() {
             <h1 className="text-4xl font-bold text-center mb-12 font-headline">Project Showcase for {state.selectedCollege}</h1>
             
             {projects.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 [perspective:1000px]">
-                    {projects.map((project, index) => {
-                        const team = teams.find(t => t.id === project.teamId);
-                        return (
-                            <Card 
-                                key={project.id} 
-                                className="flex flex-col transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]"
-                                style={{ animationDelay: `${index * 100}ms` }}
-                            >
-                                <CardHeader>
-                                    <CardTitle className="font-headline">{project.name}</CardTitle>
-                                    <CardDescription>by {team?.name || 'Unknown Team'}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex-grow flex flex-col justify-between">
-                                    <p className="text-muted-foreground mb-4">{project.description}</p>
-                                    <Link 
-                                        href={project.githubUrl} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        className="inline-flex items-center gap-2 text-accent hover:underline mt-auto"
-                                    >
-                                        <Github className="h-4 w-4" />
-                                        View on GitHub
-                                    </Link>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </div>
+                 <TooltipProvider>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 [perspective:1000px]">
+                        {projects.map((project, index) => {
+                            const team = teams.find(t => t.id === project.teamId);
+                            return (
+                                <Card 
+                                    key={project.id} 
+                                    className="flex flex-col transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]"
+                                    style={{ animationDelay: `${index * 100}ms` }}
+                                >
+                                    <CardHeader>
+                                        <CardTitle className="font-headline">{project.name}</CardTitle>
+                                        <CardDescription>by {team?.name || 'Unknown Team'}</CardDescription>
+                                        {project.achievements && project.achievements.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 pt-2">
+                                                {project.achievements.map(achievement => (
+                                                    <Tooltip key={achievement}>
+                                                        <TooltipTrigger>
+                                                            <Award className="w-5 h-5 text-yellow-500" />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>{achievement}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </CardHeader>
+                                    <CardContent className="flex-grow flex flex-col justify-between">
+                                        <p className="text-muted-foreground mb-4">{project.description}</p>
+                                        <Link 
+                                            href={project.githubUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="inline-flex items-center gap-2 text-accent hover:underline mt-auto"
+                                        >
+                                            <Github className="h-4 w-4" />
+                                            View on GitHub
+                                        </Link>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                </TooltipProvider>
             ) : (
                 <Card>
                     <CardContent className="py-16">

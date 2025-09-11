@@ -61,6 +61,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/recharts": "^1.8.29",
     "@tailwindcss/typography": "^0.5.13",
     "@types/jspdf": "^2.0.0",
     "@types/marked": "^6.0.0",

@@ -16,6 +16,7 @@ import { Shield, Loader } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import JudgingDashboard from '@/app/judge/_components/JudgingDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
+import AnalyticsDashboard from './_components/AnalyticsDashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
@@ -98,10 +99,11 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue="hackathons" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>
                     <TabsTrigger value="announcements">Announcements</TabsTrigger>
+                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
                     <TabsTrigger value="data">Data & Reset</TabsTrigger>
                 </TabsList>
                  <TabsContent value="hackathons" className="mt-6">
@@ -112,6 +114,9 @@ export default function AdminPortal() {
                 </TabsContent>
                 <TabsContent value="announcements" className="mt-6">
                     <Announcements />
+                </TabsContent>
+                 <TabsContent value="analytics" className="mt-6">
+                    {currentHackathon ? <AnalyticsDashboard hackathon={currentHackathon} /> : <p className="text-center text-muted-foreground">Please select a hackathon to view analytics.</p>}
                 </TabsContent>
                 <TabsContent value="data" className="mt-6">
                     <DataManagement />

@@ -63,6 +63,8 @@ export interface Project {
   githubUrl: string;
   scores: Score[];
   averageScore: number;
+  achievements?: string[];
+  submittedAt?: number;
 }
 
 export interface Judge {
