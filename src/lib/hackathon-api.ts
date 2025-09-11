@@ -230,7 +230,7 @@ export async function requestToJoinTeamByCode(collegeId: string, hackathonId: st
     const userTeamsQuery = query(
         collection(db, `colleges/${collegeId}/teams`), 
         where("hackathonId", "==", hackathonId),
-        where("members.id", "==", user.id)
+        where("members", "array-contains", {id: user.id, name: user.name, email: user.email})
     );
     const userTeamsSnapshot = await getDocs(userTeamsQuery);
     if (!userTeamsSnapshot.empty) {
@@ -251,7 +251,7 @@ export async function requestToJoinTeamByCode(collegeId: string, hackathonId: st
 export async function requestToJoinTeamById(collegeId: string, hackathonId: string, teamId: string, user: User) {
     const userTeamsQuery = query(collection(db, `colleges/${collegeId}/teams`), 
         where('hackathonId', '==', hackathonId), 
-        where('members.id', '==', user.id)
+        where('members', 'array-contains', {id: user.id, name: user.name, email: user.email})
     );
 
     const userTeamsSnapshot = await getDocs(userTeamsQuery);
@@ -427,28 +427,24 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
     const projectDoc = await getDoc(projectRef);
     const project = projectDoc.data() as Project;
 
-    const otherScores = project.scores.filter(s => s.judgeId !== judgeId);
-    const newScores = [...otherScores, ...scores];
+    // Remove old scores from this judge for both team and individuals
+    const otherJudgesScores = project.scores.filter(s => s.judgeId !== judgeId);
+    const newScores = [...otherJudgesScores, ...scores];
 
-    const JUDGING_RUBRIC = [
-        { id: 'innovation', name: 'Innovation & Originality', max: 10 },
-        { id: 'technical_complexity', name: 'Technical Complexity & Execution', max: 10 },
-        { id: 'ui_ux', name: 'UI/UX Design & Presentation', max: 10 },
-        { id: 'collaboration', name: 'Team Collaboration', max: 5 },
-        { id: 'problem_solving', name: 'Problem-Solving Approach', max: 5 },
-    ];
+    // Recalculate average score based only on team scores
+    const teamScores = newScores.filter(s => !s.memberId);
     
-    const uniqueJudges = new Set(newScores.map(s => s.judgeId));
-    let totalPossibleScore = 0;
-    if (uniqueJudges.size > 0) {
-         totalPossibleScore = uniqueJudges.size * JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
-    }
-    const totalScore = newScores.reduce((sum, score) => sum + score.value, 0);
-    const averageScore = totalPossibleScore > 0 ? (totalScore / uniqueJudges.size) : 0;
+    const uniqueJudges = new Set(teamScores.map(s => s.judgeId));
+    let totalScore = 0;
     
-    const maxScore = JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
-    const scaledScore = maxScore > 0 ? (averageScore / maxScore) * 10 : 0;
+    uniqueJudges.forEach(id => {
+        const judgeScores = teamScores.filter(s => s.judgeId === id);
+        totalScore += judgeScores.reduce((sum, score) => sum + score.value, 0);
+    });
 
+    const maxScorePerJudge = JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
+    const averageScore = uniqueJudges.size > 0 ? (totalScore / uniqueJudges.size) : 0;
+    const scaledScore = maxScorePerJudge > 0 ? (averageScore / maxScorePerJudge) * 10 : 0;
 
     await updateDoc(projectRef, { scores: newScores, averageScore: scaledScore });
     return { successMessage: "Scores submitted successfully." };

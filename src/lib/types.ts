@@ -76,6 +76,7 @@ export interface Score {
   criteria: string;
   value: number; // e.g., 1-10
   comment: string;
+  memberId?: string; // Optional: To score individual members
 }
 
 export interface Announcement {

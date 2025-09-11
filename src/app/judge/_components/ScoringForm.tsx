@@ -8,12 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
-import { Project, Score } from '@/lib/types';
-import { JUDGING_RUBRIC } from '@/lib/constants';
+import { Project, Score, TeamMember } from '@/lib/types';
+import { JUDGING_RUBRIC, INDIVIDUAL_JUDGING_RUBRIC } from '@/lib/constants';
 import Link from 'next/link';
-import { ArrowLeft, Bot, Loader } from 'lucide-react';
+import { Bot, Loader, User } from 'lucide-react';
 import { getAiProjectSummary } from '@/app/actions';
 import BackButton from '@/components/layout/BackButton';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 interface ScoringFormProps {
     project: Project;
@@ -24,31 +25,47 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
     const { state, api } = useHackathon();
     const { currentJudge, teams, selectedHackathonId } = state;
 
-    const [scores, setScores] = useState<Record<string, number>>({});
-    const [comments, setComments] = useState<Record<string, string>>({});
+    const [scores, setScores] = useState<Record<string, Record<string, number>>>({}); // { [memberId/team]: { [criteriaId]: value } }
+    const [comments, setComments] = useState<Record<string, Record<string, string>>>({}); // { [memberId/team]: { [criteriaId]: comment } }
+
     const [aiSummary, setAiSummary] = useState('');
     const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
+    const team = teams.find(t => t.id === project.teamId);
+
     useEffect(() => {
-        const initialScores: Record<string, number> = {};
-        const initialComments: Record<string, string> = {};
+        if (!currentJudge) return;
+
+        const initialScores: Record<string, Record<string, number>> = {};
+        const initialComments: Record<string, Record<string, string>> = {};
+
         project.scores
-            .filter(s => s.judgeId === currentJudge?.id)
+            .filter(s => s.judgeId === currentJudge.id)
             .forEach(s => {
-                initialScores[s.criteria] = s.value;
-                initialComments[s.criteria] = s.comment;
+                const targetId = s.memberId || 'team';
+                if (!initialScores[targetId]) initialScores[targetId] = {};
+                if (!initialComments[targetId]) initialComments[targetId] = {};
+                
+                initialScores[targetId][s.criteria] = s.value;
+                initialComments[targetId][s.criteria] = s.comment;
             });
         setScores(initialScores);
         setComments(initialComments);
     }, [project, currentJudge]);
 
-    const handleScoreChange = (criteriaId: string, value: number[]) => {
-        setScores(prev => ({ ...prev, [criteriaId]: value[0] }));
+    const handleScoreChange = (targetId: string, criteriaId: string, value: number[]) => {
+        setScores(prev => ({
+            ...prev,
+            [targetId]: { ...prev[targetId], [criteriaId]: value[0] }
+        }));
     };
 
-    const handleCommentChange = (criteriaId: string, value: string) => {
-        setComments(prev => ({ ...prev, [criteriaId]: value }));
+    const handleCommentChange = (targetId: string, criteriaId: string, value: string) => {
+        setComments(prev => ({
+            ...prev,
+            [targetId]: { ...prev[targetId], [criteriaId]: value }
+        }));
     };
 
     const handleGenerateSummary = async () => {
@@ -73,14 +90,34 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
         e.preventDefault();
         if (project && currentJudge && selectedHackathonId) {
             setIsSubmitting(true);
-            const projectScores: Score[] = JUDGING_RUBRIC.map(criteria => ({
-                judgeId: currentJudge.id,
-                criteria: criteria.id,
-                value: scores[criteria.id] || 0,
-                comment: comments[criteria.id] || '',
-            }));
+            
+            const allScores: Score[] = [];
+            
+            // Team scores
+            JUDGING_RUBRIC.forEach(criteria => {
+                allScores.push({
+                    judgeId: currentJudge.id,
+                    criteria: criteria.id,
+                    value: scores['team']?.[criteria.id] || 0,
+                    comment: comments['team']?.[criteria.id] || '',
+                });
+            });
+
+            // Individual scores
+            team?.members.forEach(member => {
+                INDIVIDUAL_JUDGING_RUBRIC.forEach(criteria => {
+                    allScores.push({
+                        judgeId: currentJudge.id,
+                        memberId: member.id,
+                        criteria: criteria.id,
+                        value: scores[member.id]?.[criteria.id] || 0,
+                        comment: comments[member.id]?.[criteria.id] || '',
+                    });
+                });
+            });
+            
             try {
-                await api.scoreProject(selectedHackathonId, project.id, currentJudge.id, projectScores);
+                await api.scoreProject(selectedHackathonId, project.id, currentJudge.id, allScores);
                 onBack();
             } finally {
                 setIsSubmitting(false);
@@ -88,7 +125,34 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
         }
     };
     
-    const team = teams.find(t => t.id === project.teamId);
+    const renderScoringBlock = (rubric: typeof JUDGING_RUBRIC, targetId: string) => (
+        <div className="space-y-6">
+            {rubric.map(criteria => (
+                <div key={`${targetId}-${criteria.id}`}>
+                    <Label htmlFor={`score-${targetId}-${criteria.id}`} className="text-foreground text-base">{criteria.name} (0-{criteria.max})</Label>
+                    <div className="flex items-center gap-4 mt-2">
+                        <Slider
+                            id={`score-${targetId}-${criteria.id}`}
+                            min={0}
+                            max={criteria.max}
+                            step={1}
+                            value={[scores[targetId]?.[criteria.id] || 0]}
+                            onValueChange={(value) => handleScoreChange(targetId, criteria.id, value)}
+                            disabled={isSubmitting}
+                        />
+                        <span className="font-bold text-lg text-accent w-12 text-center">{scores[targetId]?.[criteria.id] || 0}</span>
+                    </div>
+                    <Textarea
+                        placeholder="Comments (optional)"
+                        value={comments[targetId]?.[criteria.id] || ''}
+                        onChange={e => handleCommentChange(targetId, criteria.id, e.target.value)}
+                        className="mt-2"
+                        disabled={isSubmitting}
+                    />
+                </div>
+            ))}
+        </div>
+    );
 
     return (
         <div className="container max-w-3xl mx-auto py-12 animate-slide-in-up">
@@ -117,38 +181,34 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
                     </div>
                 </CardContent>
                 
-                <CardContent>
-                    <form onSubmit={handleSubmitScores} className="space-y-6 border-t pt-6">
-                        <h3 className="text-xl font-bold font-headline">Scoring Rubric</h3>
-                        {JUDGING_RUBRIC.map(criteria => (
-                            <div key={criteria.id}>
-                                <Label htmlFor={`score-${criteria.id}`} className="text-foreground text-base">{criteria.name} (0-{criteria.max})</Label>
-                                <div className="flex items-center gap-4 mt-2">
-                                    <Slider
-                                        id={`score-${criteria.id}`}
-                                        min={0}
-                                        max={criteria.max}
-                                        step={1}
-                                        value={[scores[criteria.id] || 0]}
-                                        onValueChange={(value) => handleScoreChange(criteria.id, value)}
-                                        disabled={isSubmitting}
-                                    />
-                                    <span className="font-bold text-lg text-accent w-12 text-center">{scores[criteria.id] || 0}</span>
-                                </div>
-                                <Textarea
-                                  placeholder="Comments (optional)"
-                                  value={comments[criteria.id] || ''}
-                                  onChange={e => handleCommentChange(criteria.id, e.target.value)}
-                                  className="mt-2"
-                                  disabled={isSubmitting}
-                                />
-                            </div>
-                        ))}
+                <form onSubmit={handleSubmitScores}>
+                    <CardContent className="border-t pt-6">
+                        <h3 className="text-xl font-bold font-headline mb-4">Team Scoring</h3>
+                        {renderScoringBlock(JUDGING_RUBRIC, 'team')}
+                    </CardContent>
+
+                    <CardContent className="border-t pt-6">
+                        <h3 className="text-xl font-bold font-headline mb-4">Individual Scoring</h3>
+                         <Accordion type="single" collapsible className="w-full">
+                            {team?.members.map(member => (
+                                <AccordionItem value={member.id} key={member.id}>
+                                    <AccordionTrigger>
+                                        <span className="flex items-center gap-2"><User className="h-4 w-4"/>{member.name}</span>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        {renderScoringBlock(INDIVIDUAL_JUDGING_RUBRIC, member.id)}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
+                    </CardContent>
+
+                    <CardFooter className="border-t pt-6">
                         <Button type="submit" className="w-full" disabled={isSubmitting}>
                            {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Score'}
                         </Button>
-                    </form>
-                </CardContent>
+                    </CardFooter>
+                </form>
             </Card>
         </div>
     );
