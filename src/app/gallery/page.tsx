@@ -29,7 +29,7 @@ export default function ProjectGallery() {
                             <Card 
                                 key={project.id} 
                                 className="flex flex-col transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]"
-                                style={{ animationDelay: `${index * 150}ms` }}
+                                style={{ animationDelay: `${index * 100}ms` }}
                             >
                                 <CardHeader>
                                     <CardTitle className="font-headline">{project.name}</CardTitle>

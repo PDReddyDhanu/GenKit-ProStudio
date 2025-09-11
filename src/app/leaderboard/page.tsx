@@ -17,7 +17,7 @@ export default function Leaderboard() {
     const leaderboardData = useMemo(() => {
         return projects
             .filter(p => p.averageScore > 0)
-            .sort((a, b) => b.averageScore - a.score)
+            .sort((a, b) => b.averageScore - a.averageScore)
             .slice(0, 10)
             .map((p, index) => {
                 const teamName = teams.find(t => t.id === p.teamId)?.name || 'Unknown Team';
