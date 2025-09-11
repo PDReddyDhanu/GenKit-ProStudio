@@ -237,14 +237,27 @@ export async function postAnnouncement(collegeId: string, data: Partial<Omit<Ann
     const newAnnouncement: Omit<Announcement, 'id'> = {
         message: data.message!,
         timestamp: Date.now(),
-        ...data
     };
+    if (data.publishAt) {
+        newAnnouncement.publishAt = data.publishAt;
+    }
+    if (data.expiresAt) {
+        newAnnouncement.expiresAt = data.expiresAt;
+    }
+
     await addDoc(collection(db, `colleges/${collegeId}/announcements`), newAnnouncement);
     return { successMessage: 'Announcement posted successfully.' };
 }
 
 export async function updateAnnouncement(collegeId: string, announcementId: string, data: Partial<Omit<Announcement, 'id' | 'timestamp'>>) {
-    await updateDoc(doc(db, `colleges/${collegeId}/announcements`, announcementId), data);
+    const updateData: Partial<Announcement> = { message: data.message! };
+    if (data.publishAt) {
+        updateData.publishAt = data.publishAt;
+    }
+     if (data.expiresAt) {
+        updateData.expiresAt = data.expiresAt;
+    }
+    await updateDoc(doc(db, `colleges/${collegeId}/announcements`, announcementId), updateData);
     return { successMessage: 'Announcement updated successfully.' };
 }
 
@@ -572,4 +585,3 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
     });
     return { successMessage: "Scores submitted successfully." };
 }
-
