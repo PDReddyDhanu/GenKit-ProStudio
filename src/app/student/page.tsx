@@ -31,7 +31,7 @@ export default function StudentPortal() {
     return (
         <div className="container max-w-7xl mx-auto py-12">
              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
-                <h1 className="text-4xl font-bold font-headline">Student Portal</h1>
+                <h1 className="text-3xl md:text-4xl font-bold font-headline">Student Portal</h1>
             </div>
              <Tabs defaultValue="dashboard" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">

@@ -28,7 +28,7 @@ export default function JudgingDashboard() {
     return (
         <div className="animate-slide-in-up container max-w-7xl mx-auto py-12">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
-                <h1 className="text-4xl font-bold font-headline">Judge Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
+                <h1 className="text-3xl md:text-4xl font-bold font-headline">Judge Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
                 <div>
                      <Select onValueChange={handleHackathonChange} value={selectedHackathonId || "default"}>
                         <SelectTrigger className="w-full sm:w-[280px]">
@@ -46,7 +46,7 @@ export default function JudgingDashboard() {
             <AuthMessage />
             
              <Tabs defaultValue="judging" className="w-full">
-                <TabsList className="grid w-full grid-cols-6">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto md:h-10">
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="judging">Project Scoring</TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>

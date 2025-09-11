@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, Menu, LogOut, Building2 } from 'lucide-react';
+import { Trophy, Rss, Menu, LogOut, Building2, User, UserCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -38,7 +38,7 @@ const NavLink = ({ href, children, onClick }: { href: string; children: React.Re
 
 export function Header() {
     const { state, api, dispatch } = useHackathon();
-    const { announcements, currentUser } = state;
+    const { announcements, currentUser, currentJudge, currentAdmin } = state;
     const router = useRouter();
     const [hasUnread, setHasUnread] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -133,10 +133,13 @@ export function Header() {
                     </Button>
 
                     <div className="hidden sm:flex items-center gap-2">
-                        {state.currentUser ? (
+                        {currentUser ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost">Welcome, {state.currentUser.name.split(' ')[0]}</Button>
+                                    <Button variant="ghost" className="flex items-center gap-2">
+                                        <UserCircle className="h-5 w-5" />
+                                        {currentUser.name.split(' ')[0]}
+                                    </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
@@ -149,10 +152,10 @@ export function Header() {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                        ) : state.currentJudge ? (
+                        ) : currentJudge ? (
                              <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost">Judge: {state.currentJudge.name.split(' ')[0]}</Button>
+                                    <Button variant="ghost">Judge: {currentJudge.name.split(' ')[0]}</Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuLabel>Judge Menu</DropdownMenuLabel>
@@ -163,7 +166,7 @@ export function Header() {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                        ): state.currentAdmin ? (
+                        ): currentAdmin ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost">Admin Menu</Button>
@@ -219,17 +222,17 @@ export function Header() {
                                     <Button variant="outline" className="w-full" onClick={() => {handleChangeCollege(); closeMobileMenu();}}>
                                         Change College
                                     </Button>
-                                    {state.currentUser ? (
+                                    {currentUser ? (
                                         <div className="flex flex-col gap-2">
                                            <Button variant="ghost" asChild><Link href="/profile" onClick={closeMobileMenu}>Profile</Link></Button>
                                             <Button variant="secondary" onClick={handleLogout}>Logout</Button>
                                         </div>
-                                    ) : state.currentJudge ? (
+                                    ) : currentJudge ? (
                                         <div className="flex flex-col gap-2">
-                                             <span className="text-sm text-muted-foreground text-center py-2">Judge: {state.currentJudge.name}</span>
+                                             <span className="text-sm text-muted-foreground text-center py-2">Judge: {currentJudge.name}</span>
                                              <Button variant="secondary" onClick={handleLogout}>Logout</Button>
                                         </div>
-                                    ): state.currentAdmin ? (
+                                    ): currentAdmin ? (
                                          <div className="flex flex-col gap-2">
                                             <span className="text-sm text-muted-foreground text-center py-2">Welcome, Admin</span>
                                             <Button variant="secondary" onClick={handleLogout}>Logout</Button>

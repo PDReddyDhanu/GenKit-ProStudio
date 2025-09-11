@@ -81,7 +81,7 @@ export default function AdminPortal() {
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-slide-in-up">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
-                <h1 className="text-4xl font-bold font-headline">Admin Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
+                <h1 className="text-3xl md:text-4xl font-bold font-headline">Admin Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
                 <div>
                      <Select onValueChange={handleHackathonChange} value={selectedHackathonId || "default"}>
                         <SelectTrigger className="w-full sm:w-[280px]">
@@ -99,7 +99,7 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue="hackathons" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 h-auto md:h-10">
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>
                     <TabsTrigger value="announcements">Announcements</TabsTrigger>
