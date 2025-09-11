@@ -125,7 +125,7 @@ export default function TeamFinder() {
             </div>
             
             {filteredTeams.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [perspective:1000px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredTeams.map(team => {
                         const isFull = team.members.length >= (currentHackathon?.teamSizeLimit || 4);
                         const isMyTeam = team.id === myTeamId;
@@ -133,26 +133,28 @@ export default function TeamFinder() {
                         const canJoin = !isFull && !isMyTeam && !hasPendingRequest && !!currentUser;
                         
                         return (
-                            <Card key={team.id} className="group flex flex-col transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]">
-                                <CardHeader>
-                                    <CardTitle className="font-headline">{team.name}</CardTitle>
-                                    <CardDescription className="flex items-center gap-2">
-                                        <Users className="h-4 w-4" /> {team.members.length} / {currentHackathon?.teamSizeLimit || 4} members
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex-grow">
-                                    <h4 className="font-semibold mb-2 text-sm">Members:</h4>
-                                    <ul className="space-y-1">
-                                        {team.members.map(member => (
-                                            <li key={member.id} className="flex items-center gap-2 text-muted-foreground text-sm">
-                                                <User className="h-4 w-4" /> {member.name}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </CardContent>
-                                <CardFooter className="pt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                     <Button 
-                                        className="w-full"
+                            <Card key={team.id} className="group relative flex flex-col transition-all duration-300 transform-gpu animate-card-in">
+                                <div className="flex flex-col flex-grow">
+                                    <CardHeader>
+                                        <CardTitle className="font-headline">{team.name}</CardTitle>
+                                        <CardDescription className="flex items-center gap-2">
+                                            <Users className="h-4 w-4" /> {team.members.length} / {currentHackathon?.teamSizeLimit || 4} members
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex-grow">
+                                        <h4 className="font-semibold mb-2 text-sm">Members:</h4>
+                                        <ul className="space-y-1">
+                                            {team.members.map(member => (
+                                                <li key={member.id} className="flex items-center gap-2 text-muted-foreground text-sm">
+                                                    <User className="h-4 w-4" /> {member.name}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </CardContent>
+                                </div>
+                                <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+                                    <Button 
+                                        variant="secondary"
                                         onClick={() => handleRequestToJoin(team)}
                                         disabled={!canJoin || !!isJoining}
                                     >
@@ -163,7 +165,7 @@ export default function TeamFinder() {
                                          !currentUser ? 'Login to Join' : 
                                          'Request to Join'}
                                     </Button>
-                                </CardFooter>
+                                </div>
                             </Card>
                         )
                     })}
@@ -178,4 +180,3 @@ export default function TeamFinder() {
         </div>
     );
 }
-
