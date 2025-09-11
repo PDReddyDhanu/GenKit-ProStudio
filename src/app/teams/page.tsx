@@ -77,12 +77,7 @@ export default function TeamFinder() {
     if (!selectedHackathonId || !currentHackathon) {
         return (
             <div className="py-12 animate-slide-in-up">
-                 <Card className="max-w-2xl mx-auto">
-                    <CardHeader>
-                        <CardTitle>Select a Hackathon</CardTitle>
-                        <CardDescription>Please select a hackathon from the student dashboard to see available teams.</CardDescription>
-                    </CardHeader>
-                </Card>
+                 <HackathonSelector />
             </div>
         )
     }
@@ -183,3 +178,4 @@ export default function TeamFinder() {
         </div>
     );
 }
+
