@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useHackathon } from '@/context/HackathonProvider';
@@ -7,11 +6,11 @@ import ProjectSubmission from './ProjectSubmission';
 import ProjectView from './ProjectView';
 import { AuthMessage } from '@/components/AuthMessage';
 import { useMemo } from 'react';
-import HackathonSelector from './HackathonSelector';
 import type { Hackathon } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Countdown } from './Countdown';
 import TeamHub from './TeamHub';
+import StudentHomeDashboard from './StudentHomeDashboard';
 
 
 function HackathonHeader({ hackathon }: { hackathon: Hackathon }) {
@@ -53,7 +52,7 @@ export default function Dashboard() {
         return (
              <div className="py-12 animate-slide-in-up">
                 <AuthMessage />
-                <HackathonSelector />
+                <StudentHomeDashboard />
             </div>
         )
     }
