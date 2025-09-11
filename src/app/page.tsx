@@ -1,19 +1,52 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale } from "lucide-react";
 import Link from "next/link";
 
-const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => (
-    <Card className="text-center flex flex-col items-center border-border/60 transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]">
-        <CardHeader className="items-center">
-            <div className="mb-4 text-primary">{icon}</div>
-            <CardTitle className="font-headline">{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <p className="text-muted-foreground">{description}</p>
-        </CardContent>
-    </Card>
+const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
+    <div 
+        className="group relative rounded-lg border border-border/40 bg-card/20 p-6 text-center transition-all duration-300 transform-gpu animate-card-in will-change-transform hover:[transform:perspective(1000px)_rotateX(var(--rotate-x,0))_rotateY(var(--rotate-y,0))_scale3d(1.05,1.05,1.05)]"
+        style={{ animationDelay: `${index * 100}ms` }}
+        onMouseMove={(e) => {
+            const card = e.currentTarget;
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const rotateY = (x / rect.width - 0.5) * 20;
+            const rotateX = (0.5 - y / rect.height) * 20;
+            card.style.setProperty('--rotate-y', `${rotateY}deg`);
+            card.style.setProperty('--rotate-x', `${rotateX}deg`);
+        }}
+        onMouseLeave={(e) => {
+            const card = e.currentTarget;
+            card.style.setProperty('--rotate-y', '0deg');
+            card.style.setProperty('--rotate-x', '0deg');
+        }}
+    >
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
+        <div className="relative">
+            <div className="mb-4 text-primary w-12 h-12 mx-auto flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
+                {icon}
+            </div>
+            <h3 className="text-xl font-bold font-headline text-foreground">{title}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+        </div>
+    </div>
 );
+
+
+const features = [
+    { icon: <Users className="w-8 h-8" />, title: "Team Formation", description: "Easily register, create, and join teams to start collaborating." },
+    { icon: <Lightbulb className="w-8 h-8" />, title: "AI Idea Generation", description: "Brainstorm project ideas with our intelligent suggestion system." },
+    { icon: <Github className="w-8 h-8" />, title: "Project Submissions", description: "Seamlessly submit your projects with GitHub repository integration." },
+    { icon: <BarChart className="w-8 h-8" />, title: "Live Leaderboard", description: "Track team progress in real-time with our dynamic leaderboard." },
+    { icon: <FileText className="w-8 h-8" />, title: "AI Code Review", description: "Get instant, AI-powered feedback on your code submissions." },
+    { icon: <GalleryVertical className="w-8 h-8" />, title: "Project Showcase", description: "A gallery of all submitted projects to celebrate the work." },
+    { icon: <Scale className="w-8 h-8" />, title: "Fair Judging", description: "A dedicated portal for judges to score projects, enhanced with AI summaries." },
+    { icon: <Handshake className="w-8 h-8" />, title: "Team Finder", description: "Discover teams or recruit members based on skills and interests." },
+];
+
 
 export default function Home() {
   return (
@@ -38,46 +71,15 @@ export default function Home() {
         <section className="py-24">
             <h2 className="text-3xl font-bold text-center mb-12 font-headline">Key Features</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 [perspective:1000px]">
-                 <FeatureCard
-                    icon={<Users className="w-12 h-12" />}
-                    title="Team Formation"
-                    description="Easily register, create, and join teams to start collaborating."
-                />
-                <FeatureCard
-                    icon={<Lightbulb className="w-12 h-12" />}
-                    title="AI Idea Generation"
-                    description="Brainstorm project ideas with our intelligent suggestion system."
-                />
-                <FeatureCard
-                    icon={<Github className="w-12 h-12" />}
-                    title="Project Submissions"
-                    description="Seamlessly submit your projects with GitHub repository integration."
-                />
-                <FeatureCard
-                    icon={<BarChart className="w-12 h-12" />}
-                    title="Live Leaderboard"
-                    description="Track team progress in real-time with our dynamic leaderboard."
-                />
-                 <FeatureCard
-                    icon={<FileText className="w-12 h-12" />}
-                    title="AI Code Review"
-                    description="Get instant, AI-powered feedback on your code submissions."
-                />
-                 <FeatureCard
-                    icon={<GalleryVertical className="w-12 h-12" />}
-                    title="Project Showcase"
-                    description="A gallery of all submitted projects to celebrate the work."
-                />
-                <FeatureCard
-                    icon={<Scale className="w-12 h-12" />}
-                    title="Fair Judging"
-                    description="A dedicated portal for judges to score projects, enhanced with AI summaries."
-                />
-                <FeatureCard
-                    icon={<Handshake className="w-12 h-12" />}
-                    title="Team Finder"
-                    description="Discover teams or recruit members based on skills and interests."
-                />
+                 {features.map((feature, index) => (
+                    <FeatureCard 
+                        key={feature.title}
+                        icon={feature.icon}
+                        title={feature.title}
+                        description={feature.description}
+                        index={index}
+                    />
+                 ))}
             </div>
         </section>
     </div>

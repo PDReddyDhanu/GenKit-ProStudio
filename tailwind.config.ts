@@ -145,7 +145,7 @@ export default {
         'fade-in': 'fade-in 0.5s ease-in-out forwards',
         'slide-in-up': 'slide-in-up 0.5s ease-in-out forwards',
         'slide-in-down': 'slide-in-down 0.5s ease-in-out forwards',
-        'card-in': 'card-in 0.6s ease-out forwards',
+        'card-in': 'card-in 0.6s ease-out forwards both',
         'confetti-rain': 'confetti-rain linear infinite',
         'title-reveal': 'title-reveal 4s ease-out forwards',
         'slow-zoom-in': 'slow-zoom-in 4s ease-out forwards',
