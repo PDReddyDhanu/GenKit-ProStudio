@@ -471,6 +471,33 @@ export async function submitProject(collegeId: string, hackathonId: string, { na
     return { successMessage: "Project submitted successfully!" };
 }
 
+export async function updateProject(collegeId: string, projectId: string, projectData: Partial<Pick<Project, 'name' | 'description' | 'githubUrl'>>) {
+    const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
+    const projectDoc = await getDoc(projectRef);
+
+    if (!projectDoc.exists()) {
+        throw new Error("Project not found");
+    }
+
+    const originalProject = projectDoc.data() as Project;
+    await updateDoc(projectRef, projectData);
+
+    // Check if name or description changed to regenerate the image
+    if (projectData.name !== originalProject.name || projectData.description !== originalProject.description) {
+         generateProjectImage({ projectName: projectData.name!, projectDescription: projectData.description! })
+            .then(async (result) => {
+                if (result.imageUrl) {
+                    await updateDoc(projectRef, { imageUrl: result.imageUrl });
+                }
+            })
+            .catch(error => {
+                console.error("Failed to re-generate project image after update:", error);
+            });
+    }
+
+    return { successMessage: "Project updated successfully." };
+}
+
 
 export async function updateProfile(collegeId: string, userId: string, profileData: Partial<UserProfileData>) {
     await updateDoc(doc(db, `colleges/${collegeId}/users`, userId), profileData);
