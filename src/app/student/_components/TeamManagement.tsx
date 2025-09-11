@@ -12,21 +12,19 @@ import BackButton from '@/components/layout/BackButton';
 
 export default function TeamManagement() {
     const { state, api } = useHackathon();
-    const { currentUser, selectedHackathonId, teams, hackathons } = state;
+    const { currentUser, selectedHackathonId, teams } = state;
     const [teamName, setTeamName] = useState('');
     const [joinCode, setJoinCode] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [isJoining, setIsJoining] = useState(false);
-    
-    // Check if the user is already on a team FOR THIS HACKATHON
-    const isOnTeamInThisHackathon = useMemo(() => {
-        if (!currentUser || !selectedHackathonId) return false;
-        return teams.some(team => 
-            team.hackathonId === selectedHackathonId && 
-            team.members.some(member => member.id === currentUser.id)
+
+    const pendingRequestTeam = useMemo(() => {
+        if (!currentUser || !selectedHackathonId) return null;
+        return teams.find(team => 
+            team.hackathonId === selectedHackathonId &&
+            team.joinRequests?.some(req => req.id === currentUser.id)
         );
     }, [teams, currentUser, selectedHackathonId]);
-
 
     const handleCreateTeam = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,16 +43,29 @@ export default function TeamManagement() {
         if (currentUser && selectedHackathonId) {
             setIsJoining(true);
             try {
-                await api.joinTeamByCode(selectedHackathonId, joinCode, currentUser);
+                await api.requestToJoinTeamByCode(selectedHackathonId, joinCode, currentUser);
             } finally {
                 setIsJoining(false);
             }
         }
     };
 
-    // If already on a team for this hackathon, they shouldn't see this page.
-    // The main Dashboard component should prevent this, but this is a fallback.
-    if (isOnTeamInThisHackathon) return null;
+    if (pendingRequestTeam) {
+        return (
+            <div className="container max-w-2xl mx-auto py-12">
+                <BackButton />
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">Request Pending</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-lg text-muted-foreground">Your request to join team <strong className="text-primary">{pendingRequestTeam.name}</strong> is pending approval from the team leader.</p>
+                        <p className="text-muted-foreground mt-2">You will be notified once they respond.</p>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div className="container max-w-4xl mx-auto">
@@ -80,7 +91,7 @@ export default function TeamManagement() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="font-headline">Join a Team</CardTitle>
-                        <CardDescription>Enter a team's code to instantly join.</CardDescription>
+                        <CardDescription>Enter a team's code to send a join request.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleJoinTeam} className="space-y-4">
@@ -89,7 +100,7 @@ export default function TeamManagement() {
                                 <Input id="joinCode" type="text" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} required disabled={isJoining} />
                             </div>
                             <Button type="submit" variant="secondary" className="w-full" disabled={isJoining}>
-                                 {isJoining ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Joining...</> : 'Join Team'}
+                                 {isJoining ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Sending Request...</> : 'Send Request to Join'}
                             </Button>
                         </form>
                     </CardContent>

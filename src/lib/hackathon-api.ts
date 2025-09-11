@@ -217,20 +217,13 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
         hackathonId,
         projectId: "",
         messages: [],
+        joinRequests: [],
     };
     const teamRef = await addDoc(collection(db, `colleges/${collegeId}/teams`), newTeam);
     return { successMessage: "Team created successfully!", teamId: teamRef.id };
 }
 
-export async function joinTeamByCode(collegeId: string, hackathonId: string, joinCode: string, user: User) {
-    const hackathonDocRef = doc(db, `colleges/${collegeId}/hackathons`, hackathonId);
-    const hackathonDoc = await getDoc(hackathonDocRef);
-    if (!hackathonDoc.exists()) {
-        throw new Error("Hackathon not found.");
-    }
-    const hackathon = hackathonDoc.data() as Hackathon;
-    const teamSizeLimit = hackathon.teamSizeLimit;
-
+export async function requestToJoinTeamByCode(collegeId: string, hackathonId: string, joinCode: string, user: User) {
     // Check if user is already on a team for this hackathon
     const userTeamsQuery = query(
         collection(db, `colleges/${collegeId}/teams`), 
@@ -252,23 +245,41 @@ export async function joinTeamByCode(collegeId: string, hackathonId: string, joi
     const teamDoc = querySnapshot.docs[0];
     const teamData = teamDoc.data() as Team;
 
-    if (teamData.members.length >= teamSizeLimit) {
-        throw new Error(`This team has reached the maximum size of ${teamSizeLimit} members.`);
+    if (teamData.members.some(m => m.id === user.id) || teamData.joinRequests?.some(r => r.id === user.id)) {
+        throw new Error("You have already joined or requested to join this team.");
     }
     
-    const memberToAdd = { id: user.id, name: user.name, email: user.email, skills: user.skills, bio: user.bio, github: user.github, linkedin: user.linkedin, status: user.status };
+    const request: JoinRequest = {
+        id: user.id,
+        name: user.name,
+        email: user.email
+    };
 
     await updateDoc(teamDoc.ref, {
-        members: arrayUnion(memberToAdd)
+        joinRequests: arrayUnion(request)
     });
 
-    return { successMessage: `Successfully joined team "${teamData.name}"!` };
+    return { successMessage: `Your request to join "${teamData.name}" has been sent!` };
 }
 
 export async function handleJoinRequest(collegeId: string, teamId: string, request: JoinRequest, action: 'accept' | 'reject') {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
+    const teamDoc = await getDoc(teamRef);
+    if (!teamDoc.exists()) throw new Error("Team not found.");
+    const teamData = teamDoc.data() as Team;
+    const hackathonDoc = await getDoc(doc(db, `colleges/${collegeId}/hackathons`, teamData.hackathonId));
+    if (!hackathonDoc.exists()) throw new Error("Hackathon not found.");
+    const hackathon = hackathonDoc.data() as Hackathon;
 
     if (action === 'accept') {
+        if (teamData.members.length >= hackathon.teamSizeLimit) {
+            // Remove the request even if the team is full
+            await updateDoc(teamRef, {
+                joinRequests: arrayRemove(request)
+            });
+            throw new Error(`Team has reached its maximum size of ${hackathon.teamSizeLimit} members.`);
+        }
+        
         const userDoc = await getDoc(doc(db, `colleges/${collegeId}/users`, request.id));
         if(!userDoc.exists()) throw new Error("User trying to join does not exist.");
         
@@ -290,7 +301,6 @@ export async function handleJoinRequest(collegeId: string, teamId: string, reque
 export async function removeTeammate(collegeId: string, teamId: string, memberToRemove: User) {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
 
-    // Construct the object to remove, ensuring it matches what's in the array
     const memberObject = {
         id: memberToRemove.id,
         name: memberToRemove.name,

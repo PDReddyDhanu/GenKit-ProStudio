@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useHackathon } from '@/context/HackathonProvider';
@@ -11,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Countdown } from './Countdown';
 import TeamHub from './TeamHub';
 import StudentHomeDashboard from './StudentHomeDashboard';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 function HackathonHeader({ hackathon }: { hackathon: Hackathon }) {
@@ -26,8 +28,12 @@ function HackathonHeader({ hackathon }: { hackathon: Hackathon }) {
 }
 
 export default function Dashboard() {
-    const { state } = useHackathon();
+    const { state, dispatch } = useHackathon();
     const { currentUser, teams, projects, selectedHackathonId, hackathons } = state;
+
+    const handleHackathonChange = (hackathonId: string) => {
+        dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'default' ? null : hackathonId });
+    }
 
     const currentHackathon = useMemo(() => {
         return hackathons.find(h => h.id === selectedHackathonId);
@@ -35,7 +41,6 @@ export default function Dashboard() {
 
     const currentTeam = useMemo(() => {
         if (!currentUser?.id || !selectedHackathonId) return undefined;
-        // Find the team that the user is a member of for the *currently selected* hackathon
         return teams.find(t => 
             t.hackathonId === selectedHackathonId && 
             t.members.some(m => m.id === currentUser.id)
@@ -47,51 +52,62 @@ export default function Dashboard() {
         return projects.find(p => p.teamId === currentTeam.id && p.hackathonId === selectedHackathonId);
     }, [projects, currentTeam, selectedHackathonId]);
 
-
-    if (!selectedHackathonId || !currentHackathon) {
+    const renderContent = () => {
+        if (!selectedHackathonId || !currentHackathon) {
+            return <StudentHomeDashboard />;
+        }
+        if (!currentTeam) {
+            return (
+                <>
+                    <HackathonHeader hackathon={currentHackathon} />
+                    <TeamManagement />
+                </>
+            );
+        }
         return (
-             <div className="py-12 animate-slide-in-up">
-                <AuthMessage />
-                <StudentHomeDashboard />
-            </div>
-        )
-    }
-
-    if (!currentTeam) {
-        return (
-            <div className="py-12 animate-slide-in-up">
-                <AuthMessage />
+            <>
                 <HackathonHeader hackathon={currentHackathon} />
-                <TeamManagement />
-            </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <main className="lg:col-span-2">
+                        {currentProject ? (
+                            <ProjectView project={currentProject} />
+                        ) : (
+                            <ProjectSubmission team={currentTeam} />
+                        )}
+                    </main>
+                    <aside className="lg:col-span-1 space-y-8">
+                        <TeamHub team={currentTeam} />
+                         <Card>
+                            <CardHeader>
+                                <CardTitle className="font-headline">Rules & Regulations</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                <p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentHackathon.rules}</p>
+                            </CardContent>
+                        </Card>
+                    </aside>
+                </div>
+            </>
         );
-    }
+    };
 
     return (
-        <div className="py-12 animate-slide-in-up">
+        <div className="py-6 animate-slide-in-up">
             <AuthMessage />
-            <HackathonHeader hackathon={currentHackathon} />
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <main className="lg:col-span-2">
-                    {currentProject ? (
-                        <ProjectView project={currentProject} />
-                    ) : (
-                        <ProjectSubmission team={currentTeam} />
-                    )}
-                </main>
-                <aside className="lg:col-span-1 space-y-8">
-                    <TeamHub team={currentTeam} />
-                     <Card>
-                        <CardHeader>
-                            <CardTitle className="font-headline">Rules & Regulations</CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentHackathon.rules}</p>
-                        </CardContent>
-                    </Card>
-                </aside>
+             <div className="mb-8">
+                 <Select onValueChange={handleHackathonChange} value={selectedHackathonId || "default"}>
+                    <SelectTrigger className="w-full sm:w-[280px]">
+                        <SelectValue placeholder="Select a Hackathon" />
+                    </SelectTrigger>
+                    <SelectContent>
+                         <SelectItem value="default">Default View</SelectItem>
+                        {hackathons.map(h => (
+                            <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
+            {renderContent()}
         </div>
     );
 }

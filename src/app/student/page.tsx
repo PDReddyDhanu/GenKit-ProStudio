@@ -6,17 +6,14 @@ import { useHackathon } from '@/context/HackathonProvider';
 import Auth from './_components/Auth';
 import Dashboard from './_components/Dashboard';
 import PageIntro from '@/components/PageIntro';
-import { Code, Users } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Code, Users, ClipboardList } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import InvitationsManagement from './_components/InvitationsManagement';
 
 export default function StudentPortal() {
     const { state, dispatch } = useHackathon();
-    const { currentUser, hackathons, selectedHackathonId } = state;
+    const { currentUser } = state;
     const [showIntro, setShowIntro] = useState(true);
-
-    const handleHackathonChange = (hackathonId: string) => {
-        dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'default' ? null : hackathonId });
-    }
 
     if (showIntro && !currentUser) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<Code className="w-full h-full" />} title="Student Portal" description="Register, login, and start your hackathon journey." />;
@@ -34,22 +31,20 @@ export default function StudentPortal() {
     return (
         <div className="container max-w-7xl mx-auto py-12">
              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
-                <h1 className="text-4xl font-bold font-headline">Student Dashboard</h1>
-                <div>
-                     <Select onValueChange={handleHackathonChange} value={selectedHackathonId || "default"}>
-                        <SelectTrigger className="w-full sm:w-[280px]">
-                            <SelectValue placeholder="Select a Hackathon" />
-                        </SelectTrigger>
-                        <SelectContent>
-                             <SelectItem value="default">Default View</SelectItem>
-                            {hackathons.map(h => (
-                                <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+                <h1 className="text-4xl font-bold font-headline">Student Portal</h1>
             </div>
-            <Dashboard />
+             <Tabs defaultValue="dashboard" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="dashboard"><Users className="mr-2"/> Dashboard</TabsTrigger>
+                    <TabsTrigger value="management"><ClipboardList className="mr-2"/>My Teams & Requests</TabsTrigger>
+                </TabsList>
+                <TabsContent value="dashboard" className="mt-6">
+                    <Dashboard />
+                </TabsContent>
+                <TabsContent value="management" className="mt-6">
+                    <InvitationsManagement />
+                </TabsContent>
+            </Tabs>
         </div>
     )
 }
