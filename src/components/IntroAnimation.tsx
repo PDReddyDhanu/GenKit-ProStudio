@@ -38,11 +38,11 @@ export default function IntroAnimation() {
 
         const timer = setTimeout(() => {
             setIsVisible(false);
-        }, 4000); // Total duration of the animation
+        }, 5000); // Total duration of the animation
 
         const finishTimer = setTimeout(() => {
             setIsFinished(true);
-        }, 5000); // Duration + fade out time
+        }, 6000); // Duration + fade out time
 
         return () => {
             clearTimeout(timer);
