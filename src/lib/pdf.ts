@@ -67,44 +67,47 @@ const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectNa
     doc.setFontSize(24);
     doc.text(`${getRankSuffix(rank)} Place Winner`, pageWidth / 2, 48, { align: 'center' });
 
+    // College Name
     doc.setFont("helvetica", 'normal');
     doc.setFontSize(14);
-    doc.setTextColor("#404040");
-    doc.text('This is to certify that the team', pageWidth / 2, 65, { align: 'center' });
+    doc.setTextColor('#404040');
+    doc.text(`from the HackSprint event held at ${collegeName}`, pageWidth / 2, 60, { align: 'center' });
+
+    doc.text('This is to certify that the team', pageWidth / 2, 75, { align: 'center' });
     
     // Team Name
     doc.setFontSize(36);
     doc.setFont("helvetica", 'bold');
     doc.setTextColor("#039BE5"); // Blue for contrast
-    doc.text(teamName, pageWidth / 2, 80, { align: 'center' });
+    doc.text(teamName, pageWidth / 2, 90, { align: 'center' });
 
     // Project Info
     doc.setFontSize(14);
     doc.setFont("helvetica", 'normal');
     doc.setTextColor("#404040");
-    doc.text(`has demonstrated exceptional skill in the project`, pageWidth / 2, 95, { align: 'center' });
+    doc.text(`has demonstrated exceptional skill in the project`, pageWidth / 2, 105, { align: 'center' });
     doc.setFontSize(20);
     doc.setFont("helvetica", 'italic');
     doc.setTextColor("#262626");
-    doc.text(`"${projectName}"`, pageWidth / 2, 107, { align: 'center' });
+    doc.text(`"${projectName}"`, pageWidth / 2, 117, { align: 'center' });
 
     // Performance
     doc.setFontSize(12);
     doc.setFont("helvetica", 'normal');
     doc.setTextColor("#404040");
     const performanceText = `Awarded with a performance rating of "${performance.descriptor}" and a final score of ${averageScore.toFixed(2)} / 10.`;
-    doc.text(performanceText, pageWidth / 2, 120, { align: 'center' });
+    doc.text(performanceText, pageWidth / 2, 130, { align: 'center' });
     
     // Team Members
     doc.setFontSize(12);
     doc.setFont("helvetica", 'bold');
     doc.setTextColor("#262626");
-    doc.text('AWARDED TO', pageWidth / 2, 140, { align: 'center' });
+    doc.text('AWARDED TO', pageWidth / 2, 145, { align: 'center' });
     const membersText = teamMembers.join('  •  ');
     doc.setFontSize(12);
     doc.setFont("helvetica", 'normal');
     doc.setTextColor("#404040");
-    doc.text(membersText, pageWidth / 2, 148, { align: 'center', maxWidth: pageWidth - 80 });
+    doc.text(membersText, pageWidth / 2, 153, { align: 'center', maxWidth: pageWidth - 80 });
 
     // Signatures, Date, QR
     const signatureX = pageWidth / 4 + 20;
