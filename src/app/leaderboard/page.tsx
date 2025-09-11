@@ -2,22 +2,12 @@
 "use client";
 
 import React, { useMemo, useState } from 'react';
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ZAxis } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import PageIntro from '@/components/PageIntro';
-import { BarChart, TrendingUp } from 'lucide-react';
-
-const chartConfig = {
-    score: {
-      label: "Score",
-    },
-    teams: {
-      label: "Teams",
-      color: "hsl(var(--chart-1))",
-    },
-}
+import { TrendingUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function Leaderboard() {
     const { state } = useHackathon();
@@ -26,18 +16,58 @@ export default function Leaderboard() {
 
     const leaderboardData = useMemo(() => {
         return projects
-            .map((p, index) => ({
-                name: teams.find(t => t.id === p.teamId)?.name || 'Unknown Team',
-                score: parseFloat(p.averageScore.toFixed(2)),
-                x: index + 1, // position on x-axis
-                fill: `hsl(${Math.random() * 360}, 70%, 60%)`
-            }))
-            .filter(p => p.score > 0)
-            .sort((a, b) => b.score - a.score);
+            .filter(p => p.averageScore > 0)
+            .sort((a, b) => b.averageScore - a.score)
+            .slice(0, 10)
+            .map((p, index) => {
+                const teamName = teams.find(t => t.id === p.teamId)?.name || 'Unknown Team';
+                const rank = index + 1;
+                let color;
+                if (rank === 1) color = 'hsl(var(--chart-1))'; // Gold
+                else if (rank === 2) color = 'hsl(var(--chart-2))'; // Silver
+                else if (rank === 3) color = 'hsl(var(--chart-3))'; // Bronze
+                else color = 'hsl(var(--chart-4))';
+
+                return {
+                    rank,
+                    name: teamName,
+                    score: parseFloat(p.averageScore.toFixed(2)),
+                    fill: color,
+                };
+            })
+            .reverse(); // Reverse for horizontal bar chart display
     }, [projects, teams]);
 
     if (showIntro) {
-        return <PageIntro onFinished={() => setShowIntro(false)} icon={<BarChart className="w-full h-full" />} title="Leaderboard" description="Track team progress in real-time." />;
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<TrendingUp className="w-full h-full" />} title="Leaderboard" description="Track team progress in real-time." />;
+    }
+
+    const CustomTooltip = ({ active, payload, label }: any) => {
+      if (active && payload && payload.length) {
+        return (
+          <div className="rounded-lg border bg-background p-2 shadow-sm">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col space-y-1">
+                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                  Team
+                </span>
+                <span className="font-bold text-muted-foreground">
+                  {label}
+                </span>
+              </div>
+              <div className="flex flex-col space-y-1">
+                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                  Score
+                </span>
+                <span className="font-bold">
+                  {payload[0].value}
+                </span>
+              </div>
+            </div>
+          </div>
+        )
+      }
+      return null
     }
 
     return (
@@ -45,55 +75,52 @@ export default function Leaderboard() {
             <h1 className="text-4xl font-bold text-center mb-8 font-headline">Live Leaderboard for {state.selectedCollege}</h1>
             <Card>
                 <CardHeader className="items-center pb-0">
-                    <CardTitle>Top Teams</CardTitle>
+                    <CardTitle>Top 10 Teams</CardTitle>
                     <CardDescription>A real-time look at the leading teams.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 pb-0">
                 {leaderboardData.length > 0 ? (
-                    <ChartContainer
-                      config={chartConfig}
-                      className="mx-auto aspect-square h-[500px]"
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                         <ScatterChart
-                            margin={{
-                                top: 20,
-                                right: 20,
-                                bottom: 20,
-                                left: 20,
-                            }}
-                         >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis type="number" dataKey="x" name="team" tick={false} label={{ value: 'Teams', position: 'insideBottom', offset: -10 }} />
-                            <YAxis type="number" dataKey="score" name="score" label={{ value: 'Score', angle: -90, position: 'insideLeft' }} />
-                            <ZAxis type="number" dataKey="score" range={[100, 1000]} name="rank" />
-                            <Tooltip 
-                                cursor={{ strokeDasharray: '3 3' }} 
-                                content={
-                                    <ChartTooltipContent
-                                        hideIndicator
-                                        formatter={(value, name, props) => {
-                                            if (props.payload) {
-                                                const { name, score, fill } = props.payload;
-                                                return (
-                                                    <div className="w-full">
-                                                        <div className="flex items-center gap-2">
-                                                            <div style={{ backgroundColor: fill, width: '10px', height: '10px', borderRadius: '50%' }} />
-                                                            <span className="font-bold">{name}</span>
-                                                        </div>
-                                                        <span className="text-right w-full block mt-1">Score: {score} / 10</span>
-                                                    </div>
-                                                );
-                                            }
-                                            return null;
-                                        }}
-                                    />
-                                }
-                            />
-                            <Scatter name="Teams" data={leaderboardData} fill="fill" />
-                        </ScatterChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
+                    <div className="h-[500px] w-full p-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                           <BarChart 
+                                layout="vertical" 
+                                data={leaderboardData}
+                                margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
+                            >
+                                <defs>
+                                    {leaderboardData.map((entry) => (
+                                        <linearGradient key={`gradient-${entry.rank}`} id={`gradient-${entry.rank}`} x1="0" y1="0" x2="1" y2="0">
+                                            <stop offset="5%" stopColor={entry.fill} stopOpacity={0.8}/>
+                                            <stop offset="95%" stopColor={entry.fill} stopOpacity={0.2}/>
+                                        </linearGradient>
+                                    ))}
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border) / 0.5)"/>
+                                <XAxis type="number" domain={[0, 10]} stroke="hsl(var(--muted-foreground))" />
+                                <YAxis 
+                                    dataKey="name" 
+                                    type="category" 
+                                    width={150} 
+                                    tickLine={false} 
+                                    axisLine={false} 
+                                    tick={{ fill: 'hsl(var(--foreground))' }}
+                                />
+                                <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<CustomTooltip />} />
+                                <Bar dataKey="score" radius={[0, 4, 4, 0]}>
+                                    {leaderboardData.map((entry, index) => (
+                                        <LabelList
+                                            key={`label-${entry.rank}`}
+                                            dataKey="name"
+                                            position="insideLeft"
+                                            offset={10}
+                                            className="fill-background font-bold"
+                                            formatter={(value: string) => `${entry.rank}. ${value}`}
+                                        />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 ) : (
                      <div className="text-center py-16">
                         <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground" />
