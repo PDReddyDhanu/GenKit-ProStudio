@@ -17,7 +17,7 @@ export default function JudgingDashboard() {
     const { hackathons, selectedHackathonId } = state;
 
     const handleHackathonChange = (hackathonId: string) => {
-        dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId });
+        dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'default' ? null : hackathonId });
     }
 
     const currentHackathon = useMemo(() => {
@@ -29,11 +29,12 @@ export default function JudgingDashboard() {
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
                 <h1 className="text-4xl font-bold font-headline">Judge Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
                 <div>
-                     <Select onValueChange={handleHackathonChange} value={selectedHackathonId || ""}>
+                     <Select onValueChange={handleHackathonChange} value={selectedHackathonId || "default"}>
                         <SelectTrigger className="w-full sm:w-[280px]">
                             <SelectValue placeholder="Select a Hackathon to Judge" />
                         </SelectTrigger>
                         <SelectContent>
+                             <SelectItem value="default">Default View</SelectItem>
                             {hackathons.map(h => (
                                 <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                             ))}
