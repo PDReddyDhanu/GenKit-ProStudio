@@ -16,7 +16,6 @@ import HackathonSelector from '../student/_components/HackathonSelector';
 export default function TeamFinder() {
     const { state, api, dispatch } = useHackathon();
     const { teams, currentUser, hackathons, selectedHackathonId } = state;
-    const [joinCode, setJoinCode] = useState('');
     const [showIntro, setShowIntro] = useState(true);
     const [isJoining, setIsJoining] = useState<string | null>(null); // Track joining by team ID
 
@@ -37,27 +36,6 @@ export default function TeamFinder() {
         }
     };
     
-    const handleRequestWithCode = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!currentUser) {
-            dispatch({ type: 'SET_AUTH_ERROR', payload: "You must be logged in to join a team." });
-            return;
-        }
-         if (currentUser.teamId) {
-             dispatch({ type: 'SET_AUTH_ERROR', payload: "You are already in a team." });
-             return;
-        }
-        if (!selectedHackathonId) {
-            dispatch({ type: 'SET_AUTH_ERROR', payload: "Please go to the Student Dashboard to select a hackathon first." });
-            return;
-        }
-        setIsJoining('form-join');
-        try {
-            await api.requestToJoinTeamByCode(selectedHackathonId, joinCode, currentUser);
-        } finally {
-            setIsJoining(null);
-        }
-    }
 
     if (showIntro) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<Users className="w-full h-full" />} title="Team Finder" description="Find a team or recruit new members." />;
@@ -87,29 +65,7 @@ export default function TeamFinder() {
             <h1 className="text-4xl font-bold text-center mb-2 font-headline">Team Finder</h1>
             <p className="text-center text-muted-foreground mb-8">Showing teams for {currentHackathon?.name}</p>
             <AuthMessage />
-            <Card className="mb-8">
-                <CardHeader>
-                    <CardTitle>Join a Team by Code</CardTitle>
-                    <CardDescription>Already have a team code? Enter it here to send a join request.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                     <form onSubmit={handleRequestWithCode} className="flex items-center gap-4">
-                        <Label htmlFor="joinCode" className="sr-only">Join Code</Label>
-                        <Input 
-                            id="joinCode" 
-                            placeholder="Enter 6-digit join code" 
-                            value={joinCode} 
-                            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                            className="max-w-xs"
-                            disabled={!!isJoining}
-                        />
-                        <Button type="submit" disabled={!joinCode || !!isJoining}>
-                            {isJoining === 'form-join' ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Sending Request...</> : 'Send Request'}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
-
+            
             <h2 className="text-2xl font-bold mb-6">Teams Looking for Members</h2>
             {currentTeams.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [perspective:1000px]">
