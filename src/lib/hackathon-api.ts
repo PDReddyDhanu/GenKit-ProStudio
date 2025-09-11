@@ -23,6 +23,49 @@ import {
 import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember } from './types';
 import { JUDGING_RUBRIC } from './constants';
 
+async function getOrCreateUser(email: string, password: any) {
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        return userCredential.user;
+    } catch (error: any) {
+        if (error.code === 'auth/user-not-found') {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            return userCredential.user;
+        }
+        // Handle cases like wrong password for an existing user if needed, but for creation it's tricky.
+        // For this flow, if user exists but password is wrong, we should probably fail.
+        // But the prompt implies creating if not exists.
+        // A more complex flow might try to sign in first to check.
+
+        // Re-throwing other errors
+        throw error;
+    }
+}
+
+async function getAuthUser(email: string, password: any) {
+    try {
+        // Try to sign in with a wrong password to see if user exists.
+        await signInWithEmailAndPassword(auth, email, 'a-deliberately-wrong-password');
+        // This should not be reached if user exists.
+    } catch (error: any) {
+        if (error.code === 'auth/wrong-password') {
+            // User exists, sign in with correct password
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            return userCredential.user;
+        } else if (error.code === 'auth/user-not-found') {
+            // User does not exist, create them
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            return userCredential.user;
+        } else {
+            // Other auth errors
+            throw error;
+        }
+    }
+    // Should not happen, but as a fallback
+    throw new Error('Unexpected authentication issue');
+}
+
+
 // --- Auth ---
 
 export async function registerStudent(collegeId: string, { name, email, password }: any) {
@@ -87,37 +130,38 @@ export async function addJudge(collegeId: string, { name, email, password }: any
     if (!email.toLowerCase().endsWith('@judge.com')) {
         throw new Error('Judge email must end with @judge.com');
     }
-    
-    // This is a simplified method. A real app should use a backend function to create users to avoid auth state conflicts.
-    // For this demo, we assume the admin's auth state is not persisted or they will re-login.
+
     const tempAuth = auth;
+    const currentAuthUser = tempAuth.currentUser;
     
     try {
-        const currentUser = tempAuth.currentUser;
+        const judgeAuthUser = await getAuthUser(email, password);
         
-        const judgeCredential = await createUserWithEmailAndPassword(auth, email, password);
         const judge: Judge = { 
-            id: judgeCredential.user.uid,
+            id: judgeAuthUser.uid,
             name, 
             email,
         };
         await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
         
-        // Sign out the newly created user and restore original admin/judge session if it existed
-        await firebaseSignOut(auth);
-        if (currentUser) {
-            // This is a simplified re-auth. A robust solution would use refresh tokens.
-            // For the demo, we assume the admin/judge might need to log in again if their session is lost.
+        await firebaseSignOut(tempAuth);
+        
+        if (currentAuthUser && currentAuthUser.email !== email) {
+            // This part is tricky without a proper backend and session management.
+            // A simple re-login of admin might be needed in a real scenario if session is lost.
         }
 
         return { successMessage: 'Judge added successfully! They can log in with the provided credentials.' };
     } catch (error: any) {
-        await firebaseSignOut(auth).catch(() => {}); // Attempt to sign out any lingering temporary user
-        if (error.code === 'auth/email-already-in-use') {
-            throw new Error('This email is already in use. Please use a different email.');
+        // Attempt to sign out any lingering temporary user
+        if (tempAuth.currentUser && tempAuth.currentUser.email === email) {
+            await firebaseSignOut(tempAuth).catch(() => {});
         }
         console.error("Error creating judge:", error);
-        throw new Error('Failed to create judge account.');
+        if (error.code === 'auth/email-already-in-use') {
+             throw new Error('This email is already in use by a different user. Please use another email.');
+        }
+        throw new Error(`Failed to create judge account: ${error.message}`);
     }
 }
 
@@ -135,13 +179,14 @@ export async function approveStudent(collegeId: string, userId: string) {
 }
 
 export async function registerAndApproveStudent(collegeId: string, { name, email, password }: any) {
-     try {
-        const tempAuth = auth;
-        const currentUser = tempAuth.currentUser;
+     const tempAuth = auth;
+     const currentAuthUser = tempAuth.currentUser;
 
-        const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
+     try {
+        const studentAuthUser = await getAuthUser(email, password);
+        
         const newUser: User = {
-            id: userCredential.user.uid,
+            id: studentAuthUser.uid,
             name,
             email,
             status: 'approved',
@@ -150,17 +195,20 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
         await firebaseSignOut(tempAuth);
-        if (currentUser) {
-            // As before, a more robust session management would be needed in a production app.
+
+        if (currentAuthUser && currentAuthUser.email !== email) {
+           // Session handling complexity as noted in addJudge
         }
 
         return { successMessage: `${name} has been registered and approved.` };
     } catch(error: any) {
-        await firebaseSignOut(auth).catch(() => {});
-         if (error.code === 'auth/email-already-in-use') {
-            throw new Error('This email is already in use. Please use a different email.');
+        if (tempAuth.currentUser && tempAuth.currentUser.email === email) {
+             await firebaseSignOut(auth).catch(() => {});
         }
-        throw new Error('Failed to create student account.');
+        if (error.code === 'auth/email-already-in-use') {
+            throw new Error('This email is already in use by a different account. Please use another email.');
+        }
+        throw new Error(`Failed to create student account: ${error.message}`);
     }
 }
 
