@@ -20,6 +20,21 @@ export default function TeamFinder() {
     const [joinCode, setJoinCode] = useState('');
     const [isJoining, setIsJoining] = useState(false);
 
+    const filteredTeams = useMemo(() => {
+        if (!selectedHackathonId) return [];
+        let currentTeams = teams.filter(t => t.hackathonId === selectedHackathonId);
+        if (searchQuery) {
+            currentTeams = currentTeams.filter(team =>
+                team.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+        return currentTeams;
+    }, [teams, selectedHackathonId, searchQuery]);
+
+    const currentHackathon = useMemo(() => {
+        return hackathons.find(h => h.id === selectedHackathonId);
+    }, [hackathons, selectedHackathonId]);
+
     if (showIntro) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<Users className="w-full h-full" />} title="Team Finder" description="Find a team or recruit new members." />;
     }
@@ -39,19 +54,6 @@ export default function TeamFinder() {
         }
     };
     
-    const filteredTeams = useMemo(() => {
-        if (!selectedHackathonId) return [];
-        let currentTeams = teams.filter(t => t.hackathonId === selectedHackathonId);
-        if (searchQuery) {
-            currentTeams = currentTeams.filter(team =>
-                team.name.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-        }
-        return currentTeams;
-    }, [teams, selectedHackathonId, searchQuery]);
-
-    const currentHackathon = hackathons.find(h => h.id === selectedHackathonId);
-
     if (!selectedHackathonId || !currentHackathon) {
         return (
             <div className="py-12 animate-slide-in-up">
