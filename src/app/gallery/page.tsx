@@ -39,7 +39,7 @@ export default function ProjectGallery() {
                             return (
                                 <Card 
                                     key={project.id} 
-                                    className="flex flex-col animate-card-in"
+                                    className="group flex flex-col animate-card-in"
                                     style={{ animationDelay: `${index * 100}ms` }}
                                 >
                                     <CardHeader>
@@ -68,7 +68,7 @@ export default function ProjectGallery() {
                                             </div>
                                         )}
                                     </CardContent>
-                                    <CardFooter>
+                                    <CardFooter className="transition-opacity opacity-0 group-hover:opacity-100">
                                          <Button asChild variant="secondary" className="w-full">
                                             <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer">
                                                 <Github className="mr-2 h-4 w-4" />
