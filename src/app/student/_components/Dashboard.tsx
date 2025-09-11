@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useHackathon } from '@/context/HackathonProvider';
@@ -7,7 +8,7 @@ import ProjectView from './ProjectView';
 import { AuthMessage } from '@/components/AuthMessage';
 import { useMemo } from 'react';
 import HackathonSelector from './HackathonSelector';
-import type { Team, Project, Hackathon } from '@/lib/types';
+import type { Hackathon } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Countdown } from './Countdown';
 import TeamHub from './TeamHub';
@@ -70,14 +71,14 @@ export default function Dashboard() {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <main className="lg:col-span-2">
-                    {!currentProject ? (
-                        <ProjectSubmission team={currentTeam} />
+                    {currentProject ? (
+                        <ProjectView project={currentProject} />
                     ) : (
-                        <ProjectView project={currentProject} team={currentTeam} />
+                        <ProjectSubmission team={currentTeam} />
                     )}
                 </main>
                 <aside className="lg:col-span-1 space-y-8">
-                    {currentTeam && <TeamHub team={currentTeam} />}
+                    <TeamHub team={currentTeam} />
                      <Card>
                         <CardHeader>
                             <CardTitle className="font-headline">Rules & Regulations</CardTitle>
