@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,11 +12,19 @@ import BackButton from '@/components/layout/BackButton';
 
 export default function TeamManagement() {
     const { state, api } = useHackathon();
-    const { currentUser, selectedHackathonId } = state;
+    const { currentUser, selectedHackathonId, teams } = state;
     const [teamName, setTeamName] = useState('');
     const [joinCode, setJoinCode] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [isJoining, setIsJoining] = useState(false);
+
+    const pendingRequestTeam = useMemo(() => {
+        if (!currentUser) return null;
+        return teams.find(team => 
+            team.hackathonId === selectedHackathonId &&
+            team.joinRequests?.some(req => req.id === currentUser.id)
+        );
+    }, [teams, currentUser, selectedHackathonId]);
 
     const handleCreateTeam = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,6 +49,24 @@ export default function TeamManagement() {
             }
         }
     };
+
+    if (pendingRequestTeam) {
+        return (
+             <div className="container max-w-2xl mx-auto py-12">
+                 <BackButton />
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">Request Sent</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground text-center py-8">
+                            Your request to join "<strong>{pendingRequestTeam.name}</strong>" is pending approval by the team leader.
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
 
     return (
         <div className="container max-w-4xl mx-auto">
