@@ -2,12 +2,14 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Team, Project } from '@/lib/types';
-import { CheckCircle, Bot, Loader } from 'lucide-react';
+import { Team, Project, User } from '@/lib/types';
+import { CheckCircle, Bot, Loader, Trash2, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { getAiCodeReview } from '@/app/actions';
 import { Button } from '@/components/ui/button';
+import { useHackathon } from '@/context/HackathonProvider';
+import { Badge } from '@/components/ui/badge';
 
 interface ProjectViewProps {
     project: Project;
@@ -15,8 +17,13 @@ interface ProjectViewProps {
 }
 
 export default function ProjectView({ project, team }: ProjectViewProps) {
+    const { state, api } = useHackathon();
+    const { currentUser } = state;
     const [isReviewing, setIsReviewing] = useState(false);
     const [review, setReview] = useState('');
+    const [isRemoving, setIsRemoving] = useState<string | null>(null);
+
+    const isTeamCreator = currentUser?.id === team.creatorId;
 
     const handleGetReview = async () => {
         setIsReviewing(true);
@@ -31,6 +38,19 @@ export default function ProjectView({ project, team }: ProjectViewProps) {
             setIsReviewing(false);
         }
     };
+    
+    const handleRemoveMember = async (member: User) => {
+        if (!window.confirm(`Are you sure you want to remove ${member.name} from the team?`)) return;
+        
+        setIsRemoving(member.id);
+        try {
+            await api.removeTeammate(team.id, member);
+        } catch (error) {
+            console.error("Failed to remove member:", error);
+        } finally {
+            setIsRemoving(null);
+        }
+    }
 
     return (
         <div className="container max-w-3xl mx-auto">
@@ -50,10 +70,24 @@ export default function ProjectView({ project, team }: ProjectViewProps) {
                         <p><span className="font-bold text-muted-foreground">Description:</span> {project.description}</p>
                         <p><span className="font-bold text-muted-foreground">GitHub:</span> <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{project.githubUrl}</Link></p>
                     </div>
+
                     <div className="mt-6 border-t pt-4">
-                        <h4 className="font-bold">Team Members:</h4>
-                        <ul className="list-disc list-inside text-muted-foreground">
-                            {team.members.map(m => <li key={m.id}>{m.name}</li>)}
+                        <h4 className="font-bold mb-3">Team Members:</h4>
+                        <ul className="space-y-3">
+                            {team.members.map(member => (
+                                <li key={member.id} className="flex justify-between items-center p-2 bg-muted/50 rounded-md">
+                                    <div className="flex flex-col">
+                                        <span className="flex items-center gap-2 font-semibold">
+                                            <UserIcon className="h-4 w-4" /> {member.name} {member.id === team.creatorId && <Badge variant="secondary">Leader</Badge>}
+                                        </span>
+                                    </div>
+                                    {isTeamCreator && member.id !== currentUser?.id && (
+                                        <Button variant="ghost" size="icon" onClick={() => handleRemoveMember(member)} disabled={isRemoving === member.id}>
+                                            {isRemoving === member.id ? <Loader className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4 text-destructive" />}
+                                        </Button>
+                                    )}
+                                </li>
+                            ))}
                         </ul>
                     </div>
 

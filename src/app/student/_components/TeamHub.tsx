@@ -3,8 +3,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { User, Users, Trash2, Loader, Inbox, Check, X } from 'lucide-react';
+import { Users, Inbox, Check, X, Loader } from 'lucide-react';
 import type { Team, User as UserType, JoinRequest } from '@/lib/types';
 import TeamChat from './TeamChat';
 import { useHackathon } from '@/context/HackathonProvider';
@@ -18,23 +17,9 @@ interface TeamHubProps {
 export default function TeamHub({ team }: TeamHubProps) {
     const { api, state } = useHackathon();
     const { currentUser } = state;
-    const [isRemoving, setIsRemoving] = useState<string | null>(null);
     const [isLoadingRequest, setIsLoadingRequest] = useState<string | null>(null);
 
     const isTeamCreator = currentUser?.id === team.creatorId;
-
-    const handleRemoveMember = async (member: UserType) => {
-        if (!window.confirm(`Are you sure you want to remove ${member.name} from the team?`)) return;
-        
-        setIsRemoving(member.id);
-        try {
-            await api.removeTeammate(team.id, member);
-        } catch (error) {
-            console.error("Failed to remove member:", error);
-        } finally {
-            setIsRemoving(null);
-        }
-    }
 
     const handleRequest = async (request: JoinRequest, action: 'accept' | 'reject') => {
         setIsLoadingRequest(`${team.id}-${request.id}-${action}`);
@@ -50,40 +35,14 @@ export default function TeamHub({ team }: TeamHubProps) {
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline flex items-center gap-2">
-                        <Users className="text-primary"/> Your Team
+                        <Users className="text-primary"/> Team Hub
                     </CardTitle>
                     <CardDescription>
                         Share this code to invite members:
                         <span className="font-mono text-lg text-accent bg-muted p-2 rounded-md ml-2">{team.joinCode}</span>
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <h4 className="font-semibold mb-3">Members ({team.members.length}/{state.hackathons.find(h => h.id === state.selectedHackathonId)?.teamSizeLimit})</h4>
-                    <ul className="space-y-3">
-                        {team.members.map(member => (
-                            <li key={member.id} className="flex justify-between items-center p-2 bg-muted/50 rounded-md">
-                                <div className="flex flex-col">
-                                    <span className="flex items-center gap-2 font-semibold">
-                                        <User className="h-4 w-4" /> {member.name} {member.id === team.creatorId && <Badge variant="secondary">Leader</Badge>}
-                                    </span>
-                                    {member.skills && member.skills.length > 0 && (
-                                        <div className="flex flex-wrap gap-1 mt-2 pl-6">
-                                            {member.skills.map(skill => (
-                                                <Badge key={skill} variant="outline">{skill}</Badge>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                {isTeamCreator && member.id !== currentUser?.id && (
-                                    <Button variant="ghost" size="icon" onClick={() => handleRemoveMember(member)} disabled={isRemoving === member.id}>
-                                        {isRemoving === member.id ? <Loader className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4 text-destructive" />}
-                                    </Button>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </CardContent>
-
+                
                 {isTeamCreator && (
                      <CardContent className="border-t pt-6">
                         <h4 className="font-semibold mb-3 flex items-center gap-2">
