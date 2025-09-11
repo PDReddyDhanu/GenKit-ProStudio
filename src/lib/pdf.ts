@@ -15,9 +15,9 @@ const getPerformanceDetails = (score: number) => {
 };
 
 const getRankSuffix = (rankNum: number) => {
-    if (rankNum === 1) return '1st';
-    if (rankNum === 2) return '2nd';
-    if (rankNum === 3) return '3rd';
+    if (rankNum === 1) return 'st';
+    if (rankNum === 2) return 'nd';
+    if (rankNum === 3) return 'rd';
     return `${rankNum}th`;
 };
 
@@ -149,24 +149,41 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const verificationUrl = `${window.location.origin}/verify/${projectId}?college=${encodeURIComponent(collegeName)}`;
-    
+
     // --- Colors & Fonts ---
-    const primaryBlue = '#005A9C';
-    const darkText = '#333333';
-    const lightText = '#6c757d';
-    const backgroundColor = '#FFFFFF';
-    const accentBlue = '#e7f3ff';
+    const primaryBlue = '#0D47A1'; // A deeper, more professional blue
+    const accentBlue = '#1976D2';
+    const darkText = '#212121';
+    const lightText = '#757575';
+    const backgroundColor = '#F5F7FA'; // A very light grey for the background
 
     // --- Background & Border ---
     doc.setFillColor(backgroundColor);
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
     
-    // Decorative bars
-    doc.setFillColor(primaryBlue);
-    doc.rect(0, 0, pageWidth, 15, 'F');
+    // --- Abstract Geometric Background ---
+    doc.setGState(new doc.GState({opacity: 0.05}));
     doc.setFillColor(accentBlue);
-    doc.rect(0, pageHeight - 15, pageWidth, 15, 'F');
-    
+    for (let i = 0; i < 20; i++) {
+        const x = Math.random() * pageWidth;
+        const y = Math.random() * pageHeight;
+        const size = Math.random() * 50 + 20;
+        doc.triangle(x, y, x + size, y, x + size / 2, y + size, 'F');
+    }
+    doc.setGState(new doc.GState({opacity: 1}));
+
+    // --- Corner Decorations ---
+    doc.setDrawColor(primaryBlue);
+    doc.setLineWidth(1.5);
+    doc.line(10, 10, 30, 10);
+    doc.line(10, 10, 10, 30);
+    doc.line(pageWidth - 10, 10, pageWidth - 30, 10);
+    doc.line(pageWidth - 10, 10, pageWidth - 10, 30);
+    doc.line(10, pageHeight - 10, 30, pageHeight - 10);
+    doc.line(10, pageHeight - 10, 10, pageHeight - 30);
+    doc.line(pageWidth - 10, pageHeight - 10, pageWidth - 30, pageHeight - 10);
+    doc.line(pageWidth - 10, pageHeight - 10, pageWidth - 10, pageHeight - 30);
+
 
     // --- Main Content ---
     doc.setFont("helvetica", "bold");
@@ -177,7 +194,7 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     doc.setTextColor(lightText);
-    doc.text('This certificate is presented to', pageWidth / 2, 60, { align: 'center' });
+    doc.text('This certificate is proudly presented to', pageWidth / 2, 60, { align: 'center' });
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(28);
@@ -187,17 +204,17 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     doc.setTextColor(darkText);
-    doc.text('for their successful participation and project submission in the HackSprint event', pageWidth / 2, 90, { align: 'center', maxWidth: pageWidth - 80 });
-    doc.text(`held at ${collegeName}.`, pageWidth / 2, 97, { align: 'center' });
+    doc.text('for their successful participation and innovative project submission in the HackSprint event', pageWidth / 2, 90, { align: 'center', maxWidth: pageWidth - 80 });
+    doc.text(`at ${collegeName}.`, pageWidth / 2, 97, { align: 'center' });
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.setTextColor(darkText);
-    doc.text('Project:', pageWidth / 2, 115, { align: 'center' });
+    doc.text('PROJECT SUBMISSION:', pageWidth / 2, 115, { align: 'center' });
     
     doc.setFont("helvetica", "italic");
     doc.setFontSize(18);
-    doc.setTextColor(primaryBlue);
+    doc.setTextColor(accentBlue);
     doc.text(`"${projectName}"`, pageWidth / 2, 123, { align: 'center' });
 
     // Team Members
