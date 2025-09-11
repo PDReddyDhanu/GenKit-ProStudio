@@ -46,11 +46,13 @@ export default function JudgingDashboard() {
             <AuthMessage />
             
              <Tabs defaultValue="judging" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-6">
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="judging">Project Scoring</TabsTrigger>
-                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                    <TabsTrigger value="management">User Management</TabsTrigger>
                     <TabsTrigger value="announcements">Announcements</TabsTrigger>
+                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                    <TabsTrigger value="data">Data & Reset</TabsTrigger>
                 </TabsList>
                 <TabsContent value="hackathons" className="mt-6">
                     <HackathonManagement />
@@ -58,11 +60,17 @@ export default function JudgingDashboard() {
                 <TabsContent value="judging" className="mt-6">
                     {currentHackathon ? <ScoringDashboard hackathon={currentHackathon} /> : <p className="text-center text-muted-foreground">Please select a hackathon to start judging.</p>}
                 </TabsContent>
-                 <TabsContent value="analytics" className="mt-6">
-                     {currentHackathon ? <AnalyticsDashboard hackathon={currentHackathon} /> : <p className="text-center text-muted-foreground">Please select a hackathon to view analytics.</p>}
+                 <TabsContent value="management" className="mt-6">
+                    <AdminDashboard />
                 </TabsContent>
                 <TabsContent value="announcements" className="mt-6">
                     <Announcements />
+                </TabsContent>
+                 <TabsContent value="analytics" className="mt-6">
+                     {currentHackathon ? <AnalyticsDashboard hackathon={currentHackathon} /> : <p className="text-center text-muted-foreground">Please select a hackathon to view analytics.</p>}
+                </TabsContent>
+                 <TabsContent value="data" className="mt-6">
+                    <DataManagement />
                 </TabsContent>
             </Tabs>
         </div>
