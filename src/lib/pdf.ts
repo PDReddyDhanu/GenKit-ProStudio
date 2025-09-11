@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import jsPDF from 'jspdf';
@@ -41,58 +40,67 @@ const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectNa
     // --- Decorative Border ---
     doc.setDrawColor(primaryGold);
     doc.setLineWidth(0.5);
-    doc.rect(10, 10, pageWidth - 20, pageHeight - 20); // Outer border
+    doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
     doc.setLineWidth(0.2);
-    doc.rect(12, 12, pageWidth - 24, pageHeight - 24); // Inner border
+    doc.rect(12, 12, pageWidth - 24, pageHeight - 24);
+
+    // --- Rank Badge ---
+    const badgeX = pageWidth - 35;
+    const badgeY = 35;
+    doc.setFillColor(primaryGold);
+    doc.circle(badgeX, badgeY, 10, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(darkBlue);
+    doc.text(getRankSuffix(rank), badgeX, badgeY + 1, { align: 'center', baseline: 'middle' });
+    doc.setFontSize(8);
+    doc.text('Place', badgeX, badgeY + 5, { align: 'center', baseline: 'middle' });
 
 
     // --- Main Content ---
     doc.setFont("times", "bold");
-    doc.setFontSize(36);
+    doc.setFontSize(34);
     doc.setTextColor(primaryGold);
     doc.text('CERTIFICATE OF ACHIEVEMENT', pageWidth / 2, 40, { align: 'center' });
     
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text(`${getRankSuffix(rank)} Place Winner`, pageWidth / 2, 52, { align: 'center' });
-
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     doc.setTextColor(textColor);
-    doc.text(`from the HackSprint event held at ${collegeName}`, pageWidth / 2, 62, { align: 'center' });
+    doc.text(`from the HackSprint event held at ${collegeName}`, pageWidth / 2, 55, { align: 'center' });
 
     doc.setFontSize(11);
-    doc.text('This is to certify that the team', pageWidth / 2, 80, { align: 'center' });
+    doc.text('This is to certify that the team', pageWidth / 2, 75, { align: 'center' });
     
     doc.setFont("times", "bold");
     doc.setFontSize(28);
     doc.setTextColor(textColor);
-    doc.text(teamName, pageWidth / 2, 92, { align: 'center' });
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text('has demonstrated exceptional skill in the project', pageWidth / 2, 102, { align: 'center' });
-
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(20);
-    doc.setTextColor(primaryGold);
-    doc.text(`"${projectName}"`, pageWidth / 2, 114, { align: 'center' });
+    doc.text(teamName, pageWidth / 2, 87, { align: 'center' });
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
     doc.setTextColor(textColor);
-    doc.text(`Awarded with a performance rating of "${performance.descriptor}" and a final score of ${averageScore.toFixed(2)} / 10.`, pageWidth / 2, 126, { align: 'center' });
+    doc.text('has demonstrated exceptional skill in the project', pageWidth / 2, 97, { align: 'center' });
+
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(20);
+    doc.setTextColor(primaryGold);
+    doc.text(`"${projectName}"`, pageWidth / 2, 109, { align: 'center' });
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(textColor);
+    doc.text(`Awarded with a performance rating of "${performance.descriptor}" and a final score of ${averageScore.toFixed(2)} / 10.`, pageWidth / 2, 121, { align: 'center' });
 
     // Team Members
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(primaryGold);
-    doc.text('AWARDED TO', pageWidth / 2, 145, { align: 'center' });
+    doc.text('AWARDED TO', pageWidth / 2, 138, { align: 'center' });
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
     doc.setTextColor(textColor);
-    doc.text(teamMembers.join('  •  '), pageWidth / 2, 153, { align: 'center', maxWidth: pageWidth - 80 });
+    doc.text(teamMembers.join('  •  '), pageWidth / 2, 146, { align: 'center', maxWidth: pageWidth - 80 });
 
     // --- Footer Section ---
     const bottomY = pageHeight - 45;
@@ -249,3 +257,5 @@ export const generateCertificate = async (teamName: string, projectName: string,
          doc.save(`Certificate_Participation-${teamName.replace(/\s/g, '_')}.pdf`);
     }
 };
+
+    
