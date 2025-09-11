@@ -1,4 +1,5 @@
 
+
 export interface UserProfileData {
   name: string;
   skills: string[];
@@ -82,7 +83,9 @@ export interface Score {
 export interface Announcement {
   id: string;
   message: string;
-  timestamp: number;
+  timestamp: number; // Creation timestamp
+  publishAt?: number; // Optional: when the announcement becomes visible
+  expiresAt?: number; // Optional: when the announcement is hidden
   hackathonId?: string; // Optional: scope announcements to a hackathon
 }
 

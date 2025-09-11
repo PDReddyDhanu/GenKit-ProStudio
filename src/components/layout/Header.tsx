@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
@@ -43,15 +43,23 @@ export function Header() {
     const [hasUnread, setHasUnread] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const sortedAnnouncements = [...announcements].sort((a, b) => b.timestamp - a.timestamp);
+    const activeAnnouncements = useMemo(() => {
+        const now = Date.now();
+        return announcements
+            .filter(ann => {
+                const isPublished = ann.publishAt ? ann.publishAt <= now : true;
+                const isNotExpired = ann.expiresAt ? ann.expiresAt > now : true;
+                return isPublished && isNotExpired;
+            })
+            .sort((a, b) => (b.publishAt || b.timestamp) - (a.publishAt || a.timestamp));
+    }, [announcements]);
 
-    // This effect is now just for presentation, as real-time updates handle data
-    React.useEffect(() => {
+    useEffect(() => {
         const lastViewed = localStorage.getItem('lastViewedAnnouncement');
-        if (sortedAnnouncements.length > 0 && sortedAnnouncements[0].id !== lastViewed) {
+        if (activeAnnouncements.length > 0 && activeAnnouncements[0].id !== lastViewed) {
             setHasUnread(true);
         }
-    }, [sortedAnnouncements]);
+    }, [activeAnnouncements]);
 
     const handleLogout = async () => {
         await api.signOut();
@@ -67,8 +75,8 @@ export function Header() {
     
     const handleAnnouncementsOpen = () => {
         setHasUnread(false);
-        if (sortedAnnouncements.length > 0) {
-            localStorage.setItem('lastViewedAnnouncement', sortedAnnouncements[0].id);
+        if (activeAnnouncements.length > 0) {
+            localStorage.setItem('lastViewedAnnouncement', activeAnnouncements[0].id);
         }
     };
     
@@ -106,11 +114,11 @@ export function Header() {
                                 <SheetTitle>Announcements</SheetTitle>
                             </SheetHeader>
                             <div className="py-4 space-y-4">
-                                {sortedAnnouncements.length > 0 ? sortedAnnouncements.map(ann => (
+                                {activeAnnouncements.length > 0 ? activeAnnouncements.map(ann => (
                                     <div key={ann.id} className="p-3 bg-muted rounded-md">
                                         <p className="text-sm text-foreground">{ann.message}</p>
                                         <p className="text-xs text-muted-foreground mt-2">
-                                            {formatDistanceToNow(new Date(ann.timestamp), { addSuffix: true })}
+                                            {formatDistanceToNow(new Date(ann.publishAt || ann.timestamp), { addSuffix: true })}
                                         </p>
                                     </div>
                                 )) : <p className="text-muted-foreground text-center pt-8">No announcements yet.</p>}

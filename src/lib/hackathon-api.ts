@@ -21,6 +21,7 @@ import {
     arrayRemove
 } from 'firebase/firestore';
 import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember } from './types';
+import { JUDGING_RUBRIC } from './constants';
 
 // --- Auth ---
 
@@ -199,13 +200,23 @@ export async function updateHackathon(collegeId: string, hackathonId: string, ha
 }
 
 
-export async function postAnnouncement(collegeId: string, message: string) {
+export async function postAnnouncement(collegeId: string, data: Omit<Announcement, 'id' | 'timestamp'>) {
     const newAnnouncement: Omit<Announcement, 'id'> = {
-        message,
+        ...data,
         timestamp: Date.now(),
     };
     await addDoc(collection(db, `colleges/${collegeId}/announcements`), newAnnouncement);
     return { successMessage: 'Announcement posted successfully.' };
+}
+
+export async function updateAnnouncement(collegeId: string, announcementId: string, data: Partial<Omit<Announcement, 'id' | 'timestamp'>>) {
+    await updateDoc(doc(db, `colleges/${collegeId}/announcements`, announcementId), data);
+    return { successMessage: 'Announcement updated successfully.' };
+}
+
+export async function deleteAnnouncement(collegeId: string, announcementId: string) {
+    await deleteDoc(doc(db, `colleges/${collegeId}/announcements`, announcementId));
+    return { successMessage: 'Announcement deleted successfully.' };
 }
 
 // --- Student ---
@@ -425,6 +436,7 @@ export async function postTeamMessage(collegeId: string, teamId: string, message
 export async function scoreProject(collegeId: string, hackathonId: string, projectId: string, judgeId: string, scores: Score[]) {
     const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
     const projectDoc = await getDoc(projectRef);
+    if(!projectDoc.exists()) throw new Error("Project not found.");
     const project = projectDoc.data() as Project;
 
     // Remove old scores from this judge for both team and individuals
@@ -439,13 +451,14 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
     
     uniqueJudges.forEach(id => {
         const judgeScores = teamScores.filter(s => s.judgeId === id);
-        totalScore += judgeScores.reduce((sum, score) => sum + score.value, 0);
+        const rubricMax = JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
+        const judgeTotal = judgeScores.reduce((sum, score) => sum + score.value, 0);
+        const scaledJudgeTotal = (judgeTotal / rubricMax) * 10;
+        totalScore += scaledJudgeTotal;
     });
 
-    const maxScorePerJudge = JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
     const averageScore = uniqueJudges.size > 0 ? (totalScore / uniqueJudges.size) : 0;
-    const scaledScore = maxScorePerJudge > 0 ? (averageScore / maxScorePerJudge) * 10 : 0;
-
-    await updateDoc(projectRef, { scores: newScores, averageScore: scaledScore });
+    
+    await updateDoc(projectRef, { scores: newScores, averageScore: averageScore });
     return { successMessage: "Scores submitted successfully." };
 }
