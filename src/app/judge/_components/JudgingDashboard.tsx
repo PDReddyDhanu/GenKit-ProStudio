@@ -46,11 +46,15 @@ export default function JudgingDashboard() {
             <AuthMessage />
             
              <Tabs defaultValue="judging" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="judging">Project Scoring</TabsTrigger>
                     <TabsTrigger value="analytics">Analytics</TabsTrigger>
                     <TabsTrigger value="announcements">Announcements</TabsTrigger>
                 </TabsList>
+                <TabsContent value="hackathons" className="mt-6">
+                    <HackathonManagement />
+                </TabsContent>
                 <TabsContent value="judging" className="mt-6">
                     {currentHackathon ? <ScoringDashboard hackathon={currentHackathon} /> : <p className="text-center text-muted-foreground">Please select a hackathon to start judging.</p>}
                 </TabsContent>
