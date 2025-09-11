@@ -126,7 +126,8 @@ export default {
         },
         'credits-fade-in': {
           '0%': { opacity: '0'},
-          '80%': { opacity: '0'},
+          '20%': { opacity: '0'},
+          '50%': { opacity: '0.7'},
           '100%': { opacity: '0.7'},
         },
         'slow-float': {
@@ -147,7 +148,7 @@ export default {
         'slide-in-down': 'slide-in-down 0.5s ease-in-out forwards',
         'card-in': 'card-in 0.6s ease-out forwards both',
         'confetti-rain': 'confetti-rain linear infinite',
-        'title-reveal': 'title-reveal 4s ease-out forwards',
+        'title-reveal': 'title-reveal 2.5s ease-out forwards',
         'slow-zoom-in': 'slow-zoom-in 4s ease-out forwards',
         'trophy-shine': 'trophy-shine 2s ease-in-out infinite',
         'credits-fade-in': 'credits-fade-in 4s ease-out forwards',
