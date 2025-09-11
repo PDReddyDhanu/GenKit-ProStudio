@@ -1,3 +1,4 @@
+
 "use server";
 
 import { generateProjectIdea as generateProjectIdeaFlow, GenerateProjectIdeaInput } from '@/ai/flows/generate-project-idea';
@@ -5,6 +6,7 @@ import { suggestThemes as suggestThemesFlow, SuggestThemesInput } from '@/ai/flo
 import { aiCodeReviewForSubmissions as aiCodeReviewFlow, AiCodeReviewForSubmissionsInput } from '@/ai/flows/ai-code-review-for-submissions';
 import { generateProjectSummary as generateProjectSummaryFlow, ProjectSummaryInput } from '@/ai/flows/project-summary-for-judges';
 import { fetchGuidanceInfo as fetchGuidanceInfoFlow, FetchGuidanceInfoInput } from '@/ai/flows/fetch-guidance-info';
+import { generateProjectImage as generateProjectImageFlow, GenerateProjectImageInput } from '@/ai/flows/generate-project-image';
 
 // AI Related Actions
 export async function generateProjectIdea(input: GenerateProjectIdeaInput): Promise<string> {
@@ -54,5 +56,15 @@ export async function getGuidance(input: FetchGuidanceInfoInput): Promise<string
     } catch (error) {
         console.error("Error fetching guidance:", error);
         return "Sorry, I couldn't fetch guidance at this time. Please try again later.";
+    }
+}
+
+export async function generateProjectImage(input: GenerateProjectImageInput): Promise<string | null> {
+    try {
+        const result = await generateProjectImageFlow(input);
+        return result.imageUrl;
+    } catch (error) {
+        console.error("Error generating project image:", error);
+        return null;
     }
 }

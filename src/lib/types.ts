@@ -13,6 +13,7 @@ export interface User extends UserProfileData {
   email: string;
   // password is not stored in Firestore record for security
   status: 'pending' | 'approved';
+  guidanceHistory?: ChatMessage[];
 }
 
 export interface Hackathon {
@@ -61,6 +62,7 @@ export interface Project {
   name:string;
   description: string;
   githubUrl: string;
+  imageUrl?: string;
   scores: Score[];
   averageScore: number;
   achievements?: string[];
@@ -71,6 +73,7 @@ export interface Judge {
   id:string;
   name: string;
   email: string;
+  guidanceHistory?: ChatMessage[];
   // password is not stored in Firestore record for security
 }
 

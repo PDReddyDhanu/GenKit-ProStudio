@@ -36,6 +36,7 @@ export default function ProjectGallery() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {projects.map((project, index) => {
                             const team = teams.find(t => t.id === project.teamId);
+                            const imageUrl = project.imageUrl || `https://picsum.photos/seed/${project.id}/600/400`;
                             return (
                                 <div 
                                     key={project.id} 
@@ -43,7 +44,7 @@ export default function ProjectGallery() {
                                     style={{ animationDelay: `${index * 100}ms` }}
                                 >
                                     <Image 
-                                        src={`https://picsum.photos/seed/${project.id}/600/400`}
+                                        src={imageUrl}
                                         alt={project.name}
                                         width={600}
                                         height={400}

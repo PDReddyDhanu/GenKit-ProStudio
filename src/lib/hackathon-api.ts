@@ -24,6 +24,8 @@ import {
 } from 'firebase/firestore';
 import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember } from './types';
 import { JUDGING_RUBRIC } from './constants';
+import { generateProjectImage } from '@/ai/flows/generate-project-image';
+
 
 async function getOrCreateUser(email: string, password: any) {
     try {
@@ -454,6 +456,17 @@ export async function submitProject(collegeId: string, hackathonId: string, { na
 
     const projectRef = await addDoc(projectsCollection, newProject);
     await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { projectId: projectRef.id });
+
+    // Asynchronously generate project image
+    generateProjectImage({ projectName: name, projectDescription: description })
+        .then(async (result) => {
+            if (result.imageUrl) {
+                await updateDoc(projectRef, { imageUrl: result.imageUrl });
+            }
+        })
+        .catch(error => {
+            console.error("Failed to generate project image:", error);
+        });
     
     return { successMessage: "Project submitted successfully!" };
 }
@@ -470,6 +483,20 @@ export async function postTeamMessage(collegeId: string, teamId: string, message
         messages: arrayUnion(newMessage)
     });
     return { successMessage: "Message sent." };
+}
+
+export async function saveGuidanceHistory(collegeId: string, userOrJudgeId: string, history: ChatMessage[], role: 'user' | 'judge') {
+    const collectionName = role === 'user' ? 'users' : 'judges';
+    const userRef = doc(db, `colleges/${collegeId}/${collectionName}`, userOrJudgeId);
+    await updateDoc(userRef, { guidanceHistory: history });
+    return { successMessage: "History saved." };
+}
+
+export async function clearGuidanceHistory(collegeId: string, userOrJudgeId: string, role: 'user' | 'judge') {
+    const collectionName = role === 'user' ? 'users' : 'judges';
+    const userRef = doc(db, `colleges/${collegeId}/${collectionName}`, userOrJudgeId);
+    await updateDoc(userRef, { guidanceHistory: [] });
+    return { successMessage: "Chat history cleared." };
 }
 
 

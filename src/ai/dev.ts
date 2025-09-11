@@ -1,3 +1,4 @@
+
 import { config } from 'dotenv';
 config();
 
@@ -6,3 +7,4 @@ import '@/ai/flows/ai-code-review-for-submissions.ts';
 import '@/ai/flows/project-summary-for-judges.ts';
 import '@/ai/flows/generate-project-idea.ts';
 import '@/ai/flows/fetch-guidance-info.ts';
+import '@/ai/flows/generate-project-image.ts';
