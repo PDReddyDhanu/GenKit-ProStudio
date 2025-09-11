@@ -1,10 +1,11 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { User, Users, Loader, Search } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { User, Users, Loader, Search, AlertCircle } from 'lucide-react';
 import PageIntro from '@/components/PageIntro';
 import { AuthMessage } from '@/components/AuthMessage';
 import { Team } from '@/lib/types';
@@ -18,7 +19,7 @@ export default function TeamFinder() {
     const [showIntro, setShowIntro] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [joinCode, setJoinCode] = useState('');
-    const [isJoining, setIsJoining] = useState(false);
+    const [isJoining, setIsJoining] = useState<string | null>(null);
 
     const filteredTeams = useMemo(() => {
         if (!selectedHackathonId) return [];
@@ -35,22 +36,47 @@ export default function TeamFinder() {
         return hackathons.find(h => h.id === selectedHackathonId);
     }, [hackathons, selectedHackathonId]);
 
+    const myTeamId = useMemo(() => {
+        if (!currentUser || !selectedHackathonId) return null;
+        const myTeam = teams.find(t => t.hackathonId === selectedHackathonId && t.members.some(m => m.id === currentUser.id));
+        return myTeam?.id;
+    }, [teams, currentUser, selectedHackathonId]);
+
+    const myPendingRequests = useMemo(() => {
+        if (!currentUser || !selectedHackathonId) return [];
+        return teams
+            .filter(t => t.hackathonId === selectedHackathonId && t.joinRequests?.some(req => req.id === currentUser.id))
+            .map(t => t.id);
+    }, [teams, currentUser, selectedHackathonId]);
+
+
     if (showIntro) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<Users className="w-full h-full" />} title="Team Finder" description="Find a team or recruit new members." />;
     }
 
-    const handleJoinTeam = async (e: React.FormEvent) => {
+    const handleJoinByCode = async (e: React.FormEvent) => {
         e.preventDefault();
         if (currentUser && selectedHackathonId) {
-            setIsJoining(true);
+            setIsJoining('code');
             try {
                 await api.requestToJoinTeamByCode(selectedHackathonId, joinCode, currentUser);
                 setJoinCode('');
             } finally {
-                setIsJoining(false);
+                setIsJoining(null);
             }
         } else {
             alert("You must be logged in and have a hackathon selected to join a team.");
+        }
+    };
+    
+    const handleRequestToJoin = async (team: Team) => {
+        if (currentUser && selectedHackathonId) {
+             setIsJoining(team.id);
+            try {
+                await api.requestToJoinTeamById(selectedHackathonId, team.id, currentUser);
+            } finally {
+                setIsJoining(null);
+            }
         }
     };
     
@@ -80,17 +106,17 @@ export default function TeamFinder() {
                         <CardDescription>Enter a team's code to send a join request.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleJoinTeam} className="space-y-4">
+                        <form onSubmit={handleJoinByCode} className="space-y-4">
                             <div className="space-y-2">
                                 <Input 
                                     placeholder="Enter 6-digit join code" 
                                     value={joinCode}
                                     onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                                    disabled={isJoining || !currentUser}
+                                    disabled={!!isJoining || !currentUser}
                                 />
                             </div>
-                            <Button type="submit" className="w-full" disabled={isJoining || !currentUser}>
-                                 {isJoining ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Sending Request...</> : 'Send Request to Join'}
+                            <Button type="submit" className="w-full" disabled={!!isJoining || !currentUser}>
+                                 {isJoining === 'code' ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Sending Request...</> : 'Send Request to Join'}
                             </Button>
                         </form>
                     </CardContent>
@@ -111,26 +137,47 @@ export default function TeamFinder() {
             
             {filteredTeams.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [perspective:1000px]">
-                    {filteredTeams.map(team => (
-                        <Card key={team.id} className="flex flex-col transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]">
-                            <CardHeader>
-                                <CardTitle className="font-headline">{team.name}</CardTitle>
-                                <CardDescription className="flex items-center gap-2">
-                                    <Users className="h-4 w-4" /> {team.members.length} / {currentHackathon?.teamSizeLimit || 4} members
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex-grow">
-                                <h4 className="font-semibold mb-2 text-sm">Members:</h4>
-                                <ul className="space-y-1">
-                                    {team.members.map(member => (
-                                        <li key={member.id} className="flex items-center gap-2 text-muted-foreground text-sm">
-                                            <User className="h-4 w-4" /> {member.name}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </CardContent>
-                        </Card>
-                    ))}
+                    {filteredTeams.map(team => {
+                        const isFull = team.members.length >= (currentHackathon?.teamSizeLimit || 4);
+                        const isMyTeam = team.id === myTeamId;
+                        const hasPendingRequest = myPendingRequests.includes(team.id);
+                        const canJoin = !isFull && !isMyTeam && !hasPendingRequest && !!currentUser;
+                        
+                        return (
+                            <Card key={team.id} className="flex flex-col transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]">
+                                <CardHeader>
+                                    <CardTitle className="font-headline">{team.name}</CardTitle>
+                                    <CardDescription className="flex items-center gap-2">
+                                        <Users className="h-4 w-4" /> {team.members.length} / {currentHackathon?.teamSizeLimit || 4} members
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    <h4 className="font-semibold mb-2 text-sm">Members:</h4>
+                                    <ul className="space-y-1">
+                                        {team.members.map(member => (
+                                            <li key={member.id} className="flex items-center gap-2 text-muted-foreground text-sm">
+                                                <User className="h-4 w-4" /> {member.name}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </CardContent>
+                                <CardFooter className="pt-4">
+                                     <Button 
+                                        className="w-full"
+                                        onClick={() => handleRequestToJoin(team)}
+                                        disabled={!canJoin || !!isJoining}
+                                    >
+                                        {isJoining === team.id && <Loader className="mr-2 h-4 w-4 animate-spin"/>}
+                                        {isMyTeam ? 'You are in this team' : 
+                                         hasPendingRequest ? 'Request Sent' : 
+                                         isFull ? 'Team Full' :
+                                         !currentUser ? 'Login to Join' : 
+                                         'Request to Join'}
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        )
+                    })}
                 </div>
             ) : (
                 <Card>

@@ -1,4 +1,5 @@
 
+
 import { auth, db } from './firebase';
 import { 
     createUserWithEmailAndPassword, 
@@ -34,6 +35,7 @@ export async function registerStudent(collegeId: string, { name, email, password
         bio: '',
         github: '',
         linkedin: '',
+        hackathonId: null
     };
     await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
     await firebaseSignOut(auth); // Sign out immediately after registration
@@ -143,7 +145,8 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             name,
             email,
             status: 'approved',
-            skills: [], bio: '', github: '', linkedin: ''
+            skills: [], bio: '', github: '', linkedin: '',
+            hackathonId: null
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
@@ -220,6 +223,8 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
         joinRequests: [],
     };
     const teamRef = await addDoc(collection(db, `colleges/${collegeId}/teams`), newTeam);
+    await updateDoc(doc(db, `colleges/${collegeId}/users`, user.id), { hackathonId: hackathonId, teamId: teamRef.id });
+
     return { successMessage: "Team created successfully!", teamId: teamRef.id };
 }
 
@@ -228,7 +233,7 @@ export async function requestToJoinTeamByCode(collegeId: string, hackathonId: st
     const userTeamsQuery = query(
         collection(db, `colleges/${collegeId}/teams`), 
         where("hackathonId", "==", hackathonId),
-        where("members", "array-contains", {id: user.id, name: user.name, email: user.email, skills: user.skills, bio: user.bio, github: user.github, linkedin: user.linkedin, status: user.status})
+        where("members", "array-contains", {id: user.id, name: user.name, email: user.email})
     );
     const userTeamsSnapshot = await getDocs(userTeamsQuery);
     if (!userTeamsSnapshot.empty) {
@@ -243,24 +248,46 @@ export async function requestToJoinTeamByCode(collegeId: string, hackathonId: st
     }
 
     const teamDoc = querySnapshot.docs[0];
+    return requestToJoinTeamById(collegeId, hackathonId, teamDoc.id, user);
+}
+
+export async function requestToJoinTeamById(collegeId: string, hackathonId: string, teamId: string, user: User) {
+    const userTeamsQuery = query(collection(db, `colleges/${collegeId}/teams`), 
+        where('hackathonId', '==', hackathonId), 
+        where('members', 'array-contains', { id: user.id, name: user.name, email: user.email, skills: user.skills, bio: user.bio, github: user.github, linkedin: user.linkedin, status: user.status, hackathonId: user.hackathonId })
+    );
+
+    const userTeamsSnapshot = await getDocs(userTeamsQuery);
+    if (!userTeamsSnapshot.empty) {
+        throw new Error("You are already in a team for this hackathon.");
+    }
+
+    const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
+    const teamDoc = await getDoc(teamRef);
+
+    if (!teamDoc.exists()) {
+        throw new Error("Team not found.");
+    }
+
     const teamData = teamDoc.data() as Team;
 
     if (teamData.members.some(m => m.id === user.id) || teamData.joinRequests?.some(r => r.id === user.id)) {
         throw new Error("You have already joined or requested to join this team.");
     }
-    
+
     const request: JoinRequest = {
         id: user.id,
         name: user.name,
         email: user.email
     };
 
-    await updateDoc(teamDoc.ref, {
+    await updateDoc(teamRef, {
         joinRequests: arrayUnion(request)
     });
 
     return { successMessage: `Your request to join "${teamData.name}" has been sent!` };
 }
+
 
 export async function handleJoinRequest(collegeId: string, teamId: string, request: JoinRequest, action: 'accept' | 'reject') {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
@@ -284,11 +311,13 @@ export async function handleJoinRequest(collegeId: string, teamId: string, reque
         if(!userDoc.exists()) throw new Error("User trying to join does not exist.");
         
         const userData = userDoc.data() as User;
+        const newMember = {id: userData.id, name: userData.name, email: userData.email, skills: userData.skills, bio: userData.bio, github: userData.github, linkedin: userData.linkedin, status: userData.status, hackathonId: userData.hackathonId };
 
         await updateDoc(teamRef, {
-            members: arrayUnion({id: userData.id, name: userData.name, email: userData.email, skills: userData.skills, bio: userData.bio, github: userData.github, linkedin: userData.linkedin, status: userData.status}),
+            members: arrayUnion(newMember),
             joinRequests: arrayRemove(request)
         });
+        await updateDoc(doc(db, `colleges/${collegeId}/users`, request.id), { hackathonId: teamData.hackathonId, teamId: teamId });
         return { successMessage: `${request.name} has been added to the team.` };
     } else { // reject
         await updateDoc(teamRef, {
@@ -300,6 +329,7 @@ export async function handleJoinRequest(collegeId: string, teamId: string, reque
 
 export async function removeTeammate(collegeId: string, teamId: string, memberToRemove: User) {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
+    const userRef = doc(db, `colleges/${collegeId}/users`, memberToRemove.id);
 
     const memberObject = {
         id: memberToRemove.id,
@@ -310,10 +340,15 @@ export async function removeTeammate(collegeId: string, teamId: string, memberTo
         github: memberToRemove.github,
         linkedin: memberToRemove.linkedin,
         status: memberToRemove.status,
+        hackathonId: memberToRemove.hackathonId
     };
 
     await updateDoc(teamRef, {
         members: arrayRemove(memberObject)
+    });
+    
+    await updateDoc(userRef, {
+      teamId: null
     });
     
     return { successMessage: `${memberToRemove.name} has been removed from the team.` };
@@ -352,6 +387,8 @@ export async function leaveTeam(collegeId: string, hackathonId: string, teamId: 
             }
         }
     }
+
+    await updateDoc(userRef, { hackathonId: null, teamId: null });
     
     return { successMessage: "You have left the team." };
 }
