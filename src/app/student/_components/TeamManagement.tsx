@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader, ArrowLeft } from 'lucide-react';
+import BackButton from '@/components/layout/BackButton';
 
 export default function TeamManagement() {
     const { state, api } = useHackathon();
@@ -41,17 +42,9 @@ export default function TeamManagement() {
         }
     };
 
-    const handleGoBack = () => {
-        if (currentUser) {
-             api.selectHackathonForStudent(currentUser.id, null);
-        }
-    }
-
     return (
         <div className="container max-w-4xl mx-auto">
-             <Button variant="ghost" onClick={handleGoBack} className="mb-4">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Hackathons
-            </Button>
+             <BackButton />
             <div className="grid md:grid-cols-2 gap-8">
                 <Card>
                     <CardHeader>

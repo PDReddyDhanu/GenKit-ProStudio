@@ -13,6 +13,7 @@ import { JUDGING_RUBRIC } from '@/lib/constants';
 import Link from 'next/link';
 import { ArrowLeft, Bot, Loader } from 'lucide-react';
 import { getAiProjectSummary } from '@/app/actions';
+import BackButton from '@/components/layout/BackButton';
 
 interface ScoringFormProps {
     project: Project;
@@ -91,7 +92,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
 
     return (
         <div className="container max-w-3xl mx-auto py-12 animate-slide-in-up">
-            <Button variant="ghost" onClick={onBack} className="mb-4"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects</Button>
+            <BackButton />
             <Card>
                 <CardHeader>
                     <CardTitle className="text-3xl font-headline">{project.name}</CardTitle>

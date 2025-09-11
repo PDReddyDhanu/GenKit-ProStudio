@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Team } from '@/lib/types';
 import { generateProjectIdea } from '@/app/actions';
 import { Loader, ArrowLeft } from 'lucide-react';
+import BackButton from '@/components/layout/BackButton';
 
 interface ProjectSubmissionProps {
     team: Team;
@@ -70,11 +71,7 @@ export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
 
     return (
         <div className="container max-w-3xl mx-auto">
-            <div className="flex justify-start mb-4">
-                <Button variant="ghost" onClick={handleLeaveTeam} disabled={isLeaving}>
-                    {isLeaving ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Leaving...</> : <><ArrowLeft className="mr-2 h-4 w-4" /> Back to Team Selection</>}
-                </Button>
-            </div>
+            <BackButton />
             <Card>
                 <CardHeader>
                     <CardTitle className="text-3xl font-bold font-headline">Team: {team.name}</CardTitle>
