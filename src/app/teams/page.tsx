@@ -21,33 +21,27 @@ export default function TeamFinder() {
     const [joinCode, setJoinCode] = useState('');
     const [isJoining, setIsJoining] = useState<string | null>(null);
 
-    const filteredTeams = useMemo(() => {
-        if (!selectedHackathonId) return [];
+    const { filteredTeams, currentHackathon, myTeamId, myPendingRequests } = useMemo(() => {
+        const currentHackathon = hackathons.find(h => h.id === selectedHackathonId);
+        if (!selectedHackathonId || !currentHackathon) {
+            return { filteredTeams: [], currentHackathon: null, myTeamId: null, myPendingRequests: [] };
+        }
+
         let currentTeams = teams.filter(t => t.hackathonId === selectedHackathonId);
         if (searchQuery) {
             currentTeams = currentTeams.filter(team =>
                 team.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
-        return currentTeams;
-    }, [teams, selectedHackathonId, searchQuery]);
-
-    const currentHackathon = useMemo(() => {
-        return hackathons.find(h => h.id === selectedHackathonId);
-    }, [hackathons, selectedHackathonId]);
-
-    const myTeamId = useMemo(() => {
-        if (!currentUser || !selectedHackathonId) return null;
-        const myTeam = teams.find(t => t.hackathonId === selectedHackathonId && t.members.some(m => m.id === currentUser.id));
-        return myTeam?.id;
-    }, [teams, currentUser, selectedHackathonId]);
-
-    const myPendingRequests = useMemo(() => {
-        if (!currentUser || !selectedHackathonId) return [];
-        return teams
-            .filter(t => t.hackathonId === selectedHackathonId && t.joinRequests?.some(req => req.id === currentUser.id))
+        
+        const myTeam = teams.find(t => t.hackathonId === selectedHackathonId && t.members.some(m => m.id === currentUser?.id));
+        
+        const pendingRequests = teams
+            .filter(t => t.hackathonId === selectedHackathonId && t.joinRequests?.some(req => req.id === currentUser?.id))
             .map(t => t.id);
-    }, [teams, currentUser, selectedHackathonId]);
+
+        return { filteredTeams: currentTeams, currentHackathon, myTeamId: myTeam?.id, myPendingRequests: pendingRequests };
+    }, [teams, hackathons, selectedHackathonId, searchQuery, currentUser]);
 
 
     if (showIntro) {
@@ -144,7 +138,7 @@ export default function TeamFinder() {
                         const canJoin = !isFull && !isMyTeam && !hasPendingRequest && !!currentUser;
                         
                         return (
-                            <Card key={team.id} className="flex flex-col transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]">
+                            <Card key={team.id} className="group flex flex-col transition-all duration-300 transform-gpu animate-card-in hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]">
                                 <CardHeader>
                                     <CardTitle className="font-headline">{team.name}</CardTitle>
                                     <CardDescription className="flex items-center gap-2">
@@ -161,7 +155,7 @@ export default function TeamFinder() {
                                         ))}
                                     </ul>
                                 </CardContent>
-                                <CardFooter className="pt-4">
+                                <CardFooter className="pt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                      <Button 
                                         className="w-full"
                                         onClick={() => handleRequestToJoin(team)}
