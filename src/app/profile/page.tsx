@@ -1,7 +1,8 @@
 
+
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,13 +10,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { User, Github, Linkedin, Pencil, UserCircle, Loader } from 'lucide-react';
+import { User, Github, Linkedin, Pencil, UserCircle, Loader, Download, Award } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
+import { generateCertificate } from '@/lib/pdf';
+import { format } from 'date-fns';
 
 export default function ProfilePage() {
     const { state, api } = useHackathon();
-    const { currentUser } = state;
+    const { currentUser, projects, teams, hackathons, selectedCollege } = state;
     const [showIntro, setShowIntro] = useState(true);
 
     const [isEditing, setIsEditing] = useState(false);
@@ -25,6 +28,15 @@ export default function ProfilePage() {
     const [github, setGithub] = useState(currentUser?.github || '');
     const [linkedin, setLinkedin] = useState(currentUser?.linkedin || '');
     const [isSaving, setIsSaving] = useState(false);
+    const [isGeneratingCert, setIsGeneratingCert] = useState<string | null>(null);
+
+    const userProjects = useMemo(() => {
+        if (!currentUser) return [];
+        // Find all teams the user is a member of
+        const userTeamIds = teams.filter(t => t.members.some(m => m.id === currentUser.id)).map(t => t.id);
+        // Find all projects submitted by those teams
+        return projects.filter(p => userTeamIds.includes(p.teamId));
+    }, [currentUser, teams, projects]);
 
     useEffect(() => {
       if(currentUser) {
@@ -34,11 +46,29 @@ export default function ProfilePage() {
         setGithub(currentUser.github || '');
         setLinkedin(currentUser.linkedin || '');
       }
-    }, [currentUser])
+    }, [currentUser]);
 
     const handleIntroFinish = () => {
         setShowIntro(false);
     };
+    
+     const handleDownloadCertificate = async (projectId: string) => {
+        const project = projects.find(p => p.id === projectId);
+        const team = teams.find(t => t.id === project?.teamId);
+        if (team && project && selectedCollege) {
+            setIsGeneratingCert(projectId);
+            try {
+                const teamMembers = team.members.map(m => m.name);
+                await generateCertificate(team.name, project.name, teamMembers, project.id, project.averageScore, selectedCollege);
+            } catch (error) {
+                console.error("Failed to generate certificate:", error);
+                alert("Could not generate certificate. Please try again.");
+            } finally {
+                setIsGeneratingCert(null);
+            }
+        }
+    };
+
 
     if (showIntro) {
         return <PageIntro onFinished={handleIntroFinish} icon={<UserCircle className="w-full h-full" />} title="Your Profile" description="Manage your personal details and skills." />;
@@ -78,7 +108,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="container max-w-3xl mx-auto py-12 animate-fade-in">
+        <div className="container max-w-3xl mx-auto py-12 animate-fade-in grid gap-8">
             <Card>
                 <CardHeader className="flex flex-row justify-between items-start">
                     <div>
@@ -158,6 +188,35 @@ export default function ProfilePage() {
                             </div>
                         </div>
                     )}
+                </CardContent>
+            </Card>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-2xl font-headline">
+                        <Award className="h-7 w-7 text-primary" /> My Certificates
+                    </CardTitle>
+                    <CardDescription>Download your certificates of participation.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {userProjects.length > 0 ? userProjects.map(p => {
+                            const hackathon = hackathons.find(h => h.id === p.hackathonId);
+                            return (
+                                <div key={p.id} className="p-4 bg-muted/50 rounded-md flex justify-between items-center">
+                                    <div>
+                                        <p className="font-semibold">{p.name}</p>
+                                        <p className="text-sm text-muted-foreground">{hackathon?.name} - {format(new Date(hackathon?.deadline || Date.now()), 'PPP')}</p>
+                                    </div>
+                                    <Button onClick={() => handleDownloadCertificate(p.id)} disabled={!!isGeneratingCert}>
+                                        {isGeneratingCert === p.id ? <Loader className="animate-spin" /> : <Download />}
+                                    </Button>
+                                </div>
+                            )
+                        }) : (
+                            <p className="text-muted-foreground text-center py-4">You have not submitted any projects yet. No certificates to show.</p>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
         </div>

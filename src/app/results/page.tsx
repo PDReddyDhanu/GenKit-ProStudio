@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -14,9 +15,10 @@ import PageIntro from '@/components/PageIntro';
 interface Winner {
     project: Project;
     team?: Team;
+    rank: number;
 }
 
-const WinnerCard = ({ winner, rank, collegeName }: { winner: Winner, rank: number, collegeName: string | null }) => {
+const WinnerCard = ({ winner, collegeName }: { winner: Winner, collegeName: string | null }) => {
     const [isGenerating, setIsGenerating] = useState(false);
 
     const handleDownloadCertificate = async () => {
@@ -24,7 +26,7 @@ const WinnerCard = ({ winner, rank, collegeName }: { winner: Winner, rank: numbe
             setIsGenerating(true);
             try {
                 const teamMembers = winner.team.members.map((m: User) => m.name);
-                await generateCertificate(winner.team.name, winner.project.name, teamMembers, winner.project.id, winner.project.averageScore, collegeName);
+                await generateCertificate(winner.team.name, winner.project.name, teamMembers, winner.project.id, winner.project.averageScore, collegeName, winner.rank);
             } catch (error) {
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
@@ -36,6 +38,7 @@ const WinnerCard = ({ winner, rank, collegeName }: { winner: Winner, rank: numbe
 
     if (!winner || !winner.team || !winner.project) return null;
 
+    const { rank } = winner;
     const podiumClass = rank === 1 ? 'border-amber-400' : rank === 2 ? 'border-slate-400' : 'border-orange-400';
     const trophyColor = rank === 1 ? 'text-amber-400' : rank === 2 ? 'text-slate-400' : 'text-orange-400';
     const rankText = rank === 1 ? '1st' : rank === 2 ? '2nd' : '3rd';
@@ -49,7 +52,7 @@ const WinnerCard = ({ winner, rank, collegeName }: { winner: Winner, rank: numbe
                 <p className="text-lg italic text-muted-foreground mt-1 mb-4">for "{winner.project.name}"</p>
                 <p className="font-bold text-xl text-foreground">Score: {winner.project.averageScore.toFixed(2)}</p>
                 <Button onClick={handleDownloadCertificate} className="mt-6" disabled={isGenerating}>
-                    {isGenerating ? 'Generating...' : 'Download Certificate'}
+                    {isGenerating ? 'Generating...' : 'Download Certificate of Achievement'}
                 </Button>
             </CardContent>
         </Card>
@@ -66,9 +69,10 @@ export default function Results() {
             .filter(p => p.averageScore > 0)
             .sort((a, b) => b.averageScore - a.averageScore)
             .slice(0, 3)
-            .map(p => ({
+            .map((p, index) => ({
                 project: p,
-                team: teams.find(t => t.id === p.teamId)
+                team: teams.find(t => t.id === p.teamId),
+                rank: index + 1
             }));
     }, [projects, teams]);
 
@@ -84,17 +88,17 @@ export default function Results() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
                     {winners[1] && (
                         <div className="mt-8 lg:mt-16 animate-slide-in-up" style={{ animationDelay: '200ms'}}>
-                            <WinnerCard winner={winners[1]} rank={2} collegeName={selectedCollege} />
+                            <WinnerCard winner={winners[1]} collegeName={selectedCollege} />
                         </div>
                     )}
                     {winners[0] && (
                         <div className="animate-slide-in-up">
-                             <WinnerCard winner={winners[0]} rank={1} collegeName={selectedCollege} />
+                             <WinnerCard winner={winners[0]} collegeName={selectedCollege} />
                         </div>
                     )}
                     {winners[2] && (
                          <div className="mt-8 lg:mt-24 animate-slide-in-up" style={{ animationDelay: '400ms'}}>
-                           <WinnerCard winner={winners[2]} rank={3} collegeName={selectedCollege} />
+                           <WinnerCard winner={winners[2]} collegeName={selectedCollege} />
                         </div>
                     )}
                 </div>
