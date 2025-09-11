@@ -40,11 +40,16 @@ function AnnouncementForm({ announcement, onFinished }: { announcement?: Announc
 
         setIsLoading(true);
         try {
-            const data = {
+            const data: Partial<Omit<Announcement, 'id' | 'timestamp'>> = {
                 message,
-                publishAt: publishAt?.getTime(),
-                expiresAt: expiresAt?.getTime(),
             };
+
+            if (publishAt) {
+                data.publishAt = publishAt.getTime();
+            }
+            if (expiresAt) {
+                data.expiresAt = expiresAt.getTime();
+            }
 
             if (announcement) {
                 await api.updateAnnouncement(announcement.id, data);

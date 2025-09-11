@@ -233,10 +233,11 @@ export async function updateHackathon(collegeId: string, hackathonId: string, ha
 }
 
 
-export async function postAnnouncement(collegeId: string, data: Omit<Announcement, 'id' | 'timestamp'>) {
+export async function postAnnouncement(collegeId: string, data: Partial<Omit<Announcement, 'id' | 'timestamp'>>) {
     const newAnnouncement: Omit<Announcement, 'id'> = {
-        ...data,
+        message: data.message!,
         timestamp: Date.now(),
+        ...data
     };
     await addDoc(collection(db, `colleges/${collegeId}/announcements`), newAnnouncement);
     return { successMessage: 'Announcement posted successfully.' };
@@ -571,3 +572,4 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
     });
     return { successMessage: "Scores submitted successfully." };
 }
+
