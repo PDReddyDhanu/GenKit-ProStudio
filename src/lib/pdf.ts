@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import jsPDF from 'jspdf';
@@ -18,7 +17,7 @@ const getRankSuffix = (rankNum: number) => {
     if (rankNum === 1) return 'st';
     if (rankNum === 2) return 'nd';
     if (rankNum === 3) return 'rd';
-    return `${rankNum}th`;
+    return 'th';
 };
 
 
@@ -53,7 +52,7 @@ const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectNa
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.setTextColor(darkBlue);
-    doc.text(getRankSuffix(rank), badgeX, badgeY + 1, { align: 'center', baseline: 'middle' });
+    doc.text(`${rank}${getRankSuffix(rank)}`, badgeX, badgeY + 1, { align: 'center', baseline: 'middle' });
     doc.setFontSize(8);
     doc.text('Place', badgeX, badgeY + 5, { align: 'center', baseline: 'middle' });
 
