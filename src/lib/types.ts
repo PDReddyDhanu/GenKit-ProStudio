@@ -22,6 +22,7 @@ export interface Hackathon {
   rules: string;
   teamSizeLimit: number;
   deadline: number; // timestamp
+  summaryVideoUrl?: string; // To store the generated video URL
 }
 
 export interface ChatMessage {

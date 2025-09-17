@@ -8,8 +8,8 @@ import { generateProjectSummary as generateProjectSummaryFlow, ProjectSummaryInp
 import { fetchGuidanceInfo as fetchGuidanceInfoFlow, FetchGuidanceInfoInput } from '@/ai/flows/fetch-guidance-info';
 import { generateProjectImage as generateProjectImageFlow, GenerateProjectImageInput } from '@/ai/flows/generate-project-image';
 import { generatePitchOutline as generatePitchOutlineFlow, GeneratePitchOutlineInput, GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
-import { generateShowcaseSummary as generateShowcaseSummaryFlow, GenerateShowcaseSummaryInput, GenerateShowcaseSummaryOutput } from '@/ai/flows/generate-showcase-summary';
-import { generateShowcaseImage as generateShowcaseImageFlow, GenerateShowcaseImageInput, GenerateShowcaseImageOutput } from '@/ai/flows/generate-showcase-image';
+import { generateHackathonSummaryVideo as generateHackathonSummaryVideoFlow, GenerateHackathonSummaryVideoInput, GenerateHackathonSummaryVideoOutput } from '@/ai/flows/generate-summary-video';
+
 
 // AI Related Actions
 export async function generateProjectIdea(input: GenerateProjectIdeaInput): Promise<string> {
@@ -81,20 +81,11 @@ export async function generatePitchOutline(input: GeneratePitchOutlineInput): Pr
     }
 }
 
-export async function generateShowcaseSummary(input: GenerateShowcaseSummaryInput): Promise<GenerateShowcaseSummaryOutput | null> {
+export async function generateHackathonSummaryVideo(input: GenerateHackathonSummaryVideoInput): Promise<GenerateHackathonSummaryVideoOutput | null> {
     try {
-        return await generateShowcaseSummaryFlow(input);
+        return await generateHackathonSummaryVideoFlow(input);
     } catch (error) {
-        console.error("Error generating showcase summary:", error);
-        return null;
-    }
-}
-
-export async function generateShowcaseImage(input: GenerateShowcaseImageInput): Promise<GenerateShowcaseImageOutput | null> {
-    try {
-        return await generateShowcaseImageFlow(input);
-    } catch (error) {
-        console.error("Error generating showcase image:", error);
+        console.error("Error generating hackathon summary video:", error);
         return null;
     }
 }

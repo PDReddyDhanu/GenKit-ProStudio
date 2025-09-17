@@ -1,10 +1,10 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import Link from 'next/link';
-import { Github, GalleryVertical, Award, X, Play } from 'lucide-react';
+import { Github, GalleryVertical, Award, Video, Loader } from 'lucide-react';
 import PageIntro from '@/components/PageIntro';
 import {
   Tooltip,
@@ -12,156 +12,58 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { generateShowcaseSummary, generateShowcaseImage } from '@/app/actions';
+import { generateHackathonSummaryVideo } from '@/app/actions';
 import Image from 'next/image';
-import { AnimatePresence, motion } from 'framer-motion';
-
-interface ShowcaseItem {
-    id: string;
-    name: string;
-    teamName: string;
-    summary: string;
-    imageUrl: string;
-}
-
-function ShowcaseViewer({ items, onClose }: { items: ShowcaseItem[], onClose: () => void }) {
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    useEffect(() => {
-        if (items.length === 0) return;
-        
-        const timer = setInterval(() => {
-            setCurrentIndex(prev => (prev + 1) % items.length);
-        }, 5000); // 5 seconds per slide
-
-        return () => clearInterval(timer);
-    }, [items]);
-    
-    if(items.length === 0) return null;
-
-    const currentItem = items[currentIndex];
-
-    return (
-         <motion.div 
-            className="fixed inset-0 bg-black/90 z-[200] flex flex-col items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-        >
-            <Button onClick={onClose} variant="ghost" size="icon" className="absolute top-4 right-4 text-white z-10">
-                <X />
-            </Button>
-
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={currentIndex}
-                    initial={{ opacity: 0, scale: 0.9, x: 100 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, x: -100 }}
-                    transition={{ duration: 0.7, ease: "easeInOut" }}
-                    className="w-full h-full"
-                >
-                    <Image
-                        src={currentItem.imageUrl}
-                        alt={currentItem.name}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                    />
-                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
-
-                     <div className="absolute bottom-10 left-10 text-white max-w-2xl">
-                        <motion.h1 
-                            className="text-5xl md:text-7xl font-bold font-headline mb-2"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5, duration: 0.5 }}
-                        >
-                            {currentItem.name}
-                        </motion.h1>
-                        <motion.p 
-                            className="text-2xl md:text-3xl text-secondary"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.7, duration: 0.5 }}
-                        >
-                            by {currentItem.teamName}
-                        </motion.p>
-                         <motion.p 
-                            className="text-xl md:text-2xl mt-4 italic text-neutral-300"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.9, duration: 0.5 }}
-                        >
-                            {currentItem.summary}
-                        </motion.p>
-                    </div>
-                </motion.div>
-            </AnimatePresence>
-
-             <div className="absolute bottom-4 left-4 right-4 h-1 bg-white/20 rounded-full">
-                <motion.div 
-                    key={currentIndex}
-                    className="h-full bg-white rounded-full"
-                    initial={{ width: '0%'}}
-                    animate={{ width: '100%'}}
-                    transition={{ duration: 5, ease: 'linear'}}
-                />
-            </div>
-        </motion.div>
-    );
-}
+import { useRouter } from 'next/navigation';
 
 
 export default function ProjectGallery() {
-    const { state } = useHackathon();
-    const { projects, teams } = state;
+    const { state, api } = useHackathon();
+    const { projects, teams, selectedHackathonId, hackathons, selectedCollege, currentAdmin, currentJudge } = state;
     const [showIntro, setShowIntro] = useState(true);
-    const [isInShowcaseMode, setIsInShowcaseMode] = useState(false);
-    const [showcaseItems, setShowcaseItems] = useState<ShowcaseItem[]>([]);
-    const [isLoadingShowcase, setIsLoadingShowcase] = useState(false);
+    const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
+    const router = useRouter();
 
-    const handleEnterShowcase = async () => {
-        setIsLoadingShowcase(true);
-        const items: ShowcaseItem[] = [];
-
-        for (const project of projects) {
-            try {
-                const team = teams.find(t => t.id === project.teamId);
-                if (!team) continue;
-
-                const summaryRes = await generateShowcaseSummary({ projectName: project.name, projectDescription: project.description });
-                if (!summaryRes) continue;
-
-                let finalImageUrl = project.imageUrl;
-                if (!finalImageUrl) {
-                    const imageRes = await generateShowcaseImage({ summary: summaryRes.summary });
-                    if (imageRes?.imageUrl) {
-                        finalImageUrl = imageRes.imageUrl;
-                    }
-                }
-                
-                if (!finalImageUrl) continue;
-
-                items.push({
-                    id: project.id,
-                    name: project.name,
-                    teamName: team.name,
-                    summary: summaryRes.summary,
-                    imageUrl: finalImageUrl,
-                });
-            } catch (error) {
-                console.error(`Failed to generate showcase data for project ${project.name}:`, error);
-            }
+    const handleGenerateVideo = async () => {
+        if (!selectedHackathonId || !selectedCollege) {
+            alert("Please ensure a hackathon is selected to generate a video.");
+            return;
         }
-        setShowcaseItems(items);
-        setIsLoadingShowcase(false);
-        if(items.length > 0) {
-           setIsInShowcaseMode(true);
-        } else {
-            alert("Could not generate showcase data. Please try again.");
+
+        const currentHackathon = hackathons.find(h => h.id === selectedHackathonId);
+        const hackathonProjects = projects.filter(p => p.hackathonId === selectedHackathonId);
+        const hackathonTeams = teams.filter(t => t.hackathonId === selectedHackathonId);
+
+        if (!currentHackathon) {
+             alert("Could not find the current hackathon's details.");
+            return;
+        }
+
+        setIsGeneratingVideo(true);
+        try {
+            const videoResult = await generateHackathonSummaryVideo({
+                hackathonName: currentHackathon.name,
+                collegeName: selectedCollege,
+                prizeMoney: currentHackathon.prizeMoney,
+                projectCount: hackathonProjects.length,
+                teamCount: hackathonTeams.length
+            });
+
+            if (videoResult?.videoUrl) {
+                await api.updateHackathon(selectedHackathonId, { summaryVideoUrl: videoResult.videoUrl });
+                alert("Video generated successfully! You can view it in the 'Generated Videos' tab on the Admin Dashboard.");
+                router.push('/admin');
+            } else {
+                 throw new Error("Video generation did not return a URL.");
+            }
+
+        } catch (error) {
+            console.error("Failed to generate summary video:", error);
+            alert("Video generation failed. This can happen under heavy load. Please try again in a few moments.");
+        } finally {
+            setIsGeneratingVideo(false);
         }
     };
     
@@ -169,21 +71,21 @@ export default function ProjectGallery() {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<GalleryVertical className="w-full h-full" />} title="Project Showcase" description="A gallery of all submitted projects to celebrate the work." />;
     }
 
+    const canGenerateVideo = currentAdmin || currentJudge;
+
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-fade-in">
-            <AnimatePresence>
-                {isInShowcaseMode && <ShowcaseViewer items={showcaseItems} onClose={() => setIsInShowcaseMode(false)} />}
-            </AnimatePresence>
-
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-12">
                  <div className="text-center sm:text-left">
                     <h1 className="text-4xl font-bold mb-2 font-headline">Project Showcase</h1>
                     <p className="text-lg text-muted-foreground">Celebrating the incredible work from {state.selectedCollege}</p>
                 </div>
-                 <Button onClick={handleEnterShowcase} disabled={isLoadingShowcase || projects.length === 0}>
-                    <Play className="mr-2"/> 
-                    {isLoadingShowcase ? 'Preparing...' : 'Enter Showcase Mode'}
-                </Button>
+                 {canGenerateVideo && (
+                    <Button onClick={handleGenerateVideo} disabled={isGeneratingVideo || projects.length === 0}>
+                        {isGeneratingVideo ? <Loader className="mr-2 animate-spin"/> : <Video className="mr-2"/>}
+                        {isGeneratingVideo ? 'Generating Video...' : 'Generate Summary Video'}
+                    </Button>
+                 )}
             </div>
             
             {projects.length > 0 ? (
