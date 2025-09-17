@@ -138,7 +138,7 @@ export default function ProjectGallery() {
                 let finalImageUrl = project.imageUrl;
                 if (!finalImageUrl) {
                     const imageRes = await generateShowcaseImage({ summary: summaryRes.summary });
-                    if (imageRes && imageRes.imageUrl) {
+                    if (imageRes?.imageUrl) {
                         finalImageUrl = imageRes.imageUrl;
                     }
                 }
