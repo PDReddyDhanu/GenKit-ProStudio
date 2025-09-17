@@ -80,6 +80,8 @@ export function Header() {
     };
     
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
+    
+    const loggedInUser = currentUser || currentJudge || currentAdmin;
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -96,7 +98,6 @@ export function Header() {
                     <NavLink href="/leaderboard">Leaderboard</NavLink>
                     <NavLink href="/results">Results</NavLink>
                     <NavLink href="/partners">Partners</NavLink>
-                    <NavLink href="/admin">Admin</NavLink>
                 </nav>
                 
                 <div className="flex items-center gap-2">
@@ -127,9 +128,11 @@ export function Header() {
                     
                     <ThemeToggle />
 
-                     <Button variant="outline" size="sm" onClick={handleChangeCollege} className="hidden sm:flex">
-                        <Building2 className="mr-2 h-4 w-4" /> Change College
-                    </Button>
+                    {!loggedInUser && (
+                         <Button variant="outline" size="sm" onClick={handleChangeCollege} className="hidden sm:flex">
+                            <Building2 className="mr-2 h-4 w-4" /> Change College
+                        </Button>
+                    )}
 
                     <div className="hidden sm:flex items-center gap-2">
                         {currentUser ? (
@@ -144,6 +147,7 @@ export function Header() {
                                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleChangeCollege}>Change College</DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={handleLogout} className="text-red-500">
                                         <LogOut className="mr-2 h-4 w-4" />
@@ -159,6 +163,8 @@ export function Header() {
                                 <DropdownMenuContent>
                                     <DropdownMenuLabel>Judge Menu</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
+                                     <DropdownMenuItem onClick={handleChangeCollege}>Change College</DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={handleLogout} className="text-red-500">
                                         <LogOut className="mr-2 h-4 w-4" />
                                         Logout
@@ -173,6 +179,9 @@ export function Header() {
                                 <DropdownMenuContent>
                                     <DropdownMenuLabel>Admin Actions</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
+                                    <DropdownMenuItem asChild><Link href="/admin">Dashboard</Link></DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleChangeCollege}>Change College</DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={handleLogout} className="text-red-500">
                                         <LogOut className="mr-2 h-4 w-4" />
                                         Logout
@@ -185,7 +194,7 @@ export function Header() {
                                     <Link href="/student">Student Portal</Link>
                                 </Button>
                                 <Button variant="default" asChild>
-                                    <Link href="/judge">Judge Portal</Link>
+                                    <Link href="/judge">Admin & Judge</Link>
                                 </Button>
                             </>
                         )}
@@ -215,7 +224,6 @@ export function Header() {
                                     <NavLink href="/leaderboard" onClick={closeMobileMenu}>Leaderboard</NavLink>
                                     <NavLink href="/results" onClick={closeMobileMenu}>Results</NavLink>
                                     <NavLink href="/partners" onClick={closeMobileMenu}>Partners</NavLink>
-                                    <NavLink href="/admin" onClick={closeMobileMenu}>Admin</NavLink>
                                 </nav>
                                 <div className="border-t pt-4 space-y-2">
                                     <Button variant="outline" className="w-full" onClick={() => {handleChangeCollege(); closeMobileMenu();}}>
@@ -242,7 +250,7 @@ export function Header() {
                                                 <Link href="/student" onClick={closeMobileMenu}>Student Portal</Link>
                                             </Button>
                                             <Button variant="default" asChild>
-                                                <Link href="/judge" onClick={closeMobileMenu}>Judge Portal</Link>
+                                                <Link href="/judge" onClick={closeMobileMenu}>Admin & Judge</Link>
                                             </Button>
                                         </div>
                                     )}
