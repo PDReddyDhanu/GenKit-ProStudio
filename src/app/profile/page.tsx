@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound, Certificate } from 'lucide-react';
+import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
 import { generateCertificate } from '@/lib/pdf';
@@ -194,7 +194,7 @@ export default function ProfilePage() {
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="profile"><User className="mr-2"/> Profile</TabsTrigger>
                     <TabsTrigger value="security"><KeyRound className="mr-2"/> Security</TabsTrigger>
-                    <TabsTrigger value="certificates"><Certificate className="mr-2"/> My Certificates</TabsTrigger>
+                    <TabsTrigger value="certificates"><Award className="mr-2"/> My Certificates</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="profile" className="mt-6">
