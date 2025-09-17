@@ -1,21 +1,17 @@
-
 "use client";
 
-import React, { useMemo } from 'react';
-import { useHackathon } from '@/context/HackathonProvider';
+import React from 'react';
 import ScoringDashboard from './ScoringDashboard';
+import type { Hackathon } from '@/lib/types';
 
-export default function JudgingDashboard() {
-    const { state } = useHackathon();
-    const { hackathons, selectedHackathonId } = state;
+interface JudgingDashboardProps {
+    hackathon: Hackathon;
+}
 
-    const currentHackathon = useMemo(() => {
-        return hackathons.find(h => h.id === selectedHackathonId);
-    }, [hackathons, selectedHackathonId]);
-
+export default function JudgingDashboard({ hackathon }: JudgingDashboardProps) {
     return (
         <div className="animate-slide-in-up">
-            {currentHackathon ? <ScoringDashboard hackathon={currentHackathon} /> : <p className="text-center text-muted-foreground">Please select a hackathon to start judging.</p>}
+            <ScoringDashboard hackathon={hackathon} />
         </div>
     );
 }

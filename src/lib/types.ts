@@ -12,6 +12,7 @@ export interface User extends UserProfileData {
   // password is not stored in Firestore record for security
   status: 'pending' | 'approved';
   guidanceHistory?: ChatMessage[];
+  teamId?: string; // Added to easily find a user's team
 }
 
 export interface Hackathon {

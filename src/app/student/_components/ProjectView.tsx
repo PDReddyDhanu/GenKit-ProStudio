@@ -1,19 +1,20 @@
-
-
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Project } from '@/lib/types';
-import { CheckCircle, Bot, Loader, Download, Pencil } from 'lucide-react';
+import { CheckCircle, Bot, Loader, Download, Pencil, Presentation } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { getAiCodeReview } from '@/app/actions';
+import { getAiCodeReview, generatePitchOutline } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { useHackathon } from '@/context/HackathonProvider';
 import { generateCertificate } from '@/lib/pdf';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { marked } from 'marked';
 
 interface ProjectViewProps {
     project: Project;
@@ -31,6 +32,9 @@ export default function ProjectView({ project }: ProjectViewProps) {
     const [projectName, setProjectName] = useState(project.name);
     const [projectDesc, setProjectDesc] = useState(project.description);
     const [githubUrl, setGithubUrl] = useState(project.githubUrl);
+
+    const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
+    const [pitchOutline, setPitchOutline] = useState<GeneratePitchOutlineOutput | null>(null);
 
      useEffect(() => {
         setProjectName(project.name);
@@ -66,6 +70,21 @@ export default function ProjectView({ project }: ProjectViewProps) {
             } finally {
                 setIsGeneratingCert(false);
             }
+        }
+    };
+
+    const handleGenerateOutline = async () => {
+        setIsGeneratingOutline(true);
+        setPitchOutline(null);
+        try {
+            const result = await generatePitchOutline({
+                projectName: project.name,
+                projectDescription: project.description,
+                aiCodeReview: review || undefined
+            });
+            setPitchOutline(result);
+        } finally {
+            setIsGeneratingOutline(false);
         }
     };
     
@@ -151,6 +170,29 @@ export default function ProjectView({ project }: ProjectViewProps) {
                             </Card>
                         )}
                     </div>
+
+                    <div className="mt-6 border-t pt-4 space-y-4">
+                        <h4 className="font-bold flex items-center gap-2"><Presentation className="text-primary"/> AI Pitch Coach</h4>
+                        <Button onClick={handleGenerateOutline} disabled={isGeneratingOutline} variant="outline">
+                            {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "Generate Presentation Outline"}
+                        </Button>
+                        {pitchOutline && (
+                            <Accordion type="single" collapsible className="w-full">
+                                {pitchOutline.slides.map((slide, index) => (
+                                <AccordionItem value={`item-${index}`} key={index}>
+                                    <AccordionTrigger>{index + 1}. {slide.title}</AccordionTrigger>
+                                    <AccordionContent>
+                                        <div
+                                            className="prose prose-sm dark:prose-invert text-foreground max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: marked(slide.content) as string }}
+                                        />
+                                    </AccordionContent>
+                                </AccordionItem>
+                                ))}
+                            </Accordion>
+                        )}
+                    </div>
+
                 </CardContent>
             </Card>
         </div>

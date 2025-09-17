@@ -26,7 +26,7 @@ import {
     limit
 } from 'firebase/firestore';
 import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember } from './types';
-import { JUDGING_RUBRIC } from './constants';
+import { JUDGING_RUBRIC, INDIVIDUAL_JUDGING_RUBRIC } from './constants';
 import { generateProjectImage } from '@/ai/flows/generate-project-image';
 
 
@@ -604,8 +604,14 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
         const judgeScores = teamScores.filter(s => s.judgeId === id);
         const rubricMax = JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
         const judgeTotal = judgeScores.reduce((sum, score) => sum + score.value, 0);
-        const scaledJudgeTotal = (judgeTotal / rubricMax) * 10;
-        totalScore += scaledJudgeTotal;
+        // Correct scaling: Divide by sum of max points for criteria that were actually scored
+        const scoredCriteriaIds = new Set(judgeScores.map(s => s.criteria));
+        const scoredRubricMax = JUDGING_RUBRIC.filter(c => scoredCriteriaIds.has(c.id)).reduce((sum, c) => sum + c.max, 0);
+        
+        if (scoredRubricMax > 0) {
+            const scaledJudgeTotal = (judgeTotal / scoredRubricMax) * 10;
+            totalScore += scaledJudgeTotal;
+        }
     });
 
     const averageScore = uniqueJudges.size > 0 ? (totalScore / uniqueJudges.size) : 0;
@@ -618,6 +624,9 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
         }
         if (score.criteria === 'ui_ux' && score.value === 10) {
             newAchievements.add("Design Virtuoso");
+        }
+         if (score.criteria === 'technical_complexity' && score.value === 10) {
+            newAchievements.add("Code Wizard");
         }
     });
 

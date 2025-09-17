@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -12,7 +11,7 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield, Loader } from 'lucide-react';
+import { Shield, Loader, Scale, Rss, LineChart, Database } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import JudgingDashboard from '@/app/judge/_components/JudgingDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
@@ -90,7 +89,7 @@ export default function AdminPortal() {
                             <SelectValue placeholder="Select a Hackathon to manage" />
                         </SelectTrigger>
                         <SelectContent>
-                             <SelectItem value="default">Default View</SelectItem>
+                             <SelectItem value="default">Default View (No Hackathon Selected)</SelectItem>
                             {hackathons.map(h => (
                                 <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                             ))}
@@ -102,16 +101,16 @@ export default function AdminPortal() {
 
              <Tabs defaultValue={currentJudge ? "judging" : "hackathons"} className="w-full">
                 <TabsList className={`grid w-full h-auto md:h-10 ${currentJudge ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5'}`}>
-                    {currentJudge && <TabsTrigger value="judging">Project Scoring</TabsTrigger>}
+                    {currentJudge && <TabsTrigger value="judging"><Scale /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>
-                    <TabsTrigger value="announcements">Announcements</TabsTrigger>
-                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                    <TabsTrigger value="data">Data & Export</TabsTrigger>
+                    <TabsTrigger value="announcements"><Rss/> Announcements</TabsTrigger>
+                    <TabsTrigger value="analytics"><LineChart /> Analytics</TabsTrigger>
+                    <TabsTrigger value="data"><Database/> Data & Export</TabsTrigger>
                 </TabsList>
                 {currentJudge && (
                     <TabsContent value="judging" className="mt-6">
-                        {currentHackathon ? <JudgingDashboard /> : <p className="text-center text-muted-foreground">Please select a hackathon to start judging.</p>}
+                        {currentHackathon ? <JudgingDashboard hackathon={currentHackathon} /> : <p className="text-center text-muted-foreground">Please select a hackathon to start judging.</p>}
                     </TabsContent>
                 )}
                  <TabsContent value="hackathons" className="mt-6">
