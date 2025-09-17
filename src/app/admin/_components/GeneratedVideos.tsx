@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -21,7 +22,7 @@ export default function GeneratedVideos() {
             <CardContent>
                 {videoUrl ? (
                     <video controls width="100%" className="rounded-lg">
-                        <source src={videoUrl} type="video/webm" />
+                        <source src={videoUrl} type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
                 ) : (

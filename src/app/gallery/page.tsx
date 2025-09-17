@@ -61,7 +61,7 @@ export default function ProjectGallery() {
 
         } catch (error) {
             console.error("Failed to generate summary video:", error);
-            alert("Video generation failed. This can happen under heavy load. Please try again in a few moments.");
+            alert("Video generation failed. This can happen under heavy load or due to content restrictions. Please try again in a few moments.");
         } finally {
             setIsGeneratingVideo(false);
         }

@@ -28,7 +28,7 @@ const GenerateHackathonSummaryVideoOutputSchema = z.object({
   videoUrl: z
     .string()
     .describe(
-      'The data URI of the generated video in webm format with vp9 codec.'
+      'The data URI of the generated video in mp4 format.'
     ),
 });
 export type GenerateHackathonSummaryVideoOutput = z.infer<
@@ -95,7 +95,7 @@ const generateHackathonSummaryVideoFlow = ai.defineFlow(
 
     const video = operation.output?.message?.content.find(p => !!p.media);
 
-    if (!video?.media?.url || video.media.contentType !== 'video/webm') {
+    if (!video?.media?.url || !video.media.contentType?.startsWith('video/')) {
       throw new Error('Generated video not found or in unexpected format.');
     }
     
@@ -122,7 +122,7 @@ const generateHackathonSummaryVideoFlow = ai.defineFlow(
     const base64Video = Buffer.from(buffer).toString('base64');
     
     return {
-      videoUrl: `data:video/webm;base64,${base64Video}`,
+      videoUrl: `data:video/mp4;base64,${base64Video}`,
     };
   }
 );
