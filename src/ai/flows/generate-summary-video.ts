@@ -49,23 +49,15 @@ const generateHackathonSummaryVideoFlow = ai.defineFlow(
   },
   async input => {
     const prompt = `
-      Create a high-energy, cinematic summary video for a hackathon event.
-      The video should be encouraging and celebrate the participation.
+      Create a short, cinematic video celebrating the participation at a college hackathon.
 
-      Key information to include visually or conceptually:
-      - College Name: ${input.collegeName}
-      - Hackathon Name: ${input.hackathonName}
-      - Total Projects: ${input.projectCount}
-      - Total Teams: ${input.teamCount}
-      - Prize Pool: ${input.prizeMoney}
+      The video should be encouraging and focus on two key pieces of information:
+      1. Display the college name: "${input.collegeName}"
+      2. Display the total number of teams: "${input.teamCount} Teams Participated"
 
-      Video style:
-      - Abstract data visualizations, glowing text, and energetic transitions.
-      - A futuristic and optimistic tone.
-      - Use text overlays to display the key information.
-      - Start with a shot that represents the "${input.collegeName}" and its spirit of innovation.
-      - Show concepts of teamwork and coding.
-      - End with a celebratory shot and the text "Congratulations to all participants!".
+      Use abstract, futuristic visuals with glowing text overlays for the information.
+      The tone should be uplifting and celebrate the students' involvement.
+      End with an encouraging message like "Congratulations to all innovators!".
     `;
 
     let {operation} = await ai.generate({
