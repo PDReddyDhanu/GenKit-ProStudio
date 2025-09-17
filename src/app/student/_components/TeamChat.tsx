@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +22,12 @@ export default function TeamChat({ team }: TeamChatProps) {
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const sortedMessages = (team.messages || []).sort((a, b) => a.timestamp - b.timestamp);
+    const sortedMessages = useMemo(() => {
+        if (Array.isArray(team.messages)) {
+            return [...team.messages].sort((a, b) => a.timestamp - b.timestamp);
+        }
+        return [];
+    }, [team.messages]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -30,7 +35,7 @@ export default function TeamChat({ team }: TeamChatProps) {
 
     useEffect(() => {
         scrollToBottom();
-    }, [team.messages]);
+    }, [sortedMessages]);
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
