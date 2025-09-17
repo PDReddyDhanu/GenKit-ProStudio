@@ -19,8 +19,8 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 
 function ChangePasswordCard() {
-    const { api, currentUser } = useHackathon().state;
-    const { dispatch } = useHackathon();
+    const { state, api, dispatch } = useHackathon();
+    const { currentUser } = state;
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
