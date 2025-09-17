@@ -1,9 +1,13 @@
+
 import { auth, db } from './firebase';
 import { 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, 
     signOut as firebaseSignOut,
-    sendPasswordResetEmail as firebaseSendPasswordResetEmail
+    sendPasswordResetEmail as firebaseSendPasswordResetEmail,
+    reauthenticateWithCredential,
+    EmailAuthProvider,
+    updatePassword
 } from 'firebase/auth';
 import { 
     doc, 
@@ -75,6 +79,29 @@ export async function sendPasswordResetEmail(collegeId: string, email: string) {
     await firebaseSendPasswordResetEmail(auth, email);
     return { successMessage: 'Password reset email sent. Please check your inbox (and spam folder).' };
 }
+
+export async function changePassword(collegeId: string, { oldPassword, newPassword }: any) {
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+        throw new Error("You must be logged in to change your password.");
+    }
+
+    const credential = EmailAuthProvider.credential(user.email, oldPassword);
+
+    try {
+        await reauthenticateWithCredential(user, credential);
+        // User re-authenticated successfully. Now change the password.
+        await updatePassword(user, newPassword);
+        return { successMessage: "Your password has been changed successfully." };
+    } catch (error: any) {
+        if (error.code === 'auth/wrong-password') {
+            throw new Error("The old password you entered is incorrect. Please try again.");
+        }
+        console.error("Password change error:", error);
+        throw new Error("An error occurred while changing your password.");
+    }
+}
+
 
 export async function registerStudent(collegeId: string, { name, email, password }: any) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
