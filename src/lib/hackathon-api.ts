@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { auth, db } from './firebase';
@@ -92,20 +93,27 @@ export async function changePassword(collegeId: string, { oldPassword, newPasswo
 
 
 export async function registerStudent(collegeId: string, { name, email, password }: any) {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user: User = {
-        id: userCredential.user.uid,
-        name,
-        email,
-        status: 'pending',
-        skills: [],
-        bio: '',
-        github: '',
-        linkedin: '',
-    };
-    await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
-    await firebaseSignOut(auth); // Sign out immediately after registration
-    return { successMessage: 'Registration successful! Your account is pending admin approval.' };
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user: User = {
+            id: userCredential.user.uid,
+            name,
+            email,
+            status: 'pending',
+            skills: [],
+            bio: '',
+            github: '',
+            linkedin: '',
+        };
+        await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
+        await firebaseSignOut(auth); // Sign out immediately after registration
+        return { successMessage: 'Registration successful! Your account is pending admin approval.' };
+    } catch(error: any) {
+        if (error.code === 'auth/email-already-in-use') {
+            throw new Error('This email address is already registered. Please try logging in instead.');
+        }
+        throw error;
+    }
 }
 
 export async function loginStudent(collegeId: string, { email, password }: any) {
@@ -483,7 +491,7 @@ export async function leaveTeam(collegeId: string, teamId: string, userId: strin
 
 export async function submitProject(collegeId: string, hackathonId: string, { name, description, githubUrl, teamId }: any) {
     const projectsCollection = collection(db, `colleges/${collegeId}/projects`);
-    const q = query(projectsCollection, where("hackathonId", "==", hackathonId), orderBy("submittedAt", "asc"), limit(1));
+    const q = query(projectsCollection, where("hackathonId", "==", hackathonId));
     const querySnapshot = await getDocs(q);
     const isFirstSubmission = querySnapshot.empty;
     
@@ -505,7 +513,7 @@ export async function submitProject(collegeId: string, hackathonId: string, { na
     // Asynchronously generate project image
     generateProjectImage({ projectName: name, projectDescription: description })
         .then(async (result) => {
-            if (result.imageUrl) {
+            if (result && result.imageUrl) {
                 await updateDoc(projectRef, { imageUrl: result.imageUrl });
             }
         })
@@ -531,7 +539,7 @@ export async function updateProject(collegeId: string, projectId: string, projec
     if (projectData.name !== originalProject.name || projectData.description !== originalProject.description) {
          generateProjectImage({ projectName: projectData.name!, projectDescription: projectData.description! })
             .then(async (result) => {
-                if (result.imageUrl) {
+                if (result && result.imageUrl) {
                     await updateDoc(projectRef, { imageUrl: result.imageUrl });
                 }
             })
