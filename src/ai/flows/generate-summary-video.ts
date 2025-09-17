@@ -126,4 +126,3 @@ const generateHackathonSummaryVideoFlow = ai.defineFlow(
     };
   }
 );
-
