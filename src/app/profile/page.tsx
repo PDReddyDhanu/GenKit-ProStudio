@@ -10,17 +10,18 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { User, Github, Linkedin, Pencil, UserCircle, Loader, Download, Award, KeyRound } from 'lucide-react';
+import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound, Certificate } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
 import { generateCertificate } from '@/lib/pdf';
 import { format } from 'date-fns';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 function ChangePasswordCard() {
-    const { state, api, dispatch } = useHackathon();
-    const { currentUser } = state;
+    const { api, dispatch } = useHackathon();
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -59,13 +60,13 @@ function ChangePasswordCard() {
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-2xl font-headline">
-                        <KeyRound className="h-7 w-7 text-primary" /> Security
+                        Change Your Password
                     </CardTitle>
-                    <CardDescription>Change your password.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-4">
                         {error && <p className="text-sm text-red-500">{error}</p>}
+                         <AuthMessage />
                         <div className="space-y-2">
                             <Label htmlFor="oldPassword">Old Password</Label>
                             <Input id="oldPassword" type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} required disabled={isLoading} />
@@ -89,7 +90,7 @@ function ChangePasswordCard() {
                     </CardFooter>
                 </form>
             </Card>
-            {currentUser && <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={currentUser.email} />}
+            <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={''} />
         </Dialog>
     );
 }
@@ -150,7 +151,7 @@ export default function ProfilePage() {
 
 
     if (showIntro) {
-        return <PageIntro onFinished={handleIntroFinish} icon={<UserCircle className="w-full h-full" />} title="Your Profile" description="Manage your personal details and skills." />;
+        return <PageIntro onFinished={handleIntroFinish} icon={<User className="w-full h-full" />} title="Your Profile" description="Manage your personal details and skills." />;
     }
 
     if (!currentUser) {
@@ -187,119 +188,132 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="container max-w-3xl mx-auto py-12 animate-fade-in grid gap-8">
-            <Card>
-                <CardHeader className="flex flex-row justify-between items-start">
-                    <div>
-                        <CardTitle className="flex items-center gap-3 text-3xl font-headline">
-                            <User className="h-8 w-8 text-primary" /> My Profile
-                        </CardTitle>
-                        <CardDescription>View and edit your personal information.</CardDescription>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => setIsEditing(!isEditing)}>
-                        <Pencil className="h-5 w-5" />
-                        <span className="sr-only">Edit Profile</span>
-                    </Button>
-                </CardHeader>
-                <CardContent>
-                    {isEditing ? (
-                        <form onSubmit={handleSaveProfile} className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Full Name</Label>
-                                <Input id="name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="skills">Skills (comma-separated)</Label>
-                                <Input id="skills" value={skills} onChange={e => setSkills(e.target.value)} required placeholder="React, Node.js, Python..." disabled={isSaving} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="bio">Short Bio (Optional)</Label>
-                                <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} placeholder="Passionate full-stack developer..." disabled={isSaving} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="github">GitHub Profile URL (Optional)</Label>
-                                <Input id="github" type="url" placeholder="https://github.com/username" value={github} onChange={e => setGithub(e.target.value)} disabled={isSaving} />
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="linkedin">LinkedIn Profile URL (Optional)</Label>
-                                <Input id="linkedin" type="url" placeholder="https://linkedin.com/in/username" value={linkedin} onChange={e => setLinkedin(e.target.value)} disabled={isSaving} />
-                            </div>
-                            <div className="flex gap-4">
-                                <Button type="submit" disabled={isSaving}>
-                                    {isSaving ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : 'Save Changes'}
-                                </Button>
-                                <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancel</Button>
-                            </div>
-                        </form>
-                    ) : (
-                        <div className="space-y-6">
+        <div className="container max-w-4xl mx-auto py-12 animate-fade-in">
+            <h1 className="text-4xl font-bold mb-8 font-headline">My Profile</h1>
+             <Tabs defaultValue="profile" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="profile"><User className="mr-2"/> Profile</TabsTrigger>
+                    <TabsTrigger value="security"><KeyRound className="mr-2"/> Security</TabsTrigger>
+                    <TabsTrigger value="certificates"><Certificate className="mr-2"/> My Certificates</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="profile" className="mt-6">
+                     <Card>
+                        <CardHeader className="flex flex-row justify-between items-start">
                             <div>
-                                <h3 className="text-lg font-semibold">{currentUser.name}</h3>
-                                <p className="text-sm text-muted-foreground">{currentUser.email}</p>
+                                <CardTitle className="flex items-center gap-3 text-3xl font-headline">
+                                    {currentUser.name}
+                                </CardTitle>
+                                <CardDescription>{currentUser.email}</CardDescription>
                             </div>
-                             {currentUser.bio && (
-                                <div>
-                                    <h4 className="font-semibold text-muted-foreground">Bio</h4>
-                                    <p>{currentUser.bio}</p>
-                                </div>
-                            )}
-                            {currentUser.skills && currentUser.skills.length > 0 && (
-                                <div>
-                                    <h4 className="font-semibold text-muted-foreground mb-2">Skills</h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {currentUser.skills.map(skill => (
-                                            <Badge key={skill} variant="secondary">{skill}</Badge>
-                                        ))}
+                            <Button variant="ghost" size="icon" onClick={() => setIsEditing(!isEditing)}>
+                                <Pencil className="h-5 w-5" />
+                                <span className="sr-only">Edit Profile</span>
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            {isEditing ? (
+                                <form onSubmit={handleSaveProfile} className="space-y-6">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Full Name</Label>
+                                        <Input id="name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="skills">Skills (comma-separated)</Label>
+                                        <Input id="skills" value={skills} onChange={e => setSkills(e.target.value)} required placeholder="React, Node.js, Python..." disabled={isSaving} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="bio">Short Bio</Label>
+                                        <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} placeholder="Passionate full-stack developer..." disabled={isSaving} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="github">GitHub Profile URL</Label>
+                                        <Input id="github" type="url" placeholder="https://github.com/username" value={github} onChange={e => setGithub(e.target.value)} disabled={isSaving} />
+                                    </div>
+                                     <div className="space-y-2">
+                                        <Label htmlFor="linkedin">LinkedIn Profile URL</Label>
+                                        <Input id="linkedin" type="url" placeholder="https://linkedin.com/in/username" value={linkedin} onChange={e => setLinkedin(e.target.value)} disabled={isSaving} />
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <Button type="submit" disabled={isSaving}>
+                                            {isSaving ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : 'Save Changes'}
+                                        </Button>
+                                        <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancel</Button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <div className="space-y-6">
+                                     {currentUser.bio && (
+                                        <div>
+                                            <h4 className="font-semibold text-muted-foreground">Bio</h4>
+                                            <p>{currentUser.bio}</p>
+                                        </div>
+                                    )}
+                                    {currentUser.skills && currentUser.skills.length > 0 && (
+                                        <div>
+                                            <h4 className="font-semibold text-muted-foreground mb-2">Skills</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {currentUser.skills.map(skill => (
+                                                    <Badge key={skill} variant="secondary">{skill}</Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-6 pt-4 border-t">
+                                        {currentUser.github && (
+                                            <a href={currentUser.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary">
+                                                <Github className="h-5 w-5" /> GitHub
+                                            </a>
+                                        )}
+                                        {currentUser.linkedin && (
+                                            <a href={currentUser.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary">
+                                                <Linkedin className="h-5 w-5" /> LinkedIn
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             )}
-                            <div className="flex items-center gap-6">
-                                {currentUser.github && (
-                                    <a href={currentUser.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary">
-                                        <Github className="h-5 w-5" /> GitHub
-                                    </a>
-                                )}
-                                {currentUser.linkedin && (
-                                    <a href={currentUser.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary">
-                                        <Linkedin className="h-5 w-5" /> LinkedIn
-                                    </a>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="security" className="mt-6">
+                    <ChangePasswordCard />
+                </TabsContent>
+
+                <TabsContent value="certificates" className="mt-6">
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-3 text-2xl font-headline">
+                                My Certificates
+                            </CardTitle>
+                            <CardDescription>Download your certificates of participation and achievement.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {userProjects.length > 0 ? userProjects.map(p => {
+                                    const hackathon = hackathons.find(h => h.id === p.hackathonId);
+                                    return (
+                                        <div key={p.id} className="p-4 bg-muted/50 rounded-md flex justify-between items-center">
+                                            <div>
+                                                <p className="font-semibold">{p.name}</p>
+                                                <p className="text-sm text-muted-foreground">{hackathon?.name} - {format(new Date(hackathon?.deadline || Date.now()), 'PPP')}</p>
+                                            </div>
+                                            <Button onClick={() => handleDownloadCertificate(p.id)} disabled={!!isGeneratingCert}>
+                                                {isGeneratingCert === p.id ? <Loader className="animate-spin" /> : <Download />}
+                                            </Button>
+                                        </div>
+                                    )
+                                }) : (
+                                    <p className="text-muted-foreground text-center py-4">You have not submitted any projects yet. No certificates to show.</p>
                                 )}
                             </div>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-             <ChangePasswordCard />
-
-             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-2xl font-headline">
-                        <Award className="h-7 w-7 text-primary" /> My Certificates
-                    </CardTitle>
-                    <CardDescription>Download your certificates of participation.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {userProjects.length > 0 ? userProjects.map(p => {
-                            const hackathon = hackathons.find(h => h.id === p.hackathonId);
-                            return (
-                                <div key={p.id} className="p-4 bg-muted/50 rounded-md flex justify-between items-center">
-                                    <div>
-                                        <p className="font-semibold">{p.name}</p>
-                                        <p className="text-sm text-muted-foreground">{hackathon?.name} - {format(new Date(hackathon?.deadline || Date.now()), 'PPP')}</p>
-                                    </div>
-                                    <Button onClick={() => handleDownloadCertificate(p.id)} disabled={!!isGeneratingCert}>
-                                        {isGeneratingCert === p.id ? <Loader className="animate-spin" /> : <Download />}
-                                    </Button>
-                                </div>
-                            )
-                        }) : (
-                            <p className="text-muted-foreground text-center py-4">You have not submitted any projects yet. No certificates to show.</p>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }
+
+    
