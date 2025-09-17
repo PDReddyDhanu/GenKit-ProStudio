@@ -101,12 +101,12 @@ export default function AdminPortal() {
 
              <Tabs defaultValue={currentJudge ? "judging" : "hackathons"} className="w-full">
                 <TabsList className={`grid w-full h-auto md:h-10 ${currentJudge ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5'}`}>
-                    {currentJudge && <TabsTrigger value="judging"><Scale /> Project Scoring</TabsTrigger>}
+                    {currentJudge && <TabsTrigger value="judging"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>
-                    <TabsTrigger value="announcements"><Rss/> Announcements</TabsTrigger>
-                    <TabsTrigger value="analytics"><LineChart /> Analytics</TabsTrigger>
-                    <TabsTrigger value="data"><Database/> Data & Export</TabsTrigger>
+                    <TabsTrigger value="announcements"><Rss className="mr-2 h-4 w-4" /> Announcements</TabsTrigger>
+                    <TabsTrigger value="analytics"><LineChart className="mr-2 h-4 w-4" /> Analytics</TabsTrigger>
+                    <TabsTrigger value="data"><Database className="mr-2 h-4 w-4" /> Data & Export</TabsTrigger>
                 </TabsList>
                 {currentJudge && (
                     <TabsContent value="judging" className="mt-6">
