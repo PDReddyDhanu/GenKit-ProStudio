@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI agent that generates a presentation outline for a hackathon project.
@@ -10,7 +11,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const GeneratePitchOutlineInputSchema = z.object({
+const GeneratePitchOutlineInputSchema = z.object({
   projectName: z.string().describe('The name of the project.'),
   projectDescription: z.string().describe('The description of the project.'),
   aiCodeReview: z.string().optional().describe('An optional AI-generated code review for additional context.'),
@@ -22,7 +23,7 @@ const SlideSchema = z.object({
     content: z.string().describe("The key talking points or content for the slide, formatted as markdown bullet points.")
 });
 
-export const GeneratePitchOutlineOutputSchema = z.object({
+const GeneratePitchOutlineOutputSchema = z.object({
   slides: z.array(SlideSchema).describe('An array of slide objects representing the presentation outline.'),
 });
 export type GeneratePitchOutlineOutput = z.infer<typeof GeneratePitchOutlineOutputSchema>;
