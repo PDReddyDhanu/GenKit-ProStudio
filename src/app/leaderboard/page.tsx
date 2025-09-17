@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -68,8 +69,10 @@ const PodiumCard = ({ entry, rank }: { entry: LeaderboardEntry, rank: number }) 
                      <div className="flex justify-center flex-wrap gap-2 mt-3">
                         {entry.achievements.map(achievement => (
                             <Tooltip key={achievement}>
-                                <TooltipTrigger>
-                                    <Award className="w-5 h-5 text-yellow-500" />
+                                <TooltipTrigger asChild>
+                                     <Button variant="outline" size="icon" className="border-yellow-400 text-yellow-400 h-8 w-8">
+                                        <Award className="w-4 h-4" />
+                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
                                     <p>{achievement}</p>
@@ -158,7 +161,7 @@ export default function Leaderboard() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {restOfList.map((entry) => (
+                                            {leaderboardData.map((entry) => (
                                                 <TableRow key={entry.rank}>
                                                     <TableCell className="font-bold text-lg">{entry.rank}</TableCell>
                                                     <TableCell className="font-medium text-primary">{entry.teamName}</TableCell>
@@ -167,8 +170,10 @@ export default function Leaderboard() {
                                                         <div className="flex items-center gap-2">
                                                             {entry.achievements?.map(achievement => (
                                                                 <Tooltip key={achievement}>
-                                                                    <TooltipTrigger>
-                                                                        <Award className="w-5 h-5 text-yellow-500" />
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button variant="ghost" size="icon" className="text-yellow-400 h-6 w-6">
+                                                                            <Award className="w-5 h-5" />
+                                                                        </Button>
                                                                     </TooltipTrigger>
                                                                     <TooltipContent>
                                                                         <p>{achievement}</p>
