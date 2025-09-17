@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI agent that generates a summary video for a hackathon.
@@ -12,7 +13,7 @@ import {googleAI} from '@genkit-ai/googleai';
 import * as fs from 'fs';
 import {Readable} from 'stream';
 
-export const GenerateHackathonSummaryVideoInputSchema = z.object({
+const GenerateHackathonSummaryVideoInputSchema = z.object({
   hackathonName: z.string().describe('The name of the hackathon.'),
   collegeName: z.string().describe('The name of the college hosting the event.'),
   prizeMoney: z.string().describe('The total prize money.'),
@@ -23,7 +24,7 @@ export type GenerateHackathonSummaryVideoInput = z.infer<
   typeof GenerateHackathonSummaryVideoInputSchema
 >;
 
-export const GenerateHackathonSummaryVideoOutputSchema = z.object({
+const GenerateHackathonSummaryVideoOutputSchema = z.object({
   videoUrl: z
     .string()
     .describe(
