@@ -2,7 +2,8 @@ import { auth, db } from './firebase';
 import { 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, 
-    signOut as firebaseSignOut 
+    signOut as firebaseSignOut,
+    sendPasswordResetEmail as firebaseSendPasswordResetEmail
 } from 'firebase/auth';
 import { 
     doc, 
@@ -57,6 +58,23 @@ async function getAuthUser(email: string, password: any) {
 
 
 // --- Auth ---
+
+export async function sendPasswordResetEmail(collegeId: string, email: string) {
+    // Check if user exists in the college's user list first
+    const usersRef = collection(db, `colleges/${collegeId}/users`);
+    const q = query(usersRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+        // To prevent user enumeration, we can send a generic message.
+        // Or for better UX, we can tell them the user doesn't exist for this college.
+        // Let's choose the more secure option for now.
+        // throw new Error("No student account found with this email for the selected college.");
+    }
+    
+    await firebaseSendPasswordResetEmail(auth, email);
+    return { successMessage: 'Password reset email sent. Please check your inbox (and spam folder).' };
+}
 
 export async function registerStudent(collegeId: string, { name, email, password }: any) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
