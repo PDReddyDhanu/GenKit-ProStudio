@@ -22,7 +22,6 @@ export interface Hackathon {
   rules: string;
   teamSizeLimit: number;
   deadline: number; // timestamp
-  summaryImageUrl?: string; // To store the generated image URL
 }
 
 export interface ChatMessage {

@@ -11,13 +11,12 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield, Loader, Scale, Rss, LineChart, Database, Image as ImageIcon } from 'lucide-react';
+import { Shield, Loader, Scale, Rss, LineChart, Database } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import JudgingDashboard from '@/app/judge/_components/JudgingDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
 import AnalyticsDashboard from './_components/AnalyticsDashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import GeneratedImages from './_components/GeneratedVideos';
 
 
 export default function AdminPortal() {
@@ -101,14 +100,13 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue={currentJudge ? "judging" : "hackathons"} className="w-full">
-                <TabsList className={`grid w-full h-auto md:h-10 ${currentJudge ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-7' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6'}`}>
+                <TabsList className={`grid w-full h-auto md:h-10 ${currentJudge ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5'}`}>
                     {currentJudge && <TabsTrigger value="judging"><Scale /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>
                     <TabsTrigger value="announcements"><Rss/> Announcements</TabsTrigger>
                     <TabsTrigger value="analytics"><LineChart /> Analytics</TabsTrigger>
                     <TabsTrigger value="data"><Database/> Data & Export</TabsTrigger>
-                    <TabsTrigger value="images"><ImageIcon/> Generated Images</TabsTrigger>
                 </TabsList>
                 {currentJudge && (
                     <TabsContent value="judging" className="mt-6">
@@ -129,9 +127,6 @@ export default function AdminPortal() {
                 </TabsContent>
                 <TabsContent value="data" className="mt-6">
                     <DataManagement />
-                </TabsContent>
-                <TabsContent value="images" className="mt-6">
-                    {currentHackathon ? <GeneratedImages /> : <p className="text-center text-muted-foreground">Please select a hackathon to view generated images.</p>}
                 </TabsContent>
             </Tabs>
         </div>

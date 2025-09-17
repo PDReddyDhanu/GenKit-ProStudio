@@ -8,7 +8,6 @@ import { generateProjectSummary as generateProjectSummaryFlow, ProjectSummaryInp
 import { fetchGuidanceInfo as fetchGuidanceInfoFlow, FetchGuidanceInfoInput } from '@/ai/flows/fetch-guidance-info';
 import { generateProjectImage as generateProjectImageFlow, GenerateProjectImageInput } from '@/ai/flows/generate-project-image';
 import { generatePitchOutline as generatePitchOutlineFlow, GeneratePitchOutlineInput, GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
-import { generateHackathonImage as generateHackathonImageFlow, GenerateHackathonImageInput, GenerateHackathonImageOutput } from '@/ai/flows/generate-hackathon-image';
 
 
 // AI Related Actions
@@ -77,15 +76,6 @@ export async function generatePitchOutline(input: GeneratePitchOutlineInput): Pr
         return await generatePitchOutlineFlow(input);
     } catch (error) {
         console.error("Error generating pitch outline:", error);
-        return null;
-    }
-}
-
-export async function generateHackathonImage(input: GenerateHackathonImageInput): Promise<GenerateHackathonImageOutput | null> {
-    try {
-        return await generateHackathonImageFlow(input);
-    } catch (error) {
-        console.error("Error generating hackathon summary image:", error);
         return null;
     }
 }
