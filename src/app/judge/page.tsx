@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import JudgingDashboard from './_components/JudgingDashboard';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
 import { Scale, Loader } from 'lucide-react';
@@ -40,7 +39,7 @@ export default function JudgePortal() {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<Scale className="w-full h-full" />} title="Judge & Admin Portal" description="Evaluate submissions, manage users, and run the event." />;
     }
     
-    if (currentAdmin) {
+    if (currentAdmin || currentJudge) {
         return <AdminPortal/>
     }
 
@@ -72,5 +71,6 @@ export default function JudgePortal() {
         );
     }
 
-    return <JudgingDashboard />;
+    // This case should ideally not be reached if the logic above is correct
+    return <AdminPortal />;
 }

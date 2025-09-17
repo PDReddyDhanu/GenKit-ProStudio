@@ -22,11 +22,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 export default function AdminPortal() {
     const { state, api, dispatch } = useHackathon();
-    const { currentAdmin, hackathons, selectedHackathonId } = state;
+    const { currentAdmin, currentJudge, hackathons, selectedHackathonId } = state;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showIntro, setShowIntro] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+
+    const portalUser = currentAdmin ? 'Admin' : currentJudge ? 'Judge' : null;
 
     const handleAdminLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,11 +48,11 @@ export default function AdminPortal() {
     }, [hackathons, selectedHackathonId]);
 
 
-    if (showIntro) {
+    if (showIntro && !portalUser) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<Shield className="w-full h-full" />} title="Admin Portal" description="Manage the hackathon, users, and announcements." />;
     }
 
-    if (!currentAdmin) {
+    if (!portalUser) {
         return (
             <div className="container max-w-md mx-auto py-12 animate-fade-in">
                 <Card>
@@ -81,7 +83,7 @@ export default function AdminPortal() {
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-slide-in-up">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold font-headline">Admin Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
+                <h1 className="text-3xl md:text-4xl font-bold font-headline">{portalUser} Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
                 <div>
                      <Select onValueChange={handleHackathonChange} value={selectedHackathonId || "default"}>
                         <SelectTrigger className="w-full sm:w-[280px]">
@@ -98,14 +100,18 @@ export default function AdminPortal() {
             </div>
             <AuthMessage />
 
-             <Tabs defaultValue="hackathons" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 h-auto md:h-10">
+             <Tabs defaultValue="judging" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto md:h-10">
+                    <TabsTrigger value="judging">Project Scoring</TabsTrigger>
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>
                     <TabsTrigger value="announcements">Announcements</TabsTrigger>
                     <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                    <TabsTrigger value="data">Data & Reset</TabsTrigger>
+                    <TabsTrigger value="data">Data & Export</TabsTrigger>
                 </TabsList>
+                 <TabsContent value="judging" className="mt-6">
+                    {currentHackathon ? <JudgingDashboard /> : <p className="text-center text-muted-foreground">Please select a hackathon to start judging.</p>}
+                </TabsContent>
                  <TabsContent value="hackathons" className="mt-6">
                     <HackathonManagement />
                 </TabsContent>
