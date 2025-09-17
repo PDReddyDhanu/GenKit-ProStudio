@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -134,18 +135,24 @@ export default function ProjectGallery() {
                 const summaryRes = await generateShowcaseSummary({ projectName: project.name, projectDescription: project.description });
                 if (!summaryRes) continue;
 
-                const imageRes = project.imageUrl 
-                    ? { imageUrl: project.imageUrl } 
-                    : await generateShowcaseImage({ summary: summaryRes.summary });
+                let finalImageUrl = project.imageUrl;
+                if (!finalImageUrl) {
+                    const imageRes = await generateShowcaseImage({ summary: summaryRes.summary });
+                    if (imageRes && imageRes.imageUrl) {
+                        finalImageUrl = imageRes.imageUrl;
+                    } else {
+                        continue; // Skip if image generation fails
+                    }
+                }
                 
-                if (!imageRes) continue;
+                if (!finalImageUrl) continue;
 
                 items.push({
                     id: project.id,
                     name: project.name,
                     teamName: team.name,
                     summary: summaryRes.summary,
-                    imageUrl: imageRes.imageUrl,
+                    imageUrl: finalImageUrl,
                 });
             } catch (error) {
                 console.error(`Failed to generate showcase data for project ${project.name}:`, error);
