@@ -1,5 +1,3 @@
-
-
 export interface UserProfileData {
   name: string;
   skills: string[];

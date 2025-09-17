@@ -1,4 +1,3 @@
-
 "use server";
 
 import { generateProjectIdea as generateProjectIdeaFlow, GenerateProjectIdeaInput } from '@/ai/flows/generate-project-idea';
