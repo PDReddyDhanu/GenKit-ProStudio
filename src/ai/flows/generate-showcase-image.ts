@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -11,12 +12,12 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const GenerateShowcaseImageInputSchema = z.object({
+const GenerateShowcaseImageInputSchema = z.object({
   summary: z.string().describe('A short, punchy summary of the project.'),
 });
 export type GenerateShowcaseImageInput = z.infer<typeof GenerateShowcaseImageInputSchema>;
 
-export const GenerateShowcaseImageOutputSchema = z.object({
+const GenerateShowcaseImageOutputSchema = z.object({
   imageUrl: z.string().describe('The data URI of the generated image.'),
 });
 export type GenerateShowcaseImageOutput = z.infer<typeof GenerateShowcaseImageOutputSchema>;
