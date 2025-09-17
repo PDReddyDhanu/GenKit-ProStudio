@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -30,10 +30,18 @@ export default function DataManagement() {
         await api.removeStudent(userId);
     }
     
-    const currentHackathon = hackathons.find(h => h.id === selectedHackathonId);
-    const hackathonParticipants = users.filter(u => u.hackathonId === selectedHackathonId);
-    const hackathonTeams = teams.filter(t => t.hackathonId === selectedHackathonId);
-    const hackathonProjects = projects.filter(p => p.hackathonId === selectedHackathonId);
+    const currentHackathon = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
+
+    const hackathonTeams = useMemo(() => teams.filter(t => t.hackathonId === selectedHackathonId), [teams, selectedHackathonId]);
+
+    const hackathonParticipants = useMemo(() => {
+        if (!selectedHackathonId) return [];
+        const participantIds = new Set(hackathonTeams.flatMap(t => t.members.map(m => m.id)));
+        return users.filter(u => participantIds.has(u.id));
+    }, [users, hackathonTeams, selectedHackathonId]);
+    
+    const hackathonProjects = useMemo(() => projects.filter(p => p.hackathonId === selectedHackathonId), [projects, selectedHackathonId]);
+
 
     const createCsv = (headers: string[], data: string[][]) => {
         const csvRows = [headers.join(','), ...data.map(row => row.join(','))];
@@ -110,7 +118,7 @@ export default function DataManagement() {
                             </TableHeader>
                             <TableBody>
                                 {hackathonParticipants.length > 0 ? hackathonParticipants.map(user => {
-                                    const team = hackathonTeams.find(t => t.id === user.teamId);
+                                    const team = hackathonTeams.find(t => t.members.some(m => m.id === user.id));
                                     return (
                                         <TableRow key={user.id}>
                                             <TableCell className="font-medium">{user.name}</TableCell>
