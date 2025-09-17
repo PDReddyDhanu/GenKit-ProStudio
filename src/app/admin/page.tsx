@@ -100,18 +100,20 @@ export default function AdminPortal() {
             </div>
             <AuthMessage />
 
-             <Tabs defaultValue="judging" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto md:h-10">
-                    <TabsTrigger value="judging">Project Scoring</TabsTrigger>
+             <Tabs defaultValue={currentJudge ? "judging" : "hackathons"} className="w-full">
+                <TabsList className={`grid w-full h-auto md:h-10 ${currentJudge ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5'}`}>
+                    {currentJudge && <TabsTrigger value="judging">Project Scoring</TabsTrigger>}
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>
                     <TabsTrigger value="announcements">Announcements</TabsTrigger>
                     <TabsTrigger value="analytics">Analytics</TabsTrigger>
                     <TabsTrigger value="data">Data & Export</TabsTrigger>
                 </TabsList>
-                 <TabsContent value="judging" className="mt-6">
-                    {currentHackathon ? <JudgingDashboard /> : <p className="text-center text-muted-foreground">Please select a hackathon to start judging.</p>}
-                </TabsContent>
+                {currentJudge && (
+                    <TabsContent value="judging" className="mt-6">
+                        {currentHackathon ? <JudgingDashboard /> : <p className="text-center text-muted-foreground">Please select a hackathon to start judging.</p>}
+                    </TabsContent>
+                )}
                  <TabsContent value="hackathons" className="mt-6">
                     <HackathonManagement />
                 </TabsContent>
