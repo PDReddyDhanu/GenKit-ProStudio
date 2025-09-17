@@ -11,13 +11,13 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield, Loader, Scale, Rss, LineChart, Database, Video } from 'lucide-react';
+import { Shield, Loader, Scale, Rss, LineChart, Database, Image as ImageIcon } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import JudgingDashboard from '@/app/judge/_components/JudgingDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
 import AnalyticsDashboard from './_components/AnalyticsDashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import GeneratedVideos from './_components/GeneratedVideos';
+import GeneratedImages from './_components/GeneratedVideos';
 
 
 export default function AdminPortal() {
@@ -108,7 +108,7 @@ export default function AdminPortal() {
                     <TabsTrigger value="announcements"><Rss/> Announcements</TabsTrigger>
                     <TabsTrigger value="analytics"><LineChart /> Analytics</TabsTrigger>
                     <TabsTrigger value="data"><Database/> Data & Export</TabsTrigger>
-                    <TabsTrigger value="videos"><Video/> Generated Videos</TabsTrigger>
+                    <TabsTrigger value="images"><ImageIcon/> Generated Images</TabsTrigger>
                 </TabsList>
                 {currentJudge && (
                     <TabsContent value="judging" className="mt-6">
@@ -130,8 +130,8 @@ export default function AdminPortal() {
                 <TabsContent value="data" className="mt-6">
                     <DataManagement />
                 </TabsContent>
-                <TabsContent value="videos" className="mt-6">
-                    {currentHackathon ? <GeneratedVideos /> : <p className="text-center text-muted-foreground">Please select a hackathon to view generated videos.</p>}
+                <TabsContent value="images" className="mt-6">
+                    {currentHackathon ? <GeneratedImages /> : <p className="text-center text-muted-foreground">Please select a hackathon to view generated images.</p>}
                 </TabsContent>
             </Tabs>
         </div>

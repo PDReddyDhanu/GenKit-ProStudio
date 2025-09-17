@@ -8,7 +8,7 @@ import { generateProjectSummary as generateProjectSummaryFlow, ProjectSummaryInp
 import { fetchGuidanceInfo as fetchGuidanceInfoFlow, FetchGuidanceInfoInput } from '@/ai/flows/fetch-guidance-info';
 import { generateProjectImage as generateProjectImageFlow, GenerateProjectImageInput } from '@/ai/flows/generate-project-image';
 import { generatePitchOutline as generatePitchOutlineFlow, GeneratePitchOutlineInput, GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
-import { generateHackathonSummaryVideo as generateHackathonSummaryVideoFlow, GenerateHackathonSummaryVideoInput, GenerateHackathonSummaryVideoOutput } from '@/ai/flows/generate-summary-video';
+import { generateHackathonImage as generateHackathonImageFlow, GenerateHackathonImageInput, GenerateHackathonImageOutput } from '@/ai/flows/generate-hackathon-image';
 
 
 // AI Related Actions
@@ -81,11 +81,11 @@ export async function generatePitchOutline(input: GeneratePitchOutlineInput): Pr
     }
 }
 
-export async function generateHackathonSummaryVideo(input: GenerateHackathonSummaryVideoInput): Promise<GenerateHackathonSummaryVideoOutput | null> {
+export async function generateHackathonImage(input: GenerateHackathonImageInput): Promise<GenerateHackathonImageOutput | null> {
     try {
-        return await generateHackathonSummaryVideoFlow(input);
+        return await generateHackathonImageFlow(input);
     } catch (error) {
-        console.error("Error generating hackathon summary video:", error);
+        console.error("Error generating hackathon summary image:", error);
         return null;
     }
 }

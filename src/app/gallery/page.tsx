@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import Link from 'next/link';
-import { Github, GalleryVertical, Award, Video, Loader } from 'lucide-react';
+import { Github, GalleryVertical, Award, Image as ImageIcon, Loader } from 'lucide-react';
 import PageIntro from '@/components/PageIntro';
 import {
   Tooltip,
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { generateHackathonSummaryVideo } from '@/app/actions';
+import { generateHackathonImage } from '@/app/actions';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -23,17 +23,16 @@ export default function ProjectGallery() {
     const { state, api } = useHackathon();
     const { projects, teams, selectedHackathonId, hackathons, selectedCollege, currentAdmin, currentJudge } = state;
     const [showIntro, setShowIntro] = useState(true);
-    const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
+    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
     const router = useRouter();
 
-    const handleGenerateVideo = async () => {
+    const handleGenerateImage = async () => {
         if (!selectedHackathonId || !selectedCollege) {
-            alert("Please ensure a hackathon is selected to generate a video.");
+            alert("Please ensure a hackathon is selected to generate an image.");
             return;
         }
 
         const currentHackathon = hackathons.find(h => h.id === selectedHackathonId);
-        const hackathonProjects = projects.filter(p => p.hackathonId === selectedHackathonId);
         const hackathonTeams = teams.filter(t => t.hackathonId === selectedHackathonId);
 
         if (!currentHackathon) {
@@ -41,29 +40,27 @@ export default function ProjectGallery() {
             return;
         }
 
-        setIsGeneratingVideo(true);
+        setIsGeneratingImage(true);
         try {
-            const videoResult = await generateHackathonSummaryVideo({
+            const imageResult = await generateHackathonImage({
                 hackathonName: currentHackathon.name,
                 collegeName: selectedCollege,
-                prizeMoney: currentHackathon.prizeMoney,
-                projectCount: hackathonProjects.length,
                 teamCount: hackathonTeams.length
             });
 
-            if (videoResult?.videoUrl) {
-                await api.updateHackathon(selectedHackathonId, { summaryVideoUrl: videoResult.videoUrl });
-                alert("Video generated successfully! You can view it in the 'Generated Videos' tab on the Admin Dashboard.");
+            if (imageResult?.imageUrl) {
+                await api.updateHackathon(selectedHackathonId, { summaryImageUrl: imageResult.imageUrl });
+                alert("Image generated successfully! You can view it in the 'Generated Images' tab on the Admin Dashboard.");
                 router.push('/admin');
             } else {
-                 throw new Error("Video generation did not return a URL.");
+                 throw new Error("Image generation did not return a URL.");
             }
 
         } catch (error) {
-            console.error("Failed to generate summary video:", error);
-            alert("Video generation failed. This can happen under heavy load or due to content restrictions. Please try again in a few moments.");
+            console.error("Failed to generate summary image:", error);
+            alert("Image generation failed. This can happen under heavy load or due to content restrictions. Please try again in a few moments.");
         } finally {
-            setIsGeneratingVideo(false);
+            setIsGeneratingImage(false);
         }
     };
     
@@ -71,7 +68,7 @@ export default function ProjectGallery() {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<GalleryVertical className="w-full h-full" />} title="Project Showcase" description="A gallery of all submitted projects to celebrate the work." />;
     }
 
-    const canGenerateVideo = currentAdmin || currentJudge;
+    const canGenerateImage = currentAdmin || currentJudge;
 
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-fade-in">
@@ -80,10 +77,10 @@ export default function ProjectGallery() {
                     <h1 className="text-4xl font-bold mb-2 font-headline">Project Showcase</h1>
                     <p className="text-lg text-muted-foreground">Celebrating the incredible work from {state.selectedCollege}</p>
                 </div>
-                 {canGenerateVideo && (
-                    <Button onClick={handleGenerateVideo} disabled={isGeneratingVideo || projects.length === 0}>
-                        {isGeneratingVideo ? <Loader className="mr-2 animate-spin"/> : <Video className="mr-2"/>}
-                        {isGeneratingVideo ? 'Generating Video...' : 'Generate Summary Video'}
+                 {canGenerateImage && (
+                    <Button onClick={handleGenerateImage} disabled={isGeneratingImage || projects.length === 0}>
+                        {isGeneratingImage ? <Loader className="mr-2 animate-spin"/> : <ImageIcon className="mr-2"/>}
+                        {isGeneratingImage ? 'Generating Image...' : 'Generate Hackathon Image'}
                     </Button>
                  )}
             </div>
