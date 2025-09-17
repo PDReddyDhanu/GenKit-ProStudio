@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -11,13 +12,13 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const GenerateShowcaseSummaryInputSchema = z.object({
+const GenerateShowcaseSummaryInputSchema = z.object({
   projectName: z.string().describe('The name of the project.'),
   projectDescription: z.string().describe('The description of the project.'),
 });
 export type GenerateShowcaseSummaryInput = z.infer<typeof GenerateShowcaseSummaryInputSchema>;
 
-export const GenerateShowcaseSummaryOutputSchema = z.object({
+const GenerateShowcaseSummaryOutputSchema = z.object({
   summary: z.string().describe('A very short, punchy, one-line summary of the project for a cinematic showcase.'),
 });
 export type GenerateShowcaseSummaryOutput = z.infer<typeof GenerateShowcaseSummaryOutputSchema>;
