@@ -1,4 +1,6 @@
 
+"use client";
+
 import { auth, db } from './firebase';
 import { 
     createUserWithEmailAndPassword, 
@@ -30,34 +32,20 @@ import { JUDGING_RUBRIC, INDIVIDUAL_JUDGING_RUBRIC } from './constants';
 import { generateProjectImage } from '@/ai/flows/generate-project-image';
 
 
-async function getOrCreateUser(email: string, password: any) {
-    try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        return userCredential.user;
-    } catch (error: any) {
-        if (error.code === 'auth/user-not-found') {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            return userCredential.user;
-        }
-        throw error;
-    }
-}
-
 async function getAuthUser(email: string, password: any) {
     try {
-        await signInWithEmailAndPassword(auth, email, 'a-deliberately-wrong-password');
+        // Attempt to create a new user.
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        return userCredential.user;
     } catch (error: any) {
-        if (error.code === 'auth/wrong-password') {
+        // If the email is already in use, sign in instead.
+        if (error.code === 'auth/email-already-in-use') {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             return userCredential.user;
-        } else if (error.code === 'auth/user-not-found') {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            return userCredential.user;
-        } else {
-            throw error;
         }
+        // Re-throw other errors (e.g., weak-password).
+        throw error;
     }
-    throw new Error('Unexpected authentication issue');
 }
 
 
