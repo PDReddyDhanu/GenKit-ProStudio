@@ -20,6 +20,7 @@ import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WORK_STYLE_TAGS, SKILL_TAGS } from '@/lib/constants';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 
 function ChangePasswordCard() {
@@ -264,9 +265,12 @@ export default function ProfilePage() {
                                             {SKILL_TAGS.map(tag => (
                                                 <Badge
                                                     key={tag}
-                                                    variant={skills.includes(tag) ? "default" : "secondary"}
                                                     onClick={() => toggleSkillTag(tag)}
-                                                    className="cursor-pointer"
+                                                    className={cn("cursor-pointer",
+                                                        skills.includes(tag) 
+                                                        ? 'bg-accent text-accent-foreground hover:bg-accent/80' 
+                                                        : 'bg-primary/80 text-primary-foreground hover:bg-primary/70'
+                                                    )}
                                                 >
                                                     {tag}
                                                 </Badge>
@@ -280,9 +284,12 @@ export default function ProfilePage() {
                                             {WORK_STYLE_TAGS.map(tag => (
                                                 <Badge
                                                     key={tag}
-                                                    variant={workStyle.includes(tag) ? "default" : "secondary"}
                                                     onClick={() => toggleWorkStyleTag(tag)}
-                                                    className="cursor-pointer"
+                                                    className={cn("cursor-pointer",
+                                                        workStyle.includes(tag) 
+                                                        ? 'bg-accent text-accent-foreground hover:bg-accent/80' 
+                                                        : 'bg-primary/80 text-primary-foreground hover:bg-primary/70'
+                                                    )}
                                                 >
                                                     {tag}
                                                 </Badge>
@@ -397,5 +404,3 @@ export default function ProfilePage() {
         </div>
     );
 }
-
-    
