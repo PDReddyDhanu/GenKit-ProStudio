@@ -143,11 +143,23 @@ const HowItWorksAnimation = () => {
         { title: "Build & Submit", description: "Use AI tools, collaborate, and submit your project.", icon: <Code className="w-6 h-6" />, position: { top: '70%', left: '5%' } },
         { title: "Compete & Win", description: "Get judged, climb the leaderboard, and win prizes!", icon: <Trophy className="w-6 h-6" />, position: { top: '92%', left: '90%' } },
     ];
+    
+    const CarIcon = (props: React.SVGProps<SVGSVGElement>) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+            <path d="M14 16.942a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0Z"/>
+            <path d="M7.5 16.942a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0Z"/>
+            <path d="M10.5 17H14m-10.5 0h1.5m6-1.542L12.5 7h3l1.5 4"/>
+            <path d="m5 15.4-1-4h1.5l1.5 4"/>
+            <path d="M5 11h9"/>
+        </svg>
+    );
+
 
     return (
         <div className="relative w-full max-w-4xl mx-auto h-[400px] md:h-[500px]">
             <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
                 <path 
+                    id="road"
                     d="M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380" 
                     fill="none" 
                     stroke="hsl(var(--border))" 
@@ -155,6 +167,13 @@ const HowItWorksAnimation = () => {
                     strokeDasharray="10 5"
                     className="animate-road-draw"
                 />
+                <g className="animate-car-loop">
+                    <CarIcon width="20" height="20" className="text-primary -rotate-90">
+                         <animateMotion dur="12s" repeatCount="indefinite" rotate="auto">
+                            <mpath href="#road"/>
+                        </animateMotion>
+                    </CarIcon>
+                </g>
             </svg>
 
             {steps.map((step, index) => (
@@ -432,3 +451,4 @@ export default function Home() {
     
 
     
+
