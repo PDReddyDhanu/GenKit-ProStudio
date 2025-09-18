@@ -9,12 +9,12 @@ import { Rocket } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function HackathonSelector() {
-    const { state, api } = useHackathon();
+    const { state, dispatch } = useHackathon();
     const { hackathons, currentUser } = state;
 
     const handleSelectHackathon = (hackathonId: string) => {
         if (currentUser) {
-            api.selectHackathonForStudent(currentUser.id, hackathonId);
+            dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId });
         }
     };
 
