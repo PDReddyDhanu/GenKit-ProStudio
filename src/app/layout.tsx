@@ -13,11 +13,13 @@ import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import CollegeLogin from '@/components/CollegeLogin';
 import { useEffect, useState } from 'react';
 import { Loader } from 'lucide-react';
+import { useCustomCursor } from '@/hooks/use-custom-cursor';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 
 function AppWrapper({ children }: { children: React.ReactNode }) {
+    useCustomCursor();
     const { state } = useHackathon();
     const { selectedCollege, isInitialized, isLoading } = state;
     const [showIntro, setShowIntro] = useState(true);
@@ -88,5 +90,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
