@@ -53,6 +53,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="flex flex-col min-h-screen">
+            <div className="custom-cursor" />
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 max-w-screen-2xl">
                 {children}

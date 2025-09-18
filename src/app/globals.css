@@ -83,7 +83,7 @@ body {
      cursor: none;
   }
   
-  body::before, body::after {
+  .custom-cursor::before, .custom-cursor::after {
     content: '';
     position: fixed;
     top: var(--cursor-y);
@@ -94,48 +94,60 @@ body {
     z-index: 9999;
   }
 
-  body::before {
+  .custom-cursor::before {
     height: 8px;
     width: 8px;
     background-color: var(--cursor-primary);
     transition: transform 0.1s ease-out;
   }
 
-  body::after {
+  .custom-cursor::after {
     height: 32px;
     width: 32px;
     border: 2px solid var(--cursor-accent);
     transition: transform 0.2s ease-out, height 0.3s ease, width 0.3s ease, border-color 0.3s ease;
   }
   
-  body:has(button:hover, a:hover, [role='button']:hover, input:hover, textarea:hover, select:hover, .cursor-pointer:hover) > body::before {
+  body:has(button:hover, a:hover, [role='button']:hover, input:hover, textarea:hover, select:hover, .cursor-pointer:hover) .custom-cursor::before {
      transform: translate(-50%, -50%) scale(0);
   }
   
-  body:has(button:hover, a:hover, [role='button']:hover, input:hover, textarea:hover, select:hover, .cursor-pointer:hover) > body::after {
+  body:has(button:hover, a:hover, [role='button']:hover, input:hover, textarea:hover, select:hover, .cursor-pointer:hover) .custom-cursor::after {
     height: 48px;
     width: 48px;
     border-color: var(--cursor-primary);
     transform: translate(-50%, -50%) scale(1.2);
   }
 
-
   body {
     @apply bg-background text-foreground animate-stars;
-    /* Starfield and Watermark effect */
+    /* Starfield effect */
     --star-size-1: 1px;
     --star-size-2: 2px;
     --star-size-3: 3px;
-    --pdr-watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Ctext x='50%25' y='50%25' font-family='monospace' font-size='24' fill-opacity='0.05' fill='%23888' text-anchor='middle' dominant-baseline='middle' transform='rotate(-45, 100, 100)'%3EPDR%3C/text%3E%3C/svg%3E");
 
     background-image: 
-      var(--pdr-watermark),
       radial-gradient(var(--star-size-3) var(--star-size-3) at 25px 25px, var(--star-color), var(--star-bg)),
       radial-gradient(var(--star-size-2) var(--star-size-2) at 50px 100px, var(--star-color), var(--star-bg)),
       radial-gradient(var(--star-size-1) var(--star-size-1) at 100px 75px, var(--star-color), var(--star-bg));
     background-repeat: repeat;
     background-size: 200px 200px;
     background-color: var(--star-bg);
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: var(--pdr-watermark);
+    background-repeat: repeat;
+    background-size: 200px 200px;
+  }
+
+  body {
+     --pdr-watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Ctext x='50%25' y='50%25' font-family='monospace' font-size='24' fill-opacity='0.05' fill='%23888' text-anchor='middle' dominant-baseline='middle' transform='rotate(-45, 100, 100)'%3EPDR%3C/text%3E%3C/svg%3E");
   }
 
   .dark body {
