@@ -10,6 +10,7 @@ import { generateProjectImage as generateProjectImageFlow, GenerateProjectImageI
 import { generatePitchOutline as generatePitchOutlineFlow, GeneratePitchOutlineInput, GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
 import { findTeammateMatches as findTeammateMatchesFlow, FindTeammateMatchesInput, FindTeammateMatchesOutput } from '@/ai/flows/find-teammate-matches';
 import { generateHackathonReport as generateHackathonReportFlow, GenerateHackathonReportInput } from '@/ai/flows/generate-hackathon-summary-report';
+import { triageSupportTicket as triageSupportTicketFlow, TriageSupportTicketInput, TriageSupportTicketOutput } from '@/ai/flows/triage-support-ticket';
 
 
 // AI Related Actions
@@ -98,5 +99,14 @@ export async function generateHackathonReport(input: GenerateHackathonReportInpu
     } catch (error) {
         console.error("Error generating hackathon report:", error);
         return "Failed to generate report. Please try again.";
+    }
+}
+
+export async function triageSupportTicket(input: TriageSupportTicketInput): Promise<TriageSupportTicketOutput | null> {
+    try {
+        return await triageSupportTicketFlow(input);
+    } catch (error) {
+        console.error("Error triaging support ticket:", error);
+        return null;
     }
 }

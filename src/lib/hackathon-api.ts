@@ -28,9 +28,10 @@ import {
     orderBy,
     limit
 } from 'firebase/firestore';
-import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember } from './types';
+import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember, SupportTicket } from './types';
 import { JUDGING_RUBRIC, INDIVIDUAL_JUDGING_RUBRIC } from './constants';
 import { generateProjectImage } from '@/ai/flows/generate-project-image';
+import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
 
 
 async function getAuthUser(email: string, password: any) {
@@ -272,6 +273,10 @@ export async function updateHackathon(collegeId: string, hackathonId: string, ha
     return { successMessage: `Hackathon "${hackathonData.name}" updated successfully.` };
 }
 
+export async function updateProjectImage(collegeId: string, projectId: string, imageUrl: string) {
+    await updateDoc(doc(db, `colleges/${collegeId}/projects`, projectId), { imageUrl });
+    return { successMessage: "Project image updated." };
+}
 
 export async function postAnnouncement(collegeId: string, data: Partial<Omit<Announcement, 'id' | 'timestamp'>>) {
     const newAnnouncement: Partial<Omit<Announcement, 'id'>> = {
@@ -633,4 +638,33 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
         achievements: Array.from(newAchievements),
     });
     return { successMessage: "Scores submitted successfully." };
+}
+
+// --- Support ---
+export async function submitSupportTicket(collegeId: string, ticketData: Omit<SupportTicket, 'id' | 'submittedAt' | 'status' | 'category' | 'priority' | 'suggestedResponse'>) {
+    
+    const triageResult = await triageSupportTicket({
+        subject: ticketData.subject,
+        question: ticketData.question,
+        studentName: ticketData.studentName
+    });
+    
+    if (!triageResult) {
+        throw new Error("AI Triage failed. Could not submit ticket.");
+    }
+    
+    const newTicket: Omit<SupportTicket, 'id'> = {
+        ...ticketData,
+        submittedAt: Date.now(),
+        status: 'New',
+        ...triageResult
+    };
+
+    const ticketRef = await addDoc(collection(db, `colleges/${collegeId}/supportTickets`), newTicket);
+    return { successMessage: "Support ticket submitted successfully. An admin will get back to you shortly.", id: ticketRef.id };
+}
+
+export async function updateSupportTicketStatus(collegeId: string, ticketId: string, status: SupportTicket['status']) {
+    await updateDoc(doc(db, `colleges/${collegeId}/supportTickets`, ticketId), { status });
+    return { successMessage: "Ticket status updated." };
 }

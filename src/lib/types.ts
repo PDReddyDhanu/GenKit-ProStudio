@@ -23,6 +23,7 @@ export interface Hackathon {
   rules: string;
   teamSizeLimit: number;
   deadline: number; // timestamp
+  summaryImageUrl?: string;
 }
 
 export interface ChatMessage {
@@ -94,6 +95,22 @@ export interface Announcement {
   hackathonId?: string; // Optional: scope announcements to a hackathon
 }
 
+export interface SupportTicket {
+    id: string;
+    studentId: string;
+    studentName: string;
+    studentEmail: string;
+    subject: string;
+    question: string;
+    submittedAt: number;
+    status: 'New' | 'In Progress' | 'Resolved';
+    category: string;
+    priority: 'Low' | 'Medium' | 'High';
+    suggestedResponse: string;
+    hackathonId: string | null;
+}
+
+
 export interface HackathonData {
     users: User[];
     teams: Team[];
@@ -101,4 +118,5 @@ export interface HackathonData {
     judges: Judge[];
     announcements: Announcement[];
     hackathons: Hackathon[];
+    supportTickets: SupportTicket[];
 }

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, Menu, LogOut, Building2, User, UserCircle } from 'lucide-react';
+import { Trophy, Rss, Menu, LogOut, Building2, User, UserCircle, LifeBuoy } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -98,6 +98,7 @@ export function Header() {
                     <NavLink href="/leaderboard">Leaderboard</NavLink>
                     <NavLink href="/results">Results</NavLink>
                     <NavLink href="/partners">Partners</NavLink>
+                    <NavLink href="/support">Support</NavLink>
                 </nav>
                 
                 <div className="flex items-center gap-2">
@@ -224,6 +225,7 @@ export function Header() {
                                     <NavLink href="/leaderboard" onClick={closeMobileMenu}>Leaderboard</NavLink>
                                     <NavLink href="/results" onClick={closeMobileMenu}>Results</NavLink>
                                     <NavLink href="/partners" onClick={closeMobileMenu}>Partners</NavLink>
+                                    <NavLink href="/support" onClick={closeMobileMenu}>Support</NavLink>
                                 </nav>
                                 <div className="border-t pt-4 space-y-2">
                                     <Button variant="outline" className="w-full" onClick={() => {handleChangeCollege(); closeMobileMenu();}}>

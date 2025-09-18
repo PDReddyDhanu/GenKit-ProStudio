@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useEffect, useReducer } from 'react';
-import { User, Team, Project, Judge, Announcement, Hackathon } from '../lib/types';
+import { User, Team, Project, Judge, Announcement, Hackathon, SupportTicket } from '../lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -16,6 +16,7 @@ interface HackathonState {
   judges: Judge[];
   announcements: Announcement[];
   hackathons: Hackathon[];
+  supportTickets: SupportTicket[];
   currentUser: User | null;
   currentJudge: Judge | null;
   currentAdmin: boolean;
@@ -34,6 +35,7 @@ const defaultState: HackathonState = {
   judges: [],
   announcements: [],
   hackathons: [],
+  supportTickets: [],
   currentUser: null,
   currentJudge: null,
   currentAdmin: false,
@@ -158,7 +160,7 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
         dispatch({ type: 'SET_LOADING', payload: true });
         localStorage.setItem('selectedCollege', state.selectedCollege);
         
-        const topLevelCollections = ['users', 'judges', 'announcements', 'hackathons', 'teams', 'projects'];
+        const topLevelCollections = ['users', 'judges', 'announcements', 'hackathons', 'teams', 'projects', 'supportTickets'];
         const unsubscribes = topLevelCollections.map(col => 
             onSnapshot(collection(db, `colleges/${state.selectedCollege}/${col}`), (snapshot) => {
                 const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
