@@ -1,4 +1,5 @@
 
+
 export const JUDGING_RUBRIC = [
     { id: 'innovation', name: 'Innovation & Originality', max: 10 },
     { id: 'technical_complexity', name: 'Technical Complexity & Execution', max: 10 },
@@ -25,4 +26,19 @@ export const TEAM_ROLES = [
     'DevOps Engineer',
     'Documentation',
     'Presenter'
+];
+
+export const WORK_STYLE_TAGS = [
+    'Late-night coder',
+    'Early bird',
+    'Strong presenter',
+    'Creative thinker',
+    'Meticulous planner',
+    'API expert',
+    'Frontend specialist',
+    'Backend guru',
+    'Database wizard',
+    'UI/UX enthusiast',
+    'Documentation hero',
+    'Team motivator'
 ];

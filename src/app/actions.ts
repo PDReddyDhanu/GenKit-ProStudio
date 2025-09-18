@@ -7,7 +7,9 @@ import { aiCodeReviewForSubmissions as aiCodeReviewFlow, AiCodeReviewForSubmissi
 import { generateProjectSummary as generateProjectSummaryFlow, ProjectSummaryInput } from '@/ai/flows/project-summary-for-judges';
 import { fetchGuidanceInfo as fetchGuidanceInfoFlow, FetchGuidanceInfoInput } from '@/ai/flows/fetch-guidance-info';
 import { generateProjectImage as generateProjectImageFlow, GenerateProjectImageInput } from '@/ai/flows/generate-project-image';
-import { generatePitchOutline as generatePitchOutlineFlow, GeneratePitchOutlineInput, GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
+import { generatePresentationSlides as generatePitchOutlineFlow } from '@/ai/flows/generate-presentation-slides';
+import { GeneratePresentationSlidesInput, GeneratePresentationSlidesOutput } from '@/ai/flows/generate-presentation-slides.types';
+import { findTeammateMatches as findTeammateMatchesFlow, FindTeammateMatchesInput, FindTeammateMatchesOutput } from '@/ai/flows/find-teammate-matches';
 
 
 // AI Related Actions
@@ -71,11 +73,20 @@ export async function generateProjectImage(input: GenerateProjectImageInput): Pr
     }
 }
 
-export async function generatePitchOutline(input: GeneratePitchOutlineInput): Promise<GeneratePitchOutlineOutput | null> {
+export async function generatePitchOutline(input: GeneratePresentationSlidesInput): Promise<GeneratePresentationSlidesOutput | null> {
     try {
         return await generatePitchOutlineFlow(input);
     } catch (error) {
         console.error("Error generating pitch outline:", error);
         return null;
+    }
+}
+
+export async function findTeammateMatches(input: FindTeammateMatchesInput): Promise<FindTeammateMatchesOutput> {
+    try {
+        return await findTeammateMatchesFlow(input);
+    } catch (error) {
+        console.error("Error finding teammate matches:", error);
+        return { matches: [] };
     }
 }

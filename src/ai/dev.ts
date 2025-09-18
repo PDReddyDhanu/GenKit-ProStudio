@@ -10,3 +10,4 @@ import '@/ai/flows/generate-project-idea.ts';
 import '@/ai/flows/fetch-guidance-info.ts';
 import '@/ai/flows/generate-project-image.ts';
 import '@/ai/flows/generate-pitch-outline.ts';
+import '@/ai/flows/find-teammate-matches.ts';

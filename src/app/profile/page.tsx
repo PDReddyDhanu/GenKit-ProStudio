@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound } from 'lucide-react';
+import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound, X } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
 import { generateCertificate } from '@/lib/pdf';
@@ -18,6 +18,8 @@ import { format } from 'date-fns';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WORK_STYLE_TAGS } from '@/lib/constants';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 
 function ChangePasswordCard() {
@@ -107,6 +109,7 @@ export default function ProfilePage() {
     const [bio, setBio] = useState(currentUser?.bio || '');
     const [github, setGithub] = useState(currentUser?.github || '');
     const [linkedin, setLinkedin] = useState(currentUser?.linkedin || '');
+    const [workStyle, setWorkStyle] = useState<string[]>(currentUser?.workStyle || []);
     const [isSaving, setIsSaving] = useState(false);
     const [isGeneratingCert, setIsGeneratingCert] = useState<string | null>(null);
 
@@ -125,6 +128,7 @@ export default function ProfilePage() {
         setBio(currentUser.bio || '');
         setGithub(currentUser.github || '');
         setLinkedin(currentUser.linkedin || '');
+        setWorkStyle(currentUser.workStyle || []);
       }
     }, [currentUser]);
 
@@ -179,13 +183,20 @@ export default function ProfilePage() {
                 skills: skills.split(',').map(s => s.trim()).filter(Boolean),
                 bio,
                 github,
-                linkedin
+                linkedin,
+                workStyle
             });
             setIsEditing(false);
         } finally {
             setIsSaving(false);
         }
     };
+    
+    const toggleWorkStyleTag = (tag: string) => {
+        setWorkStyle(prev => 
+            prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+        );
+    }
 
     return (
         <div className="container max-w-4xl mx-auto py-12 animate-fade-in">
@@ -223,6 +234,21 @@ export default function ProfilePage() {
                                         <Input id="skills" value={skills} onChange={e => setSkills(e.target.value)} required placeholder="React, Node.js, Python..." disabled={isSaving} />
                                     </div>
                                     <div className="space-y-2">
+                                        <Label>Work Style</Label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {WORK_STYLE_TAGS.map(tag => (
+                                                <Badge
+                                                    key={tag}
+                                                    variant={workStyle.includes(tag) ? "default" : "secondary"}
+                                                    onClick={() => toggleWorkStyleTag(tag)}
+                                                    className="cursor-pointer"
+                                                >
+                                                    {tag}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
                                         <Label htmlFor="bio">Short Bio</Label>
                                         <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} placeholder="Passionate full-stack developer..." disabled={isSaving} />
                                     </div>
@@ -255,6 +281,16 @@ export default function ProfilePage() {
                                             <div className="flex flex-wrap gap-2">
                                                 {currentUser.skills.map(skill => (
                                                     <Badge key={skill} variant="secondary">{skill}</Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {currentUser.workStyle && currentUser.workStyle.length > 0 && (
+                                        <div>
+                                            <h4 className="font-semibold text-muted-foreground mb-2">Work Style</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {currentUser.workStyle.map(style => (
+                                                    <Badge key={style} variant="default">{style}</Badge>
                                                 ))}
                                             </div>
                                         </div>

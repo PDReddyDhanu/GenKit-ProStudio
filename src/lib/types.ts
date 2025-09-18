@@ -4,6 +4,7 @@ export interface UserProfileData {
   bio: string;
   github: string;
   linkedin: string;
+  workStyle?: string[];
 }
 
 export interface User extends UserProfileData {

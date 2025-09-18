@@ -104,6 +104,7 @@ export async function registerStudent(collegeId: string, { name, email, password
             bio: '',
             github: '',
             linkedin: '',
+            workStyle: [],
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
         await firebaseSignOut(auth); // Sign out immediately after registration
@@ -215,7 +216,7 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             name,
             email,
             status: 'approved',
-            skills: [], bio: '', github: '', linkedin: '',
+            skills: [], bio: '', github: '', linkedin: '', workStyle: []
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
