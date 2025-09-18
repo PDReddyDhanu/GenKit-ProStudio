@@ -11,3 +11,4 @@ import '@/ai/flows/fetch-guidance-info.ts';
 import '@/ai/flows/generate-project-image.ts';
 import '@/ai/flows/generate-pitch-outline.ts';
 import '@/ai/flows/find-teammate-matches.ts';
+import '@/ai/flows/generate-hackathon-summary-report.ts';

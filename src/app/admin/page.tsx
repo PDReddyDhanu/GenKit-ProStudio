@@ -11,12 +11,13 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield, Loader, Scale, Rss, LineChart, Database } from 'lucide-react';
+import { Shield, Loader, Scale, Rss, LineChart, Database, FileText } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import JudgingDashboard from '@/app/judge/_components/JudgingDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
 import AnalyticsDashboard from './_components/AnalyticsDashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ReportingDashboard from './_components/ReportingDashboard';
 
 
 export default function AdminPortal() {
@@ -100,13 +101,14 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue={currentJudge ? "judging" : "hackathons"} className="w-full">
-                <TabsList className={`grid w-full h-auto md:h-10 ${currentJudge ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5'}`}>
+                <TabsList className={`grid w-full h-auto md:h-10 ${currentJudge ? 'grid-cols-2 md:grid-cols-4 lg:grid-cols-7' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6'}`}>
                     {currentJudge && <TabsTrigger value="judging"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>
                     <TabsTrigger value="announcements"><Rss className="mr-2 h-4 w-4" /> Announcements</TabsTrigger>
                     <TabsTrigger value="analytics"><LineChart className="mr-2 h-4 w-4" /> Analytics</TabsTrigger>
                     <TabsTrigger value="data"><Database className="mr-2 h-4 w-4" /> Data & Export</TabsTrigger>
+                    <TabsTrigger value="reports"><FileText className="mr-2 h-4 w-4" /> Reports</TabsTrigger>
                 </TabsList>
                 {currentJudge && (
                     <TabsContent value="judging" className="mt-6">
@@ -127,6 +129,9 @@ export default function AdminPortal() {
                 </TabsContent>
                 <TabsContent value="data" className="mt-6">
                     <DataManagement />
+                </TabsContent>
+                <TabsContent value="reports" className="mt-6">
+                    {currentHackathon ? <ReportingDashboard hackathon={currentHackathon} /> : <p className="text-center text-muted-foreground">Please select a hackathon to generate a report.</p>}
                 </TabsContent>
             </Tabs>
         </div>

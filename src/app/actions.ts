@@ -9,6 +9,7 @@ import { fetchGuidanceInfo as fetchGuidanceInfoFlow, FetchGuidanceInfoInput } fr
 import { generateProjectImage as generateProjectImageFlow, GenerateProjectImageInput } from '@/ai/flows/generate-project-image';
 import { generatePitchOutline as generatePitchOutlineFlow, GeneratePitchOutlineInput, GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
 import { findTeammateMatches as findTeammateMatchesFlow, FindTeammateMatchesInput, FindTeammateMatchesOutput } from '@/ai/flows/find-teammate-matches';
+import { generateHackathonReport as generateHackathonReportFlow, GenerateHackathonReportInput } from '@/ai/flows/generate-hackathon-summary-report';
 
 
 // AI Related Actions
@@ -87,5 +88,15 @@ export async function findTeammateMatches(input: FindTeammateMatchesInput): Prom
     } catch (error) {
         console.error("Error finding teammate matches:", error);
         return { matches: [] };
+    }
+}
+
+export async function generateHackathonReport(input: GenerateHackathonReportInput): Promise<string | null> {
+    try {
+        const result = await generateHackathonReportFlow(input);
+        return result.report;
+    } catch (error) {
+        console.error("Error generating hackathon report:", error);
+        return "Failed to generate report. Please try again.";
     }
 }
