@@ -148,9 +148,8 @@ export default {
             '90%': { 'offset-distance': '100%' },
         },
         'car-body': {
-             '0%, 100%': { opacity: '1' },
-             '48%, 92%': { opacity: '1'},
-             '50%, 90%': { opacity: '0'},
+             '0%, 92%, 100%': { opacity: '1' },
+             '94%, 98%': { opacity: '0'},
         },
         'person1-in-car': {
              '0%, 92%, 100%': { opacity: '1' },
@@ -202,5 +201,7 @@ export default {
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
+
+    
 
     

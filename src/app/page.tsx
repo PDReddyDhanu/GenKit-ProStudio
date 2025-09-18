@@ -84,7 +84,7 @@ const HowItWorksAnimation = () => {
     const steps = [
         { title: "Sign Up", description: "Register as a student for your college's event.", icon: <User className="w-6 h-6" />, position: { top: '8%', left: '10%' } },
         { title: "Form Team", description: "Create a new team or join an existing one with a code.", icon: <Users className="w-6 h-6" />, position: { top: '40%', left: '85%' } },
-        { title: "Build & Submit", description: "Use AI tools, collaborate, and submit your project.", icon: <Code className="w-6 h-6" />, position: { top: '70%', left: '15%' } },
+        { title: "Build & Submit", description: "Use AI tools, collaborate, and submit your project.", icon: <Code className="w-6 h-6" />, position: { top: '70%', left: '5%' } },
         { title: "Compete & Win", description: "Get judged, climb the leaderboard, and win prizes!", icon: <Trophy className="w-6 h-6" />, position: { top: '92%', left: '90%' } },
     ];
 
@@ -271,5 +271,7 @@ export default function Home() {
     </div>
   );
 }
+
+    
 
     
