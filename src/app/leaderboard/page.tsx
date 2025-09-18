@@ -126,19 +126,19 @@ export default function Leaderboard() {
                 {leaderboardData.length > 0 ? (
                     <div className="space-y-12">
                         {/* Podium Section */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end">
                             {podium[1] && (
-                                <div className="order-2 lg:order-1">
+                                <div className="order-2 md:order-1">
                                     <PodiumCard entry={podium[1]} rank={2} />
                                 </div>
                             )}
                             {podium[0] && (
-                                 <div className="order-1 lg:order-2">
+                                 <div className="order-1 md:order-2">
                                     <PodiumCard entry={podium[0]} rank={1} />
                                 </div>
                             )}
                             {podium[2] && (
-                                 <div className="order-3 lg:order-3">
+                                 <div className="order-3 md:order-3">
                                     <PodiumCard entry={podium[2]} rank={3} />
                                 </div>
                             )}
@@ -151,43 +151,45 @@ export default function Leaderboard() {
                                     <CardTitle className="font-headline">Top 10 Teams</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="w-[80px]">Rank</TableHead>
-                                                <TableHead>Team</TableHead>
-                                                <TableHead>Project</TableHead>
-                                                <TableHead>Achievements</TableHead>
-                                                <TableHead className="text-right">Score</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {leaderboardData.map((entry) => (
-                                                <TableRow key={entry.rank}>
-                                                    <TableCell className="font-bold text-lg">{entry.rank}</TableCell>
-                                                    <TableCell className="font-medium text-primary">{entry.teamName}</TableCell>
-                                                    <TableCell className="text-muted-foreground">{entry.projectName}</TableCell>
-                                                    <TableCell>
-                                                        <div className="flex items-center gap-2">
-                                                            {entry.achievements?.map(achievement => (
-                                                                <Tooltip key={achievement}>
-                                                                    <TooltipTrigger asChild>
-                                                                        <Button variant="ghost" size="icon" className="text-yellow-400 h-6 w-6">
-                                                                            <Award className="w-5 h-5" />
-                                                                        </Button>
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent>
-                                                                        <p>{achievement}</p>
-                                                                    </TooltipContent>
-                                                                </Tooltip>
-                                                            ))}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-right font-bold text-lg">{entry.score}</TableCell>
+                                    <div className="overflow-x-auto">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead className="w-[80px]">Rank</TableHead>
+                                                    <TableHead>Team</TableHead>
+                                                    <TableHead>Project</TableHead>
+                                                    <TableHead>Achievements</TableHead>
+                                                    <TableHead className="text-right">Score</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {leaderboardData.map((entry) => (
+                                                    <TableRow key={entry.rank}>
+                                                        <TableCell className="font-bold text-lg">{entry.rank}</TableCell>
+                                                        <TableCell className="font-medium text-primary">{entry.teamName}</TableCell>
+                                                        <TableCell className="text-muted-foreground">{entry.projectName}</TableCell>
+                                                        <TableCell>
+                                                            <div className="flex items-center gap-2">
+                                                                {entry.achievements?.map(achievement => (
+                                                                    <Tooltip key={achievement}>
+                                                                        <TooltipTrigger asChild>
+                                                                            <Button variant="ghost" size="icon" className="text-yellow-400 h-6 w-6">
+                                                                                <Award className="w-5 h-5" />
+                                                                            </Button>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>
+                                                                            <p>{achievement}</p>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                ))}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="text-right font-bold text-lg">{entry.score}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                 </CardContent>
                             </Card>
                         )}
@@ -205,3 +207,5 @@ export default function Leaderboard() {
         </div>
     );
 };
+
+    

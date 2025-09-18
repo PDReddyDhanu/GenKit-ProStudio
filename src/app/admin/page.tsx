@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -102,7 +103,7 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue={currentJudge ? "judging" : "hackathons"} className="w-full">
-                <TabsList className={`grid w-full h-auto md:h-10 ${currentJudge ? 'grid-cols-2 md:grid-cols-4 lg:grid-cols-8' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-7'}`}>
+                <TabsList className="grid w-full h-auto md:h-10 grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
                     {currentJudge && <TabsTrigger value="judging"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>
@@ -142,3 +143,5 @@ export default function AdminPortal() {
         </div>
     );
 }
+
+    

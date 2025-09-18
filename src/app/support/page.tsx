@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StatusChecker from './_components/StatusChecker';
 import { generateSupportResponse } from '@/app/actions';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { marked } from 'marked';
 import Link from 'next/link';
@@ -106,7 +106,7 @@ export default function SupportPage() {
 
     return (
         <Dialog open={isHelpDialogOpen} onOpenChange={setIsHelpDialogOpen}>
-            <div className="container max-w-2xl mx-auto py-12 animate-fade-in">
+            <div className="container max-w-4xl mx-auto py-12 animate-fade-in">
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold font-headline">Support Center</h1>
                     <p className="text-muted-foreground">Get help or check the status of an existing ticket.</p>
@@ -205,3 +205,5 @@ export default function SupportPage() {
         </Dialog>
     );
 }
+
+    

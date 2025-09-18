@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -125,7 +126,7 @@ export function Header() {
                                 <span className="sr-only">View Announcements</span>
                             </Button>
                         </SheetTrigger>
-                        <SheetContent>
+                        <SheetContent className="w-full sm:max-w-sm">
                             <SheetHeader>
                                 <SheetTitle>Announcements</SheetTitle>
                             </SheetHeader>
@@ -312,3 +313,5 @@ export function Header() {
         </header>
     );
 };
+
+    

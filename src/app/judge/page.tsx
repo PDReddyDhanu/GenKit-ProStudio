@@ -74,3 +74,5 @@ export default function JudgePortal() {
     // This case should ideally not be reached if the logic above is correct
     return <AdminPortal />;
 }
+
+    

@@ -147,7 +147,7 @@ export default function Announcements() {
                     <DialogTrigger asChild>
                         <Button>Post a New Announcement</Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-[600px]">
                         <DialogHeader>
                             <DialogTitle>New Announcement</DialogTitle>
                             <DialogDescription>This message will be broadcast to all participants.</DialogDescription>
@@ -215,7 +215,7 @@ export default function Announcements() {
 
             {editingAnnouncement && (
                  <Dialog open={!!editingAnnouncement} onOpenChange={(open) => !open && setEditingAnnouncement(null)}>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-[600px]">
                         <DialogHeader>
                             <DialogTitle>Edit Announcement</DialogTitle>
                         </DialogHeader>
@@ -229,5 +229,7 @@ export default function Announcements() {
         </div>
     );
 }
+
+    
 
     
