@@ -84,18 +84,6 @@ export default function Home() {
   const { state } = useHackathon();
   const { selectedCollege } = state;
 
-  const stats = useMemo(() => {
-    // In a real app, these would be fetched or calculated.
-    // Here we simulate them for display purposes.
-    const collegeHash = selectedCollege ? selectedCollege.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 1;
-    return {
-      participants: 800 + (collegeHash % 200),
-      projects: 150 + (collegeHash % 50),
-      prizes: 250000 + (collegeHash % 10000),
-    }
-  }, [selectedCollege]);
-
-
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
         <section className="text-center min-h-[60vh] flex flex-col justify-center items-center">
@@ -115,23 +103,6 @@ export default function Home() {
             </div>
         </section>
 
-        <section className="py-24">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <div className="animate-card-in">
-                    <p className="text-5xl font-bold text-primary">{stats.participants.toLocaleString()}+</p>
-                    <p className="text-muted-foreground mt-2 font-headline">Total Participants</p>
-                </div>
-                <div className="animate-card-in" style={{animationDelay: '200ms'}}>
-                    <p className="text-5xl font-bold text-secondary">{stats.projects.toLocaleString()}+</p>
-                    <p className="text-muted-foreground mt-2 font-headline">Projects Submitted</p>
-                </div>
-                <div className="animate-card-in" style={{animationDelay: '400ms'}}>
-                    <p className="text-5xl font-bold text-accent">₹{stats.prizes.toLocaleString()}+</p>
-                    <p className="text-muted-foreground mt-2 font-headline">In Prizes Awarded</p>
-                </div>
-            </div>
-        </section>
-        
         <section className="py-24">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Why Choose HackSprint?</h2>
             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">An integrated platform designed to elevate your hackathon experience from start to finish.</p>
