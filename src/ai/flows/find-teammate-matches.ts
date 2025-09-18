@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI agent for matching students with potential teammates.
@@ -69,7 +70,7 @@ const findTeammateMatchesFlow = ai.defineFlow(
   {
     name: 'findTeammateMatchesFlow',
     inputSchema: FindTeammateMatchesInputSchema,
-    outputSchema: FindTeammatematchOutputSchema,
+    outputSchema: FindTeammateMatchesOutputSchema,
   },
   async input => {
     // If there are no other users, return an empty list.
