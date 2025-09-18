@@ -13,3 +13,4 @@ import '@/ai/flows/generate-pitch-outline.ts';
 import '@/ai/flows/find-teammate-matches.ts';
 import '@/ai/flows/generate-hackathon-summary-report.ts';
 import '@/ai/flows/triage-support-ticket.ts';
+import '@/ai/flows/generate-support-response.ts';

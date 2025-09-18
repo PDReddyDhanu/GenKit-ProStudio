@@ -11,6 +11,7 @@ import { generatePitchOutline as generatePitchOutlineFlow, GeneratePitchOutlineI
 import { findTeammateMatches as findTeammateMatchesFlow, FindTeammateMatchesInput, FindTeammateMatchesOutput } from '@/ai/flows/find-teammate-matches';
 import { generateHackathonReport as generateHackathonReportFlow, GenerateHackathonReportInput } from '@/ai/flows/generate-hackathon-summary-report';
 import { triageSupportTicket as triageSupportTicketFlow, TriageSupportTicketInput, TriageSupportTicketOutput } from '@/ai/flows/triage-support-ticket';
+import { generateSupportResponse as generateSupportResponseFlow, GenerateSupportResponseInput, GenerateSupportResponseOutput } from '@/ai/flows/generate-support-response';
 
 
 // AI Related Actions
@@ -107,6 +108,15 @@ export async function triageSupportTicket(input: TriageSupportTicketInput): Prom
         return await triageSupportTicketFlow(input);
     } catch (error) {
         console.error("Error triaging support ticket:", error);
+        return null;
+    }
+}
+
+export async function generateSupportResponse(input: GenerateSupportResponseInput): Promise<GenerateSupportResponseOutput | null> {
+    try {
+        return await generateSupportResponseFlow(input);
+    } catch (error) {
+        console.error("Error generating support response:", error);
         return null;
     }
 }
