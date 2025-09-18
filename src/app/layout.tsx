@@ -18,8 +18,7 @@ import { useCustomCursor } from '@/hooks/use-custom-cursor';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 
-function AppWrapper({ children }: { children: React.ReactNode }) {
-    useCustomCursor();
+function AppContent({ children }: { children: React.ReactNode }) {
     const { state } = useHackathon();
     const { selectedCollege, isInitialized, isLoading } = state;
     const [showIntro, setShowIntro] = useState(true);
@@ -53,13 +52,23 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="flex flex-col min-h-screen">
-            <div className="custom-cursor" />
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 max-w-screen-2xl">
                 {children}
             </main>
             <Footer />
         </div>
+    );
+}
+
+function AppWrapper({ children }: { children: React.ReactNode }) {
+    useCustomCursor();
+
+    return (
+        <>
+            <div className="custom-cursor" />
+            <AppContent>{children}</AppContent>
+        </>
     );
 }
 
