@@ -143,9 +143,32 @@ export default {
           'from': { 'stroke-dashoffset': '2000' },
           'to': { 'stroke-dashoffset': '0' },
         },
-        'car-move': {
-            'from': { 'offset-distance': '0%' },
-            'to': { 'offset-distance': '100%' },
+        'car-loop': {
+            '0%, 100%': { 'offset-distance': '0%' },
+            '90%': { 'offset-distance': '100%' },
+        },
+        'car-body': {
+             '0%, 100%': { opacity: '1' },
+             '48%, 92%': { opacity: '1'},
+             '50%, 90%': { opacity: '0'},
+        },
+        'person1-in-car': {
+             '0%, 92%, 100%': { opacity: '1' },
+             '94%': { opacity: '0' },
+        },
+        'person2-in-car': {
+            '0%, 48%': { opacity: '0' },
+            '50%, 92%': { opacity: '1' },
+            '94%, 100%': { opacity: '0' },
+        },
+        'person-enter-exit': {
+            '0%, 45%, 95%, 100%': { opacity: '0' },
+            '48%, 52%': { opacity: '1' },
+            '50%': { transform: 'translateY(-10px)' }
+        },
+        'trophy-appear': {
+            '0%, 90%': { opacity: '0' },
+            '95%, 100%': { opacity: '1' }
         },
         'step-fade-in': {
             'from': { opacity: '0', transform: 'scale(0.9)' },
@@ -166,8 +189,13 @@ export default {
         'credits-fade-in': 'credits-fade-in 4s ease-out forwards',
         'slow-float': 'slow-float 12s ease-in-out infinite',
         'stars': 'stars 10s linear infinite',
-        'road-draw': 'road-draw 10s linear forwards',
-        'car-move': 'car-move 10s linear forwards',
+        'road-draw': 'road-draw 10s linear forwards infinite',
+        'car-loop': 'car-loop 12s linear infinite',
+        'car-body': 'car-body 12s linear infinite',
+        'person1-in-car': 'person1-in-car 12s linear infinite',
+        'person2-in-car': 'person2-in-car 12s linear infinite',
+        'person-enter-exit': 'person-enter-exit 12s linear infinite',
+        'trophy-appear': 'trophy-appear 12s linear infinite',
         'step-fade-in': 'step-fade-in 0.5s ease-out forwards',
       },
     },
