@@ -11,14 +11,14 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const GenerateSupportResponseInputSchema = z.object({
+const GenerateSupportResponseInputSchema = z.object({
   subject: z.string().describe('The subject line of the support ticket.'),
   question: z.string().describe('The full question or issue submitted by the student.'),
   category: z.string().describe('The AI-pre-triaged category of the ticket.'),
 });
 export type GenerateSupportResponseInput = z.infer<typeof GenerateSupportResponseInputSchema>;
 
-export const GenerateSupportResponseOutputSchema = z.object({
+const GenerateSupportResponseOutputSchema = z.object({
   resolution: z.string().describe('A comprehensive, helpful, and step-by-step response to resolve the student\'s issue. It should be written in Markdown format.'),
 });
 export type GenerateSupportResponseOutput = z.infer<typeof GenerateSupportResponseOutputSchema>;
