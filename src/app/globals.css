@@ -79,11 +79,13 @@ body {
   * {
     @apply border-border;
   }
-  html {
+  
+  body.custom-cursor-enabled {
      cursor: none;
   }
   
-  .custom-cursor::before, .custom-cursor::after {
+  .custom-cursor-enabled .custom-cursor::before, 
+  .custom-cursor-enabled .custom-cursor::after {
     content: '';
     position: fixed;
     top: var(--cursor-y);
@@ -94,25 +96,25 @@ body {
     z-index: 9999;
   }
 
-  .custom-cursor::before {
+  .custom-cursor-enabled .custom-cursor::before {
     height: 8px;
     width: 8px;
     background-color: var(--cursor-primary);
     transition: transform 0.1s ease-out;
   }
 
-  .custom-cursor::after {
+  .custom-cursor-enabled .custom-cursor::after {
     height: 32px;
     width: 32px;
     border: 2px solid var(--cursor-accent);
     transition: transform 0.2s ease-out, height 0.3s ease, width 0.3s ease, border-color 0.3s ease;
   }
   
-  body:has(button:hover, a:hover, [role='button']:hover, input:hover, textarea:hover, select:hover, .cursor-pointer:hover) .custom-cursor::before {
+  body.custom-cursor-enabled:has(button:hover, a:hover, [role='button']:hover, input:hover, textarea:hover, select:hover, .cursor-pointer:hover) .custom-cursor::before {
      transform: translate(-50%, -50%) scale(0);
   }
   
-  body:has(button:hover, a:hover, [role='button']:hover, input:hover, textarea:hover, select:hover, .cursor-pointer:hover) .custom-cursor::after {
+  body.custom-cursor-enabled:has(button:hover, a:hover, [role='button']:hover, input:hover, textarea:hover, select:hover, .cursor-pointer:hover) .custom-cursor::after {
     height: 48px;
     width: 48px;
     border-color: var(--cursor-primary);
