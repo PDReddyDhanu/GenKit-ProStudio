@@ -7,6 +7,14 @@ export interface UserProfileData {
   workStyle?: string[];
 }
 
+export interface Notification {
+  id: string;
+  message: string;
+  link: string; // e.g., /support/tickets/ticket-id
+  timestamp: number;
+  isRead: boolean;
+}
+
 export interface User extends UserProfileData {
   id: string;
   email: string;
@@ -14,6 +22,7 @@ export interface User extends UserProfileData {
   status: 'pending' | 'approved';
   guidanceHistory?: ChatMessage[];
   teamId?: string; // Added to easily find a user's team
+  notifications?: Notification[];
 }
 
 export interface Hackathon {
@@ -83,7 +92,7 @@ export interface Score {
   criteria: string;
   value: number; // e.g., 1-10
   comment: string;
-  memberId?: string; // Optional: To score individual members
+  memberId?: string; // Optional: to score individual members
 }
 
 export interface Announcement {
@@ -94,6 +103,15 @@ export interface Announcement {
   expiresAt?: number; // Optional: when the announcement is hidden
   hackathonId?: string; // Optional: scope announcements to a hackathon
 }
+
+export interface SupportTicketResponse {
+    id: string;
+    adminName: string;
+    adminId: string;
+    message: string;
+    timestamp: number;
+}
+
 
 export interface SupportTicket {
     id: string;
@@ -108,6 +126,7 @@ export interface SupportTicket {
     priority: 'Low' | 'Medium' | 'High';
     suggestedResponse: string;
     hackathonId: string | null;
+    responses?: SupportTicketResponse[];
 }
 
 

@@ -7,13 +7,100 @@ import type { SupportTicket } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { LifeBuoy, AlertTriangle, Wand2, Loader } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { LifeBuoy, AlertTriangle, Wand2, Loader, MessageSquare } from 'lucide-react';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { generateSupportResponse } from '@/app/actions';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { marked } from 'marked';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+
+const ReplyDialog = ({ ticket, open, onOpenChange }: { ticket: SupportTicket; open: boolean; onOpenChange: (open: boolean) => void }) => {
+    const { api, state } = useHackathon();
+    const { currentAdmin, currentJudge } = state;
+    const adminUser = currentAdmin ? {id: "admin", name: "Admin"} : currentJudge;
+    
+    const [response, setResponse] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [isAiLoading, setIsAiLoading] = useState(false);
+
+    const handleGenerateAiResponse = async () => {
+        setIsAiLoading(true);
+        try {
+            const result = await generateSupportResponse({
+                subject: ticket.subject,
+                question: ticket.question,
+                category: ticket.category,
+            });
+            if(result?.resolution) {
+                setResponse(result.resolution);
+            }
+        } catch (error) {
+            console.error("Failed to generate AI response", error);
+        } finally {
+            setIsAiLoading(false);
+        }
+    };
+    
+    const handleSendReply = async () => {
+        if (!response.trim() || !adminUser) return;
+        setIsLoading(true);
+        try {
+            await api.sendSupportResponse(ticket.id, adminUser, response);
+            onOpenChange(false);
+            setResponse('');
+        } catch(error) {
+            console.error("Failed to send reply", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>Reply to Ticket #{ticket.id.substring(0, 8)}...</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <Card className="bg-muted/50">
+                        <CardHeader>
+                           <CardTitle className="text-base">{ticket.subject}</CardTitle>
+                           <CardDescription>From: {ticket.studentName} - {format(new Date(ticket.submittedAt), 'PPP p')}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm">{ticket.question}</p>
+                        </CardContent>
+                    </Card>
+                    <div className="space-y-2">
+                        <Label htmlFor="response-message">Your Response</Label>
+                        <Textarea 
+                            id="response-message"
+                            rows={10}
+                            value={response}
+                            onChange={(e) => setResponse(e.target.value)}
+                            placeholder="Write your detailed response here... (Markdown is supported)"
+                            disabled={isLoading}
+                        />
+                    </div>
+                     <div className="flex flex-col sm:flex-row gap-2">
+                        <Button variant="outline" onClick={handleGenerateAiResponse} disabled={isAiLoading || isLoading}>
+                            {isAiLoading ? <Loader className="mr-2 h-4 w-4 animate-spin"/> : <Wand2 className="mr-2 h-4 w-4" />}
+                            Use AI to Draft Response
+                        </Button>
+                         <Button onClick={handleSendReply} disabled={isLoading || !response.trim()}>
+                            {isLoading ? <Loader className="mr-2 h-4 w-4 animate-spin"/> : null}
+                            Send Response
+                        </Button>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 
 const TicketCard = ({ ticket, onUpdateStatus }: { ticket: SupportTicket, onUpdateStatus: (ticketId: string, status: SupportTicket['status']) => void }) => {
     const priorityColors: Record<SupportTicket['priority'], string> = {
@@ -22,35 +109,10 @@ const TicketCard = ({ ticket, onUpdateStatus }: { ticket: SupportTicket, onUpdat
         'High': 'bg-red-500/20 text-red-300',
     };
     
-    const [isHelpLoading, setIsHelpLoading] = useState(false);
-    const [helpResponse, setHelpResponse] = useState<string | null>(null);
-    const [isHelpDialogOpen, setIsHelpDialogOpen] = useState(false);
-
-    const handleGetHelp = async () => {
-        setIsHelpLoading(true);
-        setHelpResponse(null);
-        try {
-            const result = await generateSupportResponse({
-                subject: ticket.subject,
-                question: ticket.question,
-                category: ticket.category,
-            });
-            if (result) {
-                setHelpResponse(result.resolution);
-                setIsHelpDialogOpen(true);
-            }
-        } catch (error) {
-            console.error("Failed to get AI help:", error);
-            setHelpResponse("Sorry, couldn't get a suggestion at this time.");
-            setIsHelpDialogOpen(true);
-        } finally {
-            setIsHelpLoading(false);
-        }
-    };
-
+    const [isReplyOpen, setIsReplyOpen] = useState(false);
 
     return (
-        <Dialog open={isHelpDialogOpen} onOpenChange={setIsHelpDialogOpen}>
+        <>
             <Card className="mb-4">
                 <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
@@ -87,24 +149,14 @@ const TicketCard = ({ ticket, onUpdateStatus }: { ticket: SupportTicket, onUpdat
                                 </SelectContent>
                             </Select>
                         </div>
-                        <Button variant="outline" size="sm" onClick={handleGetHelp} disabled={isHelpLoading}>
-                           {isHelpLoading ? <Loader className="mr-2 h-4 w-4 animate-spin"/> : <Wand2 className="mr-2 h-4 w-4" />} Get AI Help
+                        <Button variant="outline" size="sm" onClick={() => setIsReplyOpen(true)}>
+                           <MessageSquare className="mr-2 h-4 w-4" /> Reply to Student
                         </Button>
                     </div>
                 </CardContent>
             </Card>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>AI-Powered Resolution for: "{ticket.subject}"</DialogTitle>
-                </DialogHeader>
-                <ScrollArea className="max-h-[60vh] pr-6">
-                    <div
-                        className="prose dark:prose-invert max-w-none"
-                        dangerouslySetInnerHTML={{ __html: marked(helpResponse || '') as string }}
-                    />
-                </ScrollArea>
-            </DialogContent>
-        </Dialog>
+            <ReplyDialog ticket={ticket} open={isReplyOpen} onOpenChange={setIsReplyOpen} />
+        </>
     )
 }
 

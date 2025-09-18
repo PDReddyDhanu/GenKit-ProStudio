@@ -65,7 +65,7 @@ export async function getGuidance(input: FetchGuidanceInfoInput): Promise<string
     }
 }
 
-export async function generateProjectImage(input: GenerateProjectImageInput): Promise<string | null> {
+export async function generateProjectImageAction(input: GenerateProjectImageInput): Promise<string | null> {
     try {
         const result = await generateProjectImageFlow(input);
         return result.imageUrl;

@@ -15,12 +15,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StatusChecker from './_components/StatusChecker';
 import { generateSupportResponse } from '@/app/actions';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { marked } from 'marked';
+import Link from 'next/link';
 
 export default function SupportPage() {
-    const { state, api, dispatch } = useHackathon();
+    const { state, api } = useHackathon();
     const { currentUser, hackathons } = state;
     const [showIntro, setShowIntro] = useState(true);
     
@@ -112,9 +113,10 @@ export default function SupportPage() {
                 </div>
                 
                 <Tabs defaultValue="submit" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="submit">Submit a Ticket</TabsTrigger>
                         <TabsTrigger value="status">Check Status</TabsTrigger>
+                        <TabsTrigger value="history">My Tickets</TabsTrigger>
                     </TabsList>
                     <TabsContent value="submit" className="mt-6">
                         <Card>
@@ -168,6 +170,19 @@ export default function SupportPage() {
                     </TabsContent>
                     <TabsContent value="status" className="mt-6">
                         <StatusChecker />
+                    </TabsContent>
+                    <TabsContent value="history" className="mt-6">
+                         <Card>
+                            <CardHeader>
+                                <CardTitle className="font-headline">My Ticket History</CardTitle>
+                                <CardDescription>View all your past and current support tickets.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-center text-muted-foreground">
+                                    Click <Link href="/support/tickets" className="text-primary underline">here</Link> to view your full ticket history.
+                                </p>
+                            </CardContent>
+                        </Card>
                     </TabsContent>
                 </Tabs>
             </div>

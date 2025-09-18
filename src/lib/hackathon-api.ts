@@ -28,7 +28,7 @@ import {
     orderBy,
     limit
 } from 'firebase/firestore';
-import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember, SupportTicket } from './types';
+import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportTicketResponse } from './types';
 import { JUDGING_RUBRIC, INDIVIDUAL_JUDGING_RUBRIC } from './constants';
 import { generateProjectImage } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
@@ -106,6 +106,7 @@ export async function registerStudent(collegeId: string, { name, email, password
             github: '',
             linkedin: '',
             workStyle: [],
+            notifications: [],
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
         await firebaseSignOut(auth); // Sign out immediately after registration
@@ -217,7 +218,7 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             name,
             email,
             status: 'approved',
-            skills: [], bio: '', github: '', linkedin: '', workStyle: []
+            skills: [], bio: '', github: '', linkedin: '', workStyle: [], notifications: []
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
@@ -657,6 +658,7 @@ export async function submitSupportTicket(collegeId: string, ticketData: Omit<Su
         ...ticketData,
         submittedAt: Date.now(),
         status: 'New',
+        responses: [],
         ...triageResult
     };
 
@@ -667,4 +669,53 @@ export async function submitSupportTicket(collegeId: string, ticketData: Omit<Su
 export async function updateSupportTicketStatus(collegeId: string, ticketId: string, status: SupportTicket['status']) {
     await updateDoc(doc(db, `colleges/${collegeId}/supportTickets`, ticketId), { status });
     return { successMessage: "Ticket status updated." };
+}
+
+export async function sendSupportResponse(collegeId: string, ticketId: string, admin: User | Judge, message: string) {
+    const ticketRef = doc(db, `colleges/${collegeId}/supportTickets`, ticketId);
+    const ticketDoc = await getDoc(ticketRef);
+    if (!ticketDoc.exists()) throw new Error("Ticket not found.");
+    const ticket = ticketDoc.data() as SupportTicket;
+    
+    const response: SupportTicketResponse = {
+        id: doc(collection(db, 'dummy')).id,
+        adminId: admin.id,
+        adminName: admin.name,
+        message,
+        timestamp: Date.now(),
+    };
+
+    await updateDoc(ticketRef, {
+        responses: arrayUnion(response),
+        status: 'In Progress' // Automatically move to in progress on reply
+    });
+
+    // Create a notification for the student
+    const studentRef = doc(db, `colleges/${collegeId}/users`, ticket.studentId);
+    const notification = {
+        id: doc(collection(db, 'dummy')).id,
+        message: `Admin ${admin.name.split(' ')[0]} replied to your ticket: "${ticket.subject}"`,
+        link: `/support/tickets/${ticketId}`,
+        timestamp: Date.now(),
+        isRead: false,
+    };
+    await updateDoc(studentRef, {
+        notifications: arrayUnion(notification)
+    });
+
+    return { successMessage: "Response sent to student." };
+}
+
+export async function markNotificationsAsRead(collegeId: string, userId: string, notificationIds: string[]) {
+    const userRef = doc(db, `colleges/${collegeId}/users`, userId);
+    const userDoc = await getDoc(userRef);
+    if (!userDoc.exists()) throw new Error("User not found");
+
+    const user = userDoc.data() as User;
+    const updatedNotifications = (user.notifications || []).map(n => 
+        notificationIds.includes(n.id) ? { ...n, isRead: true } : n
+    );
+
+    await updateDoc(userRef, { notifications: updatedNotifications });
+    return { successMessage: "Notifications marked as read." };
 }

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, Menu, LogOut, Building2, User, UserCircle, LifeBuoy } from 'lucide-react';
+import { Trophy, Rss, Menu, LogOut, Building2, User, UserCircle, LifeBuoy, Bell } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -23,6 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Separator } from '../ui/separator';
 
 
 const NavLink = ({ href, children, onClick }: { href: string; children: React.ReactNode; onClick?: () => void }) => {
@@ -39,7 +40,7 @@ export function Header() {
     const { state, api, dispatch } = useHackathon();
     const { announcements, currentUser, currentJudge, currentAdmin } = state;
     const router = useRouter();
-    const [hasUnread, setHasUnread] = useState(false);
+    const [hasUnreadAnnouncements, setHasUnreadAnnouncements] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const activeAnnouncements = useMemo(() => {
@@ -52,11 +53,15 @@ export function Header() {
             })
             .sort((a, b) => (b.publishAt || b.timestamp) - (a.publishAt || a.timestamp));
     }, [announcements]);
+    
+    const unreadNotifications = useMemo(() => {
+        return currentUser?.notifications?.filter(n => !n.isRead) || [];
+    }, [currentUser?.notifications]);
 
     useEffect(() => {
         const lastViewed = localStorage.getItem('lastViewedAnnouncement');
         if (activeAnnouncements.length > 0 && activeAnnouncements[0].id !== lastViewed) {
-            setHasUnread(true);
+            setHasUnreadAnnouncements(true);
         }
     }, [activeAnnouncements]);
 
@@ -73,15 +78,25 @@ export function Header() {
     }
     
     const handleAnnouncementsOpen = () => {
-        setHasUnread(false);
+        setHasUnreadAnnouncements(false);
         if (activeAnnouncements.length > 0) {
             localStorage.setItem('lastViewedAnnouncement', activeAnnouncements[0].id);
+        }
+    };
+
+    const handleNotificationsOpen = async () => {
+        if (unreadNotifications.length > 0 && currentUser) {
+            const ids = unreadNotifications.map(n => n.id);
+            await api.markNotificationsAsRead(currentUser.id, ids);
         }
     };
     
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
     
     const loggedInUser = currentUser || currentJudge || currentAdmin;
+    const sortedNotifications = useMemo(() => {
+        return [...(currentUser?.notifications || [])].sort((a, b) => b.timestamp - a.timestamp);
+    }, [currentUser?.notifications]);
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -106,7 +121,7 @@ export function Header() {
                         <SheetTrigger asChild>
                              <Button variant="ghost" size="icon" className="relative">
                                 <Rss className="h-5 w-5" />
-                                {hasUnread && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />}
+                                {hasUnreadAnnouncements && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />}
                                 <span className="sr-only">View Announcements</span>
                             </Button>
                         </SheetTrigger>
@@ -127,6 +142,38 @@ export function Header() {
                         </SheetContent>
                     </Sheet>
                     
+                    {currentUser && (
+                         <DropdownMenu onOpenChange={(open) => open && handleNotificationsOpen()}>
+                            <DropdownMenuTrigger asChild>
+                                 <Button variant="ghost" size="icon" className="relative">
+                                    <Bell className="h-5 w-5" />
+                                    {unreadNotifications.length > 0 && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />}
+                                    <span className="sr-only">View Notifications</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-80">
+                                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {sortedNotifications.length > 0 ? (
+                                    sortedNotifications.slice(0, 5).map(n => (
+                                        <DropdownMenuItem key={n.id} asChild className="flex flex-col items-start gap-1 whitespace-normal">
+                                            <Link href={n.link}>
+                                                <p className={`text-sm ${!n.isRead ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{n.message}</p>
+                                                <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(n.timestamp), { addSuffix: true })}</p>
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    ))
+                                ) : (
+                                    <DropdownMenuItem disabled>No new notifications</DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                    <Link href="/support/tickets" className="justify-center">View All Tickets</Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+
                     <ThemeToggle />
 
                     {!loggedInUser && (
