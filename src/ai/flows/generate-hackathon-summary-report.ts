@@ -31,7 +31,7 @@ export async function generateHackathonReport(input: GenerateHackathonReportInpu
 
 const prompt = ai.definePrompt({
   name: 'generateHackathonReportPrompt',
-  input: {schema: GenerateHackathonReportInputSchema},
+  input: {schema: z.any()}, // Use z.any() because we are transforming the input before passing it to the prompt.
   output: {schema: GenerateHackathonReportOutputSchema},
   prompt: `You are an AI assistant tasked with generating a comprehensive and engaging summary report for a college hackathon.
 The output must be a single, well-formatted Markdown string.
@@ -43,17 +43,21 @@ The output must be a single, well-formatted Markdown string.
 - Total Teams: {{{teams.length}}}
 - Total Projects Submitted: {{{projects.length}}}
 
-**Projects and Teams Information (JSON):**
-\`\`\`json
-{{jsonStringify projects}}
-\`\`\`
+**Ranked Projects Information:**
+{{#each projects}}
+- **Project:** {{projectName}}
+  - **Team:** {{teamName}}
+  - **Description:** "{{description}}"
+  - **Score:** {{score}}
+{{/each}}
+
 
 **Your Task:**
 Generate a markdown report that includes the following sections:
 
 1.  **Executive Summary:** A short, engaging paragraph summarizing the event's energy, participation, and overall success.
 2.  **Key Statistics:** A bulleted list with key numbers (e.g., Number of Participants, Number of Teams, Number of Projects).
-3.  **Winning Teams:** A section announcing the top 3 winners. For each winner, list their **Rank**, **Team Name**, **Project Name**, and **Final Score**.
+3.  **Winning Teams:** Announce the top 3 winners based on the **Ranked Projects Information** above. For each winner, list their **Rank**, **Team Name**, **Project Name**, and **Final Score**.
 4.  **Project Highlights & Trends:** Analyze the submitted projects. Identify 2-3 interesting trends or standout project ideas (even if they didn't win) and briefly describe them. This shows a deeper engagement with the submissions.
 5.  **Conclusion:** A concluding paragraph that thanks all participants and looks forward to the next event.
 
@@ -68,23 +72,27 @@ const generateHackathonReportFlow = ai.defineFlow(
     outputSchema: GenerateHackathonReportOutputSchema,
   },
   async input => {
-    // Sort projects by score to find winners
-    const rankedProjects = [...input.projects].sort((a, b) => b.averageScore - a.averageScore);
+    // Sort projects by score to find winners and create a simplified object for the prompt
+    const rankedProjects = [...input.projects]
+        .sort((a, b) => b.averageScore - a.averageScore)
+        .map(p => {
+            const team = input.teams.find(t => t.id === p.teamId);
+            return {
+                projectName: p.name,
+                teamName: team?.name || "Unknown Team",
+                description: p.description,
+                score: p.averageScore.toFixed(2),
+            };
+        });
     
-    const processedInput = {
-      ...input,
-      projects: rankedProjects.map(p => {
-          const team = input.teams.find(t => t.id === p.teamId);
-          return {
-              projectName: p.name,
-              teamName: team?.name,
-              description: p.description,
-              score: p.averageScore,
-          }
-      })
+    // Construct the object that the prompt expects
+    const promptInput = {
+      hackathon: input.hackathon,
+      teams: input.teams,
+      projects: rankedProjects, // Pass the simplified, sorted array
     };
 
-    const {output} = await prompt(processedInput);
+    const {output} = await prompt(promptInput);
     return output!;
   }
 );
