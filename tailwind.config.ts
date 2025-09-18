@@ -139,9 +139,17 @@ export default {
           from: { backgroundPosition: '0 0' },
           to: { backgroundPosition: '0 200px' },
         },
-        'line-draw': {
-          'from': { 'stroke-dashoffset': '1000' },
+        'road-draw': {
+          'from': { 'stroke-dashoffset': '2000' },
           'to': { 'stroke-dashoffset': '0' },
+        },
+        'car-move': {
+            'from': { 'offset-distance': '0%' },
+            'to': { 'offset-distance': '100%' },
+        },
+        'step-fade-in': {
+            'from': { opacity: '0', transform: 'scale(0.9)' },
+            'to': { opacity: '1', transform: 'scale(1)' },
         }
       },
       animation: {
@@ -158,9 +166,13 @@ export default {
         'credits-fade-in': 'credits-fade-in 4s ease-out forwards',
         'slow-float': 'slow-float 12s ease-in-out infinite',
         'stars': 'stars 10s linear infinite',
-        'line-draw': 'line-draw 2s ease-out forwards',
+        'road-draw': 'road-draw 10s linear forwards',
+        'car-move': 'car-move 10s linear forwards',
+        'step-fade-in': 'step-fade-in 0.5s ease-out forwards',
       },
     },
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
+
+    

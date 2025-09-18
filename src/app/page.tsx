@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle } from "lucide-react";
+import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Car } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo } from 'react';
@@ -79,13 +79,63 @@ const testimonials = [
   },
 ];
 
+const HowItWorksAnimation = () => {
+    const steps = [
+        { title: "Sign Up", description: "Register as a student for your college's event.", icon: <User className="w-6 h-6" />, position: { top: '8%', left: '10%' } },
+        { title: "Form Team", description: "Create a new team or join an existing one with a code.", icon: <Users className="w-6 h-6" />, position: { top: '40%', left: '85%' } },
+        { title: "Build & Submit", description: "Use AI tools, collaborate, and submit your project.", icon: <Code className="w-6 h-6" />, position: { top: '70%', left: '15%' } },
+        { title: "Compete & Win", description: "Get judged, climb the leaderboard, and win prizes!", icon: <Trophy className="w-6 h-6" />, position: { top: '92%', left: '90%' } },
+    ];
+
+    return (
+        <div className="relative w-full max-w-4xl mx-auto h-[400px] md:h-[500px]">
+            {/* The SVG Road */}
+            <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                <path 
+                    d="M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380" 
+                    fill="none" 
+                    stroke="hsl(var(--border))" 
+                    strokeWidth="3" 
+                    strokeDasharray="10 5"
+                    className="animate-road-draw"
+                />
+                 {/* The Car */}
+                <g className="animate-car-move">
+                    <Car className="w-8 h-8 text-primary" style={{ filter: 'drop-shadow(0 2px 4px hsl(var(--primary)/0.5))' }} />
+                </g>
+            </svg>
+
+            {/* The Steps */}
+            {steps.map((step, index) => (
+                <div 
+                    key={index}
+                    className="absolute p-4 max-w-[200px] rounded-lg bg-card/80 backdrop-blur-sm border border-border shadow-lg animate-step-fade-in"
+                    style={{ 
+                        top: step.position.top, 
+                        left: step.position.left, 
+                        animationDelay: `${index * 2 + 1}s` 
+                    }}
+                >
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground flex-shrink-0">
+                           {step.icon}
+                        </div>
+                        <h4 className="font-bold font-headline text-lg">{step.title}</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{step.description}</p>
+                </div>
+            ))}
+        </div>
+    );
+};
+
 
 export default function Home() {
   const { state } = useHackathon();
   const { selectedCollege } = state;
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-x-hidden">
         <section className="min-h-screen flex flex-col justify-center items-center text-center animate-fade-in">
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent font-headline animate-slide-in-down">
                 Welcome to HackSprint
@@ -127,43 +177,7 @@ export default function Home() {
 
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">How It Works</h2>
-             <div className="relative grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-                {/* Dashed lines connecting the steps - visible on medium screens and up */}
-                <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 -translate-y-16">
-                    <svg width="100%" height="100%" preserveAspectRatio="none">
-                         <line x1="0" y1="0" x2="100%" y2="0" stroke="hsl(var(--border))" strokeWidth="2" strokeDasharray="8 8" className="animate-line-draw" />
-                    </svg>
-                </div>
-                
-                <div className="flex flex-col items-center">
-                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4 z-10">
-                        <span className="text-3xl font-bold text-primary">1</span>
-                    </div>
-                    <h3 className="font-bold text-lg font-headline">Sign Up</h3>
-                    <p className="text-sm text-muted-foreground">Register as a student for your college's event.</p>
-                </div>
-                 <div className="flex flex-col items-center">
-                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4 z-10">
-                        <span className="text-3xl font-bold text-primary">2</span>
-                    </div>
-                    <h3 className="font-bold text-lg font-headline">Form Your Team</h3>
-                    <p className="text-sm text-muted-foreground">Create a new team or join an existing one with a code.</p>
-                </div>
-                 <div className="flex flex-col items-center">
-                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4 z-10">
-                        <span className="text-3xl font-bold text-primary">3</span>
-                    </div>
-                    <h3 className="font-bold text-lg font-headline">Build & Submit</h3>
-                    <p className="text-sm text-muted-foreground">Use AI tools, collaborate, and submit your project.</p>
-                </div>
-                 <div className="flex flex-col items-center">
-                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4 z-10">
-                        <span className="text-3xl font-bold text-primary">4</span>
-                    </div>
-                    <h3 className="font-bold text-lg font-headline">Compete & Win</h3>
-                    <p className="text-sm text-muted-foreground">Get judged, climb the leaderboard, and win prizes!</p>
-                </div>
-             </div>
+             <HowItWorksAnimation />
         </section>
 
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
@@ -234,3 +248,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
