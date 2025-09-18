@@ -4,7 +4,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Car, User, Shield, Server } from "lucide-react";
+import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Car, User, Shield, Server, Search, CodeXml } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo } from 'react';
@@ -217,6 +217,60 @@ export default function Home() {
                  </Card>
              </div>
          </section>
+
+        <section className="py-24 scroll-m-20" data-animate-on-scroll>
+             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Meet Your AI Co-pilot</h2>
+             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">HackSprint integrates powerful AI tools at every stage of your hackathon journey, acting as your personal assistant to help you succeed.</p>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                 <div className="relative flex justify-center items-center">
+                     <svg width="300" height="300" viewBox="0 0 200 200" className="opacity-20 absolute -z-10">
+                        <circle cx="100" cy="100" r="100" fill="hsl(var(--primary)/0.2)" />
+                     </svg>
+                     <svg width="250" height="250" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_15px_hsl(var(--primary))]">
+                        <path d="M 65,5 L 85,5 C 90,5 95,10 95,15 L 95,35" stroke="hsl(var(--primary))" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
+                        <path d="M 35,95 L 15,95 C 10,95 5,90 5,85 L 5,65" stroke="hsl(var(--primary))" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
+                        <g transform="translate(15 15)">
+                            <path d="M 45.42,26.6 C 45.42,26.6 42.62,29.1 35.82,29.1 C 29.02,29.1 27.92,26.8 27.92,23.1 C 27.92,19.4 30.12,15.8 35.32,14.6 C 40.52,13.4 45.42,12.1 45.42,9.1 C 45.42,6.1 43.42,4.6 38.82,4.6 C 34.22,4.6 30.12,6.1 30.12,6.1" fill="none" stroke="hsl(var(--primary))" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M 37.92,29.1 L 37.92,3.1" fill="none" stroke="hsl(var(--primary))" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </g>
+                        <path d="M 50,50 m -18,0 a 18,18 0 1,0 36,0 a 18,18 0 1,0 -36,0" fill="hsl(var(--primary))" />
+                        <path d="M50,35c-2.4,0-4.7,0.3-6.9,0.9c-2.5,0.7-4.8,1.9-6.7,3.4c-1.9,1.6-3.4,3.5-4.4,5.7c-1,2.2-1.5,4.6-1.5,7c0,5.5,2.2,10.5,5.9,14.1c3.7,3.7,8.6,5.9,14.1,5.9s10.5-2.2,14.1-5.9c3.7-3.7,5.9-8.6,5.9-14.1c0-2.4-0.5-4.8-1.5-7c-1-2.2-2.5-4.2-4.4-5.7c-1.9-1.6-4.2-2.8-6.7-3.4C54.7,35.3,52.4,35,50,35z M50,38c4.6,0,8.9,1.8,12,5.1c3.2,3.2,5,7.4,5,12c0,1.9-0.4,3.8-1.1,5.5c-0.7,1.7-1.8,3.2-3.1,4.5c-1.3,1.3-2.8,2.4-4.5,3.1c-1.7,0.7-3.5,1.1-5.5,1.1s-3.8-0.4-5.5-1.1c-1.7-0.7-3.2-1.8-4.5-3.1c-1.3-1.3-2.4-2.8-3.1-4.5c-0.7-1.7-1.1-3.5-1.1-5.5c0-4.6,1.8-8.9,5.1-12C41.1,39.8,45.4,38,50,38z" fill="hsl(var(--background))"/>
+                        <circle cx="50" cy="50" r="3" fill="hsl(var(--background))"/>
+                        <path d="M42,42c-1.1-1.1-2.5-1.9-4-2.4" stroke="hsl(var(--background))" stroke-width="1.5" fill="none"/>
+                        <path d="M58,58c1.1,1.1,2.5,1.9,4,2.4" stroke="hsl(var(--background))" stroke-width="1.5" fill="none"/>
+                    </svg>
+                 </div>
+                 <div className="space-y-8">
+                     <div className="flex gap-4 items-start">
+                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                             <Lightbulb className="w-5 h-5 text-primary" />
+                         </div>
+                         <div>
+                            <h4 className="font-bold text-lg font-headline">Ideate & Plan</h4>
+                            <p className="text-muted-foreground mt-1">Stuck for an idea? Use the AI Idea Generator. Need a presentation structure? The AI Pitch Coach has you covered.</p>
+                         </div>
+                     </div>
+                      <div className="flex gap-4 items-start">
+                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                             <UsersRound className="w-5 h-5 text-primary" />
+                         </div>
+                         <div>
+                            <h4 className="font-bold text-lg font-headline">Find Your Team</h4>
+                            <p className="text-muted-foreground mt-1">Our AI Matchmaker analyzes skills and work styles to suggest the most compatible teammates for you.</p>
+                         </div>
+                     </div>
+                      <div className="flex gap-4 items-start">
+                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                             <CodeXml className="w-5 h-5 text-primary" />
+                         </div>
+                         <div>
+                            <h4 className="font-bold text-lg font-headline">Review & Refine</h4>
+                            <p className="text-muted-foreground mt-1">Get instant, automated feedback on your code quality with our AI Code Reviewer, helping you fix issues before submission.</p>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+        </section>
 
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">A Feature for Every Step</h2>
