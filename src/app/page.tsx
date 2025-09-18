@@ -3,9 +3,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound } from "lucide-react";
+import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useMemo } from 'react';
+import { useHackathon } from "@/context/HackathonProvider";
 
 const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
     <div 
@@ -59,8 +61,41 @@ const partners = [
     { name: 'Cisco', logo: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg' },
 ];
 
+const testimonials = [
+  {
+    quote: "HackSprint's AI tools gave our team the edge we needed. The code review was like having a senior dev on call 24/7!",
+    name: "Aarav Sharma",
+    role: "Winning Student, CodeCrafters",
+  },
+  {
+    quote: "As a judge, the AI-generated summaries were a game-changer. I could grasp the core of each project instantly, making the scoring process faster and fairer.",
+    name: "Priya Menon",
+    role: "Hackathon Judge",
+  },
+  {
+    quote: "Managing the entire event was seamless. The admin dashboard gave me a bird's-eye view of everything, from registrations to final reports.",
+    name: "Dr. Rajesh Kumar",
+    role: "Faculty Coordinator",
+  },
+];
+
 
 export default function Home() {
+  const { state } = useHackathon();
+  const { selectedCollege } = state;
+
+  const stats = useMemo(() => {
+    // In a real app, these would be fetched or calculated.
+    // Here we simulate them for display purposes.
+    const collegeHash = selectedCollege ? selectedCollege.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 1;
+    return {
+      participants: 800 + (collegeHash % 200),
+      projects: 150 + (collegeHash % 50),
+      prizes: 250000 + (collegeHash % 10000),
+    }
+  }, [selectedCollege]);
+
+
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
         <section className="text-center min-h-[60vh] flex flex-col justify-center items-center">
@@ -77,6 +112,23 @@ export default function Home() {
                 <Button size="lg" variant="secondary" asChild>
                    <Link href="/judge">Enter as Judge or Admin</Link>
                 </Button>
+            </div>
+        </section>
+
+        <section className="py-24">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div className="animate-card-in">
+                    <p className="text-5xl font-bold text-primary">{stats.participants.toLocaleString()}+</p>
+                    <p className="text-muted-foreground mt-2 font-headline">Total Participants</p>
+                </div>
+                <div className="animate-card-in" style={{animationDelay: '200ms'}}>
+                    <p className="text-5xl font-bold text-secondary">{stats.projects.toLocaleString()}+</p>
+                    <p className="text-muted-foreground mt-2 font-headline">Projects Submitted</p>
+                </div>
+                <div className="animate-card-in" style={{animationDelay: '400ms'}}>
+                    <p className="text-5xl font-bold text-accent">₹{stats.prizes.toLocaleString()}+</p>
+                    <p className="text-muted-foreground mt-2 font-headline">In Prizes Awarded</p>
+                </div>
             </div>
         </section>
         
@@ -103,6 +155,40 @@ export default function Home() {
         </section>
 
         <section className="py-24">
+             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">How It Works</h2>
+             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+                <div className="flex flex-col items-center animate-card-in">
+                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4">
+                        <span className="text-3xl font-bold text-primary">1</span>
+                    </div>
+                    <h3 className="font-bold text-lg font-headline">Sign Up</h3>
+                    <p className="text-sm text-muted-foreground">Register as a student for your college's event.</p>
+                </div>
+                 <div className="flex flex-col items-center animate-card-in" style={{animationDelay: '200ms'}}>
+                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4">
+                        <span className="text-3xl font-bold text-primary">2</span>
+                    </div>
+                    <h3 className="font-bold text-lg font-headline">Form Your Team</h3>
+                    <p className="text-sm text-muted-foreground">Create a new team or join an existing one with a code.</p>
+                </div>
+                 <div className="flex flex-col items-center animate-card-in" style={{animationDelay: '400ms'}}>
+                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4">
+                        <span className="text-3xl font-bold text-primary">3</span>
+                    </div>
+                    <h3 className="font-bold text-lg font-headline">Build & Submit</h3>
+                    <p className="text-sm text-muted-foreground">Use AI tools, collaborate, and submit your project.</p>
+                </div>
+                 <div className="flex flex-col items-center animate-card-in" style={{animationDelay: '600ms'}}>
+                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4">
+                        <span className="text-3xl font-bold text-primary">4</span>
+                    </div>
+                    <h3 className="font-bold text-lg font-headline">Compete & Win</h3>
+                    <p className="text-sm text-muted-foreground">Get judged, climb the leaderboard, and win prizes!</p>
+                </div>
+             </div>
+        </section>
+
+        <section className="py-24">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">A Feature for Every Step</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 [perspective:1000px]">
                  {features.map((feature, index) => (
@@ -114,6 +200,23 @@ export default function Home() {
                         index={index}
                     />
                  ))}
+            </div>
+        </section>
+
+        <section className="py-24">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">What People Are Saying</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {testimonials.map((testimonial, index) => (
+                    <Card key={index} className="animate-card-in" style={{animationDelay: `${index * 150}ms`}}>
+                        <CardContent className="p-6">
+                            <p className="italic text-foreground">"{testimonial.quote}"</p>
+                            <div className="mt-4 text-right">
+                                <p className="font-bold font-headline">{testimonial.name}</p>
+                                <p className="text-sm text-primary">{testimonial.role}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
         </section>
 
