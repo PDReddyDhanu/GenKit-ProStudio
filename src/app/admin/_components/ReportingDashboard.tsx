@@ -9,6 +9,7 @@ import { Loader, Wand2, FileText, AlertTriangle, Download } from 'lucide-react';
 import { generateHackathonReport } from '@/app/actions';
 import { marked } from 'marked';
 import type { Hackathon } from '@/lib/types';
+import jsPDF from 'jspdf';
 
 interface ReportingDashboardProps {
     hackathon: Hackathon;
@@ -50,17 +51,25 @@ export default function ReportingDashboard({ hackathon }: ReportingDashboardProp
     const handleDownloadReport = () => {
         if (!report) return;
 
-        const blob = new Blob([report], { type: 'text/markdown;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        const filename = `${hackathon.name.replace(/\s/g, '_')}_Report.md`;
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 15;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text(`Hackathon Summary Report: ${hackathon.name}`, pageWidth / 2, 20, { align: 'center' });
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        
+        // Remove markdown for cleaner PDF text
+        const plainTextReport = report.replace(/#/g, '').replace(/\*/g, '');
+
+        const splitText = doc.splitTextToSize(plainTextReport, pageWidth - margin * 2);
+        doc.text(splitText, margin, 30);
+        
+        const filename = `${hackathon.name.replace(/\s/g, '_')}_Report.pdf`;
+        doc.save(filename);
     };
 
     return (
@@ -89,7 +98,7 @@ export default function ReportingDashboard({ hackathon }: ReportingDashboardProp
                     <CardHeader className="flex flex-row justify-between items-center">
                         <CardTitle className="font-headline flex items-center gap-2"><FileText /> Generated Report</CardTitle>
                         <Button variant="outline" size="sm" onClick={handleDownloadReport}>
-                            <Download className="mr-2 h-4 w-4"/> Download Report
+                            <Download className="mr-2 h-4 w-4"/> Download as PDF
                         </Button>
                     </CardHeader>
                     <CardContent>
