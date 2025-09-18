@@ -226,18 +226,50 @@ export default function Home() {
                      <svg width="300" height="300" viewBox="0 0 200 200" className="opacity-20 absolute -z-10">
                         <circle cx="100" cy="100" r="100" fill="hsl(var(--primary)/0.2)" />
                      </svg>
-                     <svg width="250" height="250" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_15px_hsl(var(--primary))]">
-                        <path d="M 65,5 L 85,5 C 90,5 95,10 95,15 L 95,35" stroke="hsl(var(--primary))" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
-                        <path d="M 35,95 L 15,95 C 10,95 5,90 5,85 L 5,65" stroke="hsl(var(--primary))" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
-                        <g transform="translate(15 15)">
-                            <path d="M 45.42,26.6 C 45.42,26.6 42.62,29.1 35.82,29.1 C 29.02,29.1 27.92,26.8 27.92,23.1 C 27.92,19.4 30.12,15.8 35.32,14.6 C 40.52,13.4 45.42,12.1 45.42,9.1 C 45.42,6.1 43.42,4.6 38.82,4.6 C 34.22,4.6 30.12,6.1 30.12,6.1" fill="none" stroke="hsl(var(--primary))" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M 37.92,29.1 L 37.92,3.1" fill="none" stroke="hsl(var(--primary))" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <svg width="250" height="250" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_15px_hsl(var(--primary))]">
+                        <defs>
+                            <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                <stop offset="0%" style={{stopColor: 'hsl(var(--secondary))', stopOpacity: 1}} />
+                                <stop offset="100%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 1}} />
+                            </radialGradient>
+                            <filter id="sunGlow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        
+                        <g filter="url(#sunGlow)">
+                            <circle cx="50" cy="50" r="20" fill="url(#sunGradient)" />
+                            
+                            {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => (
+                                <line 
+                                    key={angle}
+                                    x1="50" y1="50" 
+                                    x2={50 + 35 * Math.cos(angle * Math.PI / 180)} 
+                                    y2={50 + 35 * Math.sin(angle * Math.PI / 180)}
+                                    stroke="hsl(var(--primary))" 
+                                    strokeWidth="2.5" 
+                                    strokeLinecap="round"
+                                />
+                            ))}
+                            {[22.5, 67.5, 112.5, 157.5, 202.5, 247.5, 292.5, 337.5].map(angle => (
+                                <line 
+                                    key={angle}
+                                    x1="50" y1="50" 
+                                    x2={50 + 25 * Math.cos(angle * Math.PI / 180)} 
+                                    y2={50 + 25 * Math.sin(angle * Math.PI / 180)}
+                                    stroke="hsl(var(--secondary))" 
+                                    strokeWidth="2" 
+                                    strokeLinecap="round"
+                                />
+                            ))}
                         </g>
-                        <path d="M 50,50 m -18,0 a 18,18 0 1,0 36,0 a 18,18 0 1,0 -36,0" fill="hsl(var(--primary))" />
-                        <path d="M50,35c-2.4,0-4.7,0.3-6.9,0.9c-2.5,0.7-4.8,1.9-6.7,3.4c-1.9,1.6-3.4,3.5-4.4,5.7c-1,2.2-1.5,4.6-1.5,7c0,5.5,2.2,10.5,5.9,14.1c3.7,3.7,8.6,5.9,14.1,5.9s10.5-2.2,14.1-5.9c3.7-3.7,5.9-8.6,5.9-14.1c0-2.4-0.5-4.8-1.5-7c-1-2.2-2.5-4.2-4.4-5.7c-1.9-1.6-4.2-2.8-6.7-3.4C54.7,35.3,52.4,35,50,35z M50,38c4.6,0,8.9,1.8,12,5.1c3.2,3.2,5,7.4,5,12c0,1.9-0.4,3.8-1.1,5.5c-0.7,1.7-1.8,3.2-3.1,4.5c-1.3,1.3-2.8,2.4-4.5,3.1c-1.7,0.7-3.5,1.1-5.5,1.1s-3.8-0.4-5.5-1.1c-1.7-0.7-3.2-1.8-4.5-3.1c-1.3-1.3-2.4-2.8-3.1-4.5c-0.7-1.7-1.1-3.5-1.1-5.5c0-4.6,1.8-8.9,5.1-12C41.1,39.8,45.4,38,50,38z" fill="hsl(var(--background))"/>
-                        <circle cx="50" cy="50" r="3" fill="hsl(var(--background))"/>
-                        <path d="M42,42c-1.1-1.1-2.5-1.9-4-2.4" stroke="hsl(var(--background))" stroke-width="1.5" fill="none"/>
-                        <path d="M58,58c1.1,1.1,2.5,1.9,4,2.4" stroke="hsl(var(--background))" stroke-width="1.5" fill="none"/>
+
+                        <path d="M 40 30 Q 50 20 60 30 T 40 30" fill="hsl(var(--primary))" stroke="hsl(var(--secondary))" strokeWidth="1.5" />
+                        <circle cx="50" cy="50" r="4" fill="hsl(var(--background))" />
                     </svg>
                  </div>
                  <div className="space-y-8">
