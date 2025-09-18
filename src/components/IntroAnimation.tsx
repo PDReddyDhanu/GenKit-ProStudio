@@ -73,12 +73,12 @@ export default function IntroAnimation() {
             
             <div className="z-10 text-center animate-slow-zoom-in">
                 <Trophy className="h-16 w-16 mx-auto mb-4 text-primary animate-trophy-shine" style={{ filter: 'drop-shadow(0 0 20px hsl(var(--secondary)))' }}/>
-                <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-400 font-headline animate-title-reveal"
-                    style={{ textShadow: '0 0 10px rgba(255,255,255,0.7), 0 0 25px rgba(255, 202, 40, 0.6)'}}
+                <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-gray-400 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-gray-100 dark:to-gray-400 font-headline animate-title-reveal"
+                    style={{ textShadow: 'var(--intro-text-shadow, none)' }}
                 >
                     HackSprint
                 </h1>
-                <p className="text-sm text-gray-400 mt-4 opacity-0 animate-credits-fade-in">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 opacity-0 animate-credits-fade-in">
                     Developed By Dhanunjay Reddy Palakolanu
                 </p>
             </div>
