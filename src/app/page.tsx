@@ -11,7 +11,7 @@ import { useHackathon } from "@/context/HackathonProvider";
 
 const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
     <div 
-        className="group relative rounded-lg border border-border/40 bg-card/20 p-6 text-center transition-all duration-300 transform-gpu animate-card-in will-change-transform hover:[transform:perspective(1000px)_rotateX(var(--rotate-x,0))_rotateY(var(--rotate-y,0))_scale3d(1.05,1.05,1.05)]"
+        className="group rounded-lg border border-border/40 bg-card/20 p-6 text-center transition-all duration-300 transform-gpu animate-card-in will-change-transform hover:[transform:perspective(1000px)_rotateX(var(--rotate-x,0))_rotateY(var(--rotate-y,0))_scale3d(1.05,1.05,1.05)]"
         style={{ animationDelay: `${index * 100}ms` }}
         onMouseMove={(e) => {
             const card = e.currentTarget;
@@ -85,8 +85,8 @@ export default function Home() {
   const { selectedCollege } = state;
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
-        <section className="text-center min-h-[60vh] flex flex-col justify-center items-center">
+    <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="min-h-screen flex flex-col justify-center items-center text-center animate-fade-in">
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent font-headline animate-slide-in-down">
                 Welcome to HackSprint
             </h1>
@@ -103,21 +103,21 @@ export default function Home() {
             </div>
         </section>
 
-        <section className="py-24">
+        <section className="py-24 scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Why Choose HackSprint?</h2>
             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">An integrated platform designed to elevate your hackathon experience from start to finish.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <Card className="text-center p-6 animate-card-in">
+                <Card className="text-center p-6">
                     <BrainCircuit className="w-12 h-12 mx-auto mb-4 text-primary"/>
                     <h3 className="text-xl font-bold font-headline">AI-Powered Assistance</h3>
                     <p className="text-muted-foreground mt-2">Leverage cutting-edge AI for idea generation, code reviews, project summaries, and more.</p>
                 </Card>
-                <Card className="text-center p-6 animate-card-in" style={{animationDelay: '200ms'}}>
+                <Card className="text-center p-6">
                     <UsersRound className="w-12 h-12 mx-auto mb-4 text-primary"/>
                     <h3 className="text-xl font-bold font-headline">Seamless Collaboration</h3>
                     <p className="text-muted-foreground mt-2">Find teammates, manage your team, and communicate effectively all in one place.</p>
                 </Card>
-                 <Card className="text-center p-6 animate-card-in" style={{animationDelay: '400ms'}}>
+                 <Card className="text-center p-6">
                     <BarChart className="w-12 h-12 mx-auto mb-4 text-primary"/>
                     <h3 className="text-xl font-bold font-headline">Real-time Tracking</h3>
                     <p className="text-muted-foreground mt-2">Stay updated with a live leaderboard, announcements, and clear submission tracking.</p>
@@ -125,32 +125,39 @@ export default function Home() {
             </div>
         </section>
 
-        <section className="py-24">
+        <section className="py-24 scroll-m-20" data-animate-on-scroll>
              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">How It Works</h2>
-             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-                <div className="flex flex-col items-center animate-card-in">
-                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4">
+             <div className="relative grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+                {/* Dashed lines connecting the steps - visible on medium screens and up */}
+                <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 -translate-y-16">
+                    <svg width="100%" height="100%" preserveAspectRatio="none">
+                         <line x1="0" y1="0" x2="100%" y2="0" stroke="hsl(var(--border))" strokeWidth="2" strokeDasharray="8 8" className="animate-line-draw" />
+                    </svg>
+                </div>
+                
+                <div className="flex flex-col items-center">
+                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4 z-10">
                         <span className="text-3xl font-bold text-primary">1</span>
                     </div>
                     <h3 className="font-bold text-lg font-headline">Sign Up</h3>
                     <p className="text-sm text-muted-foreground">Register as a student for your college's event.</p>
                 </div>
-                 <div className="flex flex-col items-center animate-card-in" style={{animationDelay: '200ms'}}>
-                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4">
+                 <div className="flex flex-col items-center">
+                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4 z-10">
                         <span className="text-3xl font-bold text-primary">2</span>
                     </div>
                     <h3 className="font-bold text-lg font-headline">Form Your Team</h3>
                     <p className="text-sm text-muted-foreground">Create a new team or join an existing one with a code.</p>
                 </div>
-                 <div className="flex flex-col items-center animate-card-in" style={{animationDelay: '400ms'}}>
-                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4">
+                 <div className="flex flex-col items-center">
+                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4 z-10">
                         <span className="text-3xl font-bold text-primary">3</span>
                     </div>
                     <h3 className="font-bold text-lg font-headline">Build & Submit</h3>
                     <p className="text-sm text-muted-foreground">Use AI tools, collaborate, and submit your project.</p>
                 </div>
-                 <div className="flex flex-col items-center animate-card-in" style={{animationDelay: '600ms'}}>
-                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4">
+                 <div className="flex flex-col items-center">
+                    <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/50 mb-4 z-10">
                         <span className="text-3xl font-bold text-primary">4</span>
                     </div>
                     <h3 className="font-bold text-lg font-headline">Compete & Win</h3>
@@ -159,7 +166,7 @@ export default function Home() {
              </div>
         </section>
 
-        <section className="py-24">
+        <section className="py-24 scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">A Feature for Every Step</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 [perspective:1000px]">
                  {features.map((feature, index) => (
@@ -174,11 +181,11 @@ export default function Home() {
             </div>
         </section>
 
-        <section className="py-24">
+        <section className="py-24 scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">What People Are Saying</h2>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {testimonials.map((testimonial, index) => (
-                    <Card key={index} className="animate-card-in" style={{animationDelay: `${index * 150}ms`}}>
+                    <Card key={index}>
                         <CardContent className="p-6">
                             <p className="italic text-foreground">"{testimonial.quote}"</p>
                             <div className="mt-4 text-right">
@@ -191,7 +198,7 @@ export default function Home() {
             </div>
         </section>
 
-        <section className="py-24">
+        <section className="py-24 scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">Our Esteemed Partners</h2>
             <div className="bg-muted/50 rounded-lg p-8">
                  <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
@@ -210,7 +217,7 @@ export default function Home() {
             </div>
         </section>
 
-         <section className="py-24 text-center">
+         <section className="py-24 text-center scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold mb-4 font-headline">Ready to Start Hacking?</h2>
             <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
                 Join your college's next big event. Register as a student or sign in as a judge to begin.

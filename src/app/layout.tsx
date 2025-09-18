@@ -32,6 +32,21 @@ function AppContent({ children }: { children: React.ReactNode }) {
         return () => clearTimeout(timer);
       }
     }, [isInitialized]);
+    
+    useEffect(() => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.setAttribute('data-animate-on-scroll', 'true');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      const elements = document.querySelectorAll('[data-animate-on-scroll]');
+      elements.forEach(el => observer.observe(el));
+
+      return () => elements.forEach(el => observer.unobserve(el));
+    }, [children]); // Re-run when children change to catch new elements
 
     if (!isInitialized || (showIntro && !selectedCollege)) {
         return <IntroAnimation />;

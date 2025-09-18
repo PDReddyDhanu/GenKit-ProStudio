@@ -138,6 +138,10 @@ export default {
         'stars': {
           from: { backgroundPosition: '0 0' },
           to: { backgroundPosition: '0 200px' },
+        },
+        'line-draw': {
+          'from': { 'stroke-dashoffset': '1000' },
+          'to': { 'stroke-dashoffset': '0' },
         }
       },
       animation: {
@@ -154,6 +158,7 @@ export default {
         'credits-fade-in': 'credits-fade-in 4s ease-out forwards',
         'slow-float': 'slow-float 12s ease-in-out infinite',
         'stars': 'stars 10s linear infinite',
+        'line-draw': 'line-draw 2s ease-out forwards',
       },
     },
   },
