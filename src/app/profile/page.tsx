@@ -18,7 +18,7 @@ import { format } from 'date-fns';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WORK_STYLE_TAGS } from '@/lib/constants';
+import { WORK_STYLE_TAGS, SKILL_TAGS } from '@/lib/constants';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 
@@ -105,7 +105,7 @@ export default function ProfilePage() {
 
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(currentUser?.name || '');
-    const [skills, setSkills] = useState(currentUser?.skills?.join(', ') || '');
+    const [skills, setSkills] = useState<string[]>(currentUser?.skills || []);
     const [bio, setBio] = useState(currentUser?.bio || '');
     const [github, setGithub] = useState(currentUser?.github || '');
     const [linkedin, setLinkedin] = useState(currentUser?.linkedin || '');
@@ -132,7 +132,7 @@ export default function ProfilePage() {
     useEffect(() => {
       if(currentUser) {
         setName(currentUser.name);
-        setSkills(currentUser.skills?.join(', ') || '');
+        setSkills(currentUser.skills || []);
         setBio(currentUser.bio || '');
         setGithub(currentUser.github || '');
         setLinkedin(currentUser.linkedin || '');
@@ -188,7 +188,7 @@ export default function ProfilePage() {
         try {
             await api.updateProfile(currentUser.id, {
                 name,
-                skills: skills.split(',').map(s => s.trim()).filter(Boolean),
+                skills,
                 bio,
                 github,
                 linkedin,
@@ -205,6 +205,13 @@ export default function ProfilePage() {
             prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
         );
     }
+
+    const toggleSkillTag = (tag: string) => {
+        setSkills(prev => 
+            prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+        );
+    }
+
 
     return (
         <div className="container max-w-4xl mx-auto py-12 animate-fade-in">
@@ -252,9 +259,20 @@ export default function ProfilePage() {
                                         <Input id="name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="skills">Skills (comma-separated)</Label>
-                                        <Input id="skills" value={skills} onChange={e => setSkills(e.target.value)} required placeholder="React, Node.js, Python..." disabled={isSaving} />
-                                        <p className="text-xs text-muted-foreground">This is required for team matching.</p>
+                                        <Label>Skills</Label>
+                                        <div className="p-3 border rounded-md flex flex-wrap gap-2">
+                                            {SKILL_TAGS.map(tag => (
+                                                <Badge
+                                                    key={tag}
+                                                    variant={skills.includes(tag) ? "default" : "secondary"}
+                                                    onClick={() => toggleSkillTag(tag)}
+                                                    className="cursor-pointer"
+                                                >
+                                                    {tag}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                         <p className="text-xs text-muted-foreground">Select one or more skills. This is required for team matching.</p>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Work Style</Label>

@@ -42,3 +42,23 @@ export const WORK_STYLE_TAGS = [
     'Documentation hero',
     'Team motivator'
 ];
+
+export const SKILL_TAGS = [
+    // Programming Languages
+    'JavaScript', 'TypeScript', 'Python', 'Java', 'C#', 'Go', 'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'Dart',
+    // Frontend
+    'React', 'Next.js', 'Vue.js', 'Angular', 'Svelte', 'HTML5', 'CSS3', 'Tailwind CSS', 'Bootstrap', 'Ember.js',
+    // Backend
+    'Node.js', 'Express.js', 'Django', 'Flask', 'Spring Boot', 'ASP.NET', 'Ruby on Rails', 'Laravel',
+    // Mobile
+    'React Native', 'Flutter', 'SwiftUI', 'Jetpack Compose', 'Android', 'iOS',
+    // Databases
+    'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Firebase', 'SQLite',
+    // DevOps & Cloud
+    'Docker', 'Kubernetes', 'AWS', 'Google Cloud', 'Azure', 'Vercel', 'Netlify', 'CI/CD',
+    // AI/ML
+    'TensorFlow', 'PyTorch', 'scikit-learn', 'Pandas', 'NumPy', 'Genkit', 'LangChain',
+    // Non-Technical / Soft Skills
+    'UI/UX Design', 'Figma', 'Project Management', 'Public Speaking', 'Marketing', 'Business Strategy', 'Pitching',
+    'Graphic Design', 'Video Editing', 'Content Writing'
+];
