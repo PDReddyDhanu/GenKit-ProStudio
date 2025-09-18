@@ -15,6 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { findTeammateMatches } from '@/app/actions';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Match {
     user: UserType;
@@ -22,7 +24,7 @@ interface Match {
     reasoning: string;
 }
 
-function AIWizard() {
+function AIWizard({ isProfileComplete }: { isProfileComplete: boolean }) {
     const { state, api } = useHackathon();
     const { currentUser, teams, users, selectedHackathonId } = state;
     const [matches, setMatches] = useState<Match[]>([]);
@@ -82,10 +84,29 @@ function AIWizard() {
     return (
         <div>
             <div className="text-center mb-6">
-                <Button onClick={handleFindMatches} disabled={isLoading || !currentUser}>
-                    {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/>Analyzing...</> : <><Sparkles className="mr-2 h-4 w-4"/>Find My Perfect Teammates</>}
-                </Button>
+                 <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span tabIndex={0}>
+                                <Button onClick={handleFindMatches} disabled={isLoading || !currentUser || !isProfileComplete}>
+                                    {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/>Analyzing...</> : <><Sparkles className="mr-2 h-4 w-4"/>Find My Perfect Teammates</>}
+                                </Button>
+                            </span>
+                        </TooltipTrigger>
+                        {!isProfileComplete && (
+                            <TooltipContent>
+                                <p>Please complete your profile (skills and work style) to use the matchmaker.</p>
+                            </TooltipContent>
+                        )}
+                    </Tooltip>
+                </TooltipProvider>
+
                 <p className="text-xs text-muted-foreground mt-2">Let AI find the best collaborators for you based on skills and work style.</p>
+                 {!isProfileComplete && (
+                    <div className="mt-2 text-sm text-yellow-500">
+                        <Link href="/profile" className="underline">Complete your profile</Link> to enable this feature.
+                    </div>
+                )}
             </div>
              {matches.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -103,7 +124,7 @@ function AIWizard() {
                                             </Badge>
                                         </CardTitle>
                                         <div className="flex flex-wrap gap-1 pt-2">
-                                            {fullUser.skills.map(s => <Badge key={s} variant="outline">{s}</Badge>)}
+                                            {fullUser.skills?.map(s => <Badge key={s} variant="outline">{s}</Badge>)}
                                         </div>
                                          <div className="flex flex-wrap gap-1 pt-1">
                                             {fullUser.workStyle?.map(s => <Badge key={s}>{s}</Badge>)}
@@ -136,10 +157,13 @@ export default function TeamFinder() {
     const [joinCode, setJoinCode] = useState('');
     const [isJoining, setIsJoining] = useState<string | null>(null);
 
-    const { filteredTeams, currentHackathon, myTeamId, myPendingRequests } = useMemo(() => {
+    const { filteredTeams, currentHackathon, myTeamId, myPendingRequests, isProfileComplete } = useMemo(() => {
         const currentHackathon = hackathons.find(h => h.id === selectedHackathonId);
+        
+        const profileComplete = currentUser ? (currentUser.skills && currentUser.skills.length > 0 && currentUser.workStyle && currentUser.workStyle.length > 0) : false;
+
         if (!selectedHackathonId || !currentHackathon) {
-            return { filteredTeams: [], currentHackathon: null, myTeamId: null, myPendingRequests: [] };
+            return { filteredTeams: [], currentHackathon: null, myTeamId: null, myPendingRequests: [], isProfileComplete: profileComplete };
         }
 
         let currentTeams = teams.filter(t => t.hackathonId === selectedHackathonId);
@@ -155,7 +179,7 @@ export default function TeamFinder() {
             .filter(t => t.hackathonId === selectedHackathonId && t.joinRequests?.some(req => req.id === currentUser?.id))
             .map(t => t.id);
 
-        return { filteredTeams: currentTeams, currentHackathon, myTeamId: myTeam?.id, myPendingRequests: pendingRequests };
+        return { filteredTeams: currentTeams, currentHackathon, myTeamId: myTeam?.id, myPendingRequests: pendingRequests, isProfileComplete: profileComplete };
     }, [teams, hackathons, selectedHackathonId, searchQuery, currentUser]);
 
 
@@ -222,10 +246,11 @@ export default function TeamFinder() {
                                             placeholder="Enter 6-digit join code" 
                                             value={joinCode}
                                             onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                                            disabled={!!isJoining || !currentUser}
+                                            disabled={!!isJoining || !currentUser || !isProfileComplete}
                                         />
+                                        {!isProfileComplete && currentUser && <p className="text-xs text-yellow-500">Please complete your profile to join a team.</p>}
                                     </div>
-                                    <Button type="submit" className="w-full" disabled={!!isJoining || !currentUser || !joinCode}>
+                                    <Button type="submit" className="w-full" disabled={!!isJoining || !currentUser || !joinCode || !isProfileComplete}>
                                         {isJoining === 'code' ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Sending Request...</> : 'Send Request to Join'}
                                     </Button>
                                 </form>
@@ -251,7 +276,14 @@ export default function TeamFinder() {
                                 const isFull = team.members.length >= (currentHackathon?.teamSizeLimit || 4);
                                 const isMyTeam = team.id === myTeamId;
                                 const hasPendingRequest = myPendingRequests.includes(team.id);
-                                const canJoin = !isFull && !isMyTeam && !hasPendingRequest && !!currentUser;
+                                const canJoin = !isFull && !isMyTeam && !hasPendingRequest && !!currentUser && isProfileComplete;
+                                
+                                let buttonText = 'Request to Join';
+                                if(isMyTeam) buttonText = 'You are in this team';
+                                else if (hasPendingRequest) buttonText = 'Request Sent';
+                                else if (isFull) buttonText = 'Team Full';
+                                else if (!currentUser) buttonText = 'Login to Join';
+                                else if (!isProfileComplete) buttonText = 'Complete Profile to Join';
                                 
                                 return (
                                     <Card key={team.id} className="group relative flex flex-col transition-all duration-300 transform-gpu animate-card-in">
@@ -280,11 +312,7 @@ export default function TeamFinder() {
                                                 disabled={!canJoin || !!isJoining}
                                             >
                                                 {isJoining === team.id && <Loader className="mr-2 h-4 w-4 animate-spin"/>}
-                                                {isMyTeam ? 'You are in this team' : 
-                                                hasPendingRequest ? 'Request Sent' : 
-                                                isFull ? 'Team Full' :
-                                                !currentUser ? 'Login to Join' : 
-                                                'Request to Join'}
+                                                {buttonText}
                                             </Button>
                                         </div>
                                     </Card>
@@ -300,7 +328,7 @@ export default function TeamFinder() {
                     )}
                 </TabsContent>
                  <TabsContent value="wizard" className="mt-6">
-                    <AIWizard />
+                    <AIWizard isProfileComplete={isProfileComplete} />
                 </TabsContent>
             </Tabs>
         </div>

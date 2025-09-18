@@ -13,6 +13,7 @@ import { Countdown } from './Countdown';
 import TeamHub from './TeamHub';
 import StudentHomeDashboard from './StudentHomeDashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import CompleteProfilePrompt from './CompleteProfilePrompt';
 
 
 function HackathonHeader({ hackathon }: { hackathon: Hackathon }) {
@@ -51,11 +52,28 @@ export default function Dashboard() {
         if (!currentTeam?.id || !selectedHackathonId) return undefined;
         return projects.find(p => p.teamId === currentTeam.id && p.hackathonId === selectedHackathonId);
     }, [projects, currentTeam, selectedHackathonId]);
+    
+    const isProfileComplete = useMemo(() => {
+        if (!currentUser) return false;
+        const hasSkills = currentUser.skills && currentUser.skills.length > 0;
+        const hasWorkStyle = currentUser.workStyle && currentUser.workStyle.length > 0;
+        return hasSkills && hasWorkStyle;
+    }, [currentUser]);
 
     const renderContent = () => {
         if (!selectedHackathonId || !currentHackathon) {
             return <StudentHomeDashboard />;
         }
+        
+        if (!isProfileComplete) {
+            return (
+                 <>
+                    <HackathonHeader hackathon={currentHackathon} />
+                    <CompleteProfilePrompt />
+                </>
+            )
+        }
+
         if (!currentTeam) {
             return (
                 <>

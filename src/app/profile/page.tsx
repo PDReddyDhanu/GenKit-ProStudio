@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound, X } from 'lucide-react';
+import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound, X, AlertTriangle } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
 import { generateCertificate } from '@/lib/pdf';
@@ -120,6 +120,14 @@ export default function ProfilePage() {
         // Find all projects submitted by those teams
         return projects.filter(p => userTeamIds.includes(p.teamId));
     }, [currentUser, teams, projects]);
+    
+     const isProfileComplete = useMemo(() => {
+        if (!currentUser) return false;
+        const hasSkills = currentUser.skills && currentUser.skills.length > 0;
+        const hasWorkStyle = currentUser.workStyle && currentUser.workStyle.length > 0;
+        return hasSkills && hasWorkStyle;
+    }, [currentUser]);
+
 
     useEffect(() => {
       if(currentUser) {
@@ -200,6 +208,20 @@ export default function ProfilePage() {
 
     return (
         <div className="container max-w-4xl mx-auto py-12 animate-fade-in">
+            {!isProfileComplete && !isEditing && (
+                 <Card className="mb-8 border-yellow-500 bg-yellow-500/10">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-3 text-yellow-400">
+                           <AlertTriangle /> Complete Your Profile
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p>To use team features like the AI Matchmaker, you must add your skills and preferred work style to your profile. This helps us find the best teammates for you!</p>
+                         <Button variant="secondary" onClick={() => setIsEditing(true)} className="mt-4">Edit Profile Now</Button>
+                    </CardContent>
+                </Card>
+            )}
+
             <h1 className="text-4xl font-bold mb-8 font-headline">My Profile</h1>
              <Tabs defaultValue="profile" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
@@ -232,10 +254,11 @@ export default function ProfilePage() {
                                     <div className="space-y-2">
                                         <Label htmlFor="skills">Skills (comma-separated)</Label>
                                         <Input id="skills" value={skills} onChange={e => setSkills(e.target.value)} required placeholder="React, Node.js, Python..." disabled={isSaving} />
+                                        <p className="text-xs text-muted-foreground">This is required for team matching.</p>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Work Style</Label>
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="p-3 border rounded-md flex flex-wrap gap-2">
                                             {WORK_STYLE_TAGS.map(tag => (
                                                 <Badge
                                                     key={tag}
@@ -247,6 +270,7 @@ export default function ProfilePage() {
                                                 </Badge>
                                             ))}
                                         </div>
+                                         <p className="text-xs text-muted-foreground">Select one or more tags. This is required for team matching.</p>
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="bio">Short Bio</Label>
@@ -275,7 +299,7 @@ export default function ProfilePage() {
                                             <p>{currentUser.bio}</p>
                                         </div>
                                     )}
-                                    {currentUser.skills && currentUser.skills.length > 0 && (
+                                    {currentUser.skills && currentUser.skills.length > 0 ? (
                                         <div>
                                             <h4 className="font-semibold text-muted-foreground mb-2">Skills</h4>
                                             <div className="flex flex-wrap gap-2">
@@ -284,16 +308,20 @@ export default function ProfilePage() {
                                                 ))}
                                             </div>
                                         </div>
+                                    ) : (
+                                        <p className="text-muted-foreground">No skills added yet. Edit your profile to add them.</p>
                                     )}
-                                    {currentUser.workStyle && currentUser.workStyle.length > 0 && (
+                                    {currentUser.workStyle && currentUser.workStyle.length > 0 ? (
                                         <div>
-                                            <h4 className="font-semibold text-muted-foreground mb-2">Work Style</h4>
+                                            <h4 className="font-semibold text-muted-foreground mb-2 mt-4">Work Style</h4>
                                             <div className="flex flex-wrap gap-2">
                                                 {currentUser.workStyle.map(style => (
                                                     <Badge key={style} variant="default">{style}</Badge>
                                                 ))}
                                             </div>
                                         </div>
+                                    ) : (
+                                        <p className="text-muted-foreground mt-4">No work style selected. Edit your profile to add your preferred style.</p>
                                     )}
                                     <div className="flex items-center gap-6 pt-4 border-t">
                                         {currentUser.github && (
