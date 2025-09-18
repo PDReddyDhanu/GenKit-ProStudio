@@ -207,7 +207,7 @@ export default function Home() {
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-x-hidden">
         <section className="min-h-screen flex flex-col justify-center items-center text-center animate-fade-in">
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent font-headline animate-slide-in-down">
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent font-cursive animate-slide-in-down">
                 Welcome to HackSprint
             </h1>
             <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
@@ -322,8 +322,17 @@ export default function Home() {
                             ))}
                             <circle cx="0" cy="0" r="22" fill="url(#sunGradient)" />
                             <circle cx="0" cy="0" r="18" fill="hsl(var(--background))" />
-                            <path d="M -8 -5 L 0 8 L 8 -5" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M -5 3 L 0 8 L 5 3" stroke="hsl(var(--secondary))" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                            <text
+                                x="0"
+                                y="4"
+                                fontFamily="monospace"
+                                fontSize="12"
+                                fill="hsl(var(--secondary))"
+                                textAnchor="middle"
+                                fontWeight="bold"
+                            >
+                                PDR
+                            </text>
                         </g>
                     </svg>
                  </div>
