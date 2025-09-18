@@ -4,6 +4,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Car, User, Shield, Server, Search, CodeXml } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -78,6 +79,61 @@ const testimonials = [
     name: "Dr. Rajesh Kumar",
     role: "Faculty Coordinator",
   },
+  {
+    quote: "The AI Teammate Matchmaker is genius! It connected me with a team that had the exact skills we were missing.",
+    name: "Sofia Chen",
+    role: "Participant, Data Dynamos",
+  },
+  {
+    quote: "I've never seen a student hackathon platform this comprehensive. It handles everything from A to Z.",
+    name: "Ben Carter",
+    role: "Industry Mentor",
+  },
+  {
+    quote: "Generating a pitch outline with the AI coach saved us hours. We could focus on building instead of worrying about slides.",
+    name: "Fatima Al-Jamil",
+    role: "Finalist, Cloud Nine",
+  },
+  {
+    quote: "The real-time leaderboard created such an exciting and competitive atmosphere. We were hooked!",
+    name: "Leo Gonzalez",
+    role: "Participant, The Algo-Rhythms",
+  },
+  {
+    quote: "Support was incredible. We had an issue, submitted a ticket, and the AI triage got us a helpful response almost immediately.",
+    name: "Chloe Wilson",
+    role: "Student, Bug Busters",
+  },
+  {
+    quote: "From an organizational standpoint, HackSprint is a dream. The automated reports and analytics are invaluable.",
+    name: "Prof. David Lee",
+    role: "University IT Department",
+  },
+  {
+    quote: "The platform is incredibly intuitive for students. Our adoption rate was nearly 100% from day one.",
+    name: "Isabelle Moreau",
+    role: "Student Body President",
+  },
+];
+
+
+const faqItems = [
+    {
+        question: "How do I register for a hackathon?",
+        answer: "To register, navigate to the Student Portal, sign up for an account, and wait for admin approval. Once approved, you can select an active hackathon for your college and join or create a team."
+    },
+    {
+        question: "Can I join a hackathon without a team?",
+        answer: "Yes! You can register as an individual and then use our 'Team Finder' page. You can browse existing teams that are looking for members or use the AI Matchmaker to find students with complementary skills."
+    },
+    {
+        question: "What kind of AI assistance does HackSprint offer?",
+        answer: "HackSprint integrates AI at multiple stages. This includes an AI Idea Generator to brainstorm projects, an AI Code Reviewer for instant feedback on your code, an AI Pitch Coach to structure your presentation, and an AI Teammate Matchmaker to help you find the perfect collaborators."
+    },
+    {
+        question: "Is HackSprint free to use for our college?",
+        answer: "Yes, HackSprint is offered free of charge for internal college hackathons. Our goal is to foster innovation and learning within educational institutions by providing a powerful, accessible platform."
+    },
 ];
 
 const HowItWorksAnimation = () => {
@@ -90,7 +146,7 @@ const HowItWorksAnimation = () => {
 
     return (
         <div className="relative w-full max-w-4xl mx-auto h-[400px] md:h-[500px]">
-             <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+            <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
                 <path 
                     d="M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380" 
                     fill="none" 
@@ -223,53 +279,33 @@ export default function Home() {
              <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">HackSprint integrates powerful AI tools at every stage of your hackathon journey, acting as your personal assistant to help you succeed.</p>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                  <div className="relative flex justify-center items-center">
-                     <svg width="300" height="300" viewBox="0 0 200 200" className="opacity-20 absolute -z-10">
-                        <circle cx="100" cy="100" r="100" fill="hsl(var(--primary)/0.2)" />
-                     </svg>
                     <svg width="250" height="250" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_15px_hsl(var(--primary))]">
                         <defs>
                             <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
                                 <stop offset="0%" style={{stopColor: 'hsl(var(--secondary))', stopOpacity: 1}} />
-                                <stop offset="100%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 1}} />
+                                <stop offset="70%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 0.9}} />
+                                <stop offset="100%" style={{stopColor: 'hsl(var(--background))', stopOpacity: 0}} />
                             </radialGradient>
                             <filter id="sunGlow" x="-50%" y="-50%" width="200%" height="200%">
-                                <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
                                 <feMerge>
                                     <feMergeNode in="coloredBlur" />
                                     <feMergeNode in="SourceGraphic" />
                                 </feMerge>
                             </filter>
                         </defs>
-                        
-                        <g filter="url(#sunGlow)">
-                            <circle cx="50" cy="50" r="20" fill="url(#sunGradient)" />
-                            
-                            {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => (
-                                <line 
-                                    key={angle}
-                                    x1="50" y1="50" 
-                                    x2={50 + 35 * Math.cos(angle * Math.PI / 180)} 
-                                    y2={50 + 35 * Math.sin(angle * Math.PI / 180)}
-                                    stroke="hsl(var(--primary))" 
-                                    strokeWidth="2.5" 
-                                    strokeLinecap="round"
-                                />
+                        <g filter="url(#sunGlow)" transform="translate(50 50)">
+                            {[...Array(12)].map((_, i) => (
+                                <g key={i} transform={`rotate(${i * 30})`}>
+                                    <path d="M 0 -40 C 10 -30, 10 -10, 0 -2" stroke="hsl(var(--primary) / 0.8)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: `${i * 100}ms`}}/>
+                                    <path d="M 0 -40 C -10 -30, -10 -10, 0 -2" stroke="hsl(var(--primary) / 0.8)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: `${i * 100}ms`}}/>
+                                </g>
                             ))}
-                            {[22.5, 67.5, 112.5, 157.5, 202.5, 247.5, 292.5, 337.5].map(angle => (
-                                <line 
-                                    key={angle}
-                                    x1="50" y1="50" 
-                                    x2={50 + 25 * Math.cos(angle * Math.PI / 180)} 
-                                    y2={50 + 25 * Math.sin(angle * Math.PI / 180)}
-                                    stroke="hsl(var(--secondary))" 
-                                    strokeWidth="2" 
-                                    strokeLinecap="round"
-                                />
-                            ))}
+                            <circle cx="0" cy="0" r="22" fill="url(#sunGradient)" />
+                            <circle cx="0" cy="0" r="18" fill="hsl(var(--background))" />
+                            <path d="M -8 -5 L 0 8 L 8 -5" stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M -5 3 L 0 8 L 5 3" stroke="hsl(var(--secondary))" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
                         </g>
-
-                        <path d="M 40 30 Q 50 20 60 30 T 40 30" fill="hsl(var(--primary))" stroke="hsl(var(--secondary))" strokeWidth="1.5" />
-                        <circle cx="50" cy="50" r="4" fill="hsl(var(--background))" />
                     </svg>
                  </div>
                  <div className="space-y-8">
@@ -319,22 +355,25 @@ export default function Home() {
             </div>
         </section>
 
-        <section className="py-24 scroll-m-20" data-animate-on-scroll>
+        <section className="py-24 scroll-m-20 w-full overflow-hidden" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">What People Are Saying</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {testimonials.map((testimonial, index) => (
-                    <Card key={index}>
-                        <CardContent className="p-6">
-                            <p className="italic text-foreground">"{testimonial.quote}"</p>
-                            <div className="mt-4 text-right">
-                                <p className="font-bold font-headline">{testimonial.name}</p>
-                                <p className="text-sm text-primary">{testimonial.role}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+            <div className="relative w-full">
+                <div className="flex w-max scrolling-wrapper group-hover:pause">
+                    {[...testimonials, ...testimonials].map((testimonial, index) => (
+                        <Card key={index} className="w-[350px] mx-4 flex-shrink-0">
+                            <CardContent className="p-6">
+                                <p className="italic text-foreground">"{testimonial.quote}"</p>
+                                <div className="mt-4 text-right">
+                                    <p className="font-bold font-headline">{testimonial.name}</p>
+                                    <p className="text-sm text-primary">{testimonial.role}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
             </div>
         </section>
+
 
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">Our Esteemed Partners</h2>
@@ -354,6 +393,23 @@ export default function Home() {
                 </div>
             </div>
         </section>
+        
+         <section className="py-24 scroll-m-20" data-animate-on-scroll>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">Frequently Asked Questions</h2>
+            <div className="max-w-3xl mx-auto">
+                <Accordion type="single" collapsible className="w-full">
+                    {faqItems.map((item, index) => (
+                        <AccordionItem value={`item-${index}`} key={index}>
+                            <AccordionTrigger>{item.question}</AccordionTrigger>
+                            <AccordionContent>
+                                {item.answer}
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            </div>
+        </section>
+
 
          <section className="py-24 text-center scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold mb-4 font-headline">Ready to Start Hacking?</h2>
