@@ -4,7 +4,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Car, User } from "lucide-react";
+import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Car, User, Shield, Server } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo } from 'react';
@@ -90,8 +90,7 @@ const HowItWorksAnimation = () => {
 
     return (
         <div className="relative w-full max-w-4xl mx-auto h-[400px] md:h-[500px]">
-            {/* The SVG Road */}
-            <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+             <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
                 <path 
                     d="M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380" 
                     fill="none" 
@@ -100,35 +99,8 @@ const HowItWorksAnimation = () => {
                     strokeDasharray="10 5"
                     className="animate-road-draw"
                 />
-                 {/* The Car & People Animation */}
-                <g className="animate-car-loop" style={{ offsetPath: 'path("M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380")' }}>
-                    {/* Car Body */}
-                    <g className="animate-car-body">
-                      <Car className="w-10 h-10 text-primary" style={{ filter: 'drop-shadow(0 2px 4px hsl(var(--primary)/0.5))' }} />
-                    </g>
-                    {/* Person 1 (Driver) */}
-                    <g className="animate-person1-in-car">
-                        <User className="w-5 h-5 text-background" style={{ transform: 'translate(4px, 3px)' }}/>
-                    </g>
-                     {/* Person 2 (Passenger) */}
-                    <g className="animate-person2-in-car">
-                       <User className="w-5 h-5 text-background" style={{ transform: 'translate(18px, 3px)' }}/>
-                    </g>
-                </g>
-                {/* People outside car at stops */}
-                <g>
-                    <User className="w-6 h-6 text-foreground animate-person-enter-exit" style={{ offsetPath: 'path("M 350 180")', offsetDistance: '0%' }}/>
-                    <User className="w-6 h-6 text-foreground animate-person-enter-exit" style={{ offsetPath: 'path("M 350 180")', offsetDistance: '0%', animationDelay: '0.2s' }}/>
-                </g>
-                <g className="animate-trophy-appear">
-                    <Trophy className="w-8 h-8 text-primary" style={{ offsetPath: 'path("M 350 380")' }}/>
-                     <User className="w-6 h-6 text-foreground" style={{ offsetPath: 'path("M 330 380")' }}/>
-                     <User className="w-6 h-6 text-foreground" style={{ offsetPath: 'path("M 370 380")' }}/>
-                      <User className="w-6 h-6 text-foreground" style={{ offsetPath: 'path("M 350 360")' }}/>
-                </g>
             </svg>
 
-            {/* The Steps */}
             {steps.map((step, index) => (
                 <div 
                     key={index}
@@ -202,6 +174,49 @@ export default function Home() {
              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">How It Works</h2>
              <HowItWorksAnimation />
         </section>
+
+        <section className="py-24 scroll-m-20" id="roles" data-animate-on-scroll>
+             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Tailored for Everyone</h2>
+             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">A unique set of tools designed for every role in the hackathon ecosystem.</p>
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                 <Card className="flex flex-col">
+                     <CardHeader>
+                         <CardTitle className="flex items-center gap-3 font-headline text-2xl"><User className="text-primary"/> For Students</CardTitle>
+                     </CardHeader>
+                     <CardContent className="flex-grow space-y-3">
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Join teams or use the AI Matchmaker to find collaborators.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Brainstorm ideas with the AI Idea Generator.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Submit projects easily via GitHub.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Get instant AI-powered code reviews.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Track your rank on a live leaderboard.</span></p>
+                     </CardContent>
+                 </Card>
+                 <Card className="flex flex-col">
+                     <CardHeader>
+                         <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Scale className="text-primary"/> For Judges</CardTitle>
+                     </CardHeader>
+                     <CardContent className="flex-grow space-y-3">
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Access all submissions in one place.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Read AI-generated project summaries for quick evaluation.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Use a standardized rubric for fair and consistent scoring.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>View project analytics and score distributions.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Score both teams and individual contributions.</span></p>
+                     </CardContent>
+                 </Card>
+                 <Card className="flex flex-col">
+                     <CardHeader>
+                         <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Shield className="text-primary"/> For Admins</CardTitle>
+                     </CardHeader>
+                     <CardContent className="flex-grow space-y-3">
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage multiple hackathon events seamlessly.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Approve student registrations and add judges.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Broadcast announcements to all participants.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Monitor real-time analytics and generate reports.</span></p>
+                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage support tickets with AI triage.</span></p>
+                     </CardContent>
+                 </Card>
+             </div>
+         </section>
 
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">A Feature for Every Step</h2>
