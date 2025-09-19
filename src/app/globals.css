@@ -138,18 +138,7 @@ body {
   }
 
   body {
-    @apply bg-background text-foreground animate-stars;
-    /* Starfield effect */
-    --star-size-1: 1px;
-    --star-size-2: 2px;
-    --star-size-3: 3px;
-
-    background-image: 
-      radial-gradient(var(--star-size-3) var(--star-size-3) at 25px 25px, var(--star-color), var(--star-bg)),
-      radial-gradient(var(--star-size-2) var(--star-size-2) at 50px 100px, var(--star-color), var(--star-bg)),
-      radial-gradient(var(--star-size-1) var(--star-size-1) at 100px 75px, var(--star-color), var(--star-bg));
-    background-repeat: repeat;
-    background-size: 200px 200px;
+    @apply bg-background text-foreground;
     background-color: var(--star-bg);
   }
 }
