@@ -34,8 +34,6 @@ body {
     --chart-4: 200 98% 45%;
     --chart-5: 210 88% 55%;
     --radius: 0.5rem;
-    --star-color: hsl(var(--primary));
-    --star-bg: hsl(var(--background));
     --intro-text-shadow: 0 0 10px rgba(80,80,80,0.2);
     --cursor-primary: hsl(var(--primary));
     --cursor-accent: hsl(var(--accent));
@@ -68,8 +66,6 @@ body {
     --chart-3: 30 100% 48%;
     --chart-4: 200 98% 45%;
     --chart-5: 210 88% 55%;
-    --star-color: hsl(var(--secondary));
-    --star-bg: #0c0f17;
     --intro-text-shadow: 0 0 10px rgba(255,255,255,0.7), 0 0 25px rgba(255, 202, 40, 0.6);
     --cursor-primary: hsl(var(--primary));
     --cursor-accent: hsl(var(--accent));
@@ -139,7 +135,6 @@ body {
 
   body {
     @apply bg-background text-foreground;
-    background-color: var(--star-bg);
   }
 }
 

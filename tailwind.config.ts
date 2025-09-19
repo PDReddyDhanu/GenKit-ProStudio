@@ -136,9 +136,9 @@ export default {
           '50%': { transform: 'translateY(-10px) rotateX(5deg) rotateY(-5deg)' },
           '100%': { transform: 'translateY(0) rotateX(0) rotateY(0)' },
         },
-        fall: {
-          '0%': { transform: 'translateY(0) rotate(0)' },
-          '100%': { transform: 'translateY(100vh) rotate(360deg)' },
+        'line-fall': {
+          'from': { transform: 'translateY(-100%)' },
+          'to': { transform: 'translateY(100vh)' },
         },
         'road-draw': {
           'from': { 'stroke-dashoffset': '2000' },
@@ -166,6 +166,7 @@ export default {
         'trophy-shine': 'trophy-shine 2s ease-in-out infinite',
         'credits-fade-in': 'credits-fade-in 4s ease-out forwards',
         'slow-float': 'slow-float 12s ease-in-out infinite',
+        'line-fall': 'line-fall linear infinite',
         'road-draw': 'road-draw 10s linear forwards infinite',
         'car-loop': 'car-loop 12s linear infinite',
         'step-fade-in': 'step-fade-in 0.5s ease-out forwards',

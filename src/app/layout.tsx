@@ -14,7 +14,7 @@ import CollegeLogin from '@/components/CollegeLogin';
 import { useEffect, useState } from 'react';
 import { Loader } from 'lucide-react';
 import { useCustomCursor } from '@/hooks/use-custom-cursor';
-import FallingStars from '@/components/ui/FallingStars';
+import VerticalLines from '@/components/ui/VerticalLines';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -82,7 +82,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
 
     return (
         <>
-            <FallingStars />
+            <VerticalLines />
             <div className="custom-cursor" />
             <AppContent>{children}</AppContent>
         </>
