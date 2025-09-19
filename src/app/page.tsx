@@ -143,23 +143,12 @@ const HowItWorksAnimation = () => {
         { title: "Build & Submit", description: "Use AI tools, collaborate, and submit your project.", icon: <Code className="w-6 h-6" />, position: { top: '70%', left: '5%' } },
         { title: "Compete & Win", description: "Get judged, climb the leaderboard, and win prizes!", icon: <Trophy className="w-6 h-6" />, position: { top: '92%', left: '90%' } },
     ];
-    
-    const CarIcon = (props: React.SVGProps<SVGSVGElement>) => (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-            <path d="M14 16.942a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0Z"/>
-            <path d="M7.5 16.942a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0Z"/>
-            <path d="M10.5 17H14m-10.5 0h1.5m6-1.542L12.5 7h3l1.5 4"/>
-            <path d="m5 15.4-1-4h1.5l1.5 4"/>
-            <path d="M5 11h9"/>
-        </svg>
-    );
-
 
     return (
         <div className="relative w-full max-w-4xl mx-auto h-[400px] md:h-[500px]">
+            {/* The SVG Road */}
             <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
                 <path 
-                    id="road"
                     d="M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380" 
                     fill="none" 
                     stroke="hsl(var(--border))" 
@@ -167,15 +156,35 @@ const HowItWorksAnimation = () => {
                     strokeDasharray="10 5"
                     className="animate-road-draw"
                 />
-                <g className="animate-car-loop">
-                    <CarIcon width="20" height="20" className="text-primary -rotate-90">
-                         <animateMotion dur="12s" repeatCount="indefinite" rotate="auto">
-                            <mpath href="#road"/>
-                        </animateMotion>
-                    </CarIcon>
+                 {/* The Car & People Animation */}
+                <g className="animate-car-loop" style={{ offsetPath: 'path("M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380")' }}>
+                    {/* Car Body */}
+                    <g className="animate-car-body">
+                      <Car className="w-10 h-10 text-primary" style={{ filter: 'drop-shadow(0 2px 4px hsl(var(--primary)/0.5))' }} />
+                    </g>
+                    {/* Person 1 (Driver) */}
+                    <g className="animate-person1-in-car">
+                        <User className="w-5 h-5 text-background" style={{ transform: 'translate(4px, 3px)' }}/>
+                    </g>
+                     {/* Person 2 (Passenger) */}
+                    <g className="animate-person2-in-car">
+                       <User className="w-5 h-5 text-background" style={{ transform: 'translate(18px, 3px)' }}/>
+                    </g>
+                </g>
+                {/* People outside car at stops */}
+                <g>
+                    <User className="w-6 h-6 text-foreground animate-person-enter-exit" style={{ offsetPath: 'path("M 350 180")', offsetDistance: '0%' }}/>
+                    <User className="w-6 h-6 text-foreground animate-person-enter-exit" style={{ offsetPath: 'path("M 350 180")', offsetDistance: '0%', animationDelay: '0.2s' }}/>
+                </g>
+                <g className="animate-trophy-appear">
+                    <Trophy className="w-8 h-8 text-primary" style={{ offsetPath: 'path("M 350 380")' }}/>
+                     <User className="w-6 h-6 text-foreground" style={{ offsetPath: 'path("M 330 380")' }}/>
+                     <User className="w-6 h-6 text-foreground" style={{ offsetPath: 'path("M 370 380")' }}/>
+                      <User className="w-6 h-6 text-foreground" style={{ offsetPath: 'path("M 350 360")' }}/>
                 </g>
             </svg>
 
+            {/* The Steps */}
             {steps.map((step, index) => (
                 <div 
                     key={index}
@@ -198,7 +207,6 @@ const HowItWorksAnimation = () => {
         </div>
     );
 };
-
 
 export default function Home() {
   const { state } = useHackathon();
@@ -460,4 +468,3 @@ export default function Home() {
     
 
     
-

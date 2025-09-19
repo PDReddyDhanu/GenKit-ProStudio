@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, Menu, LogOut, Building2, User, UserCircle, LifeBuoy, Bell } from 'lucide-react';
+import { Trophy, Rss, Menu, LogOut, Building2, UserCircle, Bell } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -24,7 +24,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Separator } from '../ui/separator';
 
 
 const NavLink = ({ href, children, onClick }: { href: string; children: React.ReactNode; onClick?: () => void }) => {
@@ -105,9 +104,7 @@ export function Header() {
                 <Link href="/" className="flex items-center gap-3" onClick={closeMobileMenu}>
                     <Trophy className="h-6 w-6 text-primary" />
                     <span className="font-bold text-lg font-headline">HackSprint</span>
-                    <div className="border-l border-border h-6"></div>
-                    <span className="font-mono text-sm font-semibold text-muted-foreground">PDR</span>
-                </Link>
+                  </Link>
                 
                 <nav className="hidden md:flex items-center gap-4">
                     <NavLink href="/guidance">Guidance</NavLink>
@@ -265,9 +262,7 @@ export function Header() {
                                          <Link href="/" className="flex items-center gap-3" onClick={closeMobileMenu}>
                                             <Trophy className="h-6 w-6 text-primary" />
                                             <span className="font-bold text-lg font-headline">HackSprint</span>
-                                            <div className="border-l border-border h-6"></div>
-                                            <span className="font-mono text-sm font-semibold text-muted-foreground">PDR</span>
-                                        </Link>
+                                            </Link>
                                     </SheetTitle>
                                 </SheetHeader>
                                 <nav className="flex flex-col gap-4 py-8">
@@ -317,3 +312,5 @@ export function Header() {
         </header>
     );
 };
+
+    
