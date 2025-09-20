@@ -12,7 +12,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { useTheme } from "next-themes";
 import Link from 'next/link';
@@ -142,10 +141,20 @@ export function Header() {
 
     return (
         <>
-            {/* The Dock Navigation */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center">
-                 <Dock items={[...dockItems, ...actionItems]} panelHeight={68} baseItemSize={50} magnification={70} />
-            </div>
+            <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-sm">
+                <div className="container flex h-14 items-center">
+                    <div className="flex-1">
+                        {/* You can add a logo or brand name here */}
+                         <Link href="/" className="flex items-center gap-2">
+                             <Trophy className="h-6 w-6 text-primary" />
+                             <span className="font-bold font-headline">HackSprint</span>
+                         </Link>
+                    </div>
+                     <nav className="flex items-center">
+                        <Dock items={[...dockItems, ...actionItems]} panelHeight={68} baseItemSize={40} magnification={60} />
+                    </nav>
+                </div>
+            </header>
 
             {/* Sheets for Announcements and Notifications */}
             <Sheet open={isAnnouncementsOpen} onOpenChange={setIsAnnouncementsOpen}>

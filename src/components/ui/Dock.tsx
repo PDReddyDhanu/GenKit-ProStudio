@@ -77,7 +77,7 @@ function DockItem({
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
-      className={`relative inline-flex items-center justify-center rounded-full bg-background border-border border-2 shadow-md cursor-pointer ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-full bg-background cursor-pointer ${className}`}
       tabIndex={0}
       role="button"
       aria-haspopup="true"
@@ -107,13 +107,13 @@ function DockLabel({ children, className = '', ...rest }: DockLabelProps) {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: 0 }}
-          animate={{ opacity: 1, y: -10 }}
-          exit={{ opacity: 0, y: 0 }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
           transition={{ duration: 0.2 }}
-          className={`${className} absolute -top-8 left-1/2 w-fit whitespace-pre rounded-md border border-border bg-background px-2 py-0.5 text-xs text-foreground`}
+          className={`${className} absolute top-full mt-2 w-fit whitespace-pre rounded-md border border-border bg-background px-2 py-0.5 text-xs text-foreground`}
           role="tooltip"
-          style={{ x: '-50%' }}
+          style={{ x: '-50%', left: '50%' }}
         >
           {children}
         </motion.div>
@@ -142,23 +142,12 @@ export default function Dock({
   baseItemSize = 50
 }: DockProps) {
   const mouseX = useMotionValue(Infinity);
-  const isHovered = useMotionValue(0);
-
-  const maxHeight = useMemo(() => Math.max(dockHeight, magnification + magnification / 2 + 4), [dockHeight, magnification]);
-  const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
-  const height = useSpring(heightRow, spring);
 
   return (
-     <motion.div 
-        onMouseMove={({ pageX }) => {
-          isHovered.set(1);
-          mouseX.set(pageX);
-        }}
-        onMouseLeave={() => {
-          isHovered.set(0);
-          mouseX.set(Infinity);
-        }}
-        className={`${className} flex items-end h-[80px] w-fit gap-3 rounded-2xl border-border border-2 pb-3 px-4 bg-background/50 backdrop-blur-md`}
+     <div 
+        onMouseMove={e => mouseX.set(e.pageX)}
+        onMouseLeave={() => mouseX.set(Infinity)}
+        className={`${className} flex h-full items-center justify-center gap-3`}
         role="toolbar"
         aria-label="Application dock"
     >
@@ -177,6 +166,6 @@ export default function Dock({
             <DockLabel>{item.label}</DockLabel>
           </DockItem>
         ))}
-    </motion.div>
+    </div>
   );
 }
