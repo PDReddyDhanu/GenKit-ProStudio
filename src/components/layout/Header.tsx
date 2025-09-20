@@ -142,17 +142,17 @@ export function Header() {
     return (
         <>
             <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-sm">
-                <div className="container flex h-14 items-center justify-between">
-                    <div className="flex items-center">
+                <div className="container flex h-14 items-center">
+                    <div className="flex-1 flex items-center justify-start">
                          <Link href="/" className="flex items-center gap-2">
                              <Trophy className="h-6 w-6 text-primary" />
                              <span className="font-bold font-headline">HackSprint</span>
                          </Link>
                     </div>
-                     <nav className="flex-1 flex justify-center">
+                     <nav className="flex-shrink-0">
                         <Dock items={[...dockItems, ...actionItems]} panelHeight={68} baseItemSize={40} magnification={60} />
                     </nav>
-                     <div className="w-[120px]"></div>
+                     <div className="flex-1"></div>
                 </div>
             </header>
 
