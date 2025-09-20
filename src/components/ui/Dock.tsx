@@ -9,7 +9,7 @@ import {
   useTransform,
   type SpringOptions,
   AnimatePresence
-} from 'motion/react';
+} from 'framer-motion';
 import React, { Children, cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 
 export type DockItemData = {
