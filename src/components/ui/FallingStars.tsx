@@ -18,7 +18,7 @@ const FallingStars = () => {
         };
         
         if (i % 3 === 0) {
-            const size = Math.random() * 5 + 2;
+            const size = Math.random() * 5 + 2; // Medium to Big bubbles (2px to 7px)
             return (
                 <div
                     key={`particle-${i}`}
@@ -31,6 +31,7 @@ const FallingStars = () => {
                 />
             );
         } else {
+            // Tiny to Small stars
             return (
                 <div
                     key={`particle-${i}`}
