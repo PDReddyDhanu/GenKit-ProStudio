@@ -12,19 +12,17 @@ const FallingStars = () => {
       const newParticles = Array.from({ length: 150 }).map((_, i) => {
         const style: React.CSSProperties = {
           left: `${Math.random() * 100}%`,
-          top: `calc(${Math.random() * 100}vh - 100px)`,
-          animationDuration: `${Math.random() * 5 + 10}s`, // Random duration
-          animationDelay: `${Math.random() * 15}s`, // Random delay
+          top: `${Math.random() * 100}%`,
+          animationDuration: `${Math.random() * 30 + 15}s`, // Slower, longer duration
+          animationDelay: `${Math.random() * 15}s`,
         };
         
-        // Let's create a mix of bubbles and stars
         if (i % 3 === 0) {
-            // It's a bubble
             const size = Math.random() * 5 + 2;
             return (
                 <div
                     key={`particle-${i}`}
-                    className="absolute rounded-full bg-primary/30 animate-fall"
+                    className="absolute rounded-full bg-primary/30 animate-slow-float"
                     style={{
                         ...style,
                         width: `${size}px`,
@@ -33,16 +31,14 @@ const FallingStars = () => {
                 />
             );
         } else {
-            // It's a star (line)
             return (
                 <div
                     key={`particle-${i}`}
-                    className="absolute h-12 w-0.5 rounded-full bg-gradient-to-b from-primary/10 to-primary/80 animate-fall"
+                    className="absolute h-1 w-1 rounded-full bg-gradient-to-b from-primary/10 to-primary/80 animate-slow-float"
                     style={style}
                 />
             );
         }
-
       });
       setParticles(newParticles);
     };

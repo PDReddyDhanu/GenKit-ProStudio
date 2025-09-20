@@ -132,13 +132,11 @@ export default {
           '100%': { opacity: '0.7'},
         },
         'slow-float': {
-          '0%': { transform: 'translateY(0) rotateX(0) rotateY(0)' },
-          '50%': { transform: 'translateY(-10px) rotateX(5deg) rotateY(-5deg)' },
-          '100%': { transform: 'translateY(0) rotateX(0) rotateY(0)' },
-        },
-        'fall': {
-          'from': { transform: 'translateY(-2500px) rotate(-30deg)' },
-          'to': { transform: 'translateY(100vh) rotate(30deg)' },
+          '0%': { transform: 'translateY(0) rotateX(0) rotateY(0) scale(1)', opacity: '0' },
+          '25%': { opacity: '1' },
+          '50%': { transform: 'translateY(-100px) translateX(50px) rotateX(5deg) rotateY(-5deg) scale(1.1)', opacity: '1' },
+          '75%': { opacity: '1' },
+          '100%': { transform: 'translateY(-200px) translateX(100px) rotateX(0) rotateY(0) scale(1)', opacity: '0' },
         },
         'road-draw': {
           'from': { 'stroke-dashoffset': '2000' },
@@ -165,8 +163,7 @@ export default {
         'slow-zoom-in': 'slow-zoom-in 4s ease-out forwards',
         'trophy-shine': 'trophy-shine 2s ease-in-out infinite',
         'credits-fade-in': 'credits-fade-in 4s ease-out forwards',
-        'slow-float': 'slow-float 12s ease-in-out infinite',
-        'fall': 'fall linear infinite',
+        'slow-float': 'slow-float ease-in-out infinite',
         'road-draw': 'road-draw 10s linear forwards infinite',
         'car-loop': 'car-loop 12s linear infinite',
         'step-fade-in': 'step-fade-in 0.5s ease-out forwards',
