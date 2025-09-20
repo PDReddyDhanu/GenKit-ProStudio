@@ -10,6 +10,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useMemo } from 'react';
 import { useHackathon } from "@/context/HackathonProvider";
+import GradientText from "@/components/ui/GradientText";
 
 const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
     <div 
@@ -215,9 +216,13 @@ export default function Home() {
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-x-hidden">
         <section className="min-h-screen flex flex-col justify-center items-center text-center animate-fade-in">
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent font-cursive animate-slide-in-down">
+            <GradientText
+                colors={['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']}
+                animationSpeed={5}
+                className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 font-headline animate-slide-in-down"
+            >
                 Welcome to HackSprint
-            </h1>
+            </GradientText>
             <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
                 Your all-in-one platform for managing internal college hackathons. From registration to results, we've got you covered.
             </p>
