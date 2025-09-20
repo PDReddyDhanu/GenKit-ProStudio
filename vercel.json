@@ -6,7 +6,5 @@
   },
   "github": {
     "silent": true
-  },
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": ".next"
+  }
 }
