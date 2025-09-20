@@ -2,11 +2,10 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, Menu, LogOut, Building2, UserCircle, Bell } from 'lucide-react';
+import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -15,33 +14,21 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ThemeToggle } from './ThemeToggle';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
-
-const NavLink = ({ href, children, onClick }: { href: string; children: React.ReactNode; onClick?: () => void }) => {
-    const pathname = usePathname();
-    const isActive = pathname === href;
-    return (
-        <Link href={href} onClick={onClick} className={`block sm:inline-block text-sm font-medium transition-colors ${isActive ? 'text-secondary' : 'text-muted-foreground hover:text-foreground'}`}>
-            {children}
-        </Link>
-    );
-};
+import { useTheme } from "next-themes";
+import Link from 'next/link';
+import Dock, { DockItemData } from '@/components/ui/Dock';
 
 export function Header() {
     const { state, api, dispatch } = useHackathon();
     const { announcements, currentUser, currentJudge, currentAdmin } = state;
     const router = useRouter();
+    const pathname = usePathname();
+    const { theme, setTheme } = useTheme();
+
+    const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    
     const [hasUnreadAnnouncements, setHasUnreadAnnouncements] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const activeAnnouncements = useMemo(() => {
         const now = Date.now();
@@ -67,7 +54,6 @@ export function Header() {
 
     const handleLogout = async () => {
         await api.signOut();
-        setIsMobileMenuOpen(false);
         router.push('/');
     };
 
@@ -82,6 +68,7 @@ export function Header() {
         if (activeAnnouncements.length > 0) {
             localStorage.setItem('lastViewedAnnouncement', activeAnnouncements[0].id);
         }
+        setIsAnnouncementsOpen(true);
     };
 
     const handleNotificationsOpen = async () => {
@@ -89,228 +76,120 @@ export function Header() {
             const ids = unreadNotifications.map(n => n.id);
             await api.markNotificationsAsRead(currentUser.id, ids);
         }
+        setIsNotificationsOpen(true);
     };
-    
-    const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+    const toggleTheme = () => {
+        setTheme(theme === "dark" ? "light" : "dark");
+    };
     
     const loggedInUser = currentUser || currentJudge || currentAdmin;
     const sortedNotifications = useMemo(() => {
         return [...(currentUser?.notifications || [])].sort((a, b) => b.timestamp - a.timestamp);
     }, [currentUser?.notifications]);
 
+    const dockItems: DockItemData[] = [
+        { icon: <Trophy size={24} />, label: 'Home', onClick: () => router.push('/') },
+        { icon: <Lightbulb size={24} />, label: 'Guidance', onClick: () => router.push('/guidance') },
+        { icon: <GalleryVertical size={24} />, label: 'Gallery', onClick: () => router.push('/gallery') },
+        { icon: <Users size={24} />, label: 'Teams', onClick: () => router.push('/teams') },
+        { icon: <TrendingUp size={24} />, label: 'Leaderboard', onClick: () => router.push('/leaderboard') },
+        { icon: <Trophy size={24} />, label: 'Results', onClick: () => router.push('/results') },
+        { icon: <Handshake size={24} />, label: 'Partners', onClick: () => router.push('/partners') },
+        { icon: <LifeBuoy size={24} />, label: 'Support', onClick: () => router.push('/support') },
+    ];
+
+    const actionItems: DockItemData[] = [
+        {
+            icon: <div className="relative"><Rss size={24} />{hasUnreadAnnouncements && <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-primary" />}</div>,
+            label: 'Announcements',
+            onClick: handleAnnouncementsOpen,
+        },
+    ];
+
+    if (currentUser) {
+        actionItems.push({
+            icon: <div className="relative"><Bell size={24} />{unreadNotifications.length > 0 && <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-primary" />}</div>,
+            label: 'Notifications',
+            onClick: handleNotificationsOpen,
+        });
+    }
+
+    actionItems.push({
+        icon: theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />,
+        label: theme === 'dark' ? 'Light Mode' : 'Dark Mode',
+        onClick: toggleTheme,
+    });
+    
+    if (loggedInUser) {
+        actionItems.push({
+            icon: <UserCircle size={24} />,
+            label: 'Profile',
+            onClick: () => router.push('/profile'),
+        });
+        actionItems.push({
+            icon: <LogOut size={24} />,
+            label: 'Logout',
+            onClick: handleLogout,
+        });
+    } else {
+        actionItems.push({
+            icon: <Building2 size={24} />,
+            label: 'Change College',
+            onClick: handleChangeCollege,
+        });
+    }
+
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" className="flex items-center gap-3" onClick={closeMobileMenu}>
-                    <Trophy className="h-6 w-6 text-primary" />
-                    <span className="font-bold text-lg font-headline">HackSprint</span>
-                  </Link>
-                
-                <nav className="hidden md:flex items-center gap-4">
-                    <NavLink href="/guidance">Guidance</NavLink>
-                    <NavLink href="/gallery">Gallery</NavLink>
-                    <NavLink href="/teams">Teams</NavLink>
-                    <NavLink href="/leaderboard">Leaderboard</NavLink>
-                    <NavLink href="/results">Results</NavLink>
-                    <NavLink href="/partners">Partners</NavLink>
-                    <NavLink href="/support">Support</NavLink>
-                </nav>
-                
-                <div className="flex items-center gap-2">
-                     <Sheet onOpenChange={(open) => open && handleAnnouncementsOpen()}>
-                        <SheetTrigger asChild>
-                             <Button variant="ghost" size="icon" className="relative">
-                                <Rss className="h-5 w-5" />
-                                {hasUnreadAnnouncements && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />}
-                                <span className="sr-only">View Announcements</span>
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent className="w-full sm:max-w-sm">
-                            <SheetHeader>
-                                <SheetTitle>Announcements</SheetTitle>
-                            </SheetHeader>
-                            <div className="py-4 space-y-4">
-                                {activeAnnouncements.length > 0 ? activeAnnouncements.map(ann => (
-                                    <div key={ann.id} className="p-3 bg-muted rounded-md">
-                                        <p className="text-sm text-foreground">{ann.message}</p>
-                                        <p className="text-xs text-muted-foreground mt-2">
-                                            {formatDistanceToNow(new Date(ann.publishAt || ann.timestamp), { addSuffix: true })}
-                                        </p>
-                                    </div>
-                                )) : <p className="text-muted-foreground text-center pt-8">No announcements yet.</p>}
-                            </div>
-                        </SheetContent>
-                    </Sheet>
-                    
-                    {currentUser && (
-                         <DropdownMenu onOpenChange={(open) => open && handleNotificationsOpen()}>
-                            <DropdownMenuTrigger asChild>
-                                 <Button variant="ghost" size="icon" className="relative">
-                                    <Bell className="h-5 w-5" />
-                                    {unreadNotifications.length > 0 && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />}
-                                    <span className="sr-only">View Notifications</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-80">
-                                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                {sortedNotifications.length > 0 ? (
-                                    sortedNotifications.slice(0, 5).map(n => (
-                                        <DropdownMenuItem key={n.id} asChild className="flex flex-col items-start gap-1 whitespace-normal">
-                                            <Link href={n.link}>
-                                                <p className={`text-sm ${!n.isRead ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{n.message}</p>
-                                                <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(n.timestamp), { addSuffix: true })}</p>
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    ))
-                                ) : (
-                                    <DropdownMenuItem disabled>No new notifications</DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild>
-                                    <Link href="/support/tickets" className="justify-center">View All Tickets</Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
-
-                    <ThemeToggle />
-
-                    {!loggedInUser && (
-                         <Button variant="outline" size="sm" onClick={handleChangeCollege} className="hidden sm:flex">
-                            <Building2 className="mr-2 h-4 w-4" /> Change College
-                        </Button>
-                    )}
-
-                    <div className="hidden sm:flex items-center gap-2">
-                        {currentUser ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="flex items-center gap-2">
-                                        <UserCircle className="h-5 w-5" />
-                                        {currentUser.name.split(' ')[0]}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
-                                    <DropdownMenuItem onClick={handleChangeCollege}>Change College</DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={handleLogout} className="text-red-500">
-                                        <LogOut className="mr-2 h-4 w-4" />
-                                        Logout
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        ) : currentJudge ? (
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost">Judge: {currentJudge.name.split(' ')[0]}</Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuLabel>Judge Menu</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                     <DropdownMenuItem onClick={handleChangeCollege}>Change College</DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={handleLogout} className="text-red-500">
-                                        <LogOut className="mr-2 h-4 w-4" />
-                                        Logout
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        ): currentAdmin ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost">Admin Menu</Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuLabel>Admin Actions</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem asChild><Link href="/admin">Dashboard</Link></DropdownMenuItem>
-                                    <DropdownMenuItem onClick={handleChangeCollege}>Change College</DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={handleLogout} className="text-red-500">
-                                        <LogOut className="mr-2 h-4 w-4" />
-                                        Logout
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        ) : (
-                            <>
-                                <Button variant="secondary" asChild>
-                                    <Link href="/student">Student Portal</Link>
-                                </Button>
-                                <Button variant="default" asChild>
-                                    <Link href="/judge">Admin & Judge</Link>
-                                </Button>
-                            </>
-                        )}
-                    </div>
-                    
-                    <div className="md:hidden">
-                        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                            <SheetTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <Menu className="h-6 w-6" />
-                                    <span className="sr-only">Open Menu</span>
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side="right" className="w-[280px]">
-                                <SheetHeader>
-                                    <SheetTitle>
-                                         <Link href="/" className="flex items-center gap-3" onClick={closeMobileMenu}>
-                                            <Trophy className="h-6 w-6 text-primary" />
-                                            <span className="font-bold text-lg font-headline">HackSprint</span>
-                                            </Link>
-                                    </SheetTitle>
-                                </SheetHeader>
-                                <nav className="flex flex-col gap-4 py-8">
-                                    <NavLink href="/guidance" onClick={closeMobileMenu}>Guidance</NavLink>
-                                    <NavLink href="/gallery" onClick={closeMobileMenu}>Gallery</NavLink>
-                                    <NavLink href="/teams" onClick={closeMobileMenu}>Teams</NavLink>
-                                    <NavLink href="/leaderboard" onClick={closeMobileMenu}>Leaderboard</NavLink>
-                                    <NavLink href="/results" onClick={closeMobileMenu}>Results</NavLink>
-                                    <NavLink href="/partners" onClick={closeMobileMenu}>Partners</NavLink>
-                                    <NavLink href="/support" onClick={closeMobileMenu}>Support</NavLink>
-                                </nav>
-                                <div className="border-t pt-4 space-y-2">
-                                    <Button variant="outline" className="w-full" onClick={() => {handleChangeCollege(); closeMobileMenu();}}>
-                                        Change College
-                                    </Button>
-                                    {currentUser ? (
-                                        <div className="flex flex-col gap-2">
-                                           <Button variant="ghost" asChild><Link href="/profile" onClick={closeMobileMenu}>Profile</Link></Button>
-                                            <Button variant="secondary" onClick={handleLogout}>Logout</Button>
-                                        </div>
-                                    ) : currentJudge ? (
-                                        <div className="flex flex-col gap-2">
-                                             <span className="text-sm text-muted-foreground text-center py-2">Judge: {currentJudge.name}</span>
-                                             <Button variant="secondary" onClick={handleLogout}>Logout</Button>
-                                        </div>
-                                    ): currentAdmin ? (
-                                         <div className="flex flex-col gap-2">
-                                            <span className="text-sm text-muted-foreground text-center py-2">Welcome, Admin</span>
-                                            <Button variant="secondary" onClick={handleLogout}>Logout</Button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col gap-2">
-                                            <Button variant="secondary" asChild>
-                                                <Link href="/student" onClick={closeMobileMenu}>Student Portal</Link>
-                                            </Button>
-                                            <Button variant="default" asChild>
-                                                <Link href="/judge" onClick={closeMobileMenu}>Admin & Judge</Link>
-                                            </Button>
-                                        </div>
-                                    )}
-                                </div>
-                            </SheetContent>
-                        </Sheet>
-                    </div>
-                </div>
+        <>
+            {/* The Dock Navigation */}
+            <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center">
+                 <Dock items={[...dockItems, ...actionItems]} panelHeight={68} baseItemSize={50} magnification={70} />
             </div>
-        </header>
+
+            {/* Sheets for Announcements and Notifications */}
+            <Sheet open={isAnnouncementsOpen} onOpenChange={setIsAnnouncementsOpen}>
+                <SheetContent className="w-full sm:max-w-sm">
+                    <SheetHeader>
+                        <SheetTitle>Announcements</SheetTitle>
+                    </SheetHeader>
+                    <div className="py-4 space-y-4">
+                        {activeAnnouncements.length > 0 ? activeAnnouncements.map(ann => (
+                            <div key={ann.id} className="p-3 bg-muted rounded-md">
+                                <p className="text-sm text-foreground">{ann.message}</p>
+                                <p className="text-xs text-muted-foreground mt-2">
+                                    {formatDistanceToNow(new Date(ann.publishAt || ann.timestamp), { addSuffix: true })}
+                                </p>
+                            </div>
+                        )) : <p className="text-muted-foreground text-center pt-8">No announcements yet.</p>}
+                    </div>
+                </SheetContent>
+            </Sheet>
+
+            <Sheet open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
+                <SheetContent className="w-full sm:max-w-sm">
+                    <SheetHeader>
+                        <SheetTitle>Notifications</SheetTitle>
+                    </SheetHeader>
+                    <div className="py-4 space-y-2">
+                        {sortedNotifications.length > 0 ? (
+                            sortedNotifications.slice(0, 10).map(n => (
+                                <Link key={n.id} href={n.link} className={`block p-3 rounded-md ${!n.isRead ? 'bg-muted' : ''}`} onClick={() => setIsNotificationsOpen(false)}>
+                                    <p className={`text-sm ${!n.isRead ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{n.message}</p>
+                                    <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(n.timestamp), { addSuffix: true })}</p>
+                                </Link>
+                            ))
+                        ) : (
+                            <p className="text-muted-foreground text-center pt-8">No notifications yet.</p>
+                        )}
+                         <div className="text-center pt-4">
+                            <Button variant="link" asChild onClick={() => setIsNotificationsOpen(false)}>
+                                <Link href="/support/tickets">View All Tickets</Link>
+                            </Button>
+                        </div>
+                    </div>
+                </SheetContent>
+            </Sheet>
+        </>
     );
 };
-
-    

@@ -69,7 +69,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
-            <main className="flex-grow">
+            <main className="flex-grow pb-24">
                 {children}
             </main>
             <Footer />
