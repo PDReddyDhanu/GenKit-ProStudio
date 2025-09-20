@@ -4,7 +4,9 @@
       "NEXT_PUBLIC_GEMINI_API_KEY": "AIzaSyCzyd14-05YK9OMlV-fyBg9re0Fd0LfUcY"
     }
   },
-  
+  "ignore": [
+    "git.deployment.no-team-access-for-commit"
+  ],
   "buildCommand": "npm run vercel-build",
   "outputDirectory": ".next"
 }
