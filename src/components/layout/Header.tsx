@@ -137,9 +137,17 @@ export function Header() {
                                         <Link href="/admin"><UserCircle className="mr-2 h-4 w-4"/> Admin Dashboard</Link>
                                     </Button>
                                 ) : currentJudge ? (
-                                     <Button variant="outline" size="sm" asChild>
-                                        <Link href="/judge/profile"><UserCircle className="mr-2 h-4 w-4"/> {currentJudge.name}</Link>
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" size="sm">
+                                                <UserCircle className="mr-2 h-4 w-4"/> {currentJudge.name}
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem asChild><Link href="/judge"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
+                                            <DropdownMenuItem asChild><Link href="/judge/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 ) : currentUser ? (
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
