@@ -133,9 +133,17 @@ export function Header() {
                         {loggedInUser ? (
                             <>
                                 {currentAdmin ? (
-                                    <Button variant="outline" size="sm" asChild>
-                                        <Link href="/admin"><UserCircle className="mr-2 h-4 w-4"/> Admin Dashboard</Link>
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" size="sm">
+                                                <UserCircle className="mr-2 h-4 w-4"/> Admin
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem asChild><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
+                                            <DropdownMenuItem asChild><Link href="/admin/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 ) : currentJudge ? (
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -144,7 +152,7 @@ export function Header() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            <DropdownMenuItem asChild><Link href="/judge"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
+                                            <DropdownMenuItem asChild><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
                                             <DropdownMenuItem asChild><Link href="/judge/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>

@@ -92,6 +92,15 @@ export async function changePassword(collegeId: string, { oldPassword, newPasswo
     }
 }
 
+let adminPassword = 'hack123'; // In-memory password
+
+export async function changeAdminPassword(collegeId: string, { oldPassword, newPassword }: { oldPassword: string, newPassword: string }) {
+    if (oldPassword !== adminPassword) {
+        throw new Error("The old admin password you entered is incorrect.");
+    }
+    adminPassword = newPassword;
+    return { successMessage: "Admin password has been changed successfully for this session." };
+}
 
 export async function registerStudent(collegeId: string, { name, email, password }: any) {
     try {
@@ -145,7 +154,7 @@ export async function loginJudge(collegeId: string, { email, password }: any) {
 }
 
 export async function loginAdmin({ email, password }: any) {
-    if (email !== 'hacksprint@admin.com' || password !== 'hack123') {
+    if (email !== 'hacksprint@admin.com' || password !== adminPassword) {
         throw new Error('Invalid admin credentials.');
     }
     return { successMessage: 'Admin login successful!', isAdmin: true };
