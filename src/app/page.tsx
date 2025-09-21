@@ -150,6 +150,7 @@ const HowItWorksAnimation = () => {
             {/* The SVG Road */}
             <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
                 <path 
+                    id="road-path"
                     d="M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380" 
                     fill="none" 
                     stroke="hsl(var(--border))" 
@@ -157,6 +158,7 @@ const HowItWorksAnimation = () => {
                     strokeDasharray="10 5"
                     className="animate-road-draw"
                 />
+                 <Car className="text-primary w-8 h-8 animate-move-bike" />
             </svg>
 
             {/* The Steps */}
@@ -447,3 +449,4 @@ export default function Home() {
     
 
     
+
