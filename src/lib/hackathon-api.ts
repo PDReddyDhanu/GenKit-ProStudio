@@ -56,20 +56,12 @@ async function getAuthUser(email: string, password: any) {
 // --- Auth ---
 
 export async function sendPasswordResetEmail(collegeId: string, email: string) {
-    const actionCodeSettings = {
-        url: `${window.location.origin}/student`,
-        handleCodeInApp: true,
-    };
-    
-    // To prevent user enumeration, we can return a success message even if the user doesn't exist.
-    // The actual email sending is best-effort.
     try {
-        await firebaseSendPasswordResetEmail(auth, email, actionCodeSettings);
+        await firebaseSendPasswordResetEmail(auth, email);
         return { successMessage: 'A password reset email has been sent. Please check your inbox (and spam folder).' };
     } catch(error: any) {
-        // To prevent user enumeration, we can return a success message even if the user doesn't exist.
         console.warn("Could not send password reset email. This might be because the user doesn't exist or due to a network error.", error.message);
-        return { successMessage: 'Your account is pending for admin or judge approval and you have to verify your email id by clicking link on mail i sent now check on spam folder.' };
+        return { successMessage: 'If an account exists for this email, a password reset link has been sent. Please check your inbox.' };
     }
 }
 
@@ -122,7 +114,7 @@ export async function registerStudent(collegeId: string, { name, email, password
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
         
-        // Send verification email
+        // Send verification email using Firebase's default flow
         await sendEmailVerification(userCredential.user);
         
         await firebaseSignOut(auth); // Sign out immediately after registration
