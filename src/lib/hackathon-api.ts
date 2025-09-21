@@ -10,7 +10,8 @@ import {
     sendPasswordResetEmail as firebaseSendPasswordResetEmail,
     reauthenticateWithCredential,
     EmailAuthProvider,
-    updatePassword
+    updatePassword,
+    sendEmailVerification,
 } from 'firebase/auth';
 import { 
     doc, 
@@ -55,20 +56,21 @@ async function getAuthUser(email: string, password: any) {
 // --- Auth ---
 
 export async function sendPasswordResetEmail(collegeId: string, email: string) {
-    // Check if user exists in the college's user list first
-    const usersRef = collection(db, `colleges/${collegeId}/users`);
-    const q = query(usersRef, where("email", "==", email));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-        // To prevent user enumeration, we can send a generic message.
-        // Or for better UX, we can tell them the user doesn't exist for this college.
-        // Let's choose the more secure option for now.
-        // throw new Error("No student account found with this email for the selected college.");
-    }
+    const actionCodeSettings = {
+        url: `${window.location.origin}/student`,
+        handleCodeInApp: true,
+    };
     
-    await firebaseSendPasswordResetEmail(auth, email);
-    return { successMessage: 'Password reset email sent. Please check your inbox (and spam folder).' };
+    // To prevent user enumeration, we can return a success message even if the user doesn't exist.
+    // The actual email sending is best-effort.
+    try {
+        await firebaseSendPasswordResetEmail(auth, email, actionCodeSettings);
+        return { successMessage: 'A password reset email has been sent. Please check your inbox (and spam folder).' };
+    } catch(error: any) {
+        // To prevent user enumeration, we can return a success message even if the user doesn't exist.
+        console.warn("Could not send password reset email. This might be because the user doesn't exist or due to a network error.", error.message);
+        return { successMessage: 'If an account exists for this email, a password reset link has been sent.' };
+    }
 }
 
 export async function changePassword(collegeId: string, { oldPassword, newPassword }: any) {
@@ -117,15 +119,14 @@ export async function registerStudent(collegeId: string, { name, email, password
             linkedin: '',
             workStyle: [],
             notifications: [],
-            gender: '',
-            contactNumber: '',
-            experience: '',
-            city: '',
-            state: '',
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
+        
+        // Send verification email
+        await sendEmailVerification(userCredential.user);
+        
         await firebaseSignOut(auth); // Sign out immediately after registration
-        return { successMessage: 'Registration successful! Your account is pending admin approval.' };
+        return { successMessage: 'Registration successful! A verification email has been sent. Please verify your email before logging in.' };
     } catch(error: any) {
         if (error.code === 'auth/email-already-in-use') {
             throw new Error('This email address is already registered. Please try logging in instead.');
@@ -141,6 +142,12 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
         await firebaseSignOut(auth); // Sign out if record not found for this college
         throw new Error("Student record not found for this college.");
     }
+
+    if (!userCredential.user.emailVerified) {
+        await firebaseSignOut(auth);
+        throw new Error("Please verify your email address before logging in. Check your inbox for the verification link.");
+    }
+
     const user = userDoc.data() as User;
     if (user.status === 'pending') {
         await firebaseSignOut(auth);
@@ -256,11 +263,6 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             email,
             status: 'approved',
             skills: [], bio: '', github: '', linkedin: '', workStyle: [], notifications: [],
-            gender: '',
-            contactNumber: '',
-            experience: '',
-            city: '',
-            state: '',
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
@@ -818,3 +820,5 @@ export async function resetAllUsers(collegeId: string) {
     
     return { successMessage: "All user records have been deleted from the database. Auth accounts may still exist." };
 }
+
+    

@@ -141,3 +141,5 @@ export interface HackathonData {
     hackathons: Hackathon[];
     supportTickets: SupportTicket[];
 }
+
+    
