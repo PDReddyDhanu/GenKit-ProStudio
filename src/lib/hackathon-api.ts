@@ -117,6 +117,11 @@ export async function registerStudent(collegeId: string, { name, email, password
             linkedin: '',
             workStyle: [],
             notifications: [],
+            gender: '',
+            contactNumber: '',
+            experience: '',
+            city: '',
+            state: '',
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
         await firebaseSignOut(auth); // Sign out immediately after registration
@@ -220,7 +225,21 @@ export async function removeJudge(collegeId: string, judgeId: string) {
 }
 
 export async function approveStudent(collegeId: string, userId: string) {
-    await updateDoc(doc(db, `colleges/${collegeId}/users`, userId), { status: 'approved' });
+    const userRef = doc(db, `colleges/${collegeId}/users`, userId);
+    await updateDoc(userRef, { status: 'approved' });
+
+    // Create a notification for the student
+    const notification = {
+        id: doc(collection(db, 'dummy')).id,
+        message: "Welcome to HackSprint! Your registration has been approved. Time to build something amazing.",
+        link: `/student`,
+        timestamp: Date.now(),
+        isRead: false,
+    };
+    await updateDoc(userRef, {
+        notifications: arrayUnion(notification)
+    });
+
     return { successMessage: "Student approved successfully." };
 }
 
@@ -236,7 +255,12 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             name,
             email,
             status: 'approved',
-            skills: [], bio: '', github: '', linkedin: '', workStyle: [], notifications: []
+            skills: [], bio: '', github: '', linkedin: '', workStyle: [], notifications: [],
+            gender: '',
+            contactNumber: '',
+            experience: '',
+            city: '',
+            state: '',
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
