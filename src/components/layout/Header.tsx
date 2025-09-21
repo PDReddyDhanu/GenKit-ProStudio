@@ -111,6 +111,7 @@ function AuthButtons() {
              <Button variant="secondary" size="sm" asChild className="w-full justify-start">
                  <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin Portal </Link>
              </Button>
+             <Button variant="ghost" size="sm" onClick={handleChangeCollege} className="w-full justify-start"><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
         </>
     );
 }
