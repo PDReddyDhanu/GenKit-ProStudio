@@ -126,7 +126,7 @@ export async function registerStudent(collegeId: string, { name, email, password
         await sendEmailVerification(userCredential.user);
         
         await firebaseSignOut(auth); // Sign out immediately after registration
-        return { successMessage: 'Registration successful! A verification email has been sent. Please verify your email before logging in.' };
+        return { successMessage: 'Registration successful! Your account is pending admin approval. Please also verify your email by clicking the link in the email we just sent (check your spam folder!).' };
     } catch(error: any) {
         if (error.code === 'auth/email-already-in-use') {
             throw new Error('This email address is already registered. Please try logging in instead.');
@@ -820,5 +820,3 @@ export async function resetAllUsers(collegeId: string) {
     
     return { successMessage: "All user records have been deleted from the database. Auth accounts may still exist." };
 }
-
-    
