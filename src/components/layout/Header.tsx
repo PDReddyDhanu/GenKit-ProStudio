@@ -24,25 +24,30 @@ import {
 import { useTheme } from "next-themes";
 import Link from 'next/link';
 
-function NavLinks() {
+function NavLinks({ onLinkClick }: { onLinkClick?: () => void }) {
     return (
         <>
-            <li><Link href="/" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Home className="h-4 w-4"/> Home</Link></li>
-            <li><Link href="/guidance" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Lightbulb className="h-4 w-4"/> Guidance</Link></li>
-            <li><Link href="/gallery" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><GalleryVertical className="h-4 w-4"/> Gallery</Link></li>
-            <li><Link href="/teams" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Users className="h-4 w-4"/> Teams</Link></li>
-            <li><Link href="/leaderboard" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><TrendingUp className="h-4 w-4"/> Leaderboard</Link></li>
-            <li><Link href="/results" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Trophy className="h-4 w-4"/> Results</Link></li>
-            <li><Link href="/partners" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Handshake className="h-4 w-4"/> Partners</Link></li>
-            <li><Link href="/support" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><LifeBuoy className="h-4 w-4"/> Support</Link></li>
+            <li><Link href="/" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Home className="h-4 w-4"/> Home</Link></li>
+            <li><Link href="/guidance" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Lightbulb className="h-4 w-4"/> Guidance</Link></li>
+            <li><Link href="/gallery" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><GalleryVertical className="h-4 w-4"/> Gallery</Link></li>
+            <li><Link href="/teams" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Users className="h-4 w-4"/> Teams</Link></li>
+            <li><Link href="/leaderboard" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><TrendingUp className="h-4 w-4"/> Leaderboard</Link></li>
+            <li><Link href="/results" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Trophy className="h-4 w-4"/> Results</Link></li>
+            <li><Link href="/partners" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Handshake className="h-4 w-4"/> Partners</Link></li>
+            <li><Link href="/support" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><LifeBuoy className="h-4 w-4"/> Support</Link></li>
         </>
     );
 }
 
-function AuthButtons() {
+function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
     const { state, api, dispatch } = useHackathon();
     const { currentUser, currentJudge, currentAdmin } = state;
     const router = useRouter();
+
+    const handleAction = (action: () => void) => {
+        if (onLinkClick) onLinkClick();
+        action();
+    }
 
     const handleLogout = async () => {
         await api.signOut();
@@ -68,8 +73,12 @@ function AuthButtons() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuItem asChild><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
-                            <DropdownMenuItem asChild><Link href="/admin/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                <Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                <Link href="/admin/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ) : currentJudge ? (
@@ -80,8 +89,12 @@ function AuthButtons() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuItem asChild><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
-                            <DropdownMenuItem asChild><Link href="/judge/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
+                             <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                <Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                <Link href="/judge/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ) : currentUser ? (
@@ -92,26 +105,30 @@ function AuthButtons() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuItem asChild><Link href="/student"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
-                            <DropdownMenuItem asChild><Link href="/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                <Link href="/student"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                <Link href="/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ) : null}
-                 <Button variant="ghost" size="sm" onClick={handleLogout} className="w-full justify-start"><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
-                 <Button variant="ghost" size="sm" onClick={handleChangeCollege} className="w-full justify-start"><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
+                 <Button variant="ghost" size="sm" onClick={() => handleAction(handleLogout)} className="w-full justify-start"><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
+                 <Button variant="ghost" size="sm" onClick={() => handleAction(handleChangeCollege)} className="w-full justify-start"><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
             </>
         );
     }
 
     return (
          <>
-             <Button size="sm" asChild className="w-full justify-start">
+             <Button size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
                  <Link href="/student"><User className="mr-2 h-4 w-4"/> Student Portal </Link>
              </Button>
-             <Button variant="secondary" size="sm" asChild className="w-full justify-start">
+             <Button variant="secondary" size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
                  <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin Portal </Link>
              </Button>
-             <Button variant="ghost" size="sm" onClick={handleChangeCollege} className="w-full justify-start"><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
+             <Button variant="ghost" size="sm" onClick={() => handleAction(handleChangeCollege)} className="w-full justify-start"><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
         </>
     );
 }
@@ -124,6 +141,7 @@ export function Header() {
 
     const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     
     const [hasUnreadAnnouncements, setHasUnreadAnnouncements] = useState(false);
 
@@ -173,6 +191,8 @@ export function Header() {
         return [...(currentUser?.notifications || [])].sort((a, b) => b.timestamp - a.timestamp);
     }, [currentUser?.notifications]);
 
+    const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
     return (
         <>
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
@@ -209,17 +229,17 @@ export function Header() {
                         </div>
                         
                         <div className="md:hidden">
-                             <Sheet>
+                             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                                  <SheetTrigger asChild>
                                     <Button variant="ghost" size="icon">
                                         <Menu className="h-5 w-5" />
                                         <span className="sr-only">Toggle Menu</span>
                                     </Button>
                                 </SheetTrigger>
-                                <SheetContent side="left" className="w-[300px]">
+                                <SheetContent side="right" className="w-[300px]">
                                      <SheetHeader>
                                         <SheetTitle>
-                                             <Link href="/" className="flex items-center gap-2">
+                                             <Link href="/" onClick={closeMobileMenu} className="flex items-center gap-2">
                                                  <Trophy className="h-6 w-6 text-primary" />
                                                  <span className="font-bold font-headline">HackSprint</span>
                                              </Link>
@@ -227,11 +247,11 @@ export function Header() {
                                     </SheetHeader>
                                     <nav className="mt-8">
                                         <ul className="flex flex-col space-y-4 text-lg">
-                                            <NavLinks />
+                                            <NavLinks onLinkClick={closeMobileMenu} />
                                         </ul>
                                     </nav>
                                     <div className="mt-8 pt-4 border-t flex flex-col gap-2">
-                                        <AuthButtons />
+                                        <AuthButtons onLinkClick={closeMobileMenu} />
                                     </div>
                                 </SheetContent>
                              </Sheet>
