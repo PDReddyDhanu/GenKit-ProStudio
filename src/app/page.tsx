@@ -288,6 +288,33 @@ export default function Home() {
         </section>
 
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
+             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">Powered by the Latest Technology</h2>
+              <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Built on a modern, scalable, and AI-first tech stack to deliver a seamless experience.</p>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                 <div className="text-center p-6 border rounded-lg">
+                    <Server className="w-10 h-10 mx-auto mb-3 text-primary"/>
+                    <h3 className="text-lg font-bold font-headline">Next.js & React</h3>
+                    <p className="text-sm text-muted-foreground mt-1">For a lightning-fast, server-rendered user interface.</p>
+                </div>
+                 <div className="text-center p-6 border rounded-lg">
+                    <BrainCircuit className="w-10 h-10 mx-auto mb-3 text-primary"/>
+                    <h3 className="text-lg font-bold font-headline">Google AI & Genkit</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Powering all intelligent features from idea generation to code review.</p>
+                </div>
+                 <div className="text-center p-6 border rounded-lg">
+                    <CodeXml className="w-10 h-10 mx-auto mb-3 text-primary"/>
+                    <h3 className="text-lg font-bold font-headline">ShadCN/UI & Tailwind</h3>
+                    <p className="text-sm text-muted-foreground mt-1">For a beautiful, responsive, and accessible design system.</p>
+                </div>
+                 <div className="text-center p-6 border rounded-lg">
+                    <Search className="w-10 h-10 mx-auto mb-3 text-primary"/>
+                    <h3 className="text-lg font-bold font-headline">Firebase & Vercel</h3>
+                    <p className="text-sm text-muted-foreground mt-1">Reliable backend services and seamless, scalable deployment.</p>
+                </div>
+             </div>
+        </section>
+
+        <section className="py-24 scroll-m-20" data-animate-on-scroll>
              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">How It Works</h2>
              <HowItWorksAnimation />
         </section>
