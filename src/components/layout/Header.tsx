@@ -1,11 +1,10 @@
-
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun } from 'lucide-react';
+import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun, Home } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -88,7 +87,7 @@ export function Header() {
     }, [currentUser?.notifications]);
 
     const dockItems: DockItemData[] = [
-        { icon: <Trophy size={24} />, label: 'Home', onClick: () => router.push('/') },
+        { icon: <Home size={24} />, label: 'Home', onClick: () => router.push('/') },
         { icon: <Lightbulb size={24} />, label: 'Guidance', onClick: () => router.push('/guidance') },
         { icon: <GalleryVertical size={24} />, label: 'Gallery', onClick: () => router.push('/gallery') },
         { icon: <Users size={24} />, label: 'Teams', onClick: () => router.push('/teams') },
