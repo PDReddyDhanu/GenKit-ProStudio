@@ -74,10 +74,6 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       keyframes: {
-        'move-bike': {
-          '0%': { motionOffset: '0%' },
-          '100%': { motionOffset: '100%' },
-        },
         gradient: {
           '0%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
@@ -157,7 +153,6 @@ export default {
         }
       },
       animation: {
-        'move-bike': 'move-bike 10s linear infinite',
         'gradient': 'gradient 8s linear infinite',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
