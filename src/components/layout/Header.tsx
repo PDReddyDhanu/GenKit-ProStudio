@@ -1,10 +1,11 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun, Home } from 'lucide-react';
+import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun, Home, User, Scale } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -14,7 +15,6 @@ import {
 } from "@/components/ui/sheet";
 import { useTheme } from "next-themes";
 import Link from 'next/link';
-import Dock, { DockItemData } from '@/components/ui/Dock';
 
 export function Header() {
     const { state, api, dispatch } = useHackathon();
@@ -86,71 +86,60 @@ export function Header() {
         return [...(currentUser?.notifications || [])].sort((a, b) => b.timestamp - a.timestamp);
     }, [currentUser?.notifications]);
 
-    const dockItems: DockItemData[] = [
-        { icon: <Home size={24} />, label: 'Home', onClick: () => router.push('/') },
-        { icon: <Lightbulb size={24} />, label: 'Guidance', onClick: () => router.push('/guidance') },
-        { icon: <GalleryVertical size={24} />, label: 'Gallery', onClick: () => router.push('/gallery') },
-        { icon: <Users size={24} />, label: 'Teams', onClick: () => router.push('/teams') },
-        { icon: <TrendingUp size={24} />, label: 'Leaderboard', onClick: () => router.push('/leaderboard') },
-        { icon: <Trophy size={24} />, label: 'Results', onClick: () => router.push('/results') },
-        { icon: <Handshake size={24} />, label: 'Partners', onClick: () => router.push('/partners') },
-        { icon: <LifeBuoy size={24} />, label: 'Support', onClick: () => router.push('/support') },
-    ];
-
-    const actionItems: DockItemData[] = [
-        {
-            icon: <div className="relative"><Rss size={24} />{hasUnreadAnnouncements && <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-primary" />}</div>,
-            label: 'Announcements',
-            onClick: handleAnnouncementsOpen,
-        },
-    ];
-
-    if (currentUser) {
-        actionItems.push({
-            icon: <div className="relative"><Bell size={24} />{unreadNotifications.length > 0 && <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-primary" />}</div>,
-            label: 'Notifications',
-            onClick: handleNotificationsOpen,
-        });
-    }
-
-    actionItems.push({
-        icon: theme === 'dark' ? <Sun size={24} /> : <Moon size={24} />,
-        label: theme === 'dark' ? 'Light Mode' : 'Dark Mode',
-        onClick: toggleTheme,
-    });
-    
-    if (loggedInUser) {
-        actionItems.push({
-            icon: <UserCircle size={24} />,
-            label: 'Profile',
-            onClick: () => router.push('/profile'),
-        });
-        actionItems.push({
-            icon: <LogOut size={24} />,
-            label: 'Logout',
-            onClick: handleLogout,
-        });
-    } else {
-        actionItems.push({
-            icon: <Building2 size={24} />,
-            label: 'Change College',
-            onClick: handleChangeCollege,
-        });
-    }
-
     return (
         <>
-            <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-sm">
-                <div className="container flex h-14 items-center">
-                    <div className="flex items-center justify-start">
+            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
+                <div className="container flex h-14 max-w-screen-2xl items-center">
+                     <div className="mr-4 hidden md:flex">
                          <Link href="/" className="flex items-center gap-2">
                              <Trophy className="h-6 w-6 text-primary" />
                              <span className="font-bold font-headline">HackSprint</span>
                          </Link>
-                    </div>
-                     <nav className="flex-1 flex justify-center">
-                        <Dock items={[...dockItems, ...actionItems]} panelHeight={68} baseItemSize={40} magnification={60} />
-                    </nav>
+                     </div>
+                     <nav className="flex-1">
+                         <ul className="flex items-center justify-center space-x-6 text-sm font-medium">
+                            <li><Link href="/guidance" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Lightbulb className="h-4 w-4"/> Guidance</Link></li>
+                            <li><Link href="/gallery" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><GalleryVertical className="h-4 w-4"/> Gallery</Link></li>
+                            <li><Link href="/teams" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Users className="h-4 w-4"/> Teams</Link></li>
+                            <li><Link href="/leaderboard" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><TrendingUp className="h-4 w-4"/> Leaderboard</Link></li>
+                            <li><Link href="/results" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Trophy className="h-4 w-4"/> Results</Link></li>
+                            <li><Link href="/partners" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Handshake className="h-4 w-4"/> Partners</Link></li>
+                            <li><Link href="/support" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><LifeBuoy className="h-4 w-4"/> Support</Link></li>
+                         </ul>
+                     </nav>
+                     <div className="flex items-center justify-end space-x-2">
+                        <Button variant="ghost" size="icon" onClick={handleAnnouncementsOpen} className="relative">
+                            <Rss className="h-4 w-4" />
+                            {hasUnreadAnnouncements && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />}
+                        </Button>
+                        {currentUser && (
+                             <Button variant="ghost" size="icon" onClick={handleNotificationsOpen} className="relative">
+                                <Bell className="h-4 w-4" />
+                                {unreadNotifications.length > 0 && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />}
+                            </Button>
+                        )}
+                        <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                        </Button>
+                        {loggedInUser ? (
+                            <>
+                                 <Button variant="outline" size="sm" asChild>
+                                    <Link href="/profile"><UserCircle className="mr-2 h-4 w-4"/> Profile</Link>
+                                 </Button>
+                                 <Button variant="ghost" size="sm" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
+                            </>
+                        ) : (
+                             <>
+                                 <Button size="sm" asChild>
+                                     <Link href="/student"><User className="mr-2 h-4 w-4"/> Student Portal</Link>
+                                 </Button>
+                                 <Button variant="secondary" size="sm" asChild>
+                                     <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin Portal</Link>
+                                 </Button>
+                            </>
+                        )}
+                     </div>
                 </div>
             </header>
 
