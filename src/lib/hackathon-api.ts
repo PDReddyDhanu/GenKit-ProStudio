@@ -26,7 +26,8 @@ import {
     arrayUnion,
     arrayRemove,
     orderBy,
-    limit
+    limit,
+    writeBatch
 } from 'firebase/firestore';
 import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportTicketResponse } from './types';
 import { JUDGING_RUBRIC, INDIVIDUAL_JUDGING_RUBRIC } from './constants';
@@ -168,7 +169,7 @@ export async function signOut() {
 
 // --- Admin & Judge ---
 
-export async function addJudge(collegeId: string, { name, email, password }: any) {
+export async function addJudge(collegeId: string, { name, email, password, gender, contactNumber, bio }: any) {
     if (!email.toLowerCase().endsWith('@judge.com')) {
         throw new Error('Judge email must end with @judge.com');
     }
@@ -183,9 +184,9 @@ export async function addJudge(collegeId: string, { name, email, password }: any
             id: judgeAuthUser.uid,
             name, 
             email,
-            gender: '',
-            contactNumber: '',
-            bio: '',
+            gender,
+            contactNumber,
+            bio,
         };
         await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
         
@@ -735,4 +736,61 @@ export async function markNotificationsAsRead(collegeId: string, userId: string,
 
     await updateDoc(userRef, { notifications: updatedNotifications });
     return { successMessage: "Notifications marked as read." };
+}
+
+
+// --- Data Reset Functions ---
+
+export async function resetCurrentHackathon(collegeId: string, hackathonId: string) {
+    const batch = writeBatch(db);
+
+    // Delete projects for the hackathon
+    const projectsQuery = query(collection(db, `colleges/${collegeId}/projects`), where("hackathonId", "==", hackathonId));
+    const projectsSnapshot = await getDocs(projectsQuery);
+    projectsSnapshot.forEach(doc => batch.delete(doc.ref));
+
+    // Delete teams for the hackathon
+    const teamsQuery = query(collection(db, `colleges/${collegeId}/teams`), where("hackathonId", "==", hackathonId));
+    const teamsSnapshot = await getDocs(teamsQuery);
+    teamsSnapshot.forEach(doc => batch.delete(doc.ref));
+
+    await batch.commit();
+    return { successMessage: "Current hackathon data has been reset." };
+}
+
+export async function resetAllHackathons(collegeId: string) {
+    const batch = writeBatch(db);
+
+    const collectionsToReset = ['hackathons', 'projects', 'teams'];
+    for (const col of collectionsToReset) {
+        const querySnapshot = await getDocs(collection(db, `colleges/${collegeId}/${col}`));
+        querySnapshot.forEach(doc => batch.delete(doc.ref));
+    }
+
+    await batch.commit();
+    return { successMessage: "All hackathon data has been reset." };
+}
+
+export async function resetAllUsers(collegeId: string) {
+    // This is a very destructive operation and should ideally be handled by a backend function
+    // with proper admin authentication for security. The client-side approach is for demonstration.
+    
+    const batch = writeBatch(db);
+    const usersQuery = query(collection(db, `colleges/${collegeId}/users`));
+    const usersSnapshot = await getDocs(usersQuery);
+    
+    if (usersSnapshot.empty) {
+        return { successMessage: "No users to reset." };
+    }
+
+    usersSnapshot.forEach(doc => {
+        batch.delete(doc.ref);
+        // Note: This does NOT delete users from Firebase Auth. 
+        // Deleting from Auth is a protected operation that can't be safely done in batch from the client.
+        // A real app would use a Cloud Function triggered by the Firestore deletion or an admin SDK.
+    });
+
+    await batch.commit();
+    
+    return { successMessage: "All user records have been deleted from the database. Auth accounts may still exist." };
 }

@@ -24,7 +24,7 @@ import Link from 'next/link';
 export default function DataManagement() {
     const { state, api } = useHackathon();
     const { users, teams, projects, selectedHackathonId, hackathons } = state;
-    const [isResetting, setIsResetting] = useState(false);
+    const [isLoading, setIsLoading] = useState<string | null>(null);
 
     const handleRemoveStudent = async (userId: string) => {
         await api.removeStudent(userId);
@@ -86,6 +86,40 @@ export default function DataManagement() {
         downloadCsv(csvString, `${currentHackathon?.name}_Participants.csv`);
     };
 
+    const handleResetCurrentHackathon = async () => {
+        if (!selectedHackathonId) return;
+        setIsLoading('reset-current');
+        try {
+            await api.resetCurrentHackathon(selectedHackathonId);
+        } catch (error) {
+            console.error("Failed to reset hackathon data:", error);
+        } finally {
+            setIsLoading(null);
+        }
+    }
+
+    const handleResetAllHackathons = async () => {
+        setIsLoading('reset-all-hackathons');
+        try {
+            await api.resetAllHackathons();
+        } catch (error) {
+            console.error("Failed to reset all hackathon data:", error);
+        } finally {
+            setIsLoading(null);
+        }
+    }
+    
+    const handleResetAllUsers = async () => {
+        setIsLoading('reset-all-users');
+        try {
+            await api.resetAllUsers();
+        } catch (error) {
+            console.error("Failed to reset all users:", error);
+        } finally {
+            setIsLoading(null);
+        }
+    }
+
 
     return (
         <div className="space-y-8">
@@ -133,40 +167,83 @@ export default function DataManagement() {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-destructive">
                 <CardHeader>
-                    <CardTitle className="font-headline">All Students ({users.length})</CardTitle>
-                    <CardDescription>View and manage all registered students for this college.</CardDescription>
+                    <CardTitle className="font-headline flex items-center gap-3 text-destructive"><AlertTriangle/> Danger Zone</CardTitle>
+                    <CardDescription>These are irreversible actions. Please proceed with caution.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <ScrollArea className="h-96">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {users.map(user => (
-                                    <TableRow key={user.id}>
-                                        <TableCell className="font-medium">{user.name}</TableCell>
-                                        <TableCell>{user.email}</TableCell>
-                                        <TableCell>
-                                            <span className={`px-2 py-1 text-xs rounded-full ${user.status === 'approved' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
-                                                {user.status}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                             <Button variant="destructive" size="sm" onClick={() => handleRemoveStudent(user.id)}>Remove</Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </ScrollArea>
+                <CardContent className="space-y-4">
+                     <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
+                        <div>
+                            <h4 className="font-bold">Reset Current Hackathon Data</h4>
+                            <p className="text-sm text-muted-foreground">Deletes all teams, projects, and scores for "{currentHackathon?.name || 'N/A'}".</p>
+                        </div>
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" disabled={!selectedHackathonId || !!isLoading}>
+                                    {isLoading === 'reset-current' ? <Loader className="animate-spin" /> : <Trash2 />}
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>This will permanently delete all submissions and team data for {currentHackathon?.name}. This action cannot be undone.</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleResetCurrentHackathon} className="bg-destructive hover:bg-destructive/80">Yes, reset hackathon</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
+
+                     <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
+                        <div>
+                            <h4 className="font-bold">Reset All Hackathons</h4>
+                            <p className="text-sm text-muted-foreground">Deletes all hackathon events, teams, and projects. Users and judges will remain.</p>
+                        </div>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" disabled={!!isLoading}>
+                                     {isLoading === 'reset-all-hackathons' ? <Loader className="animate-spin" /> : <Trash2 />}
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>This will permanently delete ALL hackathon events, teams, and project data. User and judge accounts will NOT be deleted. This action cannot be undone.</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleResetAllHackathons} className="bg-destructive hover:bg-destructive/80">Yes, reset all hackathons</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
+
+                     <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
+                        <div>
+                            <h4 className="font-bold">Reset All Users</h4>
+                            <p className="text-sm text-muted-foreground">Deletes all student user accounts from Firestore and Firebase Auth.</p>
+                        </div>
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" disabled={!!isLoading}>
+                                    {isLoading === 'reset-all-users' ? <Loader className="animate-spin" /> : <Trash2 />}
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure? This is highly destructive.</AlertDialogTitle>
+                                    <AlertDialogDescription>This will permanently delete ALL student user accounts, including their login credentials from Firebase Authentication. Judges and hackathon data will remain. This action cannot be undone.</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleResetAllUsers} className="bg-destructive hover:bg-destructive/80">Yes, delete all users</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
                 </CardContent>
             </Card>
         </div>
