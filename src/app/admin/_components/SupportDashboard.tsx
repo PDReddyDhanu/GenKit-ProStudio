@@ -128,7 +128,7 @@ const TicketCard = ({ ticket, onUpdateStatus }: { ticket: SupportTicket, onUpdat
                     
                     <div className="bg-muted/50 p-3 rounded-md space-y-3">
                         <p className="text-xs font-semibold uppercase text-muted-foreground">AI Triage</p>
-                        <p className="text-sm"><strong className="text-foreground">Category:</strong> <Badge variant="secondary">{ticket.category}</Badge></p>
+                        <div className="text-sm"><strong className="text-foreground">Category:</strong> <Badge variant="secondary">{ticket.category}</Badge></div>
                         <div>
                             <p className="text-sm font-semibold text-foreground">Suggested First Response:</p>
                             <p className="text-sm italic text-muted-foreground p-2 border-l-2 border-primary ml-2">"{ticket.suggestedResponse}"</p>
