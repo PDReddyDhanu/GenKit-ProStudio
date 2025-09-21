@@ -69,7 +69,7 @@ export async function sendPasswordResetEmail(collegeId: string, email: string) {
     } catch(error: any) {
         // To prevent user enumeration, we can return a success message even if the user doesn't exist.
         console.warn("Could not send password reset email. This might be because the user doesn't exist or due to a network error.", error.message);
-        return { successMessage: 'If an account exists for this email, a password reset link has been sent.' };
+        return { successMessage: 'Your account is pending for admin or judge approval and you have to verify your email id by clicking link on mail i sent now check on spam folder.' };
     }
 }
 
@@ -126,7 +126,7 @@ export async function registerStudent(collegeId: string, { name, email, password
         await sendEmailVerification(userCredential.user);
         
         await firebaseSignOut(auth); // Sign out immediately after registration
-        return { successMessage: 'Registration successful! Your account is pending admin approval. Please also verify your email by clicking the link in the email we just sent (check your spam folder!).' };
+        return { successMessage: 'Your account is pending for admin or judge approval and you have to verify your email id by clicking link on mail i sent now check on spam folder' };
     } catch(error: any) {
         if (error.code === 'auth/email-already-in-use') {
             throw new Error('This email address is already registered. Please try logging in instead.');
