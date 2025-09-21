@@ -39,12 +39,86 @@ function NavLinks() {
     );
 }
 
+function AuthButtons() {
+    const { state, api, dispatch } = useHackathon();
+    const { currentUser, currentJudge, currentAdmin } = state;
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await api.signOut();
+        router.push('/');
+    };
+
+    const handleChangeCollege = () => {
+        dispatch({ type: 'SET_SELECTED_COLLEGE', payload: null });
+        localStorage.removeItem('selectedCollege');
+        router.push('/');
+    };
+    
+    const loggedInUser = currentUser || currentJudge || currentAdmin;
+    
+    if (loggedInUser) {
+        return (
+            <>
+                {currentAdmin ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="w-full justify-start">
+                                <UserCircle className="mr-2 h-4 w-4"/> Admin
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem asChild><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild><Link href="/admin/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : currentJudge ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="w-full justify-start">
+                                <UserCircle className="mr-2 h-4 w-4"/> {currentJudge.name}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem asChild><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild><Link href="/judge/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : currentUser ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="w-full justify-start">
+                                <UserCircle className="mr-2 h-4 w-4"/> {currentUser.name}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem asChild><Link href="/student"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
+                            <DropdownMenuItem asChild><Link href="/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : null}
+                 <Button variant="ghost" size="sm" onClick={handleLogout} className="w-full justify-start"><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
+                 <Button variant="ghost" size="sm" onClick={handleChangeCollege} className="w-full justify-start"><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
+            </>
+        );
+    }
+
+    return (
+         <>
+             <Button size="sm" asChild className="w-full justify-start">
+                 <Link href="/student"><User className="mr-2 h-4 w-4"/> Student Portal </Link>
+             </Button>
+             <Button variant="secondary" size="sm" asChild className="w-full justify-start">
+                 <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin Portal </Link>
+             </Button>
+        </>
+    );
+}
+
 
 export function Header() {
-    const { state, api, dispatch } = useHackathon();
-    const { announcements, currentUser, currentJudge, currentAdmin } = state;
-    const router = useRouter();
-    const pathname = usePathname();
+    const { state, api } = useHackathon();
+    const { announcements, currentUser } = state;
     const { theme, setTheme } = useTheme();
 
     const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
@@ -74,17 +148,6 @@ export function Header() {
         }
     }, [activeAnnouncements]);
 
-    const handleLogout = async () => {
-        await api.signOut();
-        router.push('/');
-    };
-
-    const handleChangeCollege = () => {
-        dispatch({ type: 'SET_SELECTED_COLLEGE', payload: null });
-        localStorage.removeItem('selectedCollege');
-        router.push('/');
-    }
-    
     const handleAnnouncementsOpen = () => {
         setHasUnreadAnnouncements(false);
         if (activeAnnouncements.length > 0) {
@@ -105,7 +168,6 @@ export function Header() {
         setTheme(theme === "dark" ? "light" : "dark");
     };
     
-    const loggedInUser = currentUser || currentJudge || currentAdmin;
     const sortedNotifications = useMemo(() => {
         return [...(currentUser?.notifications || [])].sort((a, b) => b.timestamp - a.timestamp);
     }, [currentUser?.notifications]);
@@ -140,58 +202,10 @@ export function Header() {
                             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                         </Button>
-                        {loggedInUser ? (
-                            <>
-                                {currentAdmin ? (
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" size="sm">
-                                                <UserCircle className="mr-2 h-4 w-4"/> Admin
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuItem asChild><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
-                                            <DropdownMenuItem asChild><Link href="/admin/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                ) : currentJudge ? (
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" size="sm">
-                                                <UserCircle className="mr-2 h-4 w-4"/> {currentJudge.name}
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuItem asChild><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
-                                            <DropdownMenuItem asChild><Link href="/judge/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                ) : currentUser ? (
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" size="sm">
-                                                <UserCircle className="mr-2 h-4 w-4"/> {currentUser.name}
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuItem asChild><Link href="/student"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
-                                            <DropdownMenuItem asChild><Link href="/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                ) : null}
-                                 <Button variant="ghost" size="sm" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
-                                 <Button variant="ghost" size="sm" onClick={handleChangeCollege}><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
-                            </>
-                        ) : (
-                             <>
-                                 <Button size="sm" asChild>
-                                     <Link href="/student"><User className="mr-2 h-4 w-4"/> Get Started as Student</Link>
-                                 </Button>
-                                 <Button variant="secondary" size="sm" asChild>
-                                     <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Enter as Judge/Admin</Link>
-                                 </Button>
-                            </>
-                        )}
+                        
+                        <div className="hidden md:flex items-center gap-2">
+                            <AuthButtons />
+                        </div>
                         
                         <div className="md:hidden">
                              <Sheet>
@@ -201,7 +215,7 @@ export function Header() {
                                         <span className="sr-only">Toggle Menu</span>
                                     </Button>
                                 </SheetTrigger>
-                                <SheetContent side="left">
+                                <SheetContent side="left" className="w-[300px]">
                                      <SheetHeader>
                                         <SheetTitle>
                                              <Link href="/" className="flex items-center gap-2">
@@ -215,6 +229,9 @@ export function Header() {
                                             <NavLinks />
                                         </ul>
                                     </nav>
+                                    <div className="mt-8 pt-4 border-t flex flex-col gap-2">
+                                        <AuthButtons />
+                                    </div>
                                 </SheetContent>
                              </Sheet>
                         </div>
