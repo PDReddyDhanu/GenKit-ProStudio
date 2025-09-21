@@ -98,6 +98,7 @@ export function Header() {
                      </div>
                      <nav className="flex-1">
                          <ul className="flex items-center justify-center space-x-6 text-sm font-medium">
+                            <li><Link href="/" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Home className="h-4 w-4"/> Home</Link></li>
                             <li><Link href="/guidance" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Lightbulb className="h-4 w-4"/> Guidance</Link></li>
                             <li><Link href="/gallery" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><GalleryVertical className="h-4 w-4"/> Gallery</Link></li>
                             <li><Link href="/teams" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Users className="h-4 w-4"/> Teams</Link></li>
@@ -124,9 +125,17 @@ export function Header() {
                         </Button>
                         {loggedInUser ? (
                             <>
-                                 <Button variant="outline" size="sm" asChild>
-                                    <Link href="/profile"><UserCircle className="mr-2 h-4 w-4"/> Profile</Link>
-                                 </Button>
+                                {currentAdmin ? (
+                                    <>
+                                        <Button variant="outline" size="sm" asChild>
+                                            <Link href="/admin"><UserCircle className="mr-2 h-4 w-4"/> Dashboard</Link>
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href="/profile"><UserCircle className="mr-2 h-4 w-4"/> Profile</Link>
+                                    </Button>
+                                )}
                                  <Button variant="ghost" size="sm" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
                             </>
                         ) : (
@@ -139,6 +148,7 @@ export function Header() {
                                  </Button>
                             </>
                         )}
+                        <Button variant="ghost" size="sm" onClick={handleChangeCollege}><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
                      </div>
                 </div>
             </header>
