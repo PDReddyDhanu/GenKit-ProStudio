@@ -165,12 +165,16 @@ const HowItWorksAnimation = () => {
                         <stop offset="50%" stopColor="hsl(var(--primary))" />
                         <stop offset="100%" stopColor="hsla(var(--primary), 0)" />
                     </radialGradient>
+                    <linearGradient id="roadGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="hsl(var(--secondary))" />
+                        <stop offset="100%" stopColor="hsl(var(--primary))" />
+                    </linearGradient>
                 </defs>
                 <path 
                     id="road-path"
                     d={roadPath}
                     fill="none" 
-                    stroke="hsl(var(--border))" 
+                    stroke="url(#roadGradient)" 
                     strokeWidth="3" 
                     strokeDasharray="10 5"
                     className="animate-road-draw"
