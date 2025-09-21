@@ -123,10 +123,10 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
     return (
          <>
              <Button size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
-                 <Link href="/student"><User className="mr-2 h-4 w-4"/> Student Portal </Link>
+                 <Link href="/student"><User className="mr-2 h-4 w-4"/> Student </Link>
              </Button>
              <Button variant="secondary" size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
-                 <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin Portal </Link>
+                 <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin </Link>
              </Button>
              <Button variant="ghost" size="sm" onClick={() => handleAction(handleChangeCollege)} className="w-full justify-start"><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
         </>
