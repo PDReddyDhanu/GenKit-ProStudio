@@ -11,6 +11,7 @@ import Image from "next/image";
 import { useMemo } from 'react';
 import { useHackathon } from "@/context/HackathonProvider";
 import GradientText from "@/components/ui/GradientText";
+import { motion } from "framer-motion";
 
 const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
     <div 
@@ -144,22 +145,44 @@ const HowItWorksAnimation = () => {
         { title: "Build & Submit", description: "Use AI tools, collaborate, and submit your project.", icon: <Code className="w-6 h-6" />, position: { top: '70%', left: '5%' } },
         { title: "Compete & Win", description: "Get judged, climb the leaderboard, and win prizes!", icon: <Trophy className="w-6 h-6" />, position: { top: '92%', left: '90%' } },
     ];
+    
+    const roadPath = "M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380";
+    const bikePath = "M2.14,13.25l-.83.83,2.4,2.41,1.06-1.06-.83-.83-1.8,1.8ZM3.5,12.5a4.5,4.5,0,0,0,0-9,4.5,4.5,0,0,0,0,9Zm0-7.5a3,3,0,1,1-3,3,3,3,0,0,1,3-3Zm17,7.5a4.5,4.5,0,1,0-4.5-4.5,4.5,4.5,0,0,0,4.5,4.5Zm0-7.5a3,3,0,1,1-3,3,3,3,0,0,1,3-3ZM17,14H7a1,1,0,0,0,0,2h8.5l-1,1h-1a1,1,0,0,0-.71,1.71l1.42,1.41a1,1,0,0,0,1.41,0l2.12-2.12a1,1,0,0,0,0-1.41l-1.06-1.06-1.71,1.71L17,15.29V14Z";
 
     return (
         <div className="relative w-full max-w-4xl mx-auto h-[400px] md:h-[500px]">
-            {/* The SVG Road */}
-            <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+            {/* The SVG Road and Bike */}
+            <motion.svg 
+                viewBox="0 0 400 400" 
+                className="absolute inset-0 w-full h-full" 
+                preserveAspectRatio="none"
+            >
                 <path 
                     id="road-path"
-                    d="M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380" 
+                    d={roadPath}
                     fill="none" 
                     stroke="hsl(var(--border))" 
                     strokeWidth="3" 
                     strokeDasharray="10 5"
                     className="animate-road-draw"
                 />
-                 <Car className="text-primary w-8 h-8 animate-move-bike" />
-            </svg>
+                 <motion.path
+                    d={bikePath}
+                    className="text-primary"
+                    fill="currentColor"
+                    style={{ scale: 0.8 }}
+                >
+                    <animateMotion
+                        dur="10s"
+                        repeatCount="indefinite"
+                        rotate="auto"
+                        keyPoints="0;1"
+                        keyTimes="0;1"
+                    >
+                        <mpath href="#road-path" />
+                    </animateMotion>
+                 </motion.path>
+            </motion.svg>
 
             {/* The Steps */}
             {steps.map((step, index) => (
@@ -449,4 +472,3 @@ export default function Home() {
     
 
     
-

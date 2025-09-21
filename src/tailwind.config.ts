@@ -75,8 +75,8 @@ export default {
       },
       keyframes: {
         'move-bike': {
-            '0%': { offsetDistance: '0%' },
-            '100%': { offsetDistance: '100%' },
+          '0%': { motionOffset: '0%' },
+          '100%': { motionOffset: '100%' },
         },
         gradient: {
           '0%': { backgroundPosition: '0% 50%' },
