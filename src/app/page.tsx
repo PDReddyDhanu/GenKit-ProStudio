@@ -5,7 +5,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Car, User, Shield, Server, Search, CodeXml } from "lucide-react";
+import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Shield, Server, Search, CodeXml } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo } from 'react';
@@ -147,16 +147,25 @@ const HowItWorksAnimation = () => {
     ];
     
     const roadPath = "M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380";
-    const bikePath = "M2.14,13.25l-.83.83,2.4,2.41,1.06-1.06-.83-.83-1.8,1.8ZM3.5,12.5a4.5,4.5,0,0,0,0-9,4.5,4.5,0,0,0,0,9Zm0-7.5a3,3,0,1,1-3,3,3,3,0,0,1,3-3Zm17,7.5a4.5,4.5,0,1,0-4.5-4.5,4.5,4.5,0,0,0,4.5,4.5Zm0-7.5a3,3,0,1,1-3,3,3,3,0,0,1,3-3ZM17,14H7a1,1,0,0,0,0,2h8.5l-1,1h-1a1,1,0,0,0-.71,1.71l1.42,1.41a1,1,0,0,0,1.41,0l2.12-2.12a1,1,0,0,0,0-1.41l-1.06-1.06-1.71,1.71L17,15.29V14Z";
+    
+    const arrowPath = "M2,2 L10,6 L2,10 L4,6 Z"; // Simple arrow shape
+    const archerPath = "M45,15 C40,15 35,20 35,25 M45,15 C50,15 55,20 55,25 M45,15 L45,5 M35,25 L45,35 L55,25"; // Simple archer figure
 
     return (
         <div className="relative w-full max-w-4xl mx-auto h-[400px] md:h-[500px]">
-            {/* The SVG Road and Bike */}
+            {/* The SVG Road and Animated Arrow */}
             <motion.svg 
                 viewBox="0 0 400 400" 
                 className="absolute inset-0 w-full h-full" 
                 preserveAspectRatio="none"
             >
+                <defs>
+                    <radialGradient id="fireGradient">
+                        <stop offset="0%" stopColor="hsl(var(--secondary))" />
+                        <stop offset="50%" stopColor="hsl(var(--primary))" />
+                        <stop offset="100%" stopColor="hsla(var(--primary), 0)" />
+                    </radialGradient>
+                </defs>
                 <path 
                     id="road-path"
                     d={roadPath}
@@ -166,22 +175,39 @@ const HowItWorksAnimation = () => {
                     strokeDasharray="10 5"
                     className="animate-road-draw"
                 />
-                 <motion.path
-                    d={bikePath}
-                    className="text-primary"
-                    fill="currentColor"
-                    style={{ scale: 0.8 }}
-                >
-                    <animateMotion
-                        dur="10s"
-                        repeatCount="indefinite"
-                        rotate="auto"
-                        keyPoints="0;1"
-                        keyTimes="0;1"
+                
+                {/* Archer figure */}
+                <path d={archerPath} stroke="hsl(var(--foreground))" strokeWidth="1.5" fill="none" />
+                
+                {/* Fiery Arrow and its trail */}
+                <g>
+                    <motion.path
+                        d={arrowPath}
+                        fill="url(#fireGradient)"
+                        className="drop-shadow-[0_0_4px_hsl(var(--primary))]"
+                        style={{ scale: 1.5 }}
                     >
-                        <mpath href="#road-path" />
-                    </animateMotion>
-                 </motion.path>
+                        <animateMotion
+                            dur="10s"
+                            repeatCount="indefinite"
+                            rotate="auto"
+                            keyPoints="0;1"
+                            keyTimes="0;1"
+                        >
+                            <mpath href="#road-path" />
+                        </animateMotion>
+                    </motion.path>
+                     <motion.path
+                        d={roadPath}
+                        fill="none"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth="1.5"
+                        strokeDasharray="1000"
+                        className="animate-flame-trail"
+                    >
+                     </motion.path>
+                </g>
+
             </motion.svg>
 
             {/* The Steps */}
@@ -468,7 +494,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
-
-    
