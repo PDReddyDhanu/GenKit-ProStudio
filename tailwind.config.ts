@@ -147,10 +147,6 @@ export default {
           'from': { 'stroke-dashoffset': '2000' },
           'to': { 'stroke-dashoffset': '0' },
         },
-        'car-loop': {
-            '0%': { 'offset-distance': '0%' },
-            '100%': { 'offset-distance': '100%' },
-        },
         'step-fade-in': {
             'from': { opacity: '0', transform: 'scale(0.9)' },
             'to': { opacity: '1', transform: 'scale(1)' },
@@ -171,7 +167,6 @@ export default {
         'credits-fade-in': 'credits-fade-in 4s ease-out forwards',
         'slow-float': 'slow-float ease-in-out infinite',
         'road-draw': 'road-draw 10s linear forwards infinite',
-        'car-loop': 'car-loop 12s linear infinite',
         'step-fade-in': 'step-fade-in 0.5s ease-out forwards',
       },
     },

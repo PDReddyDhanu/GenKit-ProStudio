@@ -6,13 +6,14 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun, Home, User, Scale, LayoutDashboard } from 'lucide-react';
+import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun, Home, User, Scale, LayoutDashboard, Menu } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -22,6 +23,22 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "next-themes";
 import Link from 'next/link';
+
+function NavLinks() {
+    return (
+        <>
+            <li><Link href="/" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Home className="h-4 w-4"/> Home</Link></li>
+            <li><Link href="/guidance" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Lightbulb className="h-4 w-4"/> Guidance</Link></li>
+            <li><Link href="/gallery" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><GalleryVertical className="h-4 w-4"/> Gallery</Link></li>
+            <li><Link href="/teams" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Users className="h-4 w-4"/> Teams</Link></li>
+            <li><Link href="/leaderboard" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><TrendingUp className="h-4 w-4"/> Leaderboard</Link></li>
+            <li><Link href="/results" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Trophy className="h-4 w-4"/> Results</Link></li>
+            <li><Link href="/partners" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Handshake className="h-4 w-4"/> Partners</Link></li>
+            <li><Link href="/support" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><LifeBuoy className="h-4 w-4"/> Support</Link></li>
+        </>
+    );
+}
+
 
 export function Header() {
     const { state, api, dispatch } = useHackathon();
@@ -97,25 +114,18 @@ export function Header() {
         <>
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
                 <div className="container flex h-14 max-w-screen-2xl items-center">
-                     <div className="mr-4 hidden md:flex">
+                     <div className="mr-4 flex">
                          <Link href="/" className="flex items-center gap-2">
                              <Trophy className="h-6 w-6 text-primary" />
                              <span className="font-bold font-headline">HackSprint</span>
                          </Link>
                      </div>
-                     <nav className="flex-1">
+                     <nav className="hidden md:flex flex-1">
                          <ul className="flex items-center justify-center space-x-6 text-sm font-medium">
-                            <li><Link href="/" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Home className="h-4 w-4"/> Home</Link></li>
-                            <li><Link href="/guidance" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Lightbulb className="h-4 w-4"/> Guidance</Link></li>
-                            <li><Link href="/gallery" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><GalleryVertical className="h-4 w-4"/> Gallery</Link></li>
-                            <li><Link href="/teams" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Users className="h-4 w-4"/> Teams</Link></li>
-                            <li><Link href="/leaderboard" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><TrendingUp className="h-4 w-4"/> Leaderboard</Link></li>
-                            <li><Link href="/results" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Trophy className="h-4 w-4"/> Results</Link></li>
-                            <li><Link href="/partners" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Handshake className="h-4 w-4"/> Partners</Link></li>
-                            <li><Link href="/support" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><LifeBuoy className="h-4 w-4"/> Support</Link></li>
+                            <NavLinks />
                          </ul>
                      </nav>
-                     <div className="flex items-center justify-end space-x-2">
+                     <div className="flex flex-1 items-center justify-end space-x-2">
                         <Button variant="ghost" size="icon" onClick={handleAnnouncementsOpen} className="relative">
                             <Rss className="h-4 w-4" />
                             {hasUnreadAnnouncements && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />}
@@ -183,6 +193,31 @@ export function Header() {
                             </>
                         )}
                         
+                        <div className="md:hidden">
+                             <Sheet>
+                                 <SheetTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <Menu className="h-5 w-5" />
+                                        <span className="sr-only">Toggle Menu</span>
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent side="left">
+                                     <SheetHeader>
+                                        <SheetTitle>
+                                             <Link href="/" className="flex items-center gap-2">
+                                                 <Trophy className="h-6 w-6 text-primary" />
+                                                 <span className="font-bold font-headline">HackSprint</span>
+                                             </Link>
+                                        </SheetTitle>
+                                    </SheetHeader>
+                                    <nav className="mt-8">
+                                        <ul className="flex flex-col space-y-4 text-lg">
+                                            <NavLinks />
+                                        </ul>
+                                    </nav>
+                                </SheetContent>
+                             </Sheet>
+                        </div>
                      </div>
                 </div>
             </header>

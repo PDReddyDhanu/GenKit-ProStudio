@@ -157,32 +157,6 @@ const HowItWorksAnimation = () => {
                     strokeDasharray="10 5"
                     className="animate-road-draw"
                 />
-                 {/* The Car & People Animation */}
-                <g className="animate-car-loop" style={{ offsetPath: 'path("M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380")' }}>
-                    {/* Car Body */}
-                    <g className="animate-car-body">
-                      <Car className="w-10 h-10 text-primary" style={{ filter: 'drop-shadow(0 2px 4px hsl(var(--primary)/0.5))' }} />
-                    </g>
-                    {/* Person 1 (Driver) */}
-                    <g className="animate-person1-in-car">
-                        <User className="w-5 h-5 text-background" style={{ transform: 'translate(4px, 3px)' }}/>
-                    </g>
-                     {/* Person 2 (Passenger) */}
-                    <g className="animate-person2-in-car">
-                       <User className="w-5 h-5 text-background" style={{ transform: 'translate(18px, 3px)' }}/>
-                    </g>
-                </g>
-                {/* People outside car at stops */}
-                <g>
-                    <User className="w-6 h-6 text-foreground animate-person-enter-exit" style={{ offsetPath: 'path("M 350 180")', offsetDistance: '0%' }}/>
-                    <User className="w-6 h-6 text-foreground animate-person-enter-exit" style={{ offsetPath: 'path("M 350 180")', offsetDistance: '0%', animationDelay: '0.2s' }}/>
-                </g>
-                <g className="animate-trophy-appear">
-                    <Trophy className="w-8 h-8 text-primary" style={{ offsetPath: 'path("M 350 380")' }}/>
-                     <User className="w-6 h-6 text-foreground" style={{ offsetPath: 'path("M 330 380")' }}/>
-                     <User className="w-6 h-6 text-foreground" style={{ offsetPath: 'path("M 370 380")' }}/>
-                      <User className="w-6 h-6 text-foreground" style={{ offsetPath: 'path("M 350 360")' }}/>
-                </g>
             </svg>
 
             {/* The Steps */}
