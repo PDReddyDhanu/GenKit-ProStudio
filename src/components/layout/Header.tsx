@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -126,17 +127,20 @@ export function Header() {
                         {loggedInUser ? (
                             <>
                                 {currentAdmin ? (
-                                    <>
-                                        <Button variant="outline" size="sm" asChild>
-                                            <Link href="/admin"><UserCircle className="mr-2 h-4 w-4"/> Dashboard</Link>
-                                        </Button>
-                                    </>
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href="/admin"><UserCircle className="mr-2 h-4 w-4"/> Dashboard</Link>
+                                    </Button>
+                                ) : currentJudge ? (
+                                     <Button variant="outline" size="sm" asChild>
+                                        <Link href="/judge/profile"><UserCircle className="mr-2 h-4 w-4"/> {currentJudge.name}</Link>
+                                    </Button>
                                 ) : (
                                     <Button variant="outline" size="sm" asChild>
                                         <Link href="/profile"><UserCircle className="mr-2 h-4 w-4"/> Profile</Link>
                                     </Button>
                                 )}
                                  <Button variant="ghost" size="sm" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
+                                 <Button variant="ghost" size="sm" onClick={handleChangeCollege}><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
                             </>
                         ) : (
                              <>
@@ -148,7 +152,7 @@ export function Header() {
                                  </Button>
                             </>
                         )}
-                        <Button variant="ghost" size="sm" onClick={handleChangeCollege}><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
+                        
                      </div>
                 </div>
             </header>

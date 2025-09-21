@@ -20,7 +20,14 @@ export default function AddJudgeForm() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            await api.addJudge({ name: judgeName, email: judgeEmail, password: judgePassword });
+            await api.addJudge({ 
+                name: judgeName, 
+                email: judgeEmail, 
+                password: judgePassword,
+                gender: '',
+                contactNumber: '',
+                bio: ''
+            });
             setJudgeName('');
             setJudgeEmail('');
             setJudgePassword('');

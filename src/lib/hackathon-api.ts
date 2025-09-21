@@ -174,6 +174,9 @@ export async function addJudge(collegeId: string, { name, email, password }: any
             id: judgeAuthUser.uid,
             name, 
             email,
+            gender: '',
+            contactNumber: '',
+            bio: '',
         };
         await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
         
@@ -193,6 +196,11 @@ export async function addJudge(collegeId: string, { name, email, password }: any
         }
         throw new Error(`Failed to create judge account: ${error.message}`);
     }
+}
+
+export async function updateJudgeProfile(collegeId: string, judgeId: string, profileData: Partial<Pick<Judge, 'name' | 'gender' | 'contactNumber' | 'bio'>>) {
+    await updateDoc(doc(db, `colleges/${collegeId}/judges`, judgeId), profileData);
+    return { successMessage: "Profile updated successfully." };
 }
 
 

@@ -84,7 +84,9 @@ export interface Judge {
   name: string;
   email: string;
   guidanceHistory?: ChatMessage[];
-  // password is not stored in Firestore record for security
+  gender?: string;
+  contactNumber?: string;
+  bio?: string;
 }
 
 export interface Score {
