@@ -203,7 +203,7 @@ export function Header() {
                              <span className="font-bold font-headline">HackSprint</span>
                          </Link>
                      </div>
-                     <nav className="hidden md:flex flex-1">
+                     <nav className="hidden md:flex flex-1 justify-center">
                          <ul className="flex items-center justify-center space-x-6 text-sm font-medium">
                             <NavLinks />
                          </ul>
