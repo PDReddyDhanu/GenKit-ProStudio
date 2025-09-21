@@ -6,7 +6,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun, Home, User, Scale } from 'lucide-react';
+import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun, Home, User, Scale, LayoutDashboard } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -14,6 +14,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useTheme } from "next-themes";
 import Link from 'next/link';
 
@@ -128,27 +134,35 @@ export function Header() {
                             <>
                                 {currentAdmin ? (
                                     <Button variant="outline" size="sm" asChild>
-                                        <Link href="/admin"><UserCircle className="mr-2 h-4 w-4"/> Dashboard</Link>
+                                        <Link href="/admin"><UserCircle className="mr-2 h-4 w-4"/> Admin Dashboard</Link>
                                     </Button>
                                 ) : currentJudge ? (
                                      <Button variant="outline" size="sm" asChild>
                                         <Link href="/judge/profile"><UserCircle className="mr-2 h-4 w-4"/> {currentJudge.name}</Link>
                                     </Button>
-                                ) : (
-                                    <Button variant="outline" size="sm" asChild>
-                                        <Link href="/profile"><UserCircle className="mr-2 h-4 w-4"/> Profile</Link>
-                                    </Button>
-                                )}
+                                ) : currentUser ? (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" size="sm">
+                                                <UserCircle className="mr-2 h-4 w-4"/> {currentUser.name}
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem asChild><Link href="/student"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></DropdownMenuItem>
+                                            <DropdownMenuItem asChild><Link href="/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                ) : null}
                                  <Button variant="ghost" size="sm" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
                                  <Button variant="ghost" size="sm" onClick={handleChangeCollege}><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
                             </>
                         ) : (
                              <>
                                  <Button size="sm" asChild>
-                                     <Link href="/student"><User className="mr-2 h-4 w-4"/> Student Portal</Link>
+                                     <Link href="/student"><User className="mr-2 h-4 w-4"/> Get Started as Student</Link>
                                  </Button>
                                  <Button variant="secondary" size="sm" asChild>
-                                     <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin Portal</Link>
+                                     <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Enter as Judge/Admin</Link>
                                  </Button>
                             </>
                         )}
