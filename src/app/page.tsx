@@ -262,21 +262,39 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Why Choose HackSprint?</h2>
             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">An integrated platform designed to elevate your hackathon experience from start to finish.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                <ElectricBorder
+                    color="orange"
+                    speed={0.3}
+                    chaos={0.2}
+                    thickness={2}
+                    style={{ borderRadius: '0.75rem' }}
+                >
                     <Card className="text-center p-6 h-full">
                         <BrainCircuit className="w-12 h-12 mx-auto mb-4 text-primary"/>
                         <h3 className="text-xl font-bold font-headline">AI-Powered Assistance</h3>
                         <p className="text-muted-foreground mt-2">Leverage cutting-edge AI for idea generation, code reviews, project summaries, and more.</p>
                     </Card>
                 </ElectricBorder>
-                <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                <ElectricBorder
+                    color="orange"
+                    speed={0.3}
+                    chaos={0.2}
+                    thickness={2}
+                    style={{ borderRadius: '0.75rem' }}
+                >
                     <Card className="text-center p-6 h-full">
                         <UsersRound className="w-12 h-12 mx-auto mb-4 text-primary"/>
                         <h3 className="text-xl font-bold font-headline">Seamless Collaboration</h3>
                         <p className="text-muted-foreground mt-2">Find teammates, manage your team, and communicate effectively all in one place.</p>
                     </Card>
                 </ElectricBorder>
-                 <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                 <ElectricBorder
+                    color="orange"
+                    speed={0.3}
+                    chaos={0.2}
+                    thickness={2}
+                    style={{ borderRadius: '0.75rem' }}
+                 >
                     <Card className="text-center p-6 h-full">
                         <BarChart className="w-12 h-12 mx-auto mb-4 text-primary"/>
                         <h3 className="text-xl font-bold font-headline">Real-time Tracking</h3>
@@ -295,7 +313,13 @@ export default function Home() {
              <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Tailored for Everyone</h2>
              <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">A unique set of tools designed for every role in the hackathon ecosystem.</p>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                 <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                 <ElectricBorder
+                    color="orange"
+                    speed={0.3}
+                    chaos={0.2}
+                    thickness={2}
+                    style={{ borderRadius: '0.75rem' }}
+                 >
                      <Card className="flex flex-col h-full">
                          <CardHeader>
                              <CardTitle className="flex items-center gap-3 font-headline text-2xl"><User className="text-primary"/> For Students</CardTitle>
@@ -309,7 +333,13 @@ export default function Home() {
                          </CardContent>
                      </Card>
                  </ElectricBorder>
-                 <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                 <ElectricBorder
+                    color="orange"
+                    speed={0.3}
+                    chaos={0.2}
+                    thickness={2}
+                    style={{ borderRadius: '0.75rem' }}
+                 >
                      <Card className="flex flex-col h-full">
                          <CardHeader>
                              <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Scale className="text-primary"/> For Judges</CardTitle>
@@ -323,7 +353,13 @@ export default function Home() {
                          </CardContent>
                      </Card>
                  </ElectricBorder>
-                 <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                 <ElectricBorder
+                    color="orange"
+                    speed={0.3}
+                    chaos={0.2}
+                    thickness={2}
+                    style={{ borderRadius: '0.75rem' }}
+                 >
                      <Card className="flex flex-col h-full">
                          <CardHeader>
                              <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Shield className="text-primary"/> For Admins</CardTitle>
@@ -438,9 +474,10 @@ export default function Home() {
                         <ElectricBorder
                           key={index}
                           style={{ borderRadius: '0.75rem', margin: '0 1rem' }}
-                          color="hsl(var(--primary))"
-                          speed={0.2}
-                          chaos={0.1}
+                          color="orange"
+                          speed={0.3}
+                          chaos={0.2}
+                          thickness={2}
                         >
                             <Card className="w-[350px] flex-shrink-0 h-full">
                                 <CardContent className="p-6">
