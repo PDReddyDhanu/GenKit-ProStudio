@@ -1,16 +1,6 @@
 {
   "rules": {
-    "projects": {
-      "hacksprint-duplicate-idy24": {
-        "databases": {
-          "(default)": {
-            "documents": {
-              ".read": "now < 1151629158997800000",
-              ".write": "now < 1151629158997800000"
-            }
-          }
-        }
-      }
-    }
+    ".read": "now < 2232403200000000",
+    ".write": "now < 2232403200000000"
   }
 }
