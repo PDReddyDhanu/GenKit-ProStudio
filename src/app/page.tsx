@@ -12,36 +12,29 @@ import { useMemo } from 'react';
 import { useHackathon } from "@/context/HackathonProvider";
 import GradientText from "@/components/ui/GradientText";
 import { motion } from "framer-motion";
+import ElectricBorder from "@/components/ui/ElectricBorder";
 
 const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
-    <div 
-        className="group rounded-lg border border-border/40 bg-card/20 p-6 text-center transition-all duration-300 transform-gpu animate-card-in will-change-transform hover:[transform:perspective(1000px)_rotateX(var(--rotate-x,0))_rotateY(var(--rotate-y,0))_scale3d(1.05,1.05,1.05)]"
-        style={{ animationDelay: `${index * 100}ms` }}
-        onMouseMove={(e) => {
-            const card = e.currentTarget;
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const rotateY = (x / rect.width - 0.5) * 20;
-            const rotateX = (0.5 - y / rect.height) * 20;
-            card.style.setProperty('--rotate-y', `${rotateY}deg`);
-            card.style.setProperty('--rotate-x', `${rotateX}deg`);
-        }}
-        onMouseLeave={(e) => {
-            const card = e.currentTarget;
-            card.style.setProperty('--rotate-y', '0deg');
-            card.style.setProperty('--rotate-x', '0deg');
-        }}
+    <ElectricBorder
+        color="orange"
+        speed={0.3}
+        chaos={0.2}
+        thickness={2}
+        style={{ borderRadius: '0.5rem' }}
     >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"></div>
-        <div className="relative">
-            <div className="mb-4 text-primary w-12 h-12 mx-auto flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
-                {icon}
+        <div 
+            className="group rounded-lg bg-card/80 p-6 text-center transition-all duration-300 transform-gpu animate-card-in will-change-transform h-full"
+            style={{ animationDelay: `${index * 100}ms` }}
+        >
+            <div className="relative">
+                <div className="mb-4 text-primary w-12 h-12 mx-auto flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
+                    {icon}
+                </div>
+                <h3 className="text-xl font-bold font-headline text-foreground">{title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{description}</p>
             </div>
-            <h3 className="text-xl font-bold font-headline text-foreground">{title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{description}</p>
         </div>
-    </div>
+    </ElectricBorder>
 );
 
 
@@ -412,7 +405,7 @@ export default function Home() {
 
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">A Feature for Every Step</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 [perspective:1000px]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                  {features.map((feature, index) => (
                     <FeatureCard 
                         key={feature.title}
