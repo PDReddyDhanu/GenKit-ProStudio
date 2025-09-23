@@ -82,18 +82,18 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
                     <DropdownMenuContent align="end">
                         {currentAdmin ? (
                             <>
-                                <DropdownMenuItem asChild><Link href="/admin">Dashboard</Link></DropdownMenuItem>
-                                <DropdownMenuItem asChild><Link href="/admin/profile">Profile</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/admin" onClick={onLinkClick}>Dashboard</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/admin/profile" onClick={onLinkClick}>Profile</Link></DropdownMenuItem>
                             </>
                         ) : currentJudge ? (
                             <>
-                                <DropdownMenuItem asChild><Link href="/admin">Dashboard</Link></DropdownMenuItem>
-                                <DropdownMenuItem asChild><Link href="/judge/profile">Profile</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/admin" onClick={onLinkClick}>Dashboard</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/judge/profile" onClick={onLinkClick}>Profile</Link></DropdownMenuItem>
                             </>
                         ) : (
                             <>
-                                <DropdownMenuItem asChild><Link href="/student">Dashboard</Link></DropdownMenuItem>
-                                <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/student" onClick={onLinkClick}>Dashboard</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/profile" onClick={onLinkClick}>Profile</Link></DropdownMenuItem>
                             </>
                         )}
                         <DropdownMenuSeparator />
@@ -105,10 +105,10 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
             ) : (
                 <div className="flex items-center gap-2">
                     <Button size="sm" asChild>
-                        <Link href="/student">Student</Link>
+                        <Link href="/student" onClick={onLinkClick}>Student</Link>
                     </Button>
                     <Button variant="secondary" size="sm" asChild>
-                        <Link href="/judge">Judge/Admin</Link>
+                        <Link href="/judge" onClick={onLinkClick}>Judge/Admin</Link>
                     </Button>
                 </div>
             )}
