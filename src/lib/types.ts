@@ -1,3 +1,4 @@
+
 export interface UserProfileData {
   name: string;
   skills: string[];
@@ -141,5 +142,3 @@ export interface HackathonData {
     hackathons: Hackathon[];
     supportTickets: SupportTicket[];
 }
-
-    

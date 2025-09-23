@@ -205,5 +205,3 @@ export default function SupportPage() {
         </Dialog>
     );
 }
-
-    
