@@ -470,7 +470,9 @@ export default function Home() {
                 <Accordion type="single" collapsible className="w-full">
                     {faqItems.map((item, index) => (
                         <AccordionItem value={`item-${index}`} key={index}>
-                            <AccordionTrigger>{item.question}</AccordionTrigger>
+                            <AccordionTrigger className="text-left">
+                                {item.question}
+                            </AccordionTrigger>
                             <AccordionContent>
                                 {item.answer}
                             </AccordionContent>
