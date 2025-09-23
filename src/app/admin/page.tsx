@@ -117,7 +117,7 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue={currentJudge ? "judging" : "hackathons"} className="w-full" onValueChange={handleTabChange}>
-                <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-9">
+                <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9">
                     {currentJudge && <TabsTrigger value="judging"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
                      <TabsTrigger value="urgent-approvals" className="relative">

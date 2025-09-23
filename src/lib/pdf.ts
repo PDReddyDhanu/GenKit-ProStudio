@@ -275,7 +275,3 @@ export const generateCertificate = async (teamName: string, projectName: string,
          doc.save(`Certificate_Participation-${teamName.replace(/\s/g, '_')}.pdf`);
     }
 };
-
-    
-
-    

@@ -95,7 +95,7 @@ export default function JudgeProfilePage() {
                             </div>
                              <div className="space-y-2">
                                 <Label>Gender</Label>
-                                <RadioGroup onValueChange={setGender} value={gender} className="flex gap-4">
+                                <RadioGroup onValueChange={setGender} value={gender} className="flex gap-4 pt-2">
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="male" id="male" />
                                         <Label htmlFor="male">Male</Label>

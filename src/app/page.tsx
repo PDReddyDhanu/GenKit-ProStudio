@@ -149,7 +149,7 @@ const HowItWorksAnimation = () => {
             <motion.svg 
                 viewBox="0 0 400 400" 
                 className="absolute inset-0 w-full h-full" 
-                preserveAspectRatio="none"
+                preserveAspectRatio="xMidYMid meet"
             >
                 <defs>
                     <radialGradient id="fireGradient">

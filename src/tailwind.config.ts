@@ -1,4 +1,5 @@
 
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -147,6 +148,18 @@ export default {
           '75%': { opacity: '1' },
           '100%': { transform: 'translateY(-200px) translateX(100px) rotateX(0) rotateY(0) scale(1)', opacity: '0' },
         },
+        'road-draw': {
+          'from': { 'stroke-dashoffset': '2000' },
+          'to': { 'stroke-dashoffset': '0' },
+        },
+        'step-fade-in': {
+            'from': { opacity: '0', transform: 'scale(0.9)' },
+            'to': { opacity: '1', transform: 'scale(1)' },
+        },
+        'flame-trail': {
+            'from': { 'stroke-dashoffset': '1000' },
+            'to': { 'stroke-dashoffset': '0' },
+        }
       },
       animation: {
         'gradient': 'gradient 8s linear infinite',
@@ -162,7 +175,9 @@ export default {
         'trophy-shine': 'trophy-shine 2s ease-in-out infinite',
         'credits-fade-in': 'credits-fade-in 4s ease-out forwards',
         'slow-float': 'slow-float ease-in-out infinite',
-        'glowing-border': 'glowing-border 4s linear infinite',
+        'road-draw': 'road-draw 10s linear forwards infinite',
+        'step-fade-in': 'step-fade-in 0.5s ease-out forwards',
+        'flame-trail': 'flame-trail 10s linear forwards infinite'
       },
     },
   },

@@ -123,6 +123,56 @@ function AnnouncementForm({ announcement, onFinished }: { announcement?: Announc
     );
 }
 
+function AnnouncementItem({ ann, onEdit, onDelete }: { ann: Announcement, onEdit: (ann: Announcement) => void, onDelete: (id: string) => void }) {
+    const [status, setStatus] = useState({ text: '...', color: '' });
+    
+    useEffect(() => {
+        const getStatus = () => {
+            const now = Date.now();
+            if (ann.expiresAt && ann.expiresAt < now) return { text: 'Expired', color: 'text-red-400' };
+            if (ann.publishAt && ann.publishAt > now) return { text: `Scheduled`, color: 'text-yellow-400' };
+            return { text: 'Active', color: 'text-green-400' };
+        };
+        setStatus(getStatus());
+    }, [ann]);
+
+    return (
+        <li className="p-4 bg-muted/50 rounded-md flex flex-col sm:flex-row justify-between sm:items-start gap-4">
+            <div className="flex-grow">
+                <p className="text-sm text-foreground">{ann.message}</p>
+                <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                    <p><strong className={status.color}>{status.text}</strong></p>
+                    {ann.publishAt && <p>Published: {format(new Date(ann.publishAt), 'PPP p')}</p>}
+                    {ann.expiresAt && <p>Expires: {format(new Date(ann.expiresAt), 'PPP p')}</p>}
+                    <p>Created: {formatDistanceToNow(new Date(ann.timestamp), { addSuffix: true })}</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+                <Button variant="ghost" size="icon" onClick={() => onEdit(ann)}>
+                    <Edit className="h-4 w-4" />
+                </Button>
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="icon">
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>This action cannot be undone. This will permanently delete the announcement.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => onDelete(ann.id)}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
+        </li>
+    );
+}
+
 export default function Announcements() {
     const { state, api } = useHackathon();
     const { announcements } = state;
@@ -132,13 +182,6 @@ export default function Announcements() {
     const sortedAnnouncements = useMemo(() => {
         return [...announcements].sort((a, b) => (b.publishAt || b.timestamp) - (a.publishAt || a.timestamp));
     }, [announcements]);
-
-    const getStatus = (ann: Announcement) => {
-        const now = Date.now();
-        if (ann.expiresAt && ann.expiresAt < now) return { text: 'Expired', color: 'text-red-400' };
-        if (ann.publishAt && ann.publishAt > now) return { text: `Scheduled`, color: 'text-yellow-400' };
-        return { text: 'Active', color: 'text-green-400' };
-    };
 
     return (
         <div className="space-y-8">
@@ -165,44 +208,14 @@ export default function Announcements() {
                 <CardContent>
                     {sortedAnnouncements.length > 0 ? (
                         <ul className="space-y-4">
-                            {sortedAnnouncements.map(ann => {
-                                const status = getStatus(ann);
-                                return (
-                                    <li key={ann.id} className="p-4 bg-muted/50 rounded-md flex flex-col sm:flex-row justify-between sm:items-start gap-4">
-                                        <div className="flex-grow">
-                                            <p className="text-sm text-foreground">{ann.message}</p>
-                                            <div className="text-xs text-muted-foreground mt-2 space-y-1">
-                                                <p><strong className={status.color}>{status.text}</strong></p>
-                                                {ann.publishAt && <p>Published: {format(new Date(ann.publishAt), 'PPP p')}</p>}
-                                                {ann.expiresAt && <p>Expires: {format(new Date(ann.expiresAt), 'PPP p')}</p>}
-                                                <p>Created: {formatDistanceToNow(new Date(ann.timestamp), { addSuffix: true })}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2 flex-shrink-0">
-                                            <Button variant="ghost" size="icon" onClick={() => setEditingAnnouncement(ann)}>
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                             <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button variant="destructive" size="icon">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                        <AlertDialogDescription>This action cannot be undone. This will permanently delete the announcement.</AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => api.deleteAnnouncement(ann.id)}>Delete</AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </div>
-                                    </li>
-                                );
-                            })}
+                            {sortedAnnouncements.map(ann => (
+                                <AnnouncementItem 
+                                    key={ann.id} 
+                                    ann={ann} 
+                                    onEdit={setEditingAnnouncement}
+                                    onDelete={api.deleteAnnouncement}
+                                />
+                            ))}
                         </ul>
                     ) : (
                         <div className="text-center py-16">
@@ -229,7 +242,3 @@ export default function Announcements() {
         </div>
     );
 }
-
-    
-
-    

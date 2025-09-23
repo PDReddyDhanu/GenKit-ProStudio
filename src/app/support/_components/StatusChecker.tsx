@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,42 +10,51 @@ import { Loader, Search, Ticket, Circle, CheckCircle, Clock } from 'lucide-react
 import type { SupportTicket } from '@/lib/types';
 import { format } from 'date-fns';
 
-const getStatusInfo = (ticket: SupportTicket) => {
-    const now = Date.now();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-    const seventyTwoHours = 72 * 60 * 60 * 1000;
-    const age = now - ticket.submittedAt;
-
-    let effectiveStatus = ticket.status;
-    
-    if (ticket.status === 'New' && age > seventyTwoHours) effectiveStatus = 'Resolved';
-    else if (ticket.status === 'New' && age > twentyFourHours) effectiveStatus = 'In Progress';
-    else if (ticket.status === 'In Progress' && age > seventyTwoHours) effectiveStatus = 'Resolved';
-    
-    switch(effectiveStatus) {
-        case 'New':
-            return { text: 'New', icon: <Circle className="h-5 w-5 text-blue-500" />, color: 'text-blue-500' };
-        case 'In Progress':
-            return { text: 'In Progress', icon: <Clock className="h-5 w-5 text-yellow-500" />, color: 'text-yellow-500' };
-        case 'Resolved':
-            return { text: 'Resolved', icon: <CheckCircle className="h-5 w-5 text-green-500" />, color: 'text-green-500' };
-        default:
-            return { text: 'Unknown', icon: <Circle className="h-5 w-5 text-gray-500" />, color: 'text-gray-500' };
-    }
-}
-
-export default function StatusChecker() {
+const StatusChecker = () => {
     const { state } = useHackathon();
     const { supportTickets } = state;
 
     const [ticketId, setTicketId] = useState('');
-    const [searchedTicket, setSearchedTicket] = useState<SupportTicket | null | undefined>(undefined); // undefined: not searched, null: not found
+    const [searchedTicket, setSearchedTicket] = useState<SupportTicket | null | undefined>(undefined);
+    const [statusInfo, setStatusInfo] = useState<{ text: string, icon: JSX.Element, color: string } | null>(null);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         const foundTicket = supportTickets.find(t => t.id === ticketId.trim());
         setSearchedTicket(foundTicket || null);
     };
+
+    useEffect(() => {
+        if (searchedTicket) {
+            const getStatusInfo = () => {
+                const now = Date.now();
+                const twentyFourHours = 24 * 60 * 60 * 1000;
+                const seventyTwoHours = 72 * 60 * 60 * 1000;
+                const age = now - searchedTicket.submittedAt;
+
+                let effectiveStatus = searchedTicket.status;
+                
+                if (searchedTicket.status === 'New' && age > seventyTwoHours) effectiveStatus = 'Resolved';
+                else if (searchedTicket.status === 'New' && age > twentyFourHours) effectiveStatus = 'In Progress';
+                else if (searchedTicket.status === 'In Progress' && age > seventyTwoHours) effectiveStatus = 'Resolved';
+                
+                switch(effectiveStatus) {
+                    case 'New':
+                        return { text: 'New', icon: <Circle className="h-5 w-5 text-blue-500" />, color: 'text-blue-500' };
+                    case 'In Progress':
+                        return { text: 'In Progress', icon: <Clock className="h-5 w-5 text-yellow-500" />, color: 'text-yellow-500' };
+                    case 'Resolved':
+                        return { text: 'Resolved', icon: <CheckCircle className="h-5 w-5 text-green-500" />, color: 'text-green-500' };
+                    default:
+                        return { text: 'Unknown', icon: <Circle className="h-5 w-5 text-gray-500" />, color: 'text-gray-500' };
+                }
+            };
+            setStatusInfo(getStatusInfo());
+        } else {
+            setStatusInfo(null);
+        }
+    }, [searchedTicket]);
+
 
     return (
         <Card>
@@ -80,7 +89,7 @@ export default function StatusChecker() {
                     </div>
                 )}
 
-                {searchedTicket && (
+                {searchedTicket && statusInfo && (
                     <Card className="bg-muted/50 animate-fade-in">
                         <CardHeader>
                             <CardTitle className="text-lg">Status for Ticket #{searchedTicket.id.substring(0, 8)}...</CardTitle>
@@ -88,9 +97,9 @@ export default function StatusChecker() {
                         <CardContent className="space-y-4">
                              <div>
                                 <p className="text-sm font-semibold text-muted-foreground">Status</p>
-                                <div className={`flex items-center gap-2 font-bold text-lg ${getStatusInfo(searchedTicket).color}`}>
-                                    {getStatusInfo(searchedTicket).icon}
-                                    {getStatusInfo(searchedTicket).text}
+                                <div className={`flex items-center gap-2 font-bold text-lg ${statusInfo.color}`}>
+                                    {statusInfo.icon}
+                                    {statusInfo.text}
                                 </div>
                             </div>
                              <div>
@@ -112,3 +121,5 @@ export default function StatusChecker() {
         </Card>
     )
 }
+
+export default StatusChecker;
