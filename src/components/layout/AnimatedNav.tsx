@@ -31,13 +31,12 @@ export function AnimatedNav() {
             key={item.path}
             className={cn(
               "relative rounded-full px-4 py-1.5 text-sm font-medium text-muted-foreground transition-colors duration-200",
-              { "text-foreground": hoveredPath === item.path }
             )}
             href={item.path}
             onMouseOver={() => setHoveredPath(item.path)}
             onMouseLeave={() => setHoveredPath(pathname)}
           >
-            <span>{item.name}</span>
+            <span className={cn("relative z-10", { "text-foreground": hoveredPath === item.path })}>{item.name}</span>
             {item.path === hoveredPath && (
               <motion.div
                 className="absolute inset-0 rounded-full bg-background"
