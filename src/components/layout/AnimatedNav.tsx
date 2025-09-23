@@ -14,6 +14,7 @@ const navItems = [
   { path: "/teams", name: "Teams" },
   { path: "/leaderboard", name: "Leaderboard" },
   { path: "/results", name: "Results" },
+  { path: "/support", name: "Support" },
 ];
 
 export function AnimatedNav() {
