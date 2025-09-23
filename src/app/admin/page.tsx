@@ -12,7 +12,7 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy } from 'lucide-react';
+import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import JudgingDashboard from '@/app/judge/_components/JudgingDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
@@ -21,11 +21,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import ReportingDashboard from './_components/ReportingDashboard';
 import SupportDashboard from './_components/SupportDashboard';
 import { useRouter } from 'next/navigation';
+import UrgentApprovalsDashboard from './_components/UrgentApprovalsDashboard';
+import { Badge } from '@/components/ui/badge';
 
 
 export default function AdminPortal() {
     const { state, api, dispatch } = useHackathon();
-    const { currentAdmin, currentJudge, hackathons, selectedHackathonId } = state;
+    const { currentAdmin, currentJudge, hackathons, selectedHackathonId, users } = state;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showIntro, setShowIntro] = useState(true);
@@ -51,6 +53,11 @@ export default function AdminPortal() {
      const currentHackathon = useMemo(() => {
         return hackathons.find(h => h.id === selectedHackathonId);
     }, [hackathons, selectedHackathonId]);
+
+    const urgentApprovalsCount = useMemo(() => {
+        return users.filter(u => u.status === 'pending' && u.approvalReminderSentAt).length;
+    }, [users]);
+
 
     const handleTabChange = (value: string) => {
         router.push(`/admin?tab=${value}`, { scroll: false });
@@ -110,9 +117,15 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue={currentJudge ? "judging" : "hackathons"} className="w-full" onValueChange={handleTabChange}>
-                <TabsList className="grid w-full h-auto md:h-10 grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
+                <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-9">
                     {currentJudge && <TabsTrigger value="judging"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
+                     <TabsTrigger value="urgent-approvals" className="relative">
+                        <AlertTriangle className="mr-2 h-4 w-4" /> Urgent Approvals
+                        {urgentApprovalsCount > 0 && (
+                            <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{urgentApprovalsCount}</Badge>
+                        )}
+                    </TabsTrigger>
                     <TabsTrigger value="management">User Management</TabsTrigger>
                     <TabsTrigger value="announcements"><Rss className="mr-2 h-4 w-4" /> Announcements</TabsTrigger>
                     <TabsTrigger value="analytics"><LineChart className="mr-2 h-4 w-4" /> Analytics</TabsTrigger>
@@ -127,6 +140,9 @@ export default function AdminPortal() {
                 )}
                  <TabsContent value="hackathons" className="mt-6">
                     <HackathonManagement />
+                </TabsContent>
+                 <TabsContent value="urgent-approvals" className="mt-6">
+                    <UrgentApprovalsDashboard />
                 </TabsContent>
                 <TabsContent value="management" className="mt-6">
                     <AdminDashboard />

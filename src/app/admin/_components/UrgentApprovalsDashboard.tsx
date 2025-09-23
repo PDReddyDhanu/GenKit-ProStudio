@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useMemo } from 'react';
@@ -8,14 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { User } from '@/lib/types';
-import { X, Bell } from 'lucide-react';
+import { X, Bell, AlertTriangle } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
-interface PendingApprovalsProps {
-    users: User[];
-}
-
-export default function PendingApprovals({ users }: PendingApprovalsProps) {
-    const { api } = useHackathon();
+export default function UrgentApprovalsDashboard() {
+    const { state, api } = useHackathon();
+    const { users } = state;
 
     const handleApproveStudent = async (userId: string) => {
         await api.approveStudent(userId);
@@ -24,9 +21,8 @@ export default function PendingApprovals({ users }: PendingApprovalsProps) {
         await api.removeStudent(userId);
     }
     
-    // This component now only shows REGULAR approvals. Urgent ones are in their own dashboard.
-    const regularUsers = useMemo(() => {
-        return users.filter(u => !u.approvalReminderSentAt);
+    const urgentUsers = useMemo(() => {
+        return users.filter(u => u.status === 'pending' && u.approvalReminderSentAt).sort((a, b) => b.approvalReminderSentAt! - a.approvalReminderSentAt!);
     }, [users]);
 
 
@@ -35,6 +31,11 @@ export default function PendingApprovals({ users }: PendingApprovalsProps) {
             <div>
                 <p className="font-semibold">{user.name}</p>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
+                 {user.approvalReminderSentAt && (
+                    <p className="text-xs text-yellow-400 mt-1">
+                        Reminder sent {formatDistanceToNow(new Date(user.approvalReminderSentAt), { addSuffix: true })}
+                    </p>
+                )}
             </div>
             <div className="flex items-center gap-2">
                 <Button size="sm" onClick={() => handleApproveStudent(user.id)}>Approve</Button>
@@ -46,19 +47,21 @@ export default function PendingApprovals({ users }: PendingApprovalsProps) {
     );
 
     return (
-        <Card>
+        <Card className="border-yellow-500 bg-yellow-500/10">
             <CardHeader>
-                <CardTitle className="font-headline">Pending Student Approvals ({regularUsers.length})</CardTitle>
-                <CardDescription>Review and approve new student registrations.</CardDescription>
+                <CardTitle className="font-headline text-yellow-400 flex items-center gap-2">
+                    <AlertTriangle/> Urgent Student Approvals ({urgentUsers.length})
+                </CardTitle>
+                <CardDescription>These students have sent a reminder and are waiting for approval.</CardDescription>
             </CardHeader>
             <CardContent>
-                <ScrollArea className="h-96 pr-4">
+                <ScrollArea className="h-[60vh] pr-4">
                     <div className="space-y-4">
-                        <div className="space-y-2">
-                            {regularUsers.length > 0 ? regularUsers.map(user => (
-                                <UserRow key={user.id} user={user} />
-                            )) : <p className="text-muted-foreground text-center pt-8">No pending student approvals.</p>}
-                        </div>
+                        {urgentUsers.length > 0 ? (
+                            urgentUsers.map(user => <UserRow key={user.id} user={user} />)
+                        ) : (
+                            <p className="text-muted-foreground text-center pt-16">No urgent approvals at this time.</p>
+                        )}
                     </div>
                 </ScrollArea>
             </CardContent>
