@@ -7,14 +7,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Rocket, Trophy } from 'lucide-react';
 import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 export default function StudentHomeDashboard() {
     const { state, dispatch } = useHackathon();
     const { hackathons, currentUser } = state;
+    const { toast } = useToast();
 
     const handleSelectHackathon = (hackathonId: string) => {
         if (currentUser) {
             dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId });
+        } else {
+            toast({
+                title: "Login Required",
+                description: "You must be logged in as a student to join a hackathon.",
+                variant: "destructive",
+            });
         }
     };
 
