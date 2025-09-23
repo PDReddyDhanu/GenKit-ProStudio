@@ -1,4 +1,5 @@
 
+
 export interface UserProfileData {
   name: string;
   skills: string[];
@@ -24,6 +25,8 @@ export interface User extends UserProfileData {
   guidanceHistory?: ChatMessage[];
   teamId?: string; // Added to easily find a user's team
   notifications?: Notification[];
+  registeredAt?: number;
+  approvalReminderSentAt?: number;
 }
 
 export interface Hackathon {

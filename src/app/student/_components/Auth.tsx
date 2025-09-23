@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
@@ -7,9 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AuthMessage } from '@/components/AuthMessage';
-import { Loader, Mail, Lock, User } from 'lucide-react';
+import { Loader, Mail, Lock, User, CheckSquare } from 'lucide-react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
+import AccountStatusDialog from '@/components/AccountStatusDialog';
 
 export default function Auth() {
     const { api, dispatch } = useHackathon();
@@ -19,6 +21,7 @@ export default function Auth() {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isForgotPassOpen, setIsForgotPassOpen] = useState(false);
+    const [isStatusCheckOpen, setIsStatusCheckOpen] = useState(false);
 
     const clearForm = () => {
         setName('');
@@ -56,6 +59,7 @@ export default function Auth() {
     return (
         <div className="container max-w-md mx-auto py-12 animate-fade-in">
             <Dialog open={isForgotPassOpen} onOpenChange={setIsForgotPassOpen}>
+            <Dialog open={isStatusCheckOpen} onOpenChange={setIsStatusCheckOpen}>
                 <Card className="relative group overflow-hidden">
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-lg blur-lg opacity-0 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-glowing-border"></div>
                     <div className="relative bg-card rounded-lg">
@@ -110,9 +114,14 @@ export default function Auth() {
                                 </div>
                                 
                                 {isLoginView && (
-                                    <div className="text-right">
+                                    <div className="flex justify-between items-center text-sm">
+                                         <DialogTrigger asChild>
+                                             <Button variant="link" size="sm" className="p-0 h-auto text-muted-foreground flex items-center gap-1" onClick={() => setIsStatusCheckOpen(true)}>
+                                                <CheckSquare className="h-4 w-4" /> Check Status / Verify
+                                             </Button>
+                                         </DialogTrigger>
                                         <DialogTrigger asChild>
-                                            <Button variant="link" size="sm" className="p-0 h-auto text-muted-foreground">Forgot password?</Button>
+                                            <Button variant="link" size="sm" className="p-0 h-auto text-muted-foreground" onClick={() => setIsForgotPassOpen(true)}>Forgot password?</Button>
                                         </DialogTrigger>
                                     </div>
                                 )}
@@ -132,6 +141,8 @@ export default function Auth() {
                     </div>
                 </Card>
                 <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={email} />
+                <AccountStatusDialog onOpenChange={setIsStatusCheckOpen} />
+            </Dialog>
             </Dialog>
         </div>
     );
