@@ -25,7 +25,7 @@ const getRankSuffix = (rankNum: number) => {
 const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectName: string, teamMembers: string[], projectId: string, averageScore: number, collegeName: string, rank: number) => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const verificationUrl = `${window.location.origin}/verify/${projectId}?college=${encodeURIComponent(collegeName)}`;
+    const verificationUrl = `${window.location.origin}/verify/${projectId}?college=${encodeURIComponent(collegeName)}&rank=${rank}`;
     
     const performance = getPerformanceDetails(averageScore);
 
@@ -150,18 +150,15 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     const pageHeight = doc.internal.pageSize.getHeight();
     const verificationUrl = `${window.location.origin}/verify/${projectId}?college=${encodeURIComponent(collegeName)}`;
 
-    // --- Colors & Fonts ---
-    const primaryBlue = '#0D47A1'; // A deeper, more professional blue
+    const primaryBlue = '#0D47A1';
     const accentBlue = '#1976D2';
     const darkText = '#212121';
     const lightText = '#757575';
-    const backgroundColor = '#F5F7FA'; // A very light grey for the background
+    const backgroundColor = '#F5F7FA';
 
-    // --- Background & Border ---
     doc.setFillColor(backgroundColor);
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
     
-    // --- Abstract Geometric Background ---
     doc.setGState(new doc.GState({opacity: 0.05}));
     doc.setFillColor(accentBlue);
     for (let i = 0; i < 20; i++) {
@@ -172,7 +169,6 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     }
     doc.setGState(new doc.GState({opacity: 1}));
 
-    // --- Corner Decorations ---
     doc.setDrawColor(primaryBlue);
     doc.setLineWidth(1.5);
     doc.line(10, 10, 30, 10);
@@ -185,7 +181,6 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     doc.line(pageWidth - 10, pageHeight - 10, pageWidth - 10, pageHeight - 30);
 
 
-    // --- Main Content ---
     doc.setFont("helvetica", "bold");
     doc.setFontSize(32);
     doc.setTextColor(darkText);
@@ -217,7 +212,6 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     doc.setTextColor(accentBlue);
     doc.text(`"${projectName}"`, pageWidth / 2, 123, { align: 'center' });
 
-    // Team Members
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(darkText);
@@ -232,10 +226,8 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
         memberY += 6;
     });
     
-    // --- Footer Section ---
     const bottomY = pageHeight - 50;
 
-    // Signature
     const signatureX = pageWidth / 4;
     doc.setFont("times", "italic");
     doc.setFontSize(14);
@@ -249,7 +241,6 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     doc.setTextColor(lightText);
     doc.text('HackSprint Committee Lead', signatureX, bottomY + 12, { align: 'center' });
 
-    // Date
     const dateX = pageWidth * 3 / 4;
     doc.setFont("times", "italic");
     doc.setFontSize(14);
@@ -261,7 +252,6 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     doc.setTextColor(lightText);
     doc.text('Date of Issue', dateX, bottomY + 12, { align: 'center' });
 
-    // QR Code
     const qrX = pageWidth / 2;
     const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, { errorCorrectionLevel: 'H', width: 200, color: { dark: darkText, light: '#00000000' }});
     doc.addImage(qrCodeDataUrl, 'PNG', qrX - 12.5, bottomY - 5, 25, 25);
@@ -289,4 +279,3 @@ export const generateCertificate = async (teamName: string, projectName: string,
     
 
     
-

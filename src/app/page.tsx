@@ -145,8 +145,7 @@ const HowItWorksAnimation = () => {
     const archerPath = "M45,15 C40,15 35,20 35,25 M45,15 C50,15 55,20 55,25 M45,15 L45,5 M35,25 L45,35 L55,25"; // Simple archer figure
 
     return (
-        <div className="relative w-full max-w-4xl mx-auto h-[400px] md:h-[500px]">
-            {/* The SVG Road and Animated Arrow */}
+        <div className="relative w-full max-w-lg mx-auto h-[450px] md:h-[500px] md:max-w-2xl lg:max-w-4xl">
             <motion.svg 
                 viewBox="0 0 400 400" 
                 className="absolute inset-0 w-full h-full" 
@@ -173,10 +172,8 @@ const HowItWorksAnimation = () => {
                     className="animate-road-draw"
                 />
                 
-                {/* Archer figure */}
                 <path d={archerPath} stroke="hsl(var(--foreground))" strokeWidth="1.5" fill="none" />
                 
-                {/* Fiery Arrow and its trail */}
                 <g>
                     <motion.path
                         d={arrowPath}
@@ -207,24 +204,23 @@ const HowItWorksAnimation = () => {
 
             </motion.svg>
 
-            {/* The Steps */}
             {steps.map((step, index) => (
                 <div 
                     key={index}
-                    className="absolute p-4 max-w-[200px] rounded-lg bg-card/80 backdrop-blur-sm border border-border shadow-lg animate-step-fade-in"
+                    className="absolute p-3 sm:p-4 max-w-[150px] sm:max-w-[200px] rounded-lg bg-card/80 backdrop-blur-sm border border-border shadow-lg animate-step-fade-in"
                     style={{ 
                         top: step.position.top, 
                         left: step.position.left, 
                         animationDelay: `${index * 2 + 1}s` 
                     }}
                 >
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground flex-shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                        <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary text-primary-foreground flex-shrink-0">
                            {step.icon}
                         </div>
-                        <h4 className="font-bold font-headline text-lg">{step.title}</h4>
+                        <h4 className="font-bold font-headline text-base sm:text-lg">{step.title}</h4>
                     </div>
-                    <p className="text-xs text-muted-foreground">{step.description}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{step.description}</p>
                 </div>
             ))}
         </div>

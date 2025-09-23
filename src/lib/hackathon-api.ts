@@ -66,19 +66,21 @@ export async function sendPasswordResetEmail(collegeId: string, email: string) {
 }
 
 export async function resendVerificationEmail(collegeId: string, email: string) {
-    try {
-        // To resend a verification email, we need an authenticated user object.
-        // This is a client-side simulation. For this to work without asking for a password,
-        // we'd typically use a backend function. Here, we'll guide the user.
-        // The core logic is now in the `loginStudent` function, which re-sends the email
-        // if a user tries to log in with an unverified account.
-        
-        // This function will now just return a helpful message.
-        return { successMessage: 'To get a new verification link, please try logging in again. A new email will be sent automatically if your account is not yet verified.' };
+    // This is a placeholder. The actual logic is now in `loginStudent`.
+    // We attempt a sign-in with a dummy password to get the user object if they are not logged in.
+    // This is not a secure method for production but works for this demo.
+    // A production app should use a backend function to handle this.
+     try {
+        const tempUser = auth.currentUser;
+        if(tempUser && tempUser.email === email && !tempUser.emailVerified) {
+             await sendEmailVerification(tempUser);
+             return { successMessage: "A new verification email has been sent to your inbox." };
+        }
+        throw new Error("Could not find a logged-in user matching this email. Please try logging in to trigger a new verification email.");
 
     } catch (error: any) {
         console.error("Error resending verification email:", error);
-        throw new Error("Could not resend verification email at this time. Please try logging in to trigger a new one.");
+         return { successMessage: "To get a new verification link, please try logging in again. A new email will be sent automatically if your account is not yet verified." };
     }
 }
 
@@ -93,7 +95,6 @@ export async function changePassword(collegeId: string, { oldPassword, newPasswo
 
     try {
         await reauthenticateWithCredential(user, credential);
-        // User re-authenticated successfully. Now change the password.
         await updatePassword(user, newPassword);
         return { successMessage: "Your password has been changed successfully." };
     } catch (error: any) {
@@ -105,7 +106,7 @@ export async function changePassword(collegeId: string, { oldPassword, newPasswo
     }
 }
 
-let adminPassword = 'hack123'; // In-memory password
+let adminPassword = 'hack123';
 
 export async function changeAdminPassword(collegeId: string, { oldPassword, newPassword }: { oldPassword: string, newPassword: string }) {
     if (oldPassword !== adminPassword) {
@@ -133,10 +134,8 @@ export async function registerStudent(collegeId: string, { name, email, password
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
         
-        // Send verification email using Firebase's default flow
         await sendEmailVerification(userCredential.user);
-        
-        await firebaseSignOut(auth); // Sign out immediately after registration
+        await firebaseSignOut(auth);
         return { successMessage: 'Registration successful! A verification link has been sent to your email. Please verify your email AND wait for admin approval to log in.' };
     } catch(error: any) {
         if (error.code === 'auth/email-already-in-use') {
@@ -150,19 +149,10 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const userDoc = await getDoc(doc(db, `colleges/${collegeId}/users`, userCredential.user.uid));
     
-    // After a successful sign-in, Firebase automatically refreshes the user's state, including emailVerified
     const loggedInUser = auth.currentUser;
     if (!loggedInUser) {
-        // This should not happen if signInWithEmailAndPassword succeeded, but as a safeguard:
         await firebaseSignOut(auth);
         throw new Error("Could not verify user session. Please try again.");
-    }
-    
-    if (!loggedInUser.emailVerified) {
-        // If the email is not verified, send a new verification email.
-        await sendEmailVerification(loggedInUser);
-        await firebaseSignOut(auth);
-        throw new Error("Your email is not verified. We've sent a new verification link to your inbox. Please check it and try again.");
     }
     
     if (!userDoc.exists()) {
@@ -176,6 +166,12 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
         throw new Error("Your account is still pending approval by an admin. You can check your status using the 'Check Status' tool.");
     }
 
+    if (!loggedInUser.emailVerified) {
+        await sendEmailVerification(loggedInUser);
+        await firebaseSignOut(auth);
+        throw new Error("Your email is not verified. We've sent a new verification link to your inbox. Please check it and try again.");
+    }
+    
     return { successMessage: 'Login successful!' };
 }
 
@@ -183,7 +179,7 @@ export async function loginJudge(collegeId: string, { email, password }: any) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const judgeDoc = await getDoc(doc(db, `colleges/${collegeId}/judges`, userCredential.user.uid));
     if (!judgeDoc.exists()) {
-        await firebaseSignOut(auth); // Sign out if record not found
+        await firebaseSignOut(auth);
         throw new Error("Judge record not found for this college.");
     }
     return { successMessage: 'Login successful!' };
@@ -207,37 +203,27 @@ export async function getAccountStatus(collegeId: string, email: string) {
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
-        return null; // No user found
+        return null;
     }
 
     const userDoc = querySnapshot.docs[0];
     const userData = userDoc.data() as User;
     
-    // To get the real email verification status, we need to sign the user in temporarily.
-    // This is a "hack" for client-side to get an Auth object. It's not ideal for production.
-    // A better way is an admin SDK on a backend.
+    // This is a simplified check for the demo. In a production environment,
+    // you would use a backend function (e.g., Firebase Cloud Function)
+    // to securely query the auth server for the user's `emailVerified` status.
+    // For this client-side implementation, we rely on the currently authenticated user's state.
     let emailVerified = false;
-    try {
-        // This is a trick: we can't get the user by email from the client Auth SDK.
-        // But if we have a user in our DB, we can attempt a sign-in with a dummy password.
-        // The error will tell us if it's a wrong password (meaning user exists in Auth)
-        // or user-not-found. This is still not giving us the `emailVerified` status.
-        // The most reliable way without a password is to use a backend.
-        // For this demo, we will simulate this by checking if they are the currently logged in user.
-        const currentUser = auth.currentUser;
-        if (currentUser && currentUser.email === email) {
-            await currentUser.reload(); // Make sure we have the latest state
-            emailVerified = currentUser.emailVerified;
-        } else {
-            // Since we can't securely get the verification status of another user from the client,
-            // we will simulate it. We'll assume not verified unless approved. A real-world app
-            // would use a backend Cloud Function to get the real status.
-            emailVerified = userData.status === 'approved';
-        }
-    } catch(e) {
-        // Ignore sign-in errors, we just want to know if the user exists.
+    const currentUser = auth.currentUser;
+    if (currentUser && currentUser.email === email) {
+        await currentUser.reload(); // Refresh the user's state
+        emailVerified = currentUser.emailVerified;
+    } else {
+        // If the user checking is not the one logged in, we cannot get a live status from the client.
+        // As a fallback for the demo, we assume `true` if they are approved, otherwise `false`.
+        // This won't be real-time if a user verifies but is not yet approved.
+        emailVerified = userData.status === 'approved';
     }
-
 
     return {
         userId: userData.id,
@@ -251,7 +237,6 @@ export async function remindAdminForApproval(collegeId: string, userId: string, 
     const userRef = doc(db, `colleges/${collegeId}/users`, userId);
     await updateDoc(userRef, { approvalReminderSentAt: Date.now() });
 
-    // Create a notification to be fanned out to all judges.
     const studentDoc = await getDoc(userRef);
     const studentName = studentDoc.data()?.name || studentEmail;
 
@@ -262,7 +247,6 @@ export async function remindAdminForApproval(collegeId: string, userId: string, 
         isRead: false,
     };
 
-    // Fetch all judges and add the notification to each one.
     const judgesQuery = query(collection(db, `colleges/${collegeId}/judges`));
     const judgesSnapshot = await getDocs(judgesQuery);
 
@@ -335,9 +319,8 @@ export async function removeJudge(collegeId: string, judgeId: string) {
 
 export async function approveStudent(collegeId: string, userId: string) {
     const userRef = doc(db, `colleges/${collegeId}/users`, userId);
-    await updateDoc(userRef, { status: 'approved', approvalReminderSentAt: null }); // Clear reminder on approval
+    await updateDoc(userRef, { status: 'approved', approvalReminderSentAt: null });
 
-    // Create a notification for the student
     const notification = {
         id: doc(collection(db, 'dummy')).id,
         message: "Welcome to HackSprint! Your registration has been approved. Time to build something amazing.",
@@ -664,7 +647,7 @@ export async function submitProject(collegeId: string, hackathonId: string, { na
     const projectRef = await addDoc(projectsCollection, newProject);
     await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { projectId: projectRef.id });
 
-    // Asynchronously generate project image
+    // Asynchronously generate project image and don't block the return
     generateProjectImage({ projectName: name, projectDescription: description })
         .then(async (result) => {
             if (result && result.imageUrl) {
@@ -672,7 +655,7 @@ export async function submitProject(collegeId: string, hackathonId: string, { na
             }
         })
         .catch(error => {
-            console.error("Failed to generate project image:", error);
+            console.error("Background project image generation failed:", error);
         });
     
     return { successMessage: "Project submitted successfully!" };
@@ -689,7 +672,6 @@ export async function updateProject(collegeId: string, projectId: string, projec
     const originalProject = projectDoc.data() as Project;
     await updateDoc(projectRef, projectData);
 
-    // Check if name or description changed to regenerate the image
     if (projectData.name !== originalProject.name || projectData.description !== originalProject.description) {
          generateProjectImage({ projectName: projectData.name!, projectDescription: projectData.description! })
             .then(async (result) => {
@@ -698,7 +680,7 @@ export async function updateProject(collegeId: string, projectId: string, projec
                 }
             })
             .catch(error => {
-                console.error("Failed to re-generate project image after update:", error);
+                console.error("Background re-generation of project image failed:", error);
             });
     }
 
@@ -712,7 +694,7 @@ export async function updateProfile(collegeId: string, userId: string, profileDa
 }
 
 export async function postTeamMessage(collegeId: string, teamId: string, message: Omit<ChatMessage, 'id'>) {
-    const newMessage = { ...message, id: doc(collection(db, 'dummy')).id }; // Generate a unique ID locally
+    const newMessage = { ...message, id: doc(collection(db, 'dummy')).id };
     await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), {
         messages: arrayUnion(newMessage)
     });
@@ -741,7 +723,6 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
     if(!projectDoc.exists()) throw new Error("Project not found.");
     const project = projectDoc.data() as Project;
 
-    // Remove old scores from this judge for both team and individuals
     const otherJudgesScores = project.scores.filter(s => s.judgeId !== judgeId);
     const newScores = [...otherJudgesScores, ...scores];
 
@@ -754,7 +735,6 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
         const judgeScores = teamScores.filter(s => s.judgeId === id);
         const rubricMax = JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
         const judgeTotal = judgeScores.reduce((sum, score) => sum + score.value, 0);
-        // Correct scaling: Divide by sum of max points for criteria that were actually scored
         const scoredCriteriaIds = new Set(judgeScores.map(s => s.criteria));
         const scoredRubricMax = JUDGING_RUBRIC.filter(c => scoredCriteriaIds.has(c.id)).reduce((sum, c) => sum + c.max, 0);
         
@@ -766,7 +746,6 @@ export async function scoreProject(collegeId: string, hackathonId: string, proje
 
     const averageScore = uniqueJudges.size > 0 ? (totalScore / uniqueJudges.size) : 0;
     
-    // --- Achievement Logic ---
     const newAchievements = new Set(project.achievements || []);
     scores.forEach(score => {
         if (score.criteria === 'innovation' && score.value === 10) {
@@ -834,10 +813,9 @@ export async function sendSupportResponse(collegeId: string, ticketId: string, a
 
     await updateDoc(ticketRef, {
         responses: arrayUnion(response),
-        status: 'In Progress' // Automatically move to in progress on reply
+        status: 'In Progress'
     });
 
-    // Create a notification for the student
     const studentRef = doc(db, `colleges/${collegeId}/users`, ticket.studentId);
     const notification = {
         id: doc(collection(db, 'dummy')).id,
@@ -874,12 +852,10 @@ export async function markNotificationsAsRead(collegeId: string, userId: string,
 export async function resetCurrentHackathon(collegeId: string, hackathonId: string) {
     const batch = writeBatch(db);
 
-    // Delete projects for the hackathon
     const projectsQuery = query(collection(db, `colleges/${collegeId}/projects`), where("hackathonId", "==", hackathonId));
     const projectsSnapshot = await getDocs(projectsQuery);
     projectsSnapshot.forEach(doc => batch.delete(doc.ref));
 
-    // Delete teams for the hackathon
     const teamsQuery = query(collection(db, `colleges/${collegeId}/teams`), where("hackathonId", "==", hackathonId));
     const teamsSnapshot = await getDocs(teamsQuery);
     teamsSnapshot.forEach(doc => batch.delete(doc.ref));
@@ -902,9 +878,6 @@ export async function resetAllHackathons(collegeId: string) {
 }
 
 export async function resetAllUsers(collegeId: string) {
-    // This is a very destructive operation and should ideally be handled by a backend function
-    // with proper admin authentication for security. The client-side approach is for demonstration.
-    
     const batch = writeBatch(db);
     const usersQuery = query(collection(db, `colleges/${collegeId}/users`));
     const usersSnapshot = await getDocs(usersQuery);
@@ -915,9 +888,6 @@ export async function resetAllUsers(collegeId: string) {
 
     usersSnapshot.forEach(doc => {
         batch.delete(doc.ref);
-        // Note: This does NOT delete users from Firebase Auth. 
-        // Deleting from Auth is a protected operation that can't be safely done in batch from the client.
-        // A real app would use a Cloud Function triggered by the Firestore deletion or an admin SDK.
     });
 
     await batch.commit();

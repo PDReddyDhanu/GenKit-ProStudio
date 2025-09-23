@@ -46,8 +46,13 @@ export default function CertificateVerifyPage() {
 
         const fetchCertificateData = async () => {
             try {
+                // Ensure this code only runs on the client
+                if (typeof window === 'undefined') {
+                    return;
+                }
                 const urlParams = new URLSearchParams(window.location.search);
                 const collegeId = urlParams.get('college');
+                const rankParam = urlParams.get('rank');
 
                 if (!collegeId) {
                     throw new Error("College information is missing from the verification link.");
@@ -65,8 +70,7 @@ export default function CertificateVerifyPage() {
                 }
                 const team = { id: teamDoc.id, ...teamDoc.data() } as Team;
 
-                // This is a simplified ranking. A real-world scenario would be more complex.
-                const rank = null; // Ranking logic would need all projects, so we'll omit it here for simplicity.
+                const rank = rankParam ? parseInt(rankParam, 10) : null;
                 const performance = getPerformanceDetails(project.averageScore);
 
                 setData({ project, team, rank, performance, collegeName: collegeId });

@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import type { SupportTicket } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -163,12 +163,14 @@ const TicketCard = ({ ticket, onUpdateStatus }: { ticket: SupportTicket, onUpdat
 export default function SupportDashboard() {
     const { state, api } = useHackathon();
     const { supportTickets } = state;
+    const [clientReady, setClientReady] = useState(false);
 
-    const sortedTickets = useMemo(() => {
-        return [...supportTickets].sort((a, b) => b.submittedAt - a.submittedAt);
-    }, [supportTickets]);
+    useEffect(() => {
+        setClientReady(true);
+    }, []);
 
     const ticketsByStatus = useMemo(() => {
+        const sortedTickets = [...supportTickets].sort((a, b) => b.submittedAt - a.submittedAt);
         const now = Date.now();
         const twentyFourHours = 24 * 60 * 60 * 1000;
         const seventyTwoHours = 72 * 60 * 60 * 1000;
@@ -179,30 +181,26 @@ export default function SupportDashboard() {
             Resolved: [] as SupportTicket[],
         };
 
-        sortedTickets.forEach(ticket => {
-            const age = now - ticket.submittedAt;
-            let effectiveStatus = ticket.status;
+        if (clientReady) {
+            sortedTickets.forEach(ticket => {
+                const age = now - ticket.submittedAt;
+                let effectiveStatus = ticket.status;
 
-            if (ticket.status === 'New' && age > seventyTwoHours) {
-                effectiveStatus = 'Resolved';
-            } else if (ticket.status === 'New' && age > twentyFourHours) {
-                effectiveStatus = 'In Progress';
-            } else if (ticket.status === 'In Progress' && age > seventyTwoHours) {
-                 effectiveStatus = 'Resolved';
-            }
-            
-            // This is a bit tricky. We want to show the ticket in its *current* state
-            // but also allow the admin to see where it *should* be. 
-            // For this implementation, we will just use its saved status.
-            // The automatic update logic is better handled by a backend cron job, 
-            // but this is a client-side simulation. Let's just categorize by DB status.
-            categorized[ticket.status].push(ticket);
-
-        });
+                if (ticket.status === 'New' && age > seventyTwoHours) {
+                    effectiveStatus = 'Resolved';
+                } else if (ticket.status === 'New' && age > twentyFourHours) {
+                    effectiveStatus = 'In Progress';
+                } else if (ticket.status === 'In Progress' && age > seventyTwoHours) {
+                    effectiveStatus = 'Resolved';
+                }
+                
+                categorized[ticket.status].push(ticket);
+            });
+        }
         
         return categorized;
 
-    }, [sortedTickets]);
+    }, [supportTickets, clientReady]);
     
     const handleUpdateStatus = async (ticketId: string, status: SupportTicket['status']) => {
         try {
@@ -221,6 +219,14 @@ export default function SupportDashboard() {
                 </CardContent>
             </Card>
         )
+    }
+
+    if (!clientReady) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <Loader className="animate-spin" />
+            </div>
+        );
     }
 
     return (

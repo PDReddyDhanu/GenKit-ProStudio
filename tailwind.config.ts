@@ -79,6 +79,11 @@ export default {
           '50%': { backgroundPosition: '100% 50%' },
           '100%': { backgroundPosition: '0% 50%' },
         },
+        'glowing-border': {
+            '0%': { backgroundPosition: '0% 50%' },
+            '50%': { backgroundPosition: '100% 50%' },
+            '100%': { backgroundPosition: '0% 50%' },
+        },
         'accordion-down': {
           from: {
             height: '0',
@@ -150,6 +155,10 @@ export default {
         'step-fade-in': {
             'from': { opacity: '0', transform: 'scale(0.9)' },
             'to': { opacity: '1', transform: 'scale(1)' },
+        },
+        'flame-trail': {
+            'from': { 'stroke-dashoffset': '1000' },
+            'to': { 'stroke-dashoffset': '0' },
         }
       },
       animation: {
@@ -168,6 +177,7 @@ export default {
         'slow-float': 'slow-float ease-in-out infinite',
         'road-draw': 'road-draw 10s linear forwards infinite',
         'step-fade-in': 'step-fade-in 0.5s ease-out forwards',
+        'flame-trail': 'flame-trail 10s linear forwards infinite'
       },
     },
   },
