@@ -85,7 +85,7 @@ export default function AccountStatusDialog({ onOpenChange }: AccountStatusDialo
         }
     }
 
-    const canRemind = status?.approvalStatus === 'pending' && status.registeredAt && (Date.now() - status.registeredAt > 24 * 60 * 60 * 1000);
+    const canRemind = status?.approvalStatus === 'pending';
 
     return (
         <DialogContent>
