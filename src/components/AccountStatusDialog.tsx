@@ -140,7 +140,7 @@ export default function AccountStatusDialog({ onOpenChange }: AccountStatusDialo
                             {status.approvalStatus === 'approved' && <CheckCircle className="h-5 w-5 mt-0.5 text-green-400"/>}
                             {status.approvalStatus === 'rejected' && <AlertCircle className="h-5 w-5 mt-0.5 text-red-400"/>}
                             <div>
-                                <p className="font-medium">Admin Approval</p>
+                                <p className="font-medium">Admin/Judge Approval</p>
                                 <p className={`text-sm capitalize ${
                                     status.approvalStatus === 'pending' ? 'text-yellow-400' :
                                     status.approvalStatus === 'approved' ? 'text-green-400' : 'text-red-400'
@@ -149,7 +149,7 @@ export default function AccountStatusDialog({ onOpenChange }: AccountStatusDialo
                                 </p>
                                 {canRemind && (
                                     <Button size="sm" variant="destructive" className="mt-2 h-8" onClick={handleRemindAdmin} disabled={isReminding}>
-                                        {isReminding ? <Loader className="animate-spin h-4 w-4"/> : <><Bell className="mr-2 h-4 w-4"/>Remind Admin</>}
+                                        {isReminding ? <Loader className="animate-spin h-4 w-4"/> : <><Bell className="mr-2 h-4 w-4"/>Remind Admin/Judge</>}
                                     </Button>
                                 )}
                             </div>
