@@ -24,21 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "next-themes";
 import Link from 'next/link';
-
-function NavLinks({ onLinkClick }: { onLinkClick?: () => void }) {
-    return (
-        <>
-            <li><Link href="/" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Home className="h-4 w-4"/> Home</Link></li>
-            <li><Link href="/guidance" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Lightbulb className="h-4 w-4"/> Guidance</Link></li>
-            <li><Link href="/gallery" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><GalleryVertical className="h-4 w-4"/> Gallery</Link></li>
-            <li><Link href="/teams" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Users className="h-4 w-4"/> Teams</Link></li>
-            <li><Link href="/leaderboard" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><TrendingUp className="h-4 w-4"/> Leaderboard</Link></li>
-            <li><Link href="/results" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Trophy className="h-4 w-4"/> Results</Link></li>
-            <li><Link href="/partners" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Handshake className="h-4 w-4"/> Partners</Link></li>
-            <li><Link href="/support" onClick={onLinkClick} className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><LifeBuoy className="h-4 w-4"/> Support</Link></li>
-        </>
-    );
-}
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
     const { state, api, dispatch } = useHackathon();
@@ -69,7 +55,7 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
             {selectedCollege && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="hidden md:flex items-center gap-1 text-muted-foreground">
+                        <Button variant="ghost" className="flex items-center gap-1 text-muted-foreground">
                             <Building2 className="h-4 w-4"/> 
                             <span className="w-28 truncate text-left">{selectedCollege}</span>
                             <ChevronsUpDown className="h-4 w-4 opacity-50" />
@@ -128,81 +114,6 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
     );
 }
 
-// Mobile specific auth buttons
-function MobileAuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
-     const { state, api, dispatch } = useHackathon();
-    const { currentUser, currentJudge, currentAdmin, selectedCollege } = state;
-    const router = useRouter();
-
-    const handleAction = (action: () => void) => {
-        if (onLinkClick) onLinkClick();
-        action();
-    }
-
-    const handleLogout = async () => {
-        await api.signOut();
-        router.push('/');
-    };
-
-    const handleChangeCollege = () => {
-        dispatch({ type: 'SET_SELECTED_COLLEGE', payload: null });
-        localStorage.removeItem('selectedCollege');
-        router.push('/');
-    };
-    
-    const loggedInUser = currentUser || currentJudge || currentAdmin;
-    const userDisplayName = currentJudge?.name || currentUser?.name || 'Admin';
-
-    return (
-        <>
-             <div className="border-t pt-4 mt-4 space-y-2">
-                {selectedCollege && (
-                    <div className="px-2 py-1.5 text-center">
-                        <p className="text-sm font-semibold text-foreground">{selectedCollege}</p>
-                    </div>
-                )}
-                 <Button variant="ghost" size="sm" onClick={() => handleAction(handleChangeCollege)} className="w-full justify-center text-muted-foreground">
-                    <Building2 className="mr-2 h-4 w-4"/> Change College
-                </Button>
-            </div>
-            <div className="border-t pt-4 mt-2 space-y-2">
-            {loggedInUser ? (
-                <>
-                    <p className="px-3 text-sm font-semibold text-foreground">{userDisplayName}</p>
-                    {currentAdmin ? (
-                        <>
-                             <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/admin'))}><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></Button>
-                             <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/admin/profile'))}><Link href="/admin/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></Button>
-                        </>
-                    ) : currentJudge ? (
-                        <>
-                            <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/admin'))}><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></Button>
-                            <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/judge/profile'))}><Link href="/judge/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></Button>
-                        </>
-                    ) : (
-                        <>
-                            <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/student'))}><Link href="/student"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></Button>
-                            <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/profile'))}><Link href="/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></Button>
-                        </>
-                    )}
-                     <Button variant="ghost" size="sm" onClick={() => handleAction(handleLogout)} className="w-full justify-start"><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
-                </>
-            ) : (
-                <>
-                    <Button size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
-                        <Link href="/student"><User className="mr-2 h-4 w-4"/> Student Login</Link>
-                    </Button>
-                    <Button variant="secondary" size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
-                        <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin Login</Link>
-                    </Button>
-                </>
-            )}
-            </div>
-        </>
-    )
-}
-
-
 export function Header() {
     const { state, api } = useHackathon();
     const { announcements, currentUser } = state;
@@ -210,7 +121,6 @@ export function Header() {
 
     const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     
     const [hasUnreadAnnouncements, setHasUnreadAnnouncements] = useState(false);
 
@@ -260,23 +170,17 @@ export function Header() {
         return [...(currentUser?.notifications || [])].sort((a, b) => b.timestamp - a.timestamp);
     }, [currentUser?.notifications]);
 
-    const closeMobileMenu = () => setIsMobileMenuOpen(false);
-
     return (
         <>
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
                 <div className="container flex h-14 max-w-screen-2xl items-center">
-                     <div className="mr-4 flex">
+                     <div className="mr-4 flex items-center gap-2">
+                         <SidebarTrigger className="md:hidden"/>
                          <Link href="/" className="flex items-center gap-2">
                              <Trophy className="h-6 w-6 text-primary" />
                              <span className="font-bold font-headline">HackSprint</span>
                          </Link>
                      </div>
-                     <nav className="hidden md:flex flex-1 justify-center">
-                         <ul className="flex items-center justify-center space-x-6 text-sm font-medium">
-                            <NavLinks />
-                         </ul>
-                     </nav>
                      <div className="flex flex-1 items-center justify-end space-x-2">
                         <Button variant="ghost" size="icon" onClick={handleAnnouncementsOpen} className="relative">
                             <Rss className="h-4 w-4" />
@@ -293,37 +197,8 @@ export function Header() {
                             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                         </Button>
                         
-                        <div className="hidden md:flex items-center gap-2">
+                        <div className="flex items-center gap-2">
                             <AuthButtons />
-                        </div>
-                        
-                        <div className="md:hidden">
-                             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                                 <SheetTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                        <Menu className="h-5 w-5" />
-                                        <span className="sr-only">Toggle Menu</span>
-                                    </Button>
-                                </SheetTrigger>
-                                <SheetContent side="right" className="w-[300px] flex flex-col">
-                                     <SheetHeader>
-                                        <SheetTitle>
-                                             <Link href="/" onClick={closeMobileMenu} className="flex items-center gap-2">
-                                                 <Trophy className="h-6 w-6 text-primary" />
-                                                 <span className="font-bold font-headline">HackSprint</span>
-                                             </Link>
-                                        </SheetTitle>
-                                    </SheetHeader>
-                                    <nav className="mt-8 flex-grow">
-                                        <ul className="flex flex-col space-y-4 text-lg">
-                                            <NavLinks onLinkClick={closeMobileMenu} />
-                                        </ul>
-                                    </nav>
-                                    <div className="mt-auto pt-4">
-                                        <MobileAuthButtons onLinkClick={closeMobileMenu} />
-                                    </div>
-                                </SheetContent>
-                             </Sheet>
                         </div>
                      </div>
                 </div>
