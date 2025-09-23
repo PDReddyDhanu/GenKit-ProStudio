@@ -30,7 +30,7 @@ import {
     limit,
     writeBatch
 } from 'firebase/firestore';
-import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportTicketResponse } from './types';
+import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportTicketResponse, Notification } from './types';
 import { JUDGING_RUBRIC, INDIVIDUAL_JUDGING_RUBRIC } from './constants';
 import { generateProjectImage } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
@@ -139,7 +139,7 @@ export async function registerStudent(collegeId: string, { name, email, password
         await sendEmailVerification(userCredential.user);
         
         await firebaseSignOut(auth); // Sign out immediately after registration
-        return { successMessage: 'Registration successful! A verification link has been sent to your email. Please verify your email and wait for admin approval.' };
+        return { successMessage: 'Registration successful! A verification link has been sent to your email. Please verify your email AND wait for admin approval to log in.' };
     } catch(error: any) {
         if (error.code === 'auth/email-already-in-use') {
             throw new Error('This email address is already registered. Please try logging in instead.');
@@ -158,7 +158,7 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
     }
 
     const user = userDoc.data() as User;
-    if (user.status === 'pending') {
+    if (user.status !== 'approved') {
         await firebaseSignOut(auth);
         throw new Error("Your account is still pending approval by an admin. You can check your status using the 'Check Status' tool.");
     }
@@ -223,26 +223,37 @@ export async function getAccountStatus(collegeId: string, email: string) {
     };
 }
 
-export async function remindAdminForApproval(collegeId: string, userId: string, studentName: string) {
+export async function remindAdminForApproval(collegeId: string, userId: string, studentEmail: string) {
     const userRef = doc(db, `colleges/${collegeId}/users`, userId);
-    
-    // Create a notification for all judges/admins
-    const notification = {
-        id: doc(collection(db, 'dummy')).id,
+    await updateDoc(userRef, { approvalReminderSentAt: Date.now() });
+
+    // Create a notification to be fanned out to all judges.
+    const studentDoc = await getDoc(userRef);
+    const studentName = studentDoc.data()?.name || studentEmail;
+
+    const notification: Omit<Notification, 'id'> = {
         message: `[URGENT] ${studentName} is waiting for registration approval.`,
-        link: `/admin`,
+        link: `/admin?tab=management`,
         timestamp: Date.now(),
         isRead: false,
     };
 
-    // To send to all admins/judges, we have to iterate. This is better in a backend function.
-    // For client-side, we'll add it to the user who triggered it, and have a special UI for it in admin panel.
-    // Let's add a field to the user document instead.
-    await updateDoc(userRef, { approvalReminderSentAt: Date.now() });
+    // Fetch all judges and add the notification to each one.
+    const judgesQuery = query(collection(db, `colleges/${collegeId}/judges`));
+    const judgesSnapshot = await getDocs(judgesQuery);
 
-    // In a real app, you'd trigger a cloud function to fan this out.
-    // For this simulation, we'll have the admin panel query for this new field.
-    return { successMessage: "A reminder has been sent to the administrators." };
+    const batch = writeBatch(db);
+    judgesSnapshot.forEach(judgeDoc => {
+        const judgeRef = doc(db, `colleges/${collegeId}/judges`, judgeDoc.id);
+        const newNotification = { ...notification, id: doc(collection(db, 'dummy')).id };
+        batch.update(judgeRef, {
+            notifications: arrayUnion(newNotification)
+        });
+    });
+
+    await batch.commit();
+    
+    return { successMessage: "A reminder has been sent to all administrators and judges." };
 }
 
 // --- Admin & Judge ---
@@ -265,6 +276,7 @@ export async function addJudge(collegeId: string, { name, email, password, gende
             gender,
             contactNumber,
             bio,
+            notifications: [],
         };
         await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
         
@@ -817,12 +829,13 @@ export async function sendSupportResponse(collegeId: string, ticketId: string, a
     return { successMessage: "Response sent to student." };
 }
 
-export async function markNotificationsAsRead(collegeId: string, userId: string, notificationIds: string[]) {
-    const userRef = doc(db, `colleges/${collegeId}/users`, userId);
+export async function markNotificationsAsRead(collegeId: string, userId: string, notificationIds: string[], role: 'user' | 'judge') {
+    const collectionName = role === 'user' ? 'users' : 'judges';
+    const userRef = doc(db, `colleges/${collegeId}/${collectionName}`, userId);
     const userDoc = await getDoc(userRef);
     if (!userDoc.exists()) throw new Error("User not found");
 
-    const user = userDoc.data() as User;
+    const user = userDoc.data() as User | Judge;
     const updatedNotifications = (user.notifications || []).map(n => 
         notificationIds.includes(n.id) ? { ...n, isRead: true } : n
     );

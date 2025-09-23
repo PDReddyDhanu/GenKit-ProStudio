@@ -91,6 +91,7 @@ export interface Judge {
   gender?: string;
   contactNumber?: string;
   bio?: string;
+  notifications?: Notification[];
 }
 
 export interface Score {

@@ -20,6 +20,7 @@ import AnalyticsDashboard from './_components/AnalyticsDashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ReportingDashboard from './_components/ReportingDashboard';
 import SupportDashboard from './_components/SupportDashboard';
+import { useRouter } from 'next/navigation';
 
 
 export default function AdminPortal() {
@@ -29,6 +30,8 @@ export default function AdminPortal() {
     const [password, setPassword] = useState('');
     const [showIntro, setShowIntro] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+
 
     const portalUser = currentAdmin ? 'Admin' : currentJudge ? 'Judge' : null;
 
@@ -48,6 +51,10 @@ export default function AdminPortal() {
      const currentHackathon = useMemo(() => {
         return hackathons.find(h => h.id === selectedHackathonId);
     }, [hackathons, selectedHackathonId]);
+
+    const handleTabChange = (value: string) => {
+        router.push(`/admin?tab=${value}`, { scroll: false });
+    };
 
 
     if (showIntro && !portalUser) {
@@ -102,7 +109,7 @@ export default function AdminPortal() {
             </div>
             <AuthMessage />
 
-             <Tabs defaultValue={currentJudge ? "judging" : "hackathons"} className="w-full">
+             <Tabs defaultValue={currentJudge ? "judging" : "hackathons"} className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="grid w-full h-auto md:h-10 grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
                     {currentJudge && <TabsTrigger value="judging"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="hackathons">Hackathons</TabsTrigger>

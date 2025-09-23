@@ -71,6 +71,12 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
                     updatedState.currentUser = updatedCurrentUser;
                 }
             }
+             if (action.payload.judges) {
+                const updatedCurrentJudge = action.payload.judges.find((j: Judge) => j.id === state.currentJudge?.id);
+                if (updatedCurrentJudge) {
+                    updatedState.currentJudge = updatedCurrentJudge;
+                }
+            }
             return updatedState;
         case 'SET_USER':
             return { ...state, currentUser: action.payload, currentJudge: null, currentAdmin: false, isLoading: false };

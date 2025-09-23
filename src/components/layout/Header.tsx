@@ -133,7 +133,8 @@ const MobileNavMenu = ({ onLinkClick }: { onLinkClick: () => void }) => {
 
 export function Header() {
     const { state, api } = useHackathon();
-    const { announcements, currentUser } = state;
+    const { announcements, currentUser, currentJudge, currentAdmin } = state;
+    const router = useRouter();
 
     const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -152,9 +153,11 @@ export function Header() {
             .sort((a, b) => (b.publishAt || b.timestamp) - (a.publishAt || a.timestamp));
     }, [announcements]);
     
+    const loggedInUser = currentUser || currentJudge;
+    const notifications = loggedInUser?.notifications || [];
     const unreadNotifications = useMemo(() => {
-        return currentUser?.notifications?.filter(n => !n.isRead) || [];
-    }, [currentUser?.notifications]);
+        return notifications.filter(n => !n.isRead);
+    }, [notifications]);
 
     useEffect(() => {
         const lastViewed = localStorage.getItem('lastViewedAnnouncement');
@@ -172,16 +175,22 @@ export function Header() {
     };
 
     const handleNotificationsOpen = async () => {
-        if (unreadNotifications.length > 0 && currentUser) {
+        if (unreadNotifications.length > 0 && loggedInUser) {
             const ids = unreadNotifications.map(n => n.id);
-            await api.markNotificationsAsRead(currentUser.id, ids);
+            const role = currentUser ? 'user' : 'judge';
+            await api.markNotificationsAsRead(loggedInUser.id, ids, role);
         }
         setIsNotificationsOpen(true);
     };
     
+    const handleNotificationClick = (link: string) => {
+        setIsNotificationsOpen(false);
+        router.push(link);
+    };
+
     const sortedNotifications = useMemo(() => {
-        return [...(currentUser?.notifications || [])].sort((a, b) => b.timestamp - a.timestamp);
-    }, [currentUser?.notifications]);
+        return [...notifications].sort((a, b) => b.timestamp - a.timestamp);
+    }, [notifications]);
 
     return (
         <>
@@ -203,7 +212,7 @@ export function Header() {
                             <Rss className="h-4 w-4" />
                             {hasUnreadAnnouncements && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />}
                         </Button>
-                        {currentUser && (
+                        {(currentUser || currentJudge || currentAdmin) && (
                              <Button variant="ghost" size="icon" onClick={handleNotificationsOpen} className="relative">
                                 <Bell className="h-4 w-4" />
                                 {unreadNotifications.length > 0 && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />}
@@ -264,10 +273,10 @@ export function Header() {
                     <div className="py-4 space-y-2">
                         {sortedNotifications.length > 0 ? (
                             sortedNotifications.slice(0, 10).map(n => (
-                                <Link key={n.id} href={n.link} className={`block p-3 rounded-md ${!n.isRead ? 'bg-muted' : ''}`} onClick={() => setIsNotificationsOpen(false)}>
+                                <button key={n.id} onClick={() => handleNotificationClick(n.link)} className={`block w-full text-left p-3 rounded-md ${!n.isRead ? 'bg-muted' : ''}`}>
                                     <p className={`text-sm ${!n.isRead ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>{n.message}</p>
                                     <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(n.timestamp), { addSuffix: true })}</p>
-                                </Link>
+                                </button>
                             ))
                         ) : (
                             <p className="text-muted-foreground text-center pt-8">No notifications yet.</p>
