@@ -6,7 +6,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun, Home, User, Scale, LayoutDashboard, Menu, ChevronsUpDown } from 'lucide-react';
+import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, ChevronsUpDown, Menu } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -24,7 +24,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "next-themes";
 import Link from 'next/link';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { AnimatedNav } from './AnimatedNav';
+import { ThemeToggle } from './ThemeToggle';
+
 
 function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
     const { state, api, dispatch } = useHackathon();
@@ -114,13 +116,28 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
     );
 }
 
+const MobileNavMenu = ({ onLinkClick }: { onLinkClick: () => void }) => {
+    return (
+        <div className="flex flex-col gap-4 pt-8">
+            <Link href="/" className="text-lg font-medium" onClick={onLinkClick}>Home</Link>
+            <Link href="/guidance" className="text-lg font-medium" onClick={onLinkClick}>Guidance</Link>
+            <Link href="/gallery" className="text-lg font-medium" onClick={onLinkClick}>Gallery</Link>
+            <Link href="/teams" className="text-lg font-medium" onClick={onLinkClick}>Teams</Link>
+            <Link href="/leaderboard" className="text-lg font-medium" onClick={onLinkClick}>Leaderboard</Link>
+            <Link href="/results" className="text-lg font-medium" onClick={onLinkClick}>Results</Link>
+            <Link href="/partners" className="text-lg font-medium" onClick={onLinkClick}>Partners</Link>
+            <Link href="/support" className="text-lg font-medium" onClick={onLinkClick}>Support</Link>
+        </div>
+    )
+}
+
 export function Header() {
     const { state, api } = useHackathon();
     const { announcements, currentUser } = state;
-    const { theme, setTheme } = useTheme();
 
     const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     
     const [hasUnreadAnnouncements, setHasUnreadAnnouncements] = useState(false);
 
@@ -161,10 +178,6 @@ export function Header() {
         }
         setIsNotificationsOpen(true);
     };
-
-    const toggleTheme = () => {
-        setTheme(theme === "dark" ? "light" : "dark");
-    };
     
     const sortedNotifications = useMemo(() => {
         return [...(currentUser?.notifications || [])].sort((a, b) => b.timestamp - a.timestamp);
@@ -175,13 +188,17 @@ export function Header() {
             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
                 <div className="container flex h-14 max-w-screen-2xl items-center">
                      <div className="mr-4 flex items-center gap-2">
-                         <SidebarTrigger className="md:hidden"/>
                          <Link href="/" className="flex items-center gap-2">
                              <Trophy className="h-6 w-6 text-primary" />
                              <span className="font-bold font-headline">HackSprint</span>
                          </Link>
                      </div>
-                     <div className="flex flex-1 items-center justify-end space-x-2">
+
+                     <div className="flex-1 hidden md:flex justify-center">
+                         <AnimatedNav />
+                     </div>
+
+                     <div className="flex flex-1 items-center justify-end space-x-2 md:flex-none">
                         <Button variant="ghost" size="icon" onClick={handleAnnouncementsOpen} className="relative">
                             <Rss className="h-4 w-4" />
                             {hasUnreadAnnouncements && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />}
@@ -192,14 +209,30 @@ export function Header() {
                                 {unreadNotifications.length > 0 && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />}
                             </Button>
                         )}
-                        <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                        </Button>
+                        <ThemeToggle />
                         
-                        <div className="flex items-center gap-2">
+                        <div className="hidden md:flex items-center gap-2">
                             <AuthButtons />
                         </div>
+                        
+                         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                            <SheetTrigger asChild>
+                                 <Button variant="ghost" size="icon" className="md:hidden">
+                                    <Menu className="h-5 w-5"/>
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent>
+                                <SheetHeader>
+                                    <SheetTitle>Menu</SheetTitle>
+                                </SheetHeader>
+                                <div className="py-4">
+                                     <MobileNavMenu onLinkClick={() => setIsMobileMenuOpen(false)} />
+                                     <div className="mt-8 pt-4 border-t">
+                                        <AuthButtons onLinkClick={() => setIsMobileMenuOpen(false)}/>
+                                     </div>
+                                </div>
+                            </SheetContent>
+                        </Sheet>
                      </div>
                 </div>
             </header>

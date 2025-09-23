@@ -13,11 +13,9 @@ import IntroAnimation from '@/components/IntroAnimation';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import CollegeLogin from '@/components/CollegeLogin';
 import { useEffect, useState } from 'react';
-import { Loader, Home, Lightbulb, GalleryVertical, Users, TrendingUp, Trophy, Handshake, LifeBuoy } from 'lucide-react';
+import { Loader } from 'lucide-react';
 import { useCustomCursor } from '@/hooks/use-custom-cursor';
 import FallingStars from '@/components/ui/FallingStars';
-import { SidebarProvider, Sidebar, SidebarTrigger, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
-import Link from 'next/link';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -70,67 +68,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <SidebarProvider>
-            <Sidebar>
-                <SidebarHeader>
-                    <SidebarTrigger />
-                </SidebarHeader>
-                <SidebarContent>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton asChild tooltip="Home">
-                                <Link href="/"><Home /><span>Home</span></Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                             <SidebarMenuButton asChild tooltip="Guidance">
-                                <Link href="/guidance"><Lightbulb /><span>Guidance</span></Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                             <SidebarMenuButton asChild tooltip="Gallery">
-                                <Link href="/gallery"><GalleryVertical /><span>Gallery</span></Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                         <SidebarMenuItem>
-                             <SidebarMenuButton asChild tooltip="Teams">
-                                <Link href="/teams"><Users /><span>Teams</span></Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                         <SidebarMenuItem>
-                             <SidebarMenuButton asChild tooltip="Leaderboard">
-                                <Link href="/leaderboard"><TrendingUp /><span>Leaderboard</span></Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                             <SidebarMenuButton asChild tooltip="Results">
-                                <Link href="/results"><Trophy /><span>Results</span></Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                         <SidebarMenuItem>
-                             <SidebarMenuButton asChild tooltip="Partners">
-                                <Link href="/partners"><Handshake /><span>Partners</span></Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                             <SidebarMenuButton asChild tooltip="Support">
-                                <Link href="/support"><LifeBuoy /><span>Support</span></Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarContent>
-            </Sidebar>
-
-            <SidebarInset>
-                <div className="flex flex-col min-h-screen">
-                    <Header />
-                    <main className="flex-grow pb-24">
-                        {children}
-                    </main>
-                    <Footer />
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+         <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-grow pb-24">
+                {children}
+            </main>
+            <Footer />
+        </div>
     );
 }
 
