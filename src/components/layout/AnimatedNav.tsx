@@ -39,7 +39,7 @@ export function AnimatedNav() {
             <span className={cn("relative z-10", { "text-foreground": hoveredPath === item.path })}>{item.name}</span>
             {item.path === hoveredPath && (
               <motion.div
-                className="absolute inset-0 rounded-full bg-background"
+                className="absolute inset-0 rounded-full bg-orange-500 dark:bg-black"
                 layoutId="animated-nav-underline"
                 transition={{
                   type: "spring",
