@@ -74,9 +74,9 @@ export default function PendingApprovals({ users }: PendingApprovalsProps) {
                 <ScrollArea className="h-96 pr-4">
                     <div className="space-y-4">
                          {urgent.length > 0 && (
-                            <div className="space-y-2 p-3 border-2 border-yellow-500/50 rounded-lg">
-                                <h3 className="font-bold text-yellow-400 flex items-center gap-2">
-                                   <AlertTriangle /> Urgent Reminders ({urgent.length})
+                            <div className="space-y-2 p-3 border-2 border-yellow-500/50 rounded-lg bg-yellow-500/10">
+                                <h3 className="font-bold text-yellow-400 flex items-center gap-2 text-lg">
+                                   <AlertTriangle /> Urgent Approvals ({urgent.length})
                                 </h3>
                                 {urgent.map(user => <UserRow key={user.id} user={user} />)}
                             </div>
