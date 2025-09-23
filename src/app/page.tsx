@@ -149,7 +149,7 @@ const HowItWorksAnimation = () => {
             <motion.svg 
                 viewBox="0 0 400 400" 
                 className="absolute inset-0 w-full h-full" 
-                preserveAspectRatio="xMidYMid meet"
+                preserveAspectRatio="none"
             >
                 <defs>
                     <radialGradient id="fireGradient">
@@ -226,7 +226,6 @@ const HowItWorksAnimation = () => {
         </div>
     );
 };
-
 export default function Home() {
   const { state } = useHackathon();
   const { selectedCollege } = state;
