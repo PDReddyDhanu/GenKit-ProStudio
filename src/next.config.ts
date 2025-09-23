@@ -51,6 +51,12 @@ const nextConfig: NextConfig = {
         hostname: 'www.instacks.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

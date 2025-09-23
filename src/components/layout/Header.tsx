@@ -41,7 +41,7 @@ function NavLinks({ onLinkClick }: { onLinkClick?: () => void }) {
 
 function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
     const { state, api, dispatch } = useHackathon();
-    const { currentUser, currentJudge, currentAdmin } = state;
+    const { currentUser, currentJudge, currentAdmin, selectedCollege } = state;
     const router = useRouter();
 
     const handleAction = (action: () => void) => {
@@ -62,73 +62,83 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
     
     const loggedInUser = currentUser || currentJudge || currentAdmin;
     
-    if (loggedInUser) {
-        return (
-            <>
-                {currentAdmin ? (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="w-full justify-start">
-                                <UserCircle className="mr-2 h-4 w-4"/> Admin
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                <Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                <Link href="/admin/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                ) : currentJudge ? (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="w-full justify-start">
-                                <UserCircle className="mr-2 h-4 w-4"/> {currentJudge.name}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                             <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                <Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                <Link href="/judge/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                ) : currentUser ? (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="w-full justify-start">
-                                <UserCircle className="mr-2 h-4 w-4"/> {currentUser.name}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                <Link href="/student"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                <Link href="/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                ) : null}
-                 <Button variant="ghost" size="sm" onClick={() => handleAction(handleLogout)} className="w-full justify-start"><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
-                 <Button variant="ghost" size="sm" onClick={() => handleAction(handleChangeCollege)} className="w-full justify-start"><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
-            </>
-        );
-    }
-
     return (
          <>
-             <Button size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
-                 <Link href="/student"><User className="mr-2 h-4 w-4"/> Student </Link>
-             </Button>
-             <Button variant="secondary" size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
-                 <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin </Link>
-             </Button>
-             <Button variant="ghost" size="sm" onClick={() => handleAction(handleChangeCollege)} className="w-full justify-start"><Building2 className="mr-2 h-4 w-4"/> Change College</Button>
+             <div className="border-t pt-4 mt-4 space-y-2">
+                {selectedCollege && (
+                    <div className="px-2 py-1.5 text-center">
+                        <p className="text-sm font-semibold text-foreground">{selectedCollege}</p>
+                    </div>
+                )}
+                 <Button variant="ghost" size="sm" onClick={() => handleAction(handleChangeCollege)} className="w-full justify-center text-muted-foreground">
+                    <Building2 className="mr-2 h-4 w-4"/> Change College
+                </Button>
+            </div>
+            <div className="border-t pt-4 mt-2 space-y-2">
+            {loggedInUser ? (
+                <>
+                    {currentAdmin ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" className="w-full justify-start">
+                                    <UserCircle className="mr-2 h-4 w-4"/> Admin
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                    <Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                    <Link href="/admin/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : currentJudge ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" className="w-full justify-start">
+                                    <UserCircle className="mr-2 h-4 w-4"/> {currentJudge.name}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                 <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                    <Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                    <Link href="/judge/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : currentUser ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" className="w-full justify-start">
+                                    <UserCircle className="mr-2 h-4 w-4"/> {currentUser.name}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                    <Link href="/student"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
+                                    <Link href="/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : null}
+                     <Button variant="ghost" size="sm" onClick={() => handleAction(handleLogout)} className="w-full justify-start"><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
+                </>
+            ) : (
+                <>
+                    <Button size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
+                        <Link href="/student"><User className="mr-2 h-4 w-4"/> Student </Link>
+                    </Button>
+                    <Button variant="secondary" size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
+                        <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin </Link>
+                    </Button>
+                </>
+            )}
+            </div>
         </>
     );
 }
@@ -250,7 +260,7 @@ export function Header() {
                                             <NavLinks onLinkClick={closeMobileMenu} />
                                         </ul>
                                     </nav>
-                                    <div className="mt-8 pt-4 border-t flex flex-col gap-2">
+                                    <div className="mt-auto pt-4">
                                         <AuthButtons onLinkClick={closeMobileMenu} />
                                     </div>
                                 </SheetContent>
