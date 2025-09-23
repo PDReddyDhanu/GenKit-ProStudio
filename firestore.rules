@@ -1,79 +1,15 @@
-
-rules_version = '2';
-
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    // Helper functions to check user roles.
-    function isAuth() {
-      return request.auth != null;
-    }
-
-    function isUser(collegeId, userId) {
-      return isAuth() && request.auth.uid == userId && exists(/databases/$(database)/documents/colleges/$(collegeId)/users/$(userId));
-    }
-
-    function isJudge(collegeId) {
-      return isAuth() && exists(/databases/$(database)/documents/colleges/$(collegeId)/judges/$(request.auth.uid));
-    }
-    
-    // College data is public
-    match /colleges/{collegeId} {
-      allow read;
-      allow write: if false; // Nobody can write to the top-level college doc.
-
-      // Announcements are public to read, but only judges/admins can write.
-      match /announcements/{announcementId} {
-        allow read;
-        allow create, update, delete: if isJudge(collegeId);
-      }
-      
-      // Hackathon definitions are public to read, but only judges/admins can write.
-      match /hackathons/{hackathonId} {
-        allow read;
-        allow create, update, delete: if isJudge(collegeId);
-      }
-
-      // Users can only read/write their own data. Judges/admins can manage all users.
-      match /users/{userId} {
-        allow read, update: if isUser(collegeId, userId) || isJudge(collegeId);
-        allow create: if isAuth(); // Allow any authenticated user to create their own record.
-        allow delete: if isJudge(collegeId); // Only judges/admins can delete users.
-      }
-      
-      // Judges are read-only for most, but can be managed by other judges/admins.
-      match /judges/{judgeId} {
-        allow read: if isAuth();
-        allow create, update, delete: if isJudge(collegeId);
-      }
-
-      // Team data has more complex rules.
-      match /teams/{teamId} {
-        allow read: if isAuth(); // Any authenticated user can read team data (for team finder).
-        // Only an authenticated user can create a team.
-        allow create: if isAuth();
-        // Only judges or members of the team can update team details.
-        allow update: if isJudge(collegeId) || (isAuth() && resource.data.members.hasAny(request.auth.uid));
-        // Only a judge/admin can delete a team.
-        allow delete: if isJudge(collegeId);
-      }
-
-      // Projects are public to read.
-      match /projects/{projectId} {
-        allow read;
-        // Authenticated users can submit projects.
-        allow create: if isAuth();
-        // Only judges/admins can update projects (e.g., scores, achievements).
-        allow update: if isJudge(collegeId) || (isAuth() && request.auth.uid == resource.data.creatorId);
-        allow delete: if isJudge(collegeId);
-      }
-      
-      // Support tickets are private between the user and admins.
-      match /supportTickets/{ticketId} {
-        allow read: if isUser(collegeId, resource.data.studentId) || isJudge(collegeId);
-        allow create: if isAuth();
-        allow update: if isJudge(collegeId); // Only judges/admins can update status or respond.
-        allow delete: if false; // Nobody should delete support tickets.
+{
+  "rules": {
+    "projects": {
+      "hacksprint-duplicate-idy24": {
+        "databases": {
+          "(default)": {
+            "documents": {
+              ".read": "now < 1151629158997800000",
+              ".write": "now < 1151629158997800000"
+            }
+          }
+        }
       }
     }
   }
