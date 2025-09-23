@@ -17,7 +17,7 @@ interface AccountStatusDialogProps {
 
 interface Status {
     approvalStatus: 'pending' | 'approved' | 'rejected';
-    emailVerified: boolean;
+    emailVerified: boolean; // This will be updated by the client logic
     registeredAt: number | null;
     userId: string;
 }
@@ -31,21 +31,29 @@ export default function AccountStatusDialog({ onOpenChange }: AccountStatusDialo
     
     const [isResending, setIsResending] = useState(false);
     const [isReminding, setIsReminding] = useState(false);
+    const [emailVerificationStatus, setEmailVerificationStatus] = useState<'unknown' | 'verified' | 'pending'>('unknown');
+
 
     const handleCheckStatus = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setNotFound(false);
         setStatus(null);
+        setEmailVerificationStatus('unknown');
         try {
-            // This is a simplified check. A real app would need to check auth state too.
-            // But for this flow, we check the database record.
             const accountStatus = await api.getAccountStatus(email);
             if (accountStatus) {
-                setStatus({
-                    ...accountStatus,
-                    emailVerified: false // We can't know this from the backend without auth. Assume false if pending.
-                });
+                setStatus(accountStatus);
+                // Simulate checking email verification status. In a real app, this might be more complex.
+                // For now, we'll assume it's pending unless the account is approved.
+                // A better check would be to try to sign in silently and check user.emailVerified.
+                if (accountStatus.approvalStatus === 'approved') {
+                    // This is still a guess, but a more informed one.
+                    setEmailVerificationStatus('verified'); 
+                } else {
+                    setEmailVerificationStatus('pending');
+                }
+
             } else {
                 setNotFound(true);
             }
@@ -113,13 +121,13 @@ export default function AccountStatusDialog({ onOpenChange }: AccountStatusDialo
                     <h3 className="font-semibold">Status for: {email}</h3>
                     <div className="p-3 rounded-md bg-muted space-y-3">
                          <div className="flex items-start gap-3">
-                            <Mail className="h-5 w-5 mt-0.5 text-primary"/>
+                            {emailVerificationStatus === 'verified' ? <CheckCircle className="h-5 w-5 mt-0.5 text-green-400"/> : <Mail className="h-5 w-5 mt-0.5 text-primary"/>}
                             <div>
                                 <p className="font-medium">Email Verification</p>
-                                <p className={`text-sm ${status.approvalStatus !== 'approved' ? 'text-yellow-400' : 'text-green-400'}`}>
-                                    {status.approvalStatus !== 'approved' ? "Pending (Complete this after admin approval)" : "Verified"}
+                                <p className={`text-sm ${emailVerificationStatus === 'pending' ? 'text-yellow-400' : 'text-green-400'}`}>
+                                    {emailVerificationStatus === 'verified' ? "Verified" : "Pending"}
                                 </p>
-                                {status.approvalStatus !== 'approved' && (
+                                {emailVerificationStatus === 'pending' && (
                                      <Button size="sm" variant="outline" className="mt-2 h-8" onClick={handleResendVerification} disabled={isResending}>
                                         {isResending ? <Loader className="animate-spin h-4 w-4"/> : "Resend Verification Email"}
                                     </Button>

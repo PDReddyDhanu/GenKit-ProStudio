@@ -139,7 +139,7 @@ export async function registerStudent(collegeId: string, { name, email, password
         await sendEmailVerification(userCredential.user);
         
         await firebaseSignOut(auth); // Sign out immediately after registration
-        return { successMessage: 'Your account is pending for admin or judge approval and you have to verify your email id by clicking link on mail i sent now check on spam folder' };
+        return { successMessage: 'Registration successful! A verification link has been sent to your email. Please verify your email and wait for admin approval.' };
     } catch(error: any) {
         if (error.code === 'auth/email-already-in-use') {
             throw new Error('This email address is already registered. Please try logging in instead.');
@@ -151,25 +151,26 @@ export async function registerStudent(collegeId: string, { name, email, password
 export async function loginStudent(collegeId: string, { email, password }: any) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const userDoc = await getDoc(doc(db, `colleges/${collegeId}/users`, userCredential.user.uid));
+    
     if (!userDoc.exists()) {
-        await firebaseSignOut(auth); // Sign out if record not found for this college
-        throw new Error("Student record not found for this college.");
-    }
-
-    // We need to refresh the user state to get the latest emailVerified status
-    await userCredential.user.reload();
-    const freshUser = auth.currentUser;
-
-    if (!freshUser?.emailVerified) {
         await firebaseSignOut(auth);
-        throw new Error("Please verify your email address before logging in. Check your inbox for the verification link, or use the 'Check Status' tool to resend it.");
+        throw new Error("Student record not found for this college.");
     }
 
     const user = userDoc.data() as User;
     if (user.status === 'pending') {
         await firebaseSignOut(auth);
-        throw new Error("Your account is pending approval by an admin.");
+        throw new Error("Your account is still pending approval by an admin. You can check your status using the 'Check Status' tool.");
     }
+
+    // After approval, check for email verification
+    await userCredential.user.reload();
+    const freshUser = auth.currentUser;
+    if (!freshUser?.emailVerified) {
+        await firebaseSignOut(auth);
+        throw new Error("Your account is approved, but you must verify your email address before logging in. Use the 'Check Status' tool to resend the verification link if needed.");
+    }
+
     return { successMessage: 'Login successful!' };
 }
 
@@ -197,9 +198,7 @@ export async function signOut() {
 }
 
 export async function getAccountStatus(collegeId: string, email: string) {
-    // This function can't check email verification status without being authenticated.
-    // We will check the Firestore record only.
-    const q = query(collection(db, `colleges/${collegeId}/users`), where("email", "==", email));
+    const q = query(collection(db, `colleges/${collegeId}/users`), where("email", "==", email), limit(1));
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
@@ -208,13 +207,19 @@ export async function getAccountStatus(collegeId: string, email: string) {
 
     const userDoc = querySnapshot.docs[0];
     const userData = userDoc.data() as User;
+    
+    // For checking email verification without logging in, we can't directly ask Firebase Auth.
+    // However, if the user *is* logged in (e.g. from a previous session), we can check.
+    // Since this is a public-facing tool, we'll have to rely on Firestore data only
+    // and provide an action for the user to trigger email sending.
+    // Let's assume verification is false if we can't prove it's true.
+    // In a real scenario, you'd use a cloud function to get the auth user record by email.
 
-    // We can't check email verification without logging in, so we return what we know.
-    // The client can infer the verification status is likely pending.
     return {
+        userId: userData.id,
         approvalStatus: userData.status,
+        emailVerified: false, // We must assume false here as we can't check auth state
         registeredAt: userData.registeredAt || null,
-        userId: userData.id
     };
 }
 
