@@ -262,21 +262,27 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Why Choose HackSprint?</h2>
             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">An integrated platform designed to elevate your hackathon experience from start to finish.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <Card className="text-center p-6">
-                    <BrainCircuit className="w-12 h-12 mx-auto mb-4 text-primary"/>
-                    <h3 className="text-xl font-bold font-headline">AI-Powered Assistance</h3>
-                    <p className="text-muted-foreground mt-2">Leverage cutting-edge AI for idea generation, code reviews, project summaries, and more.</p>
-                </Card>
-                <Card className="text-center p-6">
-                    <UsersRound className="w-12 h-12 mx-auto mb-4 text-primary"/>
-                    <h3 className="text-xl font-bold font-headline">Seamless Collaboration</h3>
-                    <p className="text-muted-foreground mt-2">Find teammates, manage your team, and communicate effectively all in one place.</p>
-                </Card>
-                 <Card className="text-center p-6">
-                    <BarChart className="w-12 h-12 mx-auto mb-4 text-primary"/>
-                    <h3 className="text-xl font-bold font-headline">Real-time Tracking</h3>
-                    <p className="text-muted-foreground mt-2">Stay updated with a live leaderboard, announcements, and clear submission tracking.</p>
-                </Card>
+                <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                    <Card className="text-center p-6 h-full">
+                        <BrainCircuit className="w-12 h-12 mx-auto mb-4 text-primary"/>
+                        <h3 className="text-xl font-bold font-headline">AI-Powered Assistance</h3>
+                        <p className="text-muted-foreground mt-2">Leverage cutting-edge AI for idea generation, code reviews, project summaries, and more.</p>
+                    </Card>
+                </ElectricBorder>
+                <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                    <Card className="text-center p-6 h-full">
+                        <UsersRound className="w-12 h-12 mx-auto mb-4 text-primary"/>
+                        <h3 className="text-xl font-bold font-headline">Seamless Collaboration</h3>
+                        <p className="text-muted-foreground mt-2">Find teammates, manage your team, and communicate effectively all in one place.</p>
+                    </Card>
+                </ElectricBorder>
+                 <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                    <Card className="text-center p-6 h-full">
+                        <BarChart className="w-12 h-12 mx-auto mb-4 text-primary"/>
+                        <h3 className="text-xl font-bold font-headline">Real-time Tracking</h3>
+                        <p className="text-muted-foreground mt-2">Stay updated with a live leaderboard, announcements, and clear submission tracking.</p>
+                    </Card>
+                </ElectricBorder>
             </div>
         </section>
 
@@ -289,42 +295,48 @@ export default function Home() {
              <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Tailored for Everyone</h2>
              <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">A unique set of tools designed for every role in the hackathon ecosystem.</p>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                 <Card className="flex flex-col">
-                     <CardHeader>
-                         <CardTitle className="flex items-center gap-3 font-headline text-2xl"><User className="text-primary"/> For Students</CardTitle>
-                     </CardHeader>
-                     <CardContent className="flex-grow space-y-3">
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Join teams or use the AI Matchmaker to find collaborators.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Brainstorm ideas with the AI Idea Generator.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Submit projects easily via GitHub.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Get instant AI-powered code reviews.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Track your rank on a live leaderboard.</span></p>
-                     </CardContent>
-                 </Card>
-                 <Card className="flex flex-col">
-                     <CardHeader>
-                         <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Scale className="text-primary"/> For Judges</CardTitle>
-                     </CardHeader>
-                     <CardContent className="flex-grow space-y-3">
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Access all submissions in one place.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Read AI-generated project summaries for quick evaluation.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Use a standardized rubric for fair and consistent scoring.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>View project analytics and score distributions.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Score both teams and individual contributions.</span></p>
-                     </CardContent>
-                 </Card>
-                 <Card className="flex flex-col">
-                     <CardHeader>
-                         <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Shield className="text-primary"/> For Admins</CardTitle>
-                     </CardHeader>
-                     <CardContent className="flex-grow space-y-3">
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage multiple hackathon events seamlessly.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Approve student registrations and add judges.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Broadcast announcements to all participants.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Monitor real-time analytics and generate reports.</span></p>
-                         <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage support tickets with AI triage.</span></p>
-                     </CardContent>
-                 </Card>
+                 <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                     <Card className="flex flex-col h-full">
+                         <CardHeader>
+                             <CardTitle className="flex items-center gap-3 font-headline text-2xl"><User className="text-primary"/> For Students</CardTitle>
+                         </CardHeader>
+                         <CardContent className="flex-grow space-y-3">
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Join teams or use the AI Matchmaker to find collaborators.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Brainstorm ideas with the AI Idea Generator.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Submit projects easily via GitHub.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Get instant AI-powered code reviews.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Track your rank on a live leaderboard.</span></p>
+                         </CardContent>
+                     </Card>
+                 </ElectricBorder>
+                 <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                     <Card className="flex flex-col h-full">
+                         <CardHeader>
+                             <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Scale className="text-primary"/> For Judges</CardTitle>
+                         </CardHeader>
+                         <CardContent className="flex-grow space-y-3">
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Access all submissions in one place.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Read AI-generated project summaries for quick evaluation.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Use a standardized rubric for fair and consistent scoring.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>View project analytics and score distributions.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Score both teams and individual contributions.</span></p>
+                         </CardContent>
+                     </Card>
+                 </ElectricBorder>
+                 <ElectricBorder style={{ borderRadius: '0.75rem' }}>
+                     <Card className="flex flex-col h-full">
+                         <CardHeader>
+                             <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Shield className="text-primary"/> For Admins</CardTitle>
+                         </CardHeader>
+                         <CardContent className="flex-grow space-y-3">
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage multiple hackathon events seamlessly.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Approve student registrations and add judges.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Broadcast announcements to all participants.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Monitor real-time analytics and generate reports.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage support tickets with AI triage.</span></p>
+                         </CardContent>
+                     </Card>
+                 </ElectricBorder>
              </div>
          </section>
 
@@ -423,15 +435,23 @@ export default function Home() {
             <div className="relative w-full">
                 <div className="flex w-max scrolling-wrapper group-hover:pause">
                     {[...testimonials, ...testimonials].map((testimonial, index) => (
-                        <Card key={index} className="w-[350px] mx-4 flex-shrink-0">
-                            <CardContent className="p-6">
-                                <p className="italic text-foreground">"{testimonial.quote}"</p>
-                                <div className="mt-4 text-right">
-                                    <p className="font-bold font-headline">{testimonial.name}</p>
-                                    <p className="text-sm text-primary">{testimonial.role}</p>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <ElectricBorder
+                          key={index}
+                          style={{ borderRadius: '0.75rem', margin: '0 1rem' }}
+                          color="hsl(var(--primary))"
+                          speed={0.2}
+                          chaos={0.1}
+                        >
+                            <Card className="w-[350px] flex-shrink-0 h-full">
+                                <CardContent className="p-6">
+                                    <p className="italic text-foreground">"{testimonial.quote}"</p>
+                                    <div className="mt-4 text-right">
+                                        <p className="font-bold font-headline">{testimonial.name}</p>
+                                        <p className="text-sm text-primary">{testimonial.role}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </ElectricBorder>
                     ))}
                 </div>
             </div>
