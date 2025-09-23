@@ -6,7 +6,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun, Home, User, Scale, LayoutDashboard, Menu } from 'lucide-react';
+import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, Lightbulb, GalleryVertical, Users, TrendingUp, Handshake, LifeBuoy, Moon, Sun, Home, User, Scale, LayoutDashboard, Menu, ChevronsUpDown } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -20,6 +20,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "next-themes";
 import Link from 'next/link';
@@ -47,6 +48,95 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
     const handleAction = (action: () => void) => {
         if (onLinkClick) onLinkClick();
         action();
+    };
+
+    const handleLogout = async () => {
+        await api.signOut();
+        router.push('/');
+    };
+    
+    const loggedInUser = currentUser || currentJudge || currentAdmin;
+    const userDisplayName = currentJudge?.name || currentUser?.name || 'Admin';
+
+    const handleChangeCollege = () => {
+        dispatch({ type: 'SET_SELECTED_COLLEGE', payload: null });
+        localStorage.removeItem('selectedCollege');
+        router.push('/');
+    };
+    
+    return (
+        <>
+            {selectedCollege && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="hidden md:flex items-center gap-1 text-muted-foreground">
+                            <Building2 className="h-4 w-4"/> 
+                            <span className="w-28 truncate text-left">{selectedCollege}</span>
+                            <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleAction(handleChangeCollege)}>
+                           Change College
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
+
+            {loggedInUser ? (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="flex items-center gap-2">
+                            <UserCircle className="h-5 w-5"/>
+                            <span className="hidden sm:inline">{userDisplayName}</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        {currentAdmin ? (
+                            <>
+                                <DropdownMenuItem asChild><Link href="/admin">Dashboard</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/admin/profile">Profile</Link></DropdownMenuItem>
+                            </>
+                        ) : currentJudge ? (
+                            <>
+                                <DropdownMenuItem asChild><Link href="/admin">Dashboard</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/judge/profile">Profile</Link></DropdownMenuItem>
+                            </>
+                        ) : (
+                            <>
+                                <DropdownMenuItem asChild><Link href="/student">Dashboard</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/profile">Profile</Link></DropdownMenuItem>
+                            </>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleAction(handleLogout)}>
+                            <LogOut className="mr-2 h-4 w-4"/> Logout
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            ) : (
+                <div className="flex items-center gap-2">
+                    <Button size="sm" asChild>
+                        <Link href="/student">Student</Link>
+                    </Button>
+                    <Button variant="secondary" size="sm" asChild>
+                        <Link href="/judge">Judge/Admin</Link>
+                    </Button>
+                </div>
+            )}
+        </>
+    );
+}
+
+// Mobile specific auth buttons
+function MobileAuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
+     const { state, api, dispatch } = useHackathon();
+    const { currentUser, currentJudge, currentAdmin, selectedCollege } = state;
+    const router = useRouter();
+
+    const handleAction = (action: () => void) => {
+        if (onLinkClick) onLinkClick();
+        action();
     }
 
     const handleLogout = async () => {
@@ -61,9 +151,10 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
     };
     
     const loggedInUser = currentUser || currentJudge || currentAdmin;
-    
+    const userDisplayName = currentJudge?.name || currentUser?.name || 'Admin';
+
     return (
-         <>
+        <>
              <div className="border-t pt-4 mt-4 space-y-2">
                 {selectedCollege && (
                     <div className="px-2 py-1.5 text-center">
@@ -77,70 +168,38 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
             <div className="border-t pt-4 mt-2 space-y-2">
             {loggedInUser ? (
                 <>
+                    <p className="px-3 text-sm font-semibold text-foreground">{userDisplayName}</p>
                     {currentAdmin ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="w-full justify-start">
-                                    <UserCircle className="mr-2 h-4 w-4"/> Admin
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                    <Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                    <Link href="/admin/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <>
+                             <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/admin'))}><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></Button>
+                             <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/admin/profile'))}><Link href="/admin/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></Button>
+                        </>
                     ) : currentJudge ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="w-full justify-start">
-                                    <UserCircle className="mr-2 h-4 w-4"/> {currentJudge.name}
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                 <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                    <Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                    <Link href="/judge/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    ) : currentUser ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="w-full justify-start">
-                                    <UserCircle className="mr-2 h-4 w-4"/> {currentUser.name}
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                    <Link href="/student"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild onClick={() => handleAction(() => {})}>
-                                    <Link href="/profile"><User className="mr-2 h-4 w-4"/> Profile</Link>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    ) : null}
+                        <>
+                            <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/admin'))}><Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></Button>
+                            <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/judge/profile'))}><Link href="/judge/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/student'))}><Link href="/student"><LayoutDashboard className="mr-2 h-4 w-4"/> Dashboard</Link></Button>
+                            <Button asChild variant="ghost" size="sm" className="w-full justify-start" onClick={() => handleAction(() => router.push('/profile'))}><Link href="/profile"><User className="mr-2 h-4 w-4"/> Profile</Link></Button>
+                        </>
+                    )}
                      <Button variant="ghost" size="sm" onClick={() => handleAction(handleLogout)} className="w-full justify-start"><LogOut className="mr-2 h-4 w-4"/> Logout</Button>
                 </>
             ) : (
                 <>
                     <Button size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
-                        <Link href="/student"><User className="mr-2 h-4 w-4"/> Student </Link>
+                        <Link href="/student"><User className="mr-2 h-4 w-4"/> Student Login</Link>
                     </Button>
                     <Button variant="secondary" size="sm" asChild className="w-full justify-start" onClick={() => handleAction(() => {})}>
-                        <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin </Link>
+                        <Link href="/judge"><Scale className="mr-2 h-4 w-4"/> Judge/Admin Login</Link>
                     </Button>
                 </>
             )}
             </div>
         </>
-    );
+    )
 }
 
 
@@ -246,7 +305,7 @@ export function Header() {
                                         <span className="sr-only">Toggle Menu</span>
                                     </Button>
                                 </SheetTrigger>
-                                <SheetContent side="right" className="w-[300px]">
+                                <SheetContent side="right" className="w-[300px] flex flex-col">
                                      <SheetHeader>
                                         <SheetTitle>
                                              <Link href="/" onClick={closeMobileMenu} className="flex items-center gap-2">
@@ -255,13 +314,13 @@ export function Header() {
                                              </Link>
                                         </SheetTitle>
                                     </SheetHeader>
-                                    <nav className="mt-8">
+                                    <nav className="mt-8 flex-grow">
                                         <ul className="flex flex-col space-y-4 text-lg">
                                             <NavLinks onLinkClick={closeMobileMenu} />
                                         </ul>
                                     </nav>
                                     <div className="mt-auto pt-4">
-                                        <AuthButtons onLinkClick={closeMobileMenu} />
+                                        <MobileAuthButtons onLinkClick={closeMobileMenu} />
                                     </div>
                                 </SheetContent>
                              </Sheet>
