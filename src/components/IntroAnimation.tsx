@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { BrainCircuit } from 'lucide-react';
+import { AppLogo } from '@/components/layout/Header';
 
 interface ConfettiParticle {
     id: number;
@@ -72,7 +72,9 @@ export default function IntroAnimation() {
             </div>
             
             <div className="z-10 text-center animate-slow-zoom-in">
-                <BrainCircuit className="h-16 w-16 mx-auto mb-4 text-primary animate-trophy-shine" style={{ filter: 'drop-shadow(0 0 20px hsl(var(--secondary)))' }}/>
+                <div className="h-16 w-16 mx-auto mb-4 text-primary animate-trophy-shine" style={{ filter: 'drop-shadow(0 0 20px hsl(var(--secondary)))' }}>
+                    <AppLogo />
+                </div>
                 <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-gray-400 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-gray-100 dark:to-gray-400 font-headline animate-title-reveal"
                     style={{ textShadow: 'var(--intro-text-shadow, none)' }}
                 >

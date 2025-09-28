@@ -6,9 +6,10 @@ import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Building2, BrainCircuit, Search } from 'lucide-react';
+import { Building2, Search } from 'lucide-react';
 import { COLLEGES } from '@/lib/colleges';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { AppLogo } from './layout/Header';
 
 export default function CollegeLogin() {
     const { dispatch } = useHackathon();
@@ -38,7 +39,9 @@ export default function CollegeLogin() {
     return (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background animate-fade-in">
             <div className="text-center mb-8">
-                <BrainCircuit className="h-16 w-16 mx-auto mb-4 text-primary animate-trophy-shine" style={{ filter: 'drop-shadow(0 0 20px hsl(var(--primary)))' }}/>
+                 <div className="h-16 w-16 mx-auto mb-4 text-primary animate-trophy-shine" style={{ filter: 'drop-shadow(0 0 20px hsl(var(--primary)))' }}>
+                    <AppLogo />
+                </div>
                 <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent font-headline">
                     GenKit ProStudio
                 </h1>

@@ -1,12 +1,11 @@
 
-
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { BrainCircuit, Rss, LogOut, Building2, UserCircle, Bell, ChevronsUpDown, Menu } from 'lucide-react';
+import { Rss, LogOut, Building2, UserCircle, Bell, ChevronsUpDown, Menu } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -26,6 +25,18 @@ import { useTheme } from "next-themes";
 import Link from 'next/link';
 import { AnimatedNav } from './AnimatedNav';
 import { ThemeToggle } from './ThemeToggle';
+
+export const AppLogo = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-full h-full">
+        <path fill="currentColor" d="M50 85 L15 62.5 V37.5 L50 15 L85 37.5 V62.5 Z" />
+        <path fill="none" stroke="hsl(var(--background))" strokeWidth="5" d="M50 85 L15 62.5 V37.5 L50 15 L85 37.5 V62.5 Z" />
+        <path fill="none" stroke="hsl(var(--secondary))" strokeWidth="4" strokeLinecap="round" d="M50 65 V50 M35 57.5 L50 50 L65 57.5 M50 50 L50 35" />
+        <circle cx="50" cy="65" r="5" fill="hsl(var(--secondary))"/>
+        <circle cx="35" cy="57.5" r="5" fill="hsl(var(--secondary))"/>
+        <circle cx="65" cy="57.5" r="5" fill="hsl(var(--secondary))"/>
+        <circle cx="50" cy="35" r="5" fill="hsl(var(--secondary))"/>
+    </svg>
+);
 
 
 function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
@@ -193,7 +204,7 @@ export function Header() {
                 <div className="container flex h-14 max-w-screen-2xl items-center">
                      <div className="mr-4 flex items-center gap-2">
                          <Link href="/" className="flex items-center gap-2">
-                             <BrainCircuit className="h-6 w-6 text-primary" />
+                             <div className="h-6 w-6 text-primary"><AppLogo /></div>
                              <span className="font-bold font-headline">GenKit ProStudio</span>
                          </Link>
                      </div>
