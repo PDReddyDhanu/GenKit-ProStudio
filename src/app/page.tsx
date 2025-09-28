@@ -249,7 +249,7 @@ export default function Home() {
                     style={{ borderRadius: '0.75rem' }}
                 >
                     <Card className="text-center p-6 h-full">
-                        <div className="w-12 h-12 mx-auto mb-4 text-primary"><AppLogo /></div>
+                        <div className="w-12 h-12 mx-auto mb-4 text-primary"><BrainCircuit /></div>
                         <h3 className="text-xl font-bold font-headline">AI-Powered Assistance</h3>
                         <p className="text-muted-foreground mt-2">Leverage cutting-edge AI for idea generation, code reviews, abstract summaries, and more.</p>
                     </Card>
@@ -361,7 +361,7 @@ export default function Home() {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                  <div className="relative flex justify-center items-center">
                     <div className="w-[250px] h-[250px] text-primary drop-shadow-[0_0_15px_hsl(var(--primary))]">
-                      <AppLogo />
+                      <BrainCircuit className="w-full h-full" />
                     </div>
                  </div>
                  <div className="space-y-8">
