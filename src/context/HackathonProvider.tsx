@@ -218,18 +218,10 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
             dispatch({ type: 'CLEAR_MESSAGES' });
             try {
                 let collegeId = state.selectedCollege;
-                if (fnName === 'signOut' || fnName === 'loginAdmin') {
-                    const result = await (fn as any)(...args);
-                    if (result?.successMessage) dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage });
-                    if (fnName === 'loginAdmin' && result.isAdmin) dispatch({ type: 'SET_ADMIN', payload: true });
-                    if (fnName === 'signOut') dispatch({ type: 'SIGN_OUT_USER' });
-                    return result;
-                }
                 
                 if (fnName === 'loginFaculty') {
-                    // Special handling for sub-admin login
-                    collegeId = args[0]; // The collegeId is the first argument for loginFaculty
-                    const result = await (fn as any)(...args);
+                    // loginFaculty is special, it needs the college from its args to check for sub-admin
+                    const result = await (fn as any)(args[0], args[1]);
                      if (result?.successMessage) {
                         dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage });
                     }
@@ -239,7 +231,14 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
                     return result;
                 }
 
-
+                if (fnName === 'signOut' || fnName === 'loginAdmin') {
+                    const result = await (fn as any)(...args);
+                    if (result?.successMessage) dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage });
+                    if (fnName === 'loginAdmin' && result.isAdmin) dispatch({ type: 'SET_ADMIN', payload: true });
+                    if (fnName === 'signOut') dispatch({ type: 'SIGN_OUT_USER' });
+                    return result;
+                }
+                
                 if (!collegeId) {
                     throw new Error("No college selected. Please select a college first.");
                 }
@@ -273,5 +272,3 @@ export const useHackathon = () => {
   }
   return context;
 };
-
-    

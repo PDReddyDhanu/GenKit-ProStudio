@@ -170,7 +170,8 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
     return { successMessage: 'Login successful!' };
 }
 
-export async function loginFaculty(collegeId: string, { email, password }: any) {
+export async function loginFaculty(collegeId: string, credentials: { email: string, password: any}) {
+    const { email, password } = credentials;
     const collegeNamePrefix = collegeId.replace(/\s/g, '').substring(0, 6).toLowerCase();
     const subAdminEmail = `${collegeNamePrefix}@subadmin.com`;
 
