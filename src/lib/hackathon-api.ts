@@ -138,7 +138,7 @@ export async function registerStudent(collegeId: string, { name, email, password
             linkedin: '',
             workStyle: [],
             notifications: [],
-            projectType: 'Other',
+            projectType: 'Other', // Default value
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
         
@@ -176,7 +176,7 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
 
         const user = userDoc.data() as User;
         if (user.status !== 'approved') {
-            await firebaseSignOut(auth);
+             await firebaseSignOut(auth);
             throw new Error("Your account is still pending approval by an admin. You can check your status using the 'Check Status' tool.");
         }
 
