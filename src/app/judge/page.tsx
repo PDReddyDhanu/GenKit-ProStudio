@@ -68,7 +68,11 @@ export default function FacultyPortal() {
         if (isLoginView) {
             try {
                 await api.loginFaculty({ email, password });
-            } finally {
+            } catch (error) {
+                // The provider will set the error message, so we just need to catch it here to prevent a crash
+                console.error("Login failed:", error);
+            }
+            finally {
                 setIsLoading(false);
             }
         } else {
@@ -91,7 +95,10 @@ export default function FacultyPortal() {
                 }
                 await api.registerFaculty(facultyData);
                 toggleView(); // Switch to login view on success
-            } finally {
+            } catch (error) {
+                console.error("Registration failed:", error);
+            }
+            finally {
                 setIsLoading(false);
             }
         }
