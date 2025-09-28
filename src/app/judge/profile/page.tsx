@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -13,36 +12,37 @@ import { User, Pencil, Loader, LayoutDashboard } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import Link from 'next/link';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Badge } from '@/components/ui/badge';
 
-export default function JudgeProfilePage() {
+export default function FacultyProfilePage() {
     const { state, api } = useHackathon();
-    const { currentJudge } = state;
+    const { currentFaculty } = state;
 
     const [isEditing, setIsEditing] = useState(false);
-    const [name, setName] = useState(currentJudge?.name || '');
-    const [gender, setGender] = useState(currentJudge?.gender || '');
-    const [contactNumber, setContactNumber] = useState(currentJudge?.contactNumber || '');
-    const [bio, setBio] = useState(currentJudge?.bio || '');
+    const [name, setName] = useState(currentFaculty?.name || '');
+    const [gender, setGender] = useState(currentFaculty?.gender || '');
+    const [contactNumber, setContactNumber] = useState(currentFaculty?.contactNumber || '');
+    const [bio, setBio] = useState(currentFaculty?.bio || '');
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-      if(currentJudge) {
-        setName(currentJudge.name);
-        setGender(currentJudge.gender || '');
-        setContactNumber(currentJudge.contactNumber || '');
-        setBio(currentJudge.bio || '');
+      if(currentFaculty) {
+        setName(currentFaculty.name);
+        setGender(currentFaculty.gender || '');
+        setContactNumber(currentFaculty.contactNumber || '');
+        setBio(currentFaculty.bio || '');
       }
-    }, [currentJudge]);
+    }, [currentFaculty]);
 
-    if (!currentJudge) {
+    if (!currentFaculty) {
         return (
             <div className="container max-w-md mx-auto py-12 animate-fade-in">
                  <Card>
                     <CardHeader>
-                        <CardTitle className="text-center">Judge Profile</CardTitle>
+                        <CardTitle className="text-center">Faculty Profile</CardTitle>
                     </CardHeader>
                     <CardContent>
-                         <p className="text-center text-muted-foreground">Please log in as a judge to view and edit your profile.</p>
+                         <p className="text-center text-muted-foreground">Please log in as a faculty member to view and edit your profile.</p>
                          <AuthMessage />
                     </CardContent>
                 </Card>
@@ -54,7 +54,7 @@ export default function JudgeProfilePage() {
         e.preventDefault();
         setIsSaving(true);
         try {
-            await api.updateJudgeProfile(currentJudge.id, {
+            await api.updateFacultyProfile(currentFaculty.id, {
                 name,
                 gender,
                 contactNumber,
@@ -73,9 +73,9 @@ export default function JudgeProfilePage() {
                     <div>
                         <CardTitle className="flex items-center gap-3 text-3xl font-headline">
                             <User className="h-8 w-8 text-primary"/>
-                            {currentJudge.name}
+                            {currentFaculty.name}
                         </CardTitle>
-                        <CardDescription>{currentJudge.email}</CardDescription>
+                        <CardDescription>{currentFaculty.email} <Badge variant="outline">{currentFaculty.role}</Badge></CardDescription>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => setIsEditing(!isEditing)}>
                         <Pencil className="h-5 w-5" />
@@ -112,7 +112,7 @@ export default function JudgeProfilePage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="bio">Short Bio / About</Label>
-                                <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} placeholder="e.g., Senior Software Engineer at XYZ, passionate about AI." disabled={isSaving} />
+                                <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} placeholder="e.g., Senior Professor, passionate about AI." disabled={isSaving} />
                             </div>
                             
                             <div className="flex gap-4">
@@ -126,15 +126,15 @@ export default function JudgeProfilePage() {
                         <div className="space-y-6">
                              <div>
                                 <h4 className="font-semibold text-muted-foreground">Contact Number</h4>
-                                <p>{currentJudge.contactNumber || 'Not provided'}</p>
+                                <p>{currentFaculty.contactNumber || 'Not provided'}</p>
                             </div>
                              <div>
                                 <h4 className="font-semibold text-muted-foreground">Gender</h4>
-                                <p className="capitalize">{currentJudge.gender || 'Not specified'}</p>
+                                <p className="capitalize">{currentFaculty.gender || 'Not specified'}</p>
                             </div>
                              <div>
                                 <h4 className="font-semibold text-muted-foreground">About</h4>
-                                <p>{currentJudge.bio || 'No bio added yet.'}</p>
+                                <p>{currentFaculty.bio || 'No bio added yet.'}</p>
                             </div>
                         </div>
                     )}

@@ -30,17 +30,17 @@ export default function DataManagement() {
         await api.removeStudent(userId);
     }
     
-    const currentHackathon = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
+    const currentEvent = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
 
-    const hackathonTeams = useMemo(() => teams.filter(t => t.hackathonId === selectedHackathonId), [teams, selectedHackathonId]);
+    const eventTeams = useMemo(() => teams.filter(t => t.hackathonId === selectedHackathonId), [teams, selectedHackathonId]);
 
-    const hackathonParticipants = useMemo(() => {
+    const eventParticipants = useMemo(() => {
         if (!selectedHackathonId) return [];
-        const participantIds = new Set(hackathonTeams.flatMap(t => t.members.map(m => m.id)));
+        const participantIds = new Set(eventTeams.flatMap(t => t.members.map(m => m.id)));
         return users.filter(u => participantIds.has(u.id));
-    }, [users, hackathonTeams, selectedHackathonId]);
+    }, [users, eventTeams, selectedHackathonId]);
     
-    const hackathonProjects = useMemo(() => projects.filter(p => p.hackathonId === selectedHackathonId), [projects, selectedHackathonId]);
+    const eventProjects = useMemo(() => projects.filter(p => p.hackathonId === selectedHackathonId), [projects, selectedHackathonId]);
 
 
     const createCsv = (headers: string[], data: string[][]) => {
@@ -62,8 +62,8 @@ export default function DataManagement() {
 
     const handleExportSubmissions = () => {
         const headers = ["Project Name", "Project Description", "GitHub URL", "Team Name", "Team Members", "Average Score"];
-        const data = hackathonProjects.map(p => {
-            const team = hackathonTeams.find(t => t.id === p.teamId);
+        const data = eventProjects.map(p => {
+            const team = eventTeams.find(t => t.id === p.teamId);
             const teamMembers = team?.members.map(m => m.name).join('; ') || '';
             return [
                 `"${p.name.replace(/"/g, '""')}"`,
@@ -76,34 +76,34 @@ export default function DataManagement() {
         });
 
         const csvString = createCsv(headers, data);
-        downloadCsv(csvString, `${currentHackathon?.name}_Submissions.csv`);
+        downloadCsv(csvString, `${currentEvent?.name}_Submissions.csv`);
     };
 
     const handleExportParticipants = () => {
         const headers = ["Name", "Email"];
-        const data = hackathonParticipants.map(u => [u.name, u.email]);
+        const data = eventParticipants.map(u => [u.name, u.email]);
         const csvString = createCsv(headers, data);
-        downloadCsv(csvString, `${currentHackathon?.name}_Participants.csv`);
+        downloadCsv(csvString, `${currentEvent?.name}_Participants.csv`);
     };
 
-    const handleResetCurrentHackathon = async () => {
+    const handleResetCurrentEvent = async () => {
         if (!selectedHackathonId) return;
         setIsLoading('reset-current');
         try {
             await api.resetCurrentHackathon(selectedHackathonId);
         } catch (error) {
-            console.error("Failed to reset hackathon data:", error);
+            console.error("Failed to reset event data:", error);
         } finally {
             setIsLoading(null);
         }
     }
 
-    const handleResetAllHackathons = async () => {
-        setIsLoading('reset-all-hackathons');
+    const handleResetAllEvents = async () => {
+        setIsLoading('reset-all-events');
         try {
             await api.resetAllHackathons();
         } catch (error) {
-            console.error("Failed to reset all hackathon data:", error);
+            console.error("Failed to reset all event data:", error);
         } finally {
             setIsLoading(null);
         }
@@ -126,15 +126,15 @@ export default function DataManagement() {
             <Card>
                 <CardHeader className="flex flex-row justify-between items-center">
                     <div>
-                        <CardTitle className="font-headline">Hackathon Participants ({hackathonParticipants.length})</CardTitle>
-                        <CardDescription>Students registered for "{currentHackathon?.name || 'the selected hackathon'}"</CardDescription>
+                        <CardTitle className="font-headline">Event Participants ({eventParticipants.length})</CardTitle>
+                        <CardDescription>Students registered for "{currentEvent?.name || 'the selected event'}"</CardDescription>
                     </div>
-                     {currentHackathon && (
+                     {currentEvent && (
                         <div className="flex gap-2">
-                             <Button variant="outline" size="sm" onClick={handleExportSubmissions} disabled={hackathonProjects.length === 0}>
+                             <Button variant="outline" size="sm" onClick={handleExportSubmissions} disabled={eventProjects.length === 0}>
                                 <Download className="mr-2 h-4 w-4"/> Export Submissions
                             </Button>
-                            <Button variant="outline" size="sm" onClick={handleExportParticipants} disabled={hackathonParticipants.length === 0}>
+                            <Button variant="outline" size="sm" onClick={handleExportParticipants} disabled={eventParticipants.length === 0}>
                                 <Download className="mr-2 h-4 w-4"/> Export Participants
                             </Button>
                         </div>
@@ -151,8 +151,8 @@ export default function DataManagement() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {hackathonParticipants.length > 0 ? hackathonParticipants.map(user => {
-                                    const team = hackathonTeams.find(t => t.members.some(m => m.id === user.id));
+                                {eventParticipants.length > 0 ? eventParticipants.map(user => {
+                                    const team = eventTeams.find(t => t.members.some(m => m.id === user.id));
                                     return (
                                         <TableRow key={user.id}>
                                             <TableCell className="font-medium">{user.name}</TableCell>
@@ -160,7 +160,7 @@ export default function DataManagement() {
                                             <TableCell>{team?.name || 'No Team'}</TableCell>
                                         </TableRow>
                                     )
-                                }) : <TableRow><TableCell colSpan={3} className="text-center">No participants for this hackathon yet.</TableCell></TableRow>}
+                                }) : <TableRow><TableCell colSpan={3} className="text-center">No participants for this event yet.</TableCell></TableRow>}
                             </TableBody>
                         </Table>
                     </ScrollArea>
@@ -175,8 +175,8 @@ export default function DataManagement() {
                 <CardContent className="space-y-4">
                      <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
                         <div>
-                            <h4 className="font-bold">Reset Current Hackathon Data</h4>
-                            <p className="text-sm text-muted-foreground">Deletes all teams, projects, and scores for "{currentHackathon?.name || 'N/A'}".</p>
+                            <h4 className="font-bold">Reset Current Event Data</h4>
+                            <p className="text-sm text-muted-foreground">Deletes all teams, projects, and scores for "{currentEvent?.name || 'N/A'}".</p>
                         </div>
                          <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -187,11 +187,11 @@ export default function DataManagement() {
                             <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>This will permanently delete all submissions and team data for {currentHackathon?.name}. This action cannot be undone.</AlertDialogDescription>
+                                    <AlertDialogDescription>This will permanently delete all submissions and team data for {currentEvent?.name}. This action cannot be undone.</AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleResetCurrentHackathon} className="bg-destructive hover:bg-destructive/80">Yes, reset hackathon</AlertDialogAction>
+                                    <AlertDialogAction onClick={handleResetCurrentEvent} className="bg-destructive hover:bg-destructive/80">Yes, reset event data</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -199,23 +199,23 @@ export default function DataManagement() {
 
                      <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
                         <div>
-                            <h4 className="font-bold">Reset All Hackathons</h4>
-                            <p className="text-sm text-muted-foreground">Deletes all hackathon events, teams, and projects. Users and judges will remain.</p>
+                            <h4 className="font-bold">Reset All Events</h4>
+                            <p className="text-sm text-muted-foreground">Deletes all project events, teams, and projects. Users and faculty will remain.</p>
                         </div>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button variant="destructive" disabled={!!isLoading}>
-                                     {isLoading === 'reset-all-hackathons' ? <Loader className="animate-spin" /> : <Trash2 />}
+                                     {isLoading === 'reset-all-events' ? <Loader className="animate-spin" /> : <Trash2 />}
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>This will permanently delete ALL hackathon events, teams, and project data. User and judge accounts will NOT be deleted. This action cannot be undone.</AlertDialogDescription>
+                                    <AlertDialogDescription>This will permanently delete ALL project events, teams, and project data. User and faculty accounts will NOT be deleted. This action cannot be undone.</AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleResetAllHackathons} className="bg-destructive hover:bg-destructive/80">Yes, reset all hackathons</AlertDialogAction>
+                                    <AlertDialogAction onClick={handleResetAllEvents} className="bg-destructive hover:bg-destructive/80">Yes, reset all events</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -235,7 +235,7 @@ export default function DataManagement() {
                             <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Are you absolutely sure? This is highly destructive.</AlertDialogTitle>
-                                    <AlertDialogDescription>This will permanently delete ALL student user accounts, including their login credentials from Firebase Authentication. Judges and hackathon data will remain. This action cannot be undone.</AlertDialogDescription>
+                                    <AlertDialogDescription>This will permanently delete ALL student user accounts, including their login credentials from Firebase Authentication. Faculty and project data will remain. This action cannot be undone.</AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>

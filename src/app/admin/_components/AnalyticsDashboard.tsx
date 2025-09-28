@@ -12,35 +12,35 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BarChart2 } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
-    hackathon: Hackathon;
+    event: Hackathon;
 }
 
-export default function AnalyticsDashboard({ hackathon }: AnalyticsDashboardProps) {
+export default function AnalyticsDashboard({ event }: AnalyticsDashboardProps) {
     const { state } = useHackathon();
     const { projects } = state;
     const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
 
-    const hackathonProjects = useMemo(() => {
-        return projects.filter(p => p.hackathonId === hackathon.id && p.scores.length > 0);
-    }, [projects, hackathon.id]);
+    const eventProjects = useMemo(() => {
+        return projects.filter(p => p.hackathonId === event.id && p.scores.length > 0);
+    }, [projects, event.id]);
 
     const criteriaAverages = useMemo(() => {
         const criteriaTotals: { [key: string]: { total: number; count: number } } = {};
         EVALUATION_RUBRIC.forEach(c => criteriaTotals[c.id] = { total: 0, count: 0 });
 
-        hackathonProjects.forEach(project => {
+        eventProjects.forEach(project => {
             const teamScores = project.scores.filter(s => !s.memberId);
-            const scoresByJudge: { [judgeId: string]: { [criteriaId: string]: number } } = {};
+            const scoresByFaculty: { [facultyId: string]: { [criteriaId: string]: number } } = {};
             
             teamScores.forEach(score => {
-                if (!scoresByJudge[score.judgeId]) scoresByJudge[score.judgeId] = {};
-                scoresByJudge[score.judgeId][score.criteria] = score.value;
+                if (!scoresByFaculty[score.evaluatorId]) scoresByFaculty[score.evaluatorId] = {};
+                scoresByFaculty[score.evaluatorId][score.criteria] = score.value;
             });
 
-            Object.values(scoresByJudge).forEach(judgeScores => {
+            Object.values(scoresByFaculty).forEach(facultyScores => {
                  EVALUATION_RUBRIC.forEach(criteria => {
-                    if (judgeScores[criteria.id] !== undefined) {
-                        criteriaTotals[criteria.id].total += (judgeScores[criteria.id] / criteria.max) * 10;
+                    if (facultyScores[criteria.id] !== undefined) {
+                        criteriaTotals[criteria.id].total += (facultyScores[criteria.id] / criteria.max) * 10;
                         criteriaTotals[criteria.id].count += 1;
                     }
                 });
@@ -51,11 +51,11 @@ export default function AnalyticsDashboard({ hackathon }: AnalyticsDashboardProp
             name: c.name,
             average: criteriaTotals[c.id].count > 0 ? (criteriaTotals[c.id].total / criteriaTotals[c.id].count) : 0,
         }));
-    }, [hackathonProjects]);
+    }, [eventProjects]);
 
     const selectedProjectData = useMemo(() => {
         if (!selectedProjectId) return null;
-        const project = hackathonProjects.find(p => p.id === selectedProjectId);
+        const project = eventProjects.find(p => p.id === selectedProjectId);
         if (!project) return null;
 
         return EVALUATION_RUBRIC.map(criteria => {
@@ -68,15 +68,15 @@ export default function AnalyticsDashboard({ hackathon }: AnalyticsDashboardProp
                 fullMark: criteria.max,
             };
         });
-    }, [selectedProjectId, hackathonProjects]);
+    }, [selectedProjectId, eventProjects]);
 
-    if (hackathonProjects.length === 0) {
+    if (eventProjects.length === 0) {
         return (
             <Alert>
                 <BarChart2 className="h-4 w-4" />
                 <AlertTitle>No Data Yet</AlertTitle>
                 <AlertDescription>
-                    Analytics will be displayed here once projects for "{hackathon.name}" have been scored by faculty.
+                    Analytics will be displayed here once projects for "{event.name}" have been scored by faculty.
                 </AlertDescription>
             </Alert>
         )
@@ -87,7 +87,7 @@ export default function AnalyticsDashboard({ hackathon }: AnalyticsDashboardProp
             <Card>
                 <CardHeader>
                     <CardTitle>Average Scores by Criteria</CardTitle>
-                    <CardDescription>Overall performance across all submitted projects for "{hackathon.name}".</CardDescription>
+                    <CardDescription>Overall performance across all submitted projects for "{event.name}".</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ResponsiveContainer width="100%" height={300}>
@@ -118,7 +118,7 @@ export default function AnalyticsDashboard({ hackathon }: AnalyticsDashboardProp
                                 <SelectValue placeholder="Select a project..." />
                             </SelectTrigger>
                             <SelectContent>
-                                {hackathonProjects.map(p => (
+                                {eventProjects.map(p => (
                                     <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
                                 ))}
                             </SelectContent>

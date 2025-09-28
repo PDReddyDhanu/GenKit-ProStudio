@@ -16,13 +16,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import CompleteProfilePrompt from './CompleteProfilePrompt';
 
 
-function HackathonHeader({ hackathon }: { hackathon: Hackathon }) {
+function EventHeader({ event }: { event: Hackathon }) {
     return (
         <div className="mb-8 p-6 bg-card border rounded-lg shadow-sm">
-            <h1 className="text-4xl font-bold font-headline text-primary">{hackathon.name}</h1>
+            <h1 className="text-4xl font-bold font-headline text-primary">{event.name}</h1>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-2 text-muted-foreground">
-                <p><strong>Prize:</strong> {hackathon.prizeMoney}</p>
-                <Countdown deadline={hackathon.deadline} />
+                <p><strong>Prize/Award:</strong> {event.prizeMoney}</p>
+                <Countdown deadline={event.deadline} />
             </div>
         </div>
     );
@@ -32,11 +32,11 @@ export default function Dashboard() {
     const { state, dispatch } = useHackathon();
     const { currentUser, teams, projects, selectedHackathonId, hackathons } = state;
 
-    const handleHackathonChange = (hackathonId: string) => {
+    const handleEventChange = (hackathonId: string) => {
         dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'default' ? null : hackathonId });
     }
 
-    const currentHackathon = useMemo(() => {
+    const currentEvent = useMemo(() => {
         return hackathons.find(h => h.id === selectedHackathonId);
     }, [hackathons, selectedHackathonId]);
 
@@ -61,14 +61,14 @@ export default function Dashboard() {
     }, [currentUser]);
 
     const renderContent = () => {
-        if (!selectedHackathonId || !currentHackathon) {
+        if (!selectedHackathonId || !currentEvent) {
             return <StudentHomeDashboard />;
         }
         
         if (!isProfileComplete) {
             return (
                  <>
-                    <HackathonHeader hackathon={currentHackathon} />
+                    <EventHeader event={currentEvent} />
                     <CompleteProfilePrompt />
                 </>
             )
@@ -77,14 +77,14 @@ export default function Dashboard() {
         if (!currentTeam) {
             return (
                 <>
-                    <HackathonHeader hackathon={currentHackathon} />
+                    <EventHeader event={currentEvent} />
                     <TeamManagement />
                 </>
             );
         }
         return (
             <>
-                <HackathonHeader hackathon={currentHackathon} />
+                <EventHeader event={currentEvent} />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <main className="lg:col-span-2">
                         {currentProject ? (
@@ -100,7 +100,7 @@ export default function Dashboard() {
                                 <CardTitle className="font-headline">Rules & Regulations</CardTitle>
                             </CardHeader>
                             <CardContent className="pt-6">
-                                <p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentHackathon.rules}</p>
+                                <p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentEvent.rules}</p>
                             </CardContent>
                         </Card>
                     </aside>
@@ -113,9 +113,9 @@ export default function Dashboard() {
         <div className="py-6 animate-slide-in-up">
             <AuthMessage />
              <div className="mb-8">
-                 <Select onValueChange={handleHackathonChange} value={selectedHackathonId || "default"}>
+                 <Select onValueChange={handleEventChange} value={selectedHackathonId || "default"}>
                     <SelectTrigger className="w-full sm:w-[280px]">
-                        <SelectValue placeholder="Select a Hackathon" />
+                        <SelectValue placeholder="Select a Project Event" />
                     </SelectTrigger>
                     <SelectContent>
                          <SelectItem value="default">Default View</SelectItem>

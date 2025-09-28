@@ -46,7 +46,7 @@ export default function SupportPage() {
                 studentName: currentUser.name,
                 studentEmail: currentUser.email,
                 subject,
-                question,
+                description: question,
                 hackathonId: hackathonId && hackathonId !== 'none' ? hackathonId : null,
             });
             setSubmittedTicketId(result.id);
@@ -139,10 +139,10 @@ export default function SupportPage() {
                                         <Input id="subject" value={subject} onChange={e => setSubject(e.target.value)} required disabled={isLoading || isAiHelping} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="hackathon">Related Hackathon (Optional)</Label>
+                                        <Label htmlFor="event">Related Event (Optional)</Label>
                                         <Select onValueChange={setHackathonId} value={hackathonId} disabled={isLoading || isAiHelping}>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select a hackathon if applicable" />
+                                                <SelectValue placeholder="Select an event if applicable" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="none">None</SelectItem>

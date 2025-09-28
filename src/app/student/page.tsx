@@ -16,7 +16,7 @@ export default function StudentPortal() {
     const [showIntro, setShowIntro] = useState(true);
 
     if (showIntro && !currentUser) {
-        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Code className="w-full h-full" />} title="Student Portal" description="Register, login, and start your hackathon journey." />;
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Code className="w-full h-full" />} title="Student Portal" description="Register, login, and start your project journey." />;
     }
     
     if (showIntro && currentUser) {
@@ -48,5 +48,3 @@ export default function StudentPortal() {
         </div>
     )
 }
-
-    

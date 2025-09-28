@@ -3,25 +3,26 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { User, Judge } from '@/lib/types';
+import type { User, Faculty } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useHackathon } from '@/context/HackathonProvider';
+import { Badge } from '@/components/ui/badge';
 
 interface UserListsProps {
     approvedStudents: User[];
-    judges: Judge[];
+    faculty: Faculty[];
 }
 
-export default function UserLists({ approvedStudents, judges }: UserListsProps) {
+export default function UserLists({ approvedStudents, faculty }: UserListsProps) {
     const { api, state } = useHackathon();
-    const { currentJudge } = state;
+    const { currentFaculty } = state;
 
     const handleRemoveStudent = async (userId: string) => {
         await api.removeStudent(userId);
     };
 
-    const handleRemoveJudge = async (judgeId: string) => {
-        await api.removeJudge(judgeId);
+    const handleRemoveFaculty = async (facultyId: string) => {
+        await api.removeFaculty(facultyId);
     };
 
     return (
@@ -51,28 +52,28 @@ export default function UserLists({ approvedStudents, judges }: UserListsProps) 
             </Card>
              <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline">Judges ({judges.length})</CardTitle>
-                    <CardDescription>List of all registered judges.</CardDescription>
+                    <CardTitle className="font-headline">Faculty & Admins ({faculty.length})</CardTitle>
+                    <CardDescription>List of all faculty and admin accounts.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-96 pr-4">
                         <div className="space-y-2">
-                            {judges.length > 0 ? judges.map(judge => (
-                                <div key={judge.id} className="p-2 bg-muted/50 rounded-md flex justify-between items-center">
+                            {faculty.length > 0 ? faculty.map(fac => (
+                                <div key={fac.id} className="p-2 bg-muted/50 rounded-md flex justify-between items-center">
                                     <div>
-                                        <p className="font-semibold text-sm">{judge.name}</p>
-                                        <p className="text-xs text-muted-foreground">{judge.email}</p>
+                                        <p className="font-semibold text-sm">{fac.name} <Badge variant="secondary">{fac.role}</Badge></p>
+                                        <p className="text-xs text-muted-foreground">{fac.email}</p>
                                     </div>
                                     <Button 
                                         variant="destructive" 
                                         size="sm" 
-                                        onClick={() => handleRemoveJudge(judge.id)}
-                                        disabled={currentJudge?.id === judge.id}
+                                        onClick={() => handleRemoveFaculty(fac.id)}
+                                        disabled={currentFaculty?.id === fac.id}
                                     >
                                         Remove
                                     </Button>
                                 </div>
-                            )) : <p className="text-muted-foreground text-center pt-8">No judges have been added yet.</p>}
+                            )) : <p className="text-muted-foreground text-center pt-8">No faculty or admins have been added yet.</p>}
                         </div>
                     </ScrollArea>
                 </CardContent>

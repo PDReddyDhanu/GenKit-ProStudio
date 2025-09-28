@@ -36,7 +36,8 @@ export function Countdown({ deadline }: CountdownProps) {
     const timerComponents: JSX.Element[] = [];
 
     Object.keys(timeLeft).forEach(interval => {
-        if (!timeLeft[interval as keyof typeof timeLeft]) {
+        if (!timeLeft[interval as keyof typeof timeLeft] && timerComponents.length === 0 && interval !== 'days') {
+            // Don't show 0d unless it's the only thing left.
             return;
         }
 
@@ -54,5 +55,3 @@ export function Countdown({ deadline }: CountdownProps) {
         </p>
     );
 }
-
-    

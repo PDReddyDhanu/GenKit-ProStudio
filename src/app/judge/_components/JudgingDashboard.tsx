@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -5,13 +6,13 @@ import ScoringDashboard from './ScoringDashboard';
 import type { Hackathon } from '@/lib/types';
 
 interface JudgingDashboardProps {
-    hackathon: Hackathon;
+    event: Hackathon;
 }
 
-export default function JudgingDashboard({ hackathon }: JudgingDashboardProps) {
+export default function JudgingDashboard({ event }: JudgingDashboardProps) {
     return (
         <div className="animate-slide-in-up">
-            <ScoringDashboard hackathon={hackathon} />
+            <ScoringDashboard event={event} />
         </div>
     );
 }

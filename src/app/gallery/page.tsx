@@ -25,7 +25,7 @@ export default function ProjectGallery() {
     const [showIntro, setShowIntro] = useState(true);
     const router = useRouter();
 
-    const handleHackathonChange = (hackathonId: string) => {
+    const handleEventChange = (hackathonId: string) => {
         dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'all' ? null : hackathonId });
     };
 
@@ -49,12 +49,12 @@ export default function ProjectGallery() {
                     <p className="text-lg text-muted-foreground">Celebrating the incredible work from {state.selectedCollege}</p>
                 </div>
                  <div>
-                     <Select onValueChange={handleHackathonChange} value={selectedHackathonId || "all"}>
+                     <Select onValueChange={handleEventChange} value={selectedHackathonId || "all"}>
                         <SelectTrigger className="w-full sm:w-[280px]">
-                            <SelectValue placeholder="Select a Hackathon to view projects" />
+                            <SelectValue placeholder="Select an Event to view projects" />
                         </SelectTrigger>
                         <SelectContent>
-                             <SelectItem value="all">Select a Hackathon</SelectItem>
+                             <SelectItem value="all">Select an Event</SelectItem>
                             {hackathons.map(h => (
                                 <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                             ))}
@@ -132,7 +132,7 @@ export default function ProjectGallery() {
                         <CardContent className="py-16">
                             <div className="text-center text-muted-foreground">
                                 <GalleryVertical className="h-12 w-12 mx-auto" />
-                                 <p className="mt-4 text-lg">No projects have been submitted for this hackathon yet.</p>
+                                 <p className="mt-4 text-lg">No projects have been submitted for this event yet.</p>
                                  <p>The gallery is waiting to be filled!</p>
                             </div>
                         </CardContent>
@@ -143,7 +143,7 @@ export default function ProjectGallery() {
                     <CardContent className="py-16">
                         <div className="text-center text-muted-foreground">
                             <GalleryVertical className="h-12 w-12 mx-auto" />
-                             <p className="mt-4 text-lg">Please select a hackathon from the dropdown above to view its project showcase.</p>
+                             <p className="mt-4 text-lg">Please select an event from the dropdown above to view its project showcase.</p>
                         </div>
                     </CardContent>
                 </Card>

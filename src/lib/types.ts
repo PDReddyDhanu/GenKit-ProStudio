@@ -66,16 +66,18 @@ export interface Team {
   creatorId: string; // ID of the user who created the team
   joinCode: string;
   members: TeamMember[];
-  joinRequests?: JoinRequest[]; // Array of users who requested to join
   projectId?: string;
   notifications?: Notification[];
   messages?: ChatMessage[];
+  joinRequests?: JoinRequest[]; // Array of users who requested to join
+  hackathonId?: string; // TBD: This might be deprecated or changed
 }
 
 export interface Project {
   id: string;
   teamId: string;
   title: string;
+  name: string; // TBD: Consolidate with title
   description: string;
   abstractFileUrl?: string;
   githubUrl: string;
@@ -84,6 +86,9 @@ export interface Project {
   scores: Score[];
   averageScore: number;
   submittedAt?: number;
+  hackathonId?: string; // This links the project to an event/term
+  achievements?: string[];
+  imageUrl?: string;
 }
 
 export interface Faculty {
@@ -94,9 +99,11 @@ export interface Faculty {
   guidanceHistory?: ChatMessage[];
   gender?: string;
   contactNumber?: string;
-  bio?: string;
-  notifications?: Notification[];
+bio?: string;
+notifications?: Notification[];
 }
+
+export type Judge = Faculty;
 
 export interface Score {
   evaluatorId: string;
@@ -136,6 +143,7 @@ export interface SupportTicket {
     category: string;
     suggestedResponse?: string;
     responses?: SupportResponse[];
+    hackathonId?: string | null;
 }
 
 
@@ -146,4 +154,14 @@ export interface AppData {
     faculty: Faculty[];
     announcements: Announcement[];
     supportTickets: SupportTicket[];
+}
+
+export interface Hackathon {
+    id: string;
+    name: string;
+    prizeMoney: string;
+    rules: string;
+    teamSizeLimit: number;
+    deadline: number;
+    summaryImageUrl?: string;
 }

@@ -15,13 +15,13 @@ interface ProjectListProps {
 
 export default function ProjectList({ projects, onSelectProject }: ProjectListProps) {
     const { state } = useHackathon();
-    const { teams, currentJudge } = state;
+    const { teams, currentFaculty } = state;
 
     if (!projects || projects.length === 0) {
         return (
             <Card>
                 <CardContent className="pt-6">
-                    <p className="text-muted-foreground text-center">No projects have been submitted for this hackathon yet.</p>
+                    <p className="text-muted-foreground text-center">No projects have been submitted for this event yet.</p>
                 </CardContent>
             </Card>
         );
@@ -31,7 +31,7 @@ export default function ProjectList({ projects, onSelectProject }: ProjectListPr
         <div className="space-y-4">
             {projects.map(p => {
                 const team = teams.find(t => t.id === p.teamId);
-                const hasScored = p.scores.some(s => s.judgeId === currentJudge?.id);
+                const hasScored = p.scores.some(s => s.evaluatorId === currentFaculty?.id);
                 return (
                     <Card key={p.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <CardHeader>

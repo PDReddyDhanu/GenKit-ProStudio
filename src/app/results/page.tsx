@@ -104,7 +104,7 @@ export default function Results() {
     }, [projects, teams]);
 
     if (showIntro) {
-        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Trophy className="w-full h-full" />} title="Final Results" description="Announcing the winners of the hackathon." />;
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Trophy className="w-full h-full" />} title="Final Results" description="Announcing the winners of the project evaluations." />;
     }
 
     return (

@@ -14,7 +14,7 @@ import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
 import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
-import JudgingDashboard from '@/app/judge/_components/JudgingDashboard';
+import ScoringDashboard from '@/app/judge/_components/ScoringDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
 import AnalyticsDashboard from './_components/AnalyticsDashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -27,7 +27,7 @@ import { Badge } from '@/components/ui/badge';
 
 export default function AdminPortal() {
     const { state, api, dispatch } = useHackathon();
-    const { currentAdmin, currentJudge, hackathons, selectedHackathonId, users } = state;
+    const { currentAdmin, currentFaculty, hackathons, selectedHackathonId, users } = state;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showIntro, setShowIntro] = useState(true);
@@ -35,7 +35,7 @@ export default function AdminPortal() {
     const router = useRouter();
 
 
-    const portalUser = currentAdmin ? 'Admin' : currentJudge ? 'Judge' : null;
+    const portalUser = currentAdmin ? 'Admin' : currentFaculty ? 'Faculty' : null;
 
     const handleAdminLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -47,10 +47,10 @@ export default function AdminPortal() {
         }
     };
     
-    const handleHackathonChange = (hackathonId: string) => {
+    const handleEventChange = (hackathonId: string) => {
         dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'default' ? null : hackathonId });
     }
-     const currentHackathon = useMemo(() => {
+     const currentEvent = useMemo(() => {
         return hackathons.find(h => h.id === selectedHackathonId);
     }, [hackathons, selectedHackathonId]);
 
@@ -65,7 +65,7 @@ export default function AdminPortal() {
 
 
     if (showIntro && !portalUser) {
-        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Shield className="w-full h-full" />} title="Admin Portal" description="Manage the hackathon, users, and announcements." />;
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Shield className="w-full h-full" />} title="Admin & Faculty Portal" description="Manage projects, users, and evaluations." />;
     }
 
     if (!portalUser) {
@@ -73,13 +73,13 @@ export default function AdminPortal() {
             <div className="container max-w-md mx-auto py-12 animate-fade-in">
                 <Card>
                      <CardHeader>
-                        <CardTitle className="text-2xl font-bold text-center font-headline">Admin Login</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-center font-headline">Admin & Faculty Login</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleAdminLogin} className="space-y-4">
                             <AuthMessage />
                             <div className="space-y-2">
-                                <Label htmlFor="admin-email">Admin Email</Label>
+                                <Label htmlFor="admin-email">Email</Label>
                                 <Input id="admin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
                             </div>
                             <div className="space-y-2">
@@ -99,14 +99,14 @@ export default function AdminPortal() {
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-slide-in-up">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
-                <h1 className="text-3xl md:text-4xl font-bold font-headline">{portalUser} Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
+                <h1 className="text-3xl md:text-4xl font-bold font-headline">{currentAdmin ? 'Admin' : currentFaculty?.role.toUpperCase()} Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
                 <div>
-                     <Select onValueChange={handleHackathonChange} value={selectedHackathonId || "default"}>
+                     <Select onValueChange={handleEventChange} value={selectedHackathonId || "default"}>
                         <SelectTrigger className="w-full sm:w-[280px]">
-                            <SelectValue placeholder="Select a Hackathon to manage" />
+                            <SelectValue placeholder="Select an Event to manage" />
                         </SelectTrigger>
                         <SelectContent>
-                             <SelectItem value="default">Default View (No Hackathon Selected)</SelectItem>
+                             <SelectItem value="default">Default View (No Event Selected)</SelectItem>
                             {hackathons.map(h => (
                                 <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                             ))}
@@ -116,10 +116,10 @@ export default function AdminPortal() {
             </div>
             <AuthMessage />
 
-             <Tabs defaultValue={currentJudge ? "judging" : "hackathons"} className="w-full" onValueChange={handleTabChange}>
+             <Tabs defaultValue={currentFaculty ? "scoring" : "events"} className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9">
-                    {currentJudge && <TabsTrigger value="judging"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
-                    <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
+                    {currentFaculty && <TabsTrigger value="scoring"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
+                    <TabsTrigger value="events">Events</TabsTrigger>
                      <TabsTrigger value="urgent-approvals" className="relative">
                         <AlertTriangle className="mr-2 h-4 w-4" /> Urgent Approvals
                         {urgentApprovalsCount > 0 && (
@@ -133,12 +133,12 @@ export default function AdminPortal() {
                     <TabsTrigger value="reports"><FileText className="mr-2 h-4 w-4" /> Reports</TabsTrigger>
                     <TabsTrigger value="support"><LifeBuoy className="mr-2 h-4 w-4" /> Support</TabsTrigger>
                 </TabsList>
-                {currentJudge && (
-                    <TabsContent value="judging" className="mt-6">
-                        {currentHackathon ? <JudgingDashboard hackathon={currentHackathon} /> : <p className="text-center text-muted-foreground">Please select a hackathon to start judging.</p>}
+                {currentFaculty && (
+                    <TabsContent value="scoring" className="mt-6">
+                        {currentEvent ? <ScoringDashboard event={currentEvent} /> : <p className="text-center text-muted-foreground">Please select an event to start scoring projects.</p>}
                     </TabsContent>
                 )}
-                 <TabsContent value="hackathons" className="mt-6">
+                 <TabsContent value="events" className="mt-6">
                     <HackathonManagement />
                 </TabsContent>
                  <TabsContent value="urgent-approvals" className="mt-6">
@@ -151,13 +151,13 @@ export default function AdminPortal() {
                     <Announcements />
                 </TabsContent>
                  <TabsContent value="analytics" className="mt-6">
-                    {currentHackathon ? <AnalyticsDashboard hackathon={currentHackathon} /> : <p className="text-center text-muted-foreground">Please select a hackathon to view analytics.</p>}
+                    {currentEvent ? <AnalyticsDashboard event={currentEvent} /> : <p className="text-center text-muted-foreground">Please select an event to view analytics.</p>}
                 </TabsContent>
                 <TabsContent value="data" className="mt-6">
                     <DataManagement />
                 </TabsContent>
                 <TabsContent value="reports" className="mt-6">
-                    {currentHackathon ? <ReportingDashboard hackathon={currentHackathon} /> : <p className="text-center text-muted-foreground">Please select a hackathon to generate a report.</p>}
+                    {currentEvent ? <ReportingDashboard /> : <p className="text-center text-muted-foreground">Please select an event to generate a report.</p>}
                 </TabsContent>
                 <TabsContent value="support" className="mt-6">
                     <SupportDashboard />

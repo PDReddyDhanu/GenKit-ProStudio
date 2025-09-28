@@ -111,7 +111,7 @@ export default function CertificateVerifyPage() {
                     <CardHeader className="text-center">
                         <CheckCircle className="h-16 w-16 mx-auto text-green-400" />
                         <CardTitle className="text-3xl mt-4 text-green-300 font-headline">Certificate Verified</CardTitle>
-                        <CardDescription>This certificate is authentic and has been issued by HackSprint for {collegeName}.</CardDescription>
+                        <CardDescription>This certificate is authentic and has been issued by GenKit ProStudio for {collegeName}.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4 bg-muted/50 p-6 rounded-md">
                         {rank && (

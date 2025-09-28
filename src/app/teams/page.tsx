@@ -9,7 +9,7 @@ import { User, Users, Loader, Search, AlertCircle, Sparkles, Star } from 'lucide
 import PageIntro from '@/components/PageIntro';
 import { AuthMessage } from '@/components/AuthMessage';
 import { Team, User as UserType } from '@/lib/types';
-import HackathonSelector from '../student/_components/HackathonSelector';
+import EventSelector from '../student/_components/HackathonSelector';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -157,13 +157,13 @@ export default function TeamFinder() {
     const [joinCode, setJoinCode] = useState('');
     const [isJoining, setIsJoining] = useState<string | null>(null);
 
-    const { filteredTeams, currentHackathon, myTeamId, myPendingRequests, isProfileComplete } = useMemo(() => {
-        const currentHackathon = hackathons.find(h => h.id === selectedHackathonId);
+    const { filteredTeams, currentEvent, myTeamId, myPendingRequests, isProfileComplete } = useMemo(() => {
+        const currentEvent = hackathons.find(h => h.id === selectedHackathonId);
         
         const profileComplete = currentUser ? (currentUser.skills && currentUser.skills.length > 0 && currentUser.workStyle && currentUser.workStyle.length > 0) : false;
 
-        if (!selectedHackathonId || !currentHackathon) {
-            return { filteredTeams: [], currentHackathon: null, myTeamId: null, myPendingRequests: [], isProfileComplete: profileComplete };
+        if (!selectedHackathonId || !currentEvent) {
+            return { filteredTeams: [], currentEvent: null, myTeamId: null, myPendingRequests: [], isProfileComplete: profileComplete };
         }
 
         let currentTeams = teams.filter(t => t.hackathonId === selectedHackathonId);
@@ -179,7 +179,7 @@ export default function TeamFinder() {
             .filter(t => t.hackathonId === selectedHackathonId && t.joinRequests?.some(req => req.id === currentUser?.id))
             .map(t => t.id);
 
-        return { filteredTeams: currentTeams, currentHackathon, myTeamId: myTeam?.id, myPendingRequests: pendingRequests, isProfileComplete: profileComplete };
+        return { filteredTeams: currentTeams, currentEvent, myTeamId: myTeam?.id, myPendingRequests: pendingRequests, isProfileComplete: profileComplete };
     }, [teams, hackathons, selectedHackathonId, searchQuery, currentUser]);
 
 
@@ -198,7 +198,7 @@ export default function TeamFinder() {
                 setIsJoining(null);
             }
         } else {
-            alert("You must be logged in and have a hackathon selected to join a team.");
+            alert("You must be logged in and have an event selected to join a team.");
         }
     };
     
@@ -213,10 +213,10 @@ export default function TeamFinder() {
         }
     };
     
-    if (!selectedHackathonId || !currentHackathon) {
+    if (!selectedHackathonId || !currentEvent) {
         return (
             <div className="py-12 animate-slide-in-up">
-                 <HackathonSelector />
+                 <EventSelector />
             </div>
         )
     }
@@ -224,7 +224,7 @@ export default function TeamFinder() {
     return (
         <div className="container max-w-6xl mx-auto py-12 animate-fade-in">
             <h1 className="text-4xl font-bold text-center mb-2 font-headline">Team Finder</h1>
-            <p className="text-center text-muted-foreground mb-8">Showing teams for {currentHackathon?.name}</p>
+            <p className="text-center text-muted-foreground mb-8">Showing teams for {currentEvent?.name}</p>
             <AuthMessage />
 
             <Tabs defaultValue="finder" className="w-full">
@@ -273,7 +273,7 @@ export default function TeamFinder() {
                     {filteredTeams.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredTeams.map(team => {
-                                const isFull = team.members.length >= (currentHackathon?.teamSizeLimit || 4);
+                                const isFull = team.members.length >= (currentEvent?.teamSizeLimit || 4);
                                 const isMyTeam = team.id === myTeamId;
                                 const hasPendingRequest = myPendingRequests.includes(team.id);
                                 const canJoin = !isFull && !isMyTeam && !hasPendingRequest && !!currentUser && isProfileComplete;
@@ -291,7 +291,7 @@ export default function TeamFinder() {
                                             <CardHeader>
                                                 <CardTitle className="font-headline">{team.name}</CardTitle>
                                                 <CardDescription className="flex items-center gap-2">
-                                                    <Users className="h-4 w-4" /> {team.members.length} / {currentHackathon?.teamSizeLimit || 4} members
+                                                    <Users className="h-4 w-4" /> {team.members.length} / {currentEvent?.teamSizeLimit || 4} members
                                                 </CardDescription>
                                             </CardHeader>
                                             <CardContent className="flex-grow">
@@ -322,7 +322,7 @@ export default function TeamFinder() {
                     ) : (
                         <Card>
                             <CardContent className="py-16 text-center">
-                                <p className="text-muted-foreground">{searchQuery ? 'No teams match your search.' : 'No teams have been created yet for this hackathon. Be the first!'}</p>
+                                <p className="text-muted-foreground">{searchQuery ? 'No teams match your search.' : 'No teams have been created yet for this event. Be the first!'}</p>
                             </CardContent>
                         </Card>
                     )}

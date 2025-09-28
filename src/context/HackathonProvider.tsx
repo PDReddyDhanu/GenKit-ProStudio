@@ -2,42 +2,42 @@
 "use client";
 
 import React, { createContext, useContext, ReactNode, useEffect, useReducer } from 'react';
-import { User, Team, Project, Judge, Announcement, Hackathon, SupportTicket } from '../lib/types';
+import { User, Team, Project, Judge, Announcement, Hackathon, SupportTicket, Faculty } from '../lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import * as hackathonApi from '@/lib/hackathon-api';
 
-interface HackathonState {
+interface AppState {
   users: User[];
   teams: Team[];
   projects: Project[];
-  judges: Judge[];
+  faculty: Faculty[];
   announcements: Announcement[];
   hackathons: Hackathon[];
   supportTickets: SupportTicket[];
   currentUser: User | null;
-  currentJudge: Judge | null;
+  currentFaculty: Faculty | null;
   currentAdmin: boolean;
   selectedCollege: string | null;
-  selectedHackathonId: string | null; // New state for selected hackathon
+  selectedHackathonId: string | null; // Renamed for clarity
   authError: string | null;
   successMessage: string | null;
   isInitialized: boolean;
   isLoading: boolean;
 }
 
-const defaultState: HackathonState = {
+const defaultState: AppState = {
   users: [],
   teams: [],
   projects: [],
-  judges: [],
+  faculty: [],
   announcements: [],
   hackathons: [],
   supportTickets: [],
   currentUser: null,
-  currentJudge: null,
+  currentFaculty: null,
   currentAdmin: false,
   selectedCollege: null,
   selectedHackathonId: null,
@@ -50,7 +50,7 @@ const defaultState: HackathonState = {
 type Action =
   | { type: 'SET_DATA'; payload: { [key: string]: any[] } }
   | { type: 'SET_USER'; payload: User | null }
-  | { type: 'SET_JUDGE'; payload: Judge | null }
+  | { type: 'SET_FACULTY'; payload: Faculty | null }
   | { type: 'SET_ADMIN'; payload: boolean }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_INITIALIZED'; payload: boolean }
@@ -61,7 +61,7 @@ type Action =
   | { type: 'CLEAR_MESSAGES' }
   | { type: 'SIGN_OUT_USER' };
 
-function hackathonReducer(state: HackathonState, action: Action): HackathonState {
+function appReducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case 'SET_DATA':
             let updatedState = { ...state, ...action.payload };
@@ -71,19 +71,19 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
                     updatedState.currentUser = updatedCurrentUser;
                 }
             }
-             if (action.payload.judges) {
-                const updatedCurrentJudge = action.payload.judges.find((j: Judge) => j.id === state.currentJudge?.id);
-                if (updatedCurrentJudge) {
-                    updatedState.currentJudge = updatedCurrentJudge;
+             if (action.payload.faculty) {
+                const updatedCurrentFaculty = action.payload.faculty.find((f: Faculty) => f.id === state.currentFaculty?.id);
+                if (updatedCurrentFaculty) {
+                    updatedState.currentFaculty = updatedCurrentFaculty;
                 }
             }
             return updatedState;
         case 'SET_USER':
-            return { ...state, currentUser: action.payload, currentJudge: null, currentAdmin: false, isLoading: false };
-        case 'SET_JUDGE':
-            return { ...state, currentJudge: action.payload, currentUser: null, currentAdmin: false, isLoading: false };
+            return { ...state, currentUser: action.payload, currentFaculty: null, currentAdmin: false, isLoading: false };
+        case 'SET_FACULTY':
+            return { ...state, currentFaculty: action.payload, currentUser: null, currentAdmin: false, isLoading: false };
         case 'SET_ADMIN':
-            return { ...state, currentAdmin: action.payload, currentUser: null, currentJudge: null, isLoading: false };
+            return { ...state, currentAdmin: action.payload, currentUser: null, currentFaculty: null, isLoading: false };
         case 'SET_LOADING':
             return { ...state, isLoading: action.payload };
         case 'SET_INITIALIZED':
@@ -101,9 +101,9 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
             return { ...state, selectedCollege: college, isLoading: !!college };
         case 'SET_SELECTED_HACKATHON':
              if (action.payload && state.selectedCollege) {
-                localStorage.setItem(`selectedHackathon_${state.selectedCollege}`, action.payload);
+                localStorage.setItem(`selectedEvent_${state.selectedCollege}`, action.payload);
             } else if (state.selectedCollege) {
-                localStorage.removeItem(`selectedHackathon_${state.selectedCollege}`);
+                localStorage.removeItem(`selectedEvent_${state.selectedCollege}`);
             }
             return { ...state, selectedHackathonId: action.payload };
         case 'SET_AUTH_ERROR':
@@ -113,21 +113,21 @@ function hackathonReducer(state: HackathonState, action: Action): HackathonState
         case 'CLEAR_MESSAGES':
             return { ...state, authError: null, successMessage: null };
         case 'SIGN_OUT_USER':
-            return { ...state, currentUser: null, currentJudge: null, currentAdmin: false, selectedHackathonId: null };
+            return { ...state, currentUser: null, currentFaculty: null, currentAdmin: false, selectedHackathonId: null };
         default:
             return state;
     }
 }
 
 
-const HackathonContext = createContext<{
-  state: HackathonState;
+const AppContext = createContext<{
+  state: AppState;
   dispatch: React.Dispatch<Action>;
   api: typeof hackathonApi;
 } | undefined>(undefined);
 
 export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(hackathonReducer, defaultState);
+  const [state, dispatch] = useReducer(appReducer, defaultState);
   const { toast } = useToast();
 
    useEffect(() => {
@@ -145,9 +145,9 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
         const storedCollege = localStorage.getItem('selectedCollege');
         if (storedCollege) {
             dispatch({ type: 'SET_SELECTED_COLLEGE', payload: storedCollege });
-            const storedHackathon = localStorage.getItem(`selectedHackathon_${storedCollege}`);
-            if (storedHackathon) {
-                dispatch({ type: 'SET_SELECTED_HACKATHON', payload: storedHackathon });
+            const storedEvent = localStorage.getItem(`selectedEvent_${storedCollege}`);
+            if (storedEvent) {
+                dispatch({ type: 'SET_SELECTED_HACKATHON', payload: storedEvent });
             }
         } else {
             dispatch({ type: 'SET_INITIALIZED', payload: true });
@@ -166,7 +166,7 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
         dispatch({ type: 'SET_LOADING', payload: true });
         localStorage.setItem('selectedCollege', state.selectedCollege);
         
-        const topLevelCollections = ['users', 'judges', 'announcements', 'hackathons', 'teams', 'projects', 'supportTickets'];
+        const topLevelCollections = ['users', 'faculty', 'announcements', 'hackathons', 'teams', 'projects', 'supportTickets'];
         const unsubscribes = topLevelCollections.map(col => 
             onSnapshot(collection(db, `colleges/${state.selectedCollege}/${col}`), (snapshot) => {
                 const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -176,24 +176,21 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
         
         const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
             if (user && state.selectedCollege) {
-                const judgeDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/judges`, user.uid));
-                if (judgeDoc.exists()) {
-                    dispatch({ type: 'SET_JUDGE', payload: { id: judgeDoc.id, ...judgeDoc.data() } as Judge });
+                const facultyDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/faculty`, user.uid));
+                if (facultyDoc.exists()) {
+                    dispatch({ type: 'SET_FACULTY', payload: { id: facultyDoc.id, ...facultyDoc.data() } as Faculty });
                 } else {
                     const userDoc = await getDoc(doc(db, `colleges/${state.selectedCollege}/users`, user.uid));
                     if (userDoc.exists()) {
                         const userData = { id: userDoc.id, ...userDoc.data() } as User;
-                        // IMPORTANT: Only set user if they are approved
                         if (userData.status === 'approved') {
                             dispatch({ type: 'SET_USER', payload: userData });
                         } else {
-                            // If user exists but is not approved, ensure they are signed out on the client
                              if (state.currentUser) {
                                 dispatch({ type: 'SIGN_OUT_USER' });
                             }
                         }
                     } else {
-                        // If no record found in either collection for this college, sign out.
                         await hackathonApi.signOut();
                     }
                 }
@@ -221,7 +218,6 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
             dispatch({ type: 'CLEAR_MESSAGES' });
             try {
                 let collegeId = state.selectedCollege;
-                // Special case for signOut, doesn't need collegeId
                 if (fnName === 'signOut' || fnName === 'loginAdmin') {
                     const result = await (fn as any)(...args);
                     if (result?.successMessage) dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage });
@@ -250,14 +246,14 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
 
 
   return (
-    <HackathonContext.Provider value={{ state, dispatch, api: apiWithDispatch }}>
+    <AppContext.Provider value={{ state, dispatch, api: apiWithDispatch }}>
       {children}
-    </HackathonContext.Provider>
+    </AppContext.Provider>
   );
 };
 
 export const useHackathon = () => {
-  const context = useContext(HackathonContext);
+  const context = useContext(AppContext);
   if (!context) {
     throw new Error('useHackathon must be used within a HackathonProvider');
   }

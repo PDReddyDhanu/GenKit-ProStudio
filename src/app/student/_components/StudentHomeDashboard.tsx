@@ -14,13 +14,13 @@ export default function StudentHomeDashboard() {
     const { hackathons, currentUser } = state;
     const { toast } = useToast();
 
-    const handleSelectHackathon = (hackathonId: string) => {
+    const handleSelectEvent = (hackathonId: string) => {
         if (currentUser) {
             dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId });
         } else {
             toast({
                 title: "Login Required",
-                description: "You must be logged in as a student to join a hackathon.",
+                description: "You must be logged in as a student to join an event.",
                 variant: "destructive",
             });
         }
@@ -31,33 +31,33 @@ export default function StudentHomeDashboard() {
             <div className="text-center mb-12">
                 <Trophy className="h-12 w-12 mx-auto text-primary animate-trophy-shine" />
                 <h1 className="text-4xl font-bold font-headline mt-4">Welcome, {currentUser?.name.split(' ')[0]}!</h1>
-                <p className="text-muted-foreground text-lg">Here are the hackathons available at {state.selectedCollege}.</p>
+                <p className="text-muted-foreground text-lg">Here are the project events available at {state.selectedCollege}.</p>
             </div>
             
             {hackathons.length === 0 ? (
                  <Card>
                     <CardHeader>
-                        <CardTitle className="font-headline">No Active Hackathons</CardTitle>
+                        <CardTitle className="font-headline">No Active Project Events</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground text-center py-8">There are no hackathons scheduled for your college right now. Please check back later!</p>
+                        <p className="text-muted-foreground text-center py-8">There are no project events scheduled for your college right now. Please check back later!</p>
                     </CardContent>
                 </Card>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {hackathons.map(hackathon => (
-                        <Card key={hackathon.id} className="flex flex-col transform-gpu transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
+                    {hackathons.map(event => (
+                        <Card key={event.id} className="flex flex-col transform-gpu transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
                             <CardHeader>
-                                <CardTitle className="font-headline text-primary text-xl">{hackathon.name}</CardTitle>
-                                <CardDescription>Deadline: {format(new Date(hackathon.deadline), 'PPP')}</CardDescription>
+                                <CardTitle className="font-headline text-primary text-xl">{event.name}</CardTitle>
+                                <CardDescription>Deadline: {format(new Date(event.deadline), 'PPP')}</CardDescription>
                             </CardHeader>
                             <CardContent className="flex-grow space-y-3">
-                                <p><strong className="text-muted-foreground">Prize:</strong> {hackathon.prizeMoney}</p>
-                                <p><strong className="text-muted-foreground">Team Size:</strong> Up to {hackathon.teamSizeLimit} members</p>
+                                <p><strong className="text-muted-foreground">Prize/Award:</strong> {event.prizeMoney}</p>
+                                <p><strong className="text-muted-foreground">Team Size:</strong> Up to {event.teamSizeLimit} members</p>
                             </CardContent>
                             <div className="p-6 pt-0">
-                               <Button className="w-full" onClick={() => handleSelectHackathon(hackathon.id)}>
-                                    <Rocket className="mr-2 h-4 w-4" /> Go to Hackathon
+                               <Button className="w-full" onClick={() => handleSelectEvent(event.id)}>
+                                    <Rocket className="mr-2 h-4 w-4" /> Go to Event
                                </Button>
                             </div>
                         </Card>

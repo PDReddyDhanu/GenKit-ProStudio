@@ -3,14 +3,14 @@
 
 import React, { useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
-import AddJudgeForm from './AddJudgeForm';
+import AddFacultyForm from './AddJudgeForm';
 import AddStudentForm from './AddStudentForm';
 import PendingApprovals from './PendingApprovals';
 import UserLists from './UserLists';
 
 export default function AdminDashboard() {
     const { state } = useHackathon();
-    const { users, judges } = state;
+    const { users, faculty } = state;
 
     const { pendingUsers, approvedUsers } = useMemo(() => {
         const pending = users.filter(u => u.status === 'pending');
@@ -21,12 +21,12 @@ export default function AdminDashboard() {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 space-y-8">
-                <AddJudgeForm />
+                <AddFacultyForm />
                 <AddStudentForm />
             </div>
             <div className="lg:col-span-2 space-y-8">
                 <PendingApprovals users={pendingUsers} />
-                <UserLists approvedStudents={approvedUsers} judges={judges} />
+                <UserLists approvedStudents={approvedUsers} faculty={faculty} />
             </div>
         </div>
     );
