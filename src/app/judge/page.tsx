@@ -24,11 +24,7 @@ export default function FacultyPortal() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            if (email === 'genkit@admin.com') {
-                await api.loginAdmin({ email, password });
-            } else {
-                await api.loginFaculty({ email, password });
-            }
+            await api.loginFaculty(email, password);
         } finally {
             setIsLoading(false);
         }
@@ -112,3 +108,5 @@ export default function FacultyPortal() {
         </div>
     );
 }
+
+    

@@ -41,7 +41,11 @@ export default function AdminPortal() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            await api.loginAdmin({ email, password });
+            if (email === 'genkit@admin.com') {
+                await api.loginAdmin({ email, password });
+            } else {
+                await api.loginFaculty(email, password);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -166,3 +170,5 @@ export default function AdminPortal() {
         </div>
     );
 }
+
+    
