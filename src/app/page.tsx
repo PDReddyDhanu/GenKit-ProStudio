@@ -13,6 +13,7 @@ import { useHackathon } from "@/context/HackathonProvider";
 import GradientText from "@/components/ui/GradientText";
 import { motion } from "framer-motion";
 import ElectricBorder from "@/components/ui/ElectricBorder";
+import { AppLogo } from "@/components/layout/Header";
 
 const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
     <ElectricBorder
@@ -248,7 +249,7 @@ export default function Home() {
                     style={{ borderRadius: '0.75rem' }}
                 >
                     <Card className="text-center p-6 h-full">
-                        <BrainCircuit className="w-12 h-12 mx-auto mb-4 text-primary"/>
+                        <div className="w-12 h-12 mx-auto mb-4 text-primary"><AppLogo /></div>
                         <h3 className="text-xl font-bold font-headline">AI-Powered Assistance</h3>
                         <p className="text-muted-foreground mt-2">Leverage cutting-edge AI for idea generation, code reviews, abstract summaries, and more.</p>
                     </Card>
@@ -359,43 +360,9 @@ export default function Home() {
              <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">GenKit ProStudio integrates powerful AI tools at every stage of your project journey, acting as your personal assistant to help you succeed.</p>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                  <div className="relative flex justify-center items-center">
-                    <svg width="250" height="250" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_15px_hsl(var(--primary))]">
-                        <defs>
-                            <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                                <stop offset="0%" style={{stopColor: 'hsl(var(--secondary))', stopOpacity: 1}} />
-                                <stop offset="70%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 0.9}} />
-                                <stop offset="100%" style={{stopColor: 'hsl(var(--background))', stopOpacity: 0}} />
-                            </radialGradient>
-                            <filter id="sunGlow" x="-50%" y="-50%" width="200%" height="200%">
-                                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                </feMerge>
-                            </filter>
-                        </defs>
-                        <g filter="url(#sunGlow)" transform="translate(50 50)">
-                            {[...Array(12)].map((_, i) => (
-                                <g key={i} transform={`rotate(${i * 30})`}>
-                                    <path d="M 0 -40 C 10 -30, 10 -10, 0 -2" stroke="hsl(var(--primary) / 0.8)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: `${i * 100}ms`}}/>
-                                    <path d="M 0 -40 C -10 -30, -10 -10, 0 -2" stroke="hsl(var(--primary) / 0.8)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: `${i * 100}ms`}}/>
-                                </g>
-                            ))}
-                            <circle cx="0" cy="0" r="22" fill="url(#sunGradient)" />
-                            <circle cx="0" cy="0" r="18" fill="hsl(var(--background))" />
-                            <text
-                                x="0"
-                                y="4"
-                                fontFamily="monospace"
-                                fontSize="12"
-                                fill="hsl(var(--secondary))"
-                                textAnchor="middle"
-                                fontWeight="bold"
-                            >
-                                AI
-                            </text>
-                        </g>
-                    </svg>
+                    <div className="w-[250px] h-[250px] text-primary drop-shadow-[0_0_15px_hsl(var(--primary))]">
+                      <AppLogo />
+                    </div>
                  </div>
                  <div className="space-y-8">
                      <div className="flex gap-4 items-start">
