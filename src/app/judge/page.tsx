@@ -24,7 +24,7 @@ export default function FacultyPortal() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            await api.loginFaculty(email, password);
+            await api.loginFaculty({ email, password });
         } finally {
             setIsLoading(false);
         }
