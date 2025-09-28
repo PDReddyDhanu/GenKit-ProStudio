@@ -14,6 +14,7 @@ import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import AccountStatusDialog from '@/components/AccountStatusDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DEPARTMENTS_DATA } from '@/lib/constants';
+import type { User as UserType } from '@/lib/types';
 
 export default function Auth() {
     const { state, api, dispatch } = useHackathon();
@@ -27,7 +28,7 @@ export default function Auth() {
     const [department, setDepartment] = useState('');
     const [section, setSection] = useState('');
     const [contactNumber, setContactNumber] = useState('');
-    
+    const [projectType, setProjectType] = useState<UserType['projectType'] | ''>('');
 
 
     const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +44,7 @@ export default function Auth() {
         setDepartment('');
         setSection('');
         setContactNumber('');
+        setProjectType('');
         
         dispatch({ type: 'CLEAR_MESSAGES' });
     };
@@ -63,7 +65,7 @@ export default function Auth() {
             }
         } else {
             try {
-                await api.registerStudent({ name, email, password, rollNo, branch, department, section, contactNumber });
+                await api.registerStudent({ name, email, password, rollNo, branch, department, section, contactNumber, projectType });
                 // On successful registration, switch to login view with a success message
                 setIsLoginView(true);
                 clearForm();
@@ -161,16 +163,31 @@ export default function Auth() {
                                                 </Select>
                                             </div>
                                         </div>
-                                        <div className="relative">
-                                            <Input
-                                                type="text"
-                                                placeholder="Enter Section (e.g., A, B, C)"
-                                                value={section}
-                                                onChange={(e) => setSection(e.target.value.toUpperCase())}
-                                                required
-                                                disabled={isLoading}
-                                                maxLength={2}
-                                            />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="relative">
+                                                <Input
+                                                    type="text"
+                                                    placeholder="Enter Section (e.g., A, B, C)"
+                                                    value={section}
+                                                    onChange={(e) => setSection(e.target.value.toUpperCase())}
+                                                    required
+                                                    disabled={isLoading}
+                                                    maxLength={2}
+                                                />
+                                            </div>
+                                             <div className="relative">
+                                                <Select onValueChange={(v) => setProjectType(v as UserType['projectType'])} value={projectType} required>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select Project Type" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="RTP">Real-Time Project (RTP)</SelectItem>
+                                                        <SelectItem value="Mini">Mini Project</SelectItem>
+                                                        <SelectItem value="Major">Major Project</SelectItem>
+                                                        <SelectItem value="Other">Other</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
                                         </div>
                                         
                                     </>
