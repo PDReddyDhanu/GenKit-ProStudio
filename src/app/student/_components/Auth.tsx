@@ -26,7 +26,7 @@ export default function Auth() {
     const [branch, setBranch] = useState('');
     const [department, setDepartment] = useState('');
     const [section, setSection] = useState('');
-    const [projectType, setProjectType] = useState<'Real-Time' | 'Mini' | 'Major' | 'Other' | ''>('');
+    
 
 
     const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +41,7 @@ export default function Auth() {
         setBranch('');
         setDepartment('');
         setSection('');
-        setProjectType('');
+        
         dispatch({ type: 'CLEAR_MESSAGES' });
     };
 
@@ -61,7 +61,7 @@ export default function Auth() {
             }
         } else {
             try {
-                await api.registerStudent({ name, email, password, rollNo, branch, department, section, projectType });
+                await api.registerStudent({ name, email, password, rollNo, branch, department, section });
                 // On successful registration, switch to login view with a success message
                 setIsLoginView(true);
                 clearForm();
@@ -158,19 +158,7 @@ export default function Auth() {
                                                 maxLength={2}
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Select onValueChange={(v) => setProjectType(v as any)} value={projectType} required>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select the type of your project" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="Real-Time">Real-Time Project</SelectItem>
-                                                    <SelectItem value="Mini">Mini Project</SelectItem>
-                                                    <SelectItem value="Major">Major Project</SelectItem>
-                                                    <SelectItem value="Other">Other</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+                                        
                                     </>
                                 )}
                                 <div className="relative">

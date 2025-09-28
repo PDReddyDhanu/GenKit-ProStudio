@@ -40,7 +40,7 @@ export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
         if (selectedHackathonId && projectType) {
             setIsSubmitting(true);
             try {
-                await api.submitProject(selectedHackathonId, { name: projectName, description: projectDesc, githubUrl, teamId: team.id, projectType });
+                await api.submitProject(selectedHackathonId, { title: projectName, description: projectDesc, githubUrl, teamId: team.id, projectType });
             } finally {
                 setIsSubmitting(false);
             }

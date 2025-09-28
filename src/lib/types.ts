@@ -24,7 +24,6 @@ export interface User extends UserProfileData {
   branch: string;
   department: string;
   section: string;
-  projectType: 'Real-Time' | 'Mini' | 'Major' | 'Other' | '';
   status: 'pending' | 'approved';
   guidanceHistory?: ChatMessage[];
   notifications?: Notification[];
