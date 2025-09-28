@@ -112,7 +112,7 @@ export async function changeAdminPassword(collegeId: string, { oldPassword, newP
     return { successMessage: "Admin password has been changed successfully for this session." };
 }
 
-export async function registerStudent(collegeId: string, { name, email, password, rollNo, branch, department, section }: any) {
+export async function registerStudent(collegeId: string, { name, email, password, rollNo, branch, department, section, projectType }: any) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user: User = {
@@ -123,6 +123,7 @@ export async function registerStudent(collegeId: string, { name, email, password
             branch,
             department,
             section,
+            projectType,
             status: 'pending',
             registeredAt: Date.now(),
             skills: [],
@@ -217,20 +218,27 @@ export async function loginFaculty(collegeId: string, { email, password }: { ema
         return { successMessage: 'Sub-Admin login successful!', faculty: subAdminUser };
     }
 
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const facultyDoc = await getDoc(doc(db, `colleges/${collegeId}/faculty`, userCredential.user.uid));
-    if (!facultyDoc.exists()) {
-        await firebaseSignOut(auth);
-        throw new Error("Faculty record not found for this college.");
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const facultyDoc = await getDoc(doc(db, `colleges/${collegeId}/faculty`, userCredential.user.uid));
+        if (!facultyDoc.exists()) {
+            await firebaseSignOut(auth);
+            throw new Error("Faculty record not found for this college.");
+        }
+        
+        const faculty = facultyDoc.data() as Faculty;
+        if (faculty.status !== 'approved') {
+            await firebaseSignOut(auth);
+            throw new Error("Your faculty account is pending admin approval.");
+        }
+        
+        return { successMessage: 'Login successful!' };
+    } catch (error: any) {
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            throw new Error("Invalid email or password.");
+        }
+        throw error;
     }
-    
-    const faculty = facultyDoc.data() as Faculty;
-    if (faculty.status !== 'approved') {
-        await firebaseSignOut(auth);
-        throw new Error("Your faculty account is pending admin approval.");
-    }
-    
-    return { successMessage: 'Login successful!' };
 }
 
 
@@ -407,7 +415,7 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             status: 'approved',
             registeredAt: Date.now(),
             skills: [], bio: '', github: '', linkedin: '', workStyle: [], notifications: [],
-            rollNo: '', branch: '', department: '', section: '',
+            rollNo: '', branch: '', department: '', section: '', projectType: ''
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
