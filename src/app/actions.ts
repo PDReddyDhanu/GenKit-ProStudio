@@ -12,6 +12,7 @@ import { findTeammateMatches as findTeammateMatchesFlow, FindTeammateMatchesInpu
 import { generateSummaryReport as generateSummaryReportFlow, GenerateSummaryReportInput } from '@/ai/flows/generate-hackathon-summary-report';
 import { triageSupportTicket as triageSupportTicketFlow, TriageSupportTicketInput, TriageSupportTicketOutput } from '@/ai/flows/triage-support-ticket';
 import { generateSupportResponse as generateSupportResponseFlow, GenerateSupportResponseInput, GenerateSupportResponseOutput } from '@/ai/flows/generate-support-response';
+import { generateDetailedProjectIdea as generateDetailedProjectIdeaFlow, GenerateDetailedProjectIdeaInput, GenerateDetailedProjectIdeaOutput } from '@/ai/flows/generate-detailed-project-idea';
 
 
 // AI Related Actions
@@ -24,6 +25,16 @@ export async function generateProjectIdea(input: GenerateProjectIdeaInput): Prom
         return "Failed to generate an idea. Please try again.";
     }
 }
+
+export async function generateDetailedProjectIdeaAction(input: GenerateDetailedProjectIdeaInput): Promise<GenerateDetailedProjectIdeaOutput | null> {
+    try {
+        return await generateDetailedProjectIdeaFlow(input);
+    } catch (error) {
+        console.error("Error generating detailed project idea:", error);
+        return null;
+    }
+}
+
 
 export async function suggestThemes(query: SuggestThemesInput): Promise<string[]> {
     try {

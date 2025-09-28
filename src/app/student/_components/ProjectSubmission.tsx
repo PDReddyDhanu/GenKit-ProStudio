@@ -6,12 +6,16 @@ import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import type { Team, ProjectIdea } from '@/lib/types';
-import { Loader, ArrowLeft, UploadCloud } from 'lucide-react';
+import { Loader, ArrowLeft, UploadCloud, Wand2, Sparkles } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { generateDetailedProjectIdeaAction } from '@/app/actions';
+import type { GenerateDetailedProjectIdeaOutput } from '@/ai/flows/generate-detailed-project-idea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ProjectSubmissionProps {
     team: Team;
@@ -71,6 +75,48 @@ const ProjectIdeaForm = ({ idea, setIdea, isSubmitting }: { idea: ProjectIdea, s
     )
 }
 
+const IdeaGeneratorDialog = ({ open, onOpenChange, onUseIdea, generatedIdea, onRegenerate, isGenerating }: { open: boolean, onOpenChange: (open: boolean) => void, onUseIdea: () => void, generatedIdea: GenerateDetailedProjectIdeaOutput | null, onRegenerate: () => void, isGenerating: boolean }) => {
+    if (!generatedIdea) return null;
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2"><Sparkles className="text-primary"/>AI Generated Project Idea</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="max-h-[60vh] pr-4">
+                    <div className="space-y-4">
+                        <div>
+                            <Label className="text-muted-foreground">Title</Label>
+                            <p className="font-semibold text-lg">{generatedIdea.title}</p>
+                        </div>
+                         <div>
+                            <Label className="text-muted-foreground">Description</Label>
+                            <p>{generatedIdea.description}</p>
+                        </div>
+                        <div>
+                            <Label className="text-muted-foreground">Abstract</Label>
+                            <p className="text-sm whitespace-pre-wrap">{generatedIdea.abstract}</p>
+                        </div>
+                         <div>
+                            <Label className="text-muted-foreground">Keywords</Label>
+                            <p className="text-sm italic">{generatedIdea.keywords}</p>
+                        </div>
+                    </div>
+                </ScrollArea>
+                <DialogFooter className="gap-2 sm:gap-0">
+                    <Button variant="outline" onClick={onRegenerate} disabled={isGenerating}>
+                        {isGenerating ? <Loader className="mr-2 h-4 w-4 animate-spin"/> : null}
+                        Regenerate
+                    </Button>
+                    <Button onClick={onUseIdea}>Use This Idea</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+};
+
+
 export default function ProjectSubmission({ team, onBack }: ProjectSubmissionProps) {
     const { api, state } = useHackathon();
     const { selectedHackathonId } = state;
@@ -80,6 +126,12 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
         { id: '3', title: '', description: '', abstractText: '', keywords: '', githubUrl: '' },
     ]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [activeTab, setActiveTab] = useState('idea-1');
+
+    const [generatorTheme, setGeneratorTheme] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generatedIdea, setGeneratedIdea] = useState<GenerateDetailedProjectIdeaOutput | null>(null);
+    const [isDialogVisible, setIsDialogVisible] = useState(false);
 
     const isTeamSizeValid = team.members.length >= 2 && team.members.length <= 6;
 
@@ -109,6 +161,45 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
             alert("Your team size must be between 2 and 6 members to submit a project.");
         }
     };
+    
+    const handleGenerateIdea = async () => {
+        if (!generatorTheme.trim()) {
+            alert("Please enter a theme or topic for the AI to generate ideas.");
+            return;
+        }
+        setIsGenerating(true);
+        setGeneratedIdea(null);
+        try {
+            const result = await generateDetailedProjectIdeaAction({ theme: generatorTheme });
+            if (result) {
+                setGeneratedIdea(result);
+                setIsDialogVisible(true);
+            } else {
+                alert("The AI failed to generate an idea. Please try again.");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("An error occurred while generating the idea.");
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+    
+    const handleUseGeneratedIdea = () => {
+        if (!generatedIdea) return;
+        
+        const ideaIndex = parseInt(activeTab.split('-')[1]) - 1;
+        const ideasCopy = [...projectIdeas];
+        ideasCopy[ideaIndex] = {
+            ...ideasCopy[ideaIndex],
+            title: generatedIdea.title,
+            description: generatedIdea.description,
+            abstractText: generatedIdea.abstract,
+            keywords: generatedIdea.keywords,
+        };
+        setProjectIdeas(ideasCopy);
+        setIsDialogVisible(false);
+    };
 
     return (
         <div className="container max-w-3xl mx-auto">
@@ -120,22 +211,43 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
                     <CardTitle className="text-3xl font-bold font-headline">Submit Your Project Ideas</CardTitle>
                     <CardDescription>Fill out the details for up to three project ideas. The first idea is mandatory. Faculty will review and approve one.</CardDescription>
                 </CardHeader>
-                <CardContent className="border-t pt-6">
+
+                <CardContent>
+                    <Card className="bg-muted/50 mb-6">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-xl font-headline"><Wand2 className="text-primary"/>AI Idea Helper</CardTitle>
+                             <CardDescription>Stuck? Enter a theme and let AI generate a full project proposal for you.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                                <Input 
+                                    placeholder="e.g., 'AI in healthcare' or 'Gamified learning app'" 
+                                    value={generatorTheme}
+                                    onChange={(e) => setGeneratorTheme(e.target.value)}
+                                    disabled={isGenerating}
+                                />
+                                <Button onClick={handleGenerateIdea} disabled={isGenerating} className="w-full sm:w-auto">
+                                    {isGenerating ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "Generate Idea"}
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     <form onSubmit={handleSubmitProject} className="space-y-6">
-                         <Tabs defaultValue="idea-1" className="w-full">
+                         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
                             <TabsList className="grid w-full grid-cols-3">
                                 <TabsTrigger value="idea-1">Idea 1</TabsTrigger>
                                 <TabsTrigger value="idea-2">Idea 2</TabsTrigger>
                                 <TabsTrigger value="idea-3">Idea 3</TabsTrigger>
                             </TabsList>
                             <TabsContent value="idea-1" className="mt-4">
-                                <ProjectIdeaForm idea={projectIdeas[0]} setIdea={handleSetIdea} isSubmitting={isSubmitting} />
+                                <ProjectIdeaForm idea={projectIdeas[0]} setIdea={(idea) => setProjectIdeas(prev => [idea, prev[1], prev[2]])} isSubmitting={isSubmitting} />
                             </TabsContent>
                             <TabsContent value="idea-2" className="mt-4">
-                                <ProjectIdeaForm idea={projectIdeas[1]} setIdea={handleSetIdea} isSubmitting={isSubmitting} />
+                                <ProjectIdeaForm idea={projectIdeas[1]} setIdea={(idea) => setProjectIdeas(prev => [prev[0], idea, prev[2]])} isSubmitting={isSubmitting} />
                             </TabsContent>
                             <TabsContent value="idea-3" className="mt-4">
-                                <ProjectIdeaForm idea={projectIdeas[2]} setIdea={handleSetIdea} isSubmitting={isSubmitting} />
+                                <ProjectIdeaForm idea={projectIdeas[2]} setIdea={(idea) => setProjectIdeas(prev => [prev[0], prev[1], idea])} isSubmitting={isSubmitting} />
                             </TabsContent>
                         </Tabs>
 
@@ -158,7 +270,15 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
                     </form>
                 </CardContent>
             </Card>
+
+            <IdeaGeneratorDialog 
+                open={isDialogVisible}
+                onOpenChange={setIsDialogVisible}
+                generatedIdea={generatedIdea}
+                onUseIdea={handleUseGeneratedIdea}
+                onRegenerate={handleGenerateIdea}
+                isGenerating={isGenerating}
+            />
         </div>
     );
 }
-
