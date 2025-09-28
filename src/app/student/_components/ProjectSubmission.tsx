@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -12,6 +13,11 @@ import { generateProjectIdea, suggestThemes } from '@/app/actions';
 import { Loader, Wand2, Lightbulb } from 'lucide-react';
 import BackButton from '@/components/layout/BackButton';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+interface ProjectSubmissionProps {
+    team: Team;
+}
 
 export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
     const { api, state } = useHackathon();
@@ -19,6 +25,7 @@ export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
     const [projectName, setProjectName] = useState('');
     const [projectDesc, setProjectDesc] = useState('');
     const [githubUrl, setGithubUrl] = useState('');
+    const [projectType, setProjectType] = useState<'Real-Time' | 'Mini' | 'Major' | 'Other' | ''>('');
     
     const [interest, setInterest] = useState('');
     const [themes, setThemes] = useState<string[]>([]);
@@ -30,13 +37,15 @@ export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
 
     const handleSubmitProject = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (selectedHackathonId) {
+        if (selectedHackathonId && projectType) {
             setIsSubmitting(true);
             try {
-                await api.submitProject(selectedHackathonId, { name: projectName, description: projectDesc, githubUrl, teamId: team.id });
+                await api.submitProject(selectedHackathonId, { name: projectName, description: projectDesc, githubUrl, teamId: team.id, projectType });
             } finally {
                 setIsSubmitting(false);
             }
+        } else {
+            alert("Please select a project type.");
         }
     };
 
@@ -127,6 +136,20 @@ export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
 
 
                     <form onSubmit={handleSubmitProject} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="projectType">Project Type</Label>
+                            <Select onValueChange={(v) => setProjectType(v as any)} value={projectType} required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select the type of your project" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Real-Time">Real-Time Project</SelectItem>
+                                    <SelectItem value="Mini">Mini Project</SelectItem>
+                                    <SelectItem value="Major">Major Project</SelectItem>
+                                    <SelectItem value="Other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div className="space-y-2">
                             <Label htmlFor="projectName">Project Name</Label>
                             <Input id="projectName" value={projectName} onChange={e => setProjectName(e.target.value)} required disabled={isSubmitting} />

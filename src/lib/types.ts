@@ -80,6 +80,7 @@ export interface Project {
   title: string;
   name: string; // TBD: Consolidate with title
   description: string;
+  projectType: 'Real-Time' | 'Mini' | 'Major' | 'Other';
   abstractFileUrl?: string;
   githubUrl: string;
   deployedUrl?: string;
@@ -96,12 +97,17 @@ export interface Faculty {
   id:string;
   name: string;
   email: string;
-  role: 'guide' | 'hod' | 'rnd' | 'external' | 'admin' | 'sub-admin';
+  role: 'guide' | 'hod' | 'rnd' | 'external' | 'admin' | 'sub-admin' | 'academic-coordinator' | 'class-mentor';
   guidanceHistory?: ChatMessage[];
-  gender?: string;
+  gender?: 'Male' | 'Female' | 'Other';
   contactNumber?: string;
-bio?: string;
-notifications?: Notification[];
+  bio?: string;
+  notifications?: Notification[];
+  designation?: 'Professor' | 'Associate Professor' | 'Assistant Professor';
+  education?: 'PhD' | 'M.Tech' | 'B.Tech' | 'Other';
+  branch?: string;
+  department?: string;
+  collegeName?: string; // For external faculty
 }
 
 export interface Score {

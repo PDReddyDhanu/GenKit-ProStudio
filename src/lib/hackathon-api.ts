@@ -275,15 +275,20 @@ export async function remindAdminForApproval(collegeId: string, userId: string, 
 
 // --- Admin & Faculty ---
 
-export async function addFaculty(collegeId: string, { name, email, password, role, gender, contactNumber, bio }: any) {
+export async function addFaculty(collegeId: string, data: Partial<Faculty> & { password?: string }) {
+    const { name, email, password, role, gender, contactNumber, bio, designation, education, branch, department, collegeName } = data;
+
+    if (!email || !password || !name || !role) {
+        throw new Error("Missing required fields for faculty creation.");
+    }
+    
     const currentAuthUser = auth.currentUser;
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const facultyAuthUser = userCredential.user;
 
-        const facultyMember: Faculty = { 
-            id: facultyAuthUser.uid,
+        const facultyMember: Omit<Faculty, 'id'> = { 
             name, 
             email,
             role,
@@ -291,16 +296,21 @@ export async function addFaculty(collegeId: string, { name, email, password, rol
             contactNumber,
             bio,
             notifications: [],
+            designation,
+            education,
+            branch,
+            department,
+            collegeName
         };
-        await setDoc(doc(db, `colleges/${collegeId}/faculty`, facultyMember.id), facultyMember);
+        await setDoc(doc(db, `colleges/${collegeId}/faculty`, facultyAuthUser.uid), facultyMember);
 
-        // Re-authenticate the original admin user if they were signed out
-        if (currentAuthUser) {
-            // This is a simplified approach. In a real-world scenario, you'd handle re-authentication more robustly.
-            // For this app, we assume the frontend state management will keep the admin logged in visually.
-        } else {
-            await firebaseSignOut(auth); // Sign out the newly created faculty user
+        // This logic to re-sign-in the admin is complex and often fails in a web environment.
+        // It's better to handle this by just signing out the new user and letting the admin's session persist.
+        if (auth.currentUser?.uid !== currentAuthUser?.uid) {
+            await firebaseSignOut(auth);
         }
+        
+        // If an admin was logged in, we assume their auth state is managed by the frontend and don't force a sign-in.
 
         return { successMessage: 'Faculty member added successfully! They can now log in.' };
     } catch (error: any) {
@@ -600,7 +610,7 @@ export async function leaveTeam(collegeId: string, teamId: string, userId: strin
     return { successMessage: "You have left the team." };
 }
 
-export async function submitProject(collegeId: string, hackathonId: string, { title, description, githubUrl, teamId }: any) {
+export async function submitProject(collegeId: string, hackathonId: string, { title, description, githubUrl, teamId, projectType }: any) {
     const projectsCollection = collection(db, `colleges/${collegeId}/projects`);
     
     const newProject: Omit<Project, 'id'> = {
@@ -609,6 +619,7 @@ export async function submitProject(collegeId: string, hackathonId: string, { ti
         title,
         name: title,
         description,
+        projectType,
         githubUrl,
         scores: [],
         averageScore: 0,
