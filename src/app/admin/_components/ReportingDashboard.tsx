@@ -6,38 +6,26 @@ import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader, Wand2, FileText, AlertTriangle, Download } from 'lucide-react';
-import { generateHackathonReport } from '@/app/actions';
+import { generateSummaryReport } from '@/app/actions';
 import { marked } from 'marked';
-import type { Hackathon } from '@/lib/types';
+import type { Project, Team } from '@/lib/types';
 import jsPDF from 'jspdf';
 
-interface ReportingDashboardProps {
-    hackathon: Hackathon;
-}
-
-export default function ReportingDashboard({ hackathon }: ReportingDashboardProps) {
+export default function ReportingDashboard() {
     const { state } = useHackathon();
-    const { projects, teams } = state;
+    const { projects, teams, selectedCollege } = state;
     const [report, setReport] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const hackathonProjects = useMemo(() => {
-        return projects.filter(p => p.hackathonId === hackathon.id);
-    }, [projects, hackathon.id]);
-
-    const hackathonTeams = useMemo(() => {
-        const projectTeamIds = new Set(hackathonProjects.map(p => p.teamId));
-        return teams.filter(t => projectTeamIds.has(t.id));
-    }, [teams, hackathonProjects]);
-
     const handleGenerateReport = async () => {
+        if (!selectedCollege) return;
         setIsLoading(true);
         setReport(null);
         try {
-            const result = await generateHackathonReport({
-                hackathon,
-                projects: hackathonProjects,
-                teams: hackathonTeams,
+            const result = await generateSummaryReport({
+                collegeName: selectedCollege,
+                projects: projects,
+                teams: teams,
             });
             setReport(result);
         } catch (error) {
@@ -49,7 +37,7 @@ export default function ReportingDashboard({ hackathon }: ReportingDashboardProp
     };
 
     const handleDownloadReport = () => {
-        if (!report) return;
+        if (!report || !selectedCollege) return;
 
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -57,7 +45,7 @@ export default function ReportingDashboard({ hackathon }: ReportingDashboardProp
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(18);
-        doc.text(`Hackathon Summary Report: ${hackathon.name}`, pageWidth / 2, 20, { align: 'center' });
+        doc.text(`Project Summary Report: ${selectedCollege}`, pageWidth / 2, 20, { align: 'center' });
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
@@ -68,7 +56,7 @@ export default function ReportingDashboard({ hackathon }: ReportingDashboardProp
         const splitText = doc.splitTextToSize(plainTextReport, pageWidth - margin * 2);
         doc.text(splitText, margin, 30);
         
-        const filename = `${hackathon.name.replace(/\s/g, '_')}_Report.pdf`;
+        const filename = `${selectedCollege.replace(/\s/g, '_')}_Report.pdf`;
         doc.save(filename);
     };
 
@@ -77,17 +65,17 @@ export default function ReportingDashboard({ hackathon }: ReportingDashboardProp
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">Automated Report Generation</CardTitle>
-                    <CardDescription>Generate a comprehensive AI-powered summary report for the "{hackathon.name}" event.</CardDescription>
+                    <CardDescription>Generate a comprehensive AI-powered summary report for all projects at "{selectedCollege}".</CardDescription>
                 </CardHeader>
                 <CardContent>
-                     {hackathonProjects.length > 0 ? (
+                     {projects.length > 0 ? (
                         <Button onClick={handleGenerateReport} disabled={isLoading}>
-                            {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating Report...</> : <><Wand2 className="mr-2 h-4 w-4"/> Generate Hackathon Report</>}
+                            {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating Report...</> : <><Wand2 className="mr-2 h-4 w-4"/> Generate College Report</>}
                         </Button>
                     ) : (
                         <div className="flex items-center gap-3 text-yellow-500">
                             <AlertTriangle />
-                            <p>No projects were submitted for this hackathon, so a report cannot be generated.</p>
+                            <p>No projects have been submitted, so a report cannot be generated.</p>
                         </div>
                     )}
                 </CardContent>
