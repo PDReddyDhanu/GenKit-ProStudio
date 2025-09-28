@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound, X, AlertTriangle } from 'lucide-react';
+import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound, X, AlertTriangle, Building, BookUser, Phone } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
 import { generateCertificate } from '@/lib/pdf';
@@ -19,7 +19,6 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WORK_STYLE_TAGS, SKILL_TAGS } from '@/lib/constants';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 
@@ -111,6 +110,7 @@ export default function ProfilePage() {
     const [github, setGithub] = useState(currentUser?.github || '');
     const [linkedin, setLinkedin] = useState(currentUser?.linkedin || '');
     const [workStyle, setWorkStyle] = useState<string[]>(currentUser?.workStyle || []);
+    const [contactNumber, setContactNumber] = useState(currentUser?.contactNumber || '');
     const [isSaving, setIsSaving] = useState(false);
     const [isGeneratingCert, setIsGeneratingCert] = useState<string | null>(null);
 
@@ -138,6 +138,7 @@ export default function ProfilePage() {
         setGithub(currentUser.github || '');
         setLinkedin(currentUser.linkedin || '');
         setWorkStyle(currentUser.workStyle || []);
+        setContactNumber(currentUser.contactNumber || '');
       }
     }, [currentUser]);
 
@@ -193,7 +194,8 @@ export default function ProfilePage() {
                 bio,
                 github,
                 linkedin,
-                workStyle
+                workStyle,
+                contactNumber,
             });
             setIsEditing(false);
         } finally {
@@ -260,6 +262,10 @@ export default function ProfilePage() {
                                         <Input id="name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving} />
                                     </div>
                                     <div className="space-y-2">
+                                        <Label htmlFor="contactNumber">Contact Number</Label>
+                                        <Input id="contactNumber" type="tel" value={contactNumber} onChange={e => setContactNumber(e.target.value)} required disabled={isSaving} />
+                                    </div>
+                                    <div className="space-y-2">
                                         <Label>Skills</Label>
                                         <div className="p-3 border rounded-md flex flex-wrap gap-2">
                                             {SKILL_TAGS.map(tag => (
@@ -318,14 +324,32 @@ export default function ProfilePage() {
                                 </form>
                             ) : (
                                 <div className="space-y-6">
+                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        <div className="space-y-1">
+                                            <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2"><Building className="h-4 w-4"/> College</h4>
+                                            <p>{selectedCollege || 'Not specified'}</p>
+                                        </div>
+                                         <div className="space-y-1">
+                                            <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2"><BookUser className="h-4 w-4"/> Roll Number</h4>
+                                            <p>{currentUser.rollNo || 'Not specified'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h4 className="text-sm font-semibold text-muted-foreground">Branch & Department</h4>
+                                            <p>{currentUser.branch ? `${currentUser.branch} / ${currentUser.department}` : 'Not specified'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2"><Phone className="h-4 w-4"/> Contact Number</h4>
+                                            <p>{currentUser.contactNumber || 'Not specified'}</p>
+                                        </div>
+                                    </div>
                                      {currentUser.bio && (
-                                        <div>
+                                        <div className="border-t pt-6">
                                             <h4 className="font-semibold text-muted-foreground">Bio</h4>
                                             <p>{currentUser.bio}</p>
                                         </div>
                                     )}
                                     {currentUser.skills && currentUser.skills.length > 0 ? (
-                                        <div>
+                                        <div className="border-t pt-6">
                                             <h4 className="font-semibold text-muted-foreground mb-2">Skills</h4>
                                             <div className="flex flex-wrap gap-2">
                                                 {currentUser.skills.map(skill => (
@@ -334,10 +358,10 @@ export default function ProfilePage() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <p className="text-muted-foreground">No skills added yet. Edit your profile to add them.</p>
+                                        <p className="text-muted-foreground pt-6 border-t">No skills added yet. Edit your profile to add them.</p>
                                     )}
                                     {currentUser.workStyle && currentUser.workStyle.length > 0 ? (
-                                        <div>
+                                        <div className="border-t pt-6">
                                             <h4 className="font-semibold text-muted-foreground mb-2 mt-4">Work Style</h4>
                                             <div className="flex flex-wrap gap-2">
                                                 {currentUser.workStyle.map(style => (
@@ -346,9 +370,9 @@ export default function ProfilePage() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <p className="text-muted-foreground mt-4">No work style selected. Edit your profile to add your preferred style.</p>
+                                        <p className="text-muted-foreground mt-4 pt-6 border-t">No work style selected. Edit your profile to add your preferred style.</p>
                                     )}
-                                    <div className="flex items-center gap-6 pt-4 border-t">
+                                    <div className="flex items-center gap-6 pt-6 border-t">
                                         {currentUser.github && (
                                             <a href={currentUser.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary">
                                                 <Github className="h-5 w-5" /> GitHub

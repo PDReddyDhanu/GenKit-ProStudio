@@ -7,6 +7,7 @@ export interface UserProfileData {
   github: string;
   linkedin: string;
   workStyle?: string[];
+  contactNumber?: string;
 }
 
 export interface Notification {

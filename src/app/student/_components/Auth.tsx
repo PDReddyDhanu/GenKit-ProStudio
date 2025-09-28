@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AuthMessage } from '@/components/AuthMessage';
-import { Loader, Mail, Lock, User, CheckSquare, Library, BookUser, Building } from 'lucide-react';
+import { Loader, Mail, Lock, User, CheckSquare, Library, BookUser, Building, Phone } from 'lucide-react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import AccountStatusDialog from '@/components/AccountStatusDialog';
@@ -26,6 +26,7 @@ export default function Auth() {
     const [branch, setBranch] = useState('');
     const [department, setDepartment] = useState('');
     const [section, setSection] = useState('');
+    const [contactNumber, setContactNumber] = useState('');
     
 
 
@@ -41,6 +42,7 @@ export default function Auth() {
         setBranch('');
         setDepartment('');
         setSection('');
+        setContactNumber('');
         
         dispatch({ type: 'CLEAR_MESSAGES' });
     };
@@ -61,7 +63,7 @@ export default function Auth() {
             }
         } else {
             try {
-                await api.registerStudent({ name, email, password, rollNo, branch, department, section });
+                await api.registerStudent({ name, email, password, rollNo, branch, department, section, contactNumber });
                 // On successful registration, switch to login view with a success message
                 setIsLoginView(true);
                 clearForm();
@@ -117,6 +119,18 @@ export default function Auth() {
                                                 className="pl-10"
                                                 value={rollNo}
                                                 onChange={e => setRollNo(e.target.value)}
+                                                required
+                                                disabled={isLoading}
+                                            />
+                                        </div>
+                                        <div className="relative">
+                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                            <Input
+                                                type="tel"
+                                                placeholder="Contact Number"
+                                                className="pl-10"
+                                                value={contactNumber}
+                                                onChange={e => setContactNumber(e.target.value)}
                                                 required
                                                 disabled={isLoading}
                                             />
