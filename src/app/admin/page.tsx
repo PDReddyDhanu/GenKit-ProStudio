@@ -28,7 +28,7 @@ import { Badge } from '@/components/ui/badge';
 export default function AdminPortal() {
     const { state, api, dispatch } = useHackathon();
     const { currentAdmin, currentFaculty, hackathons, selectedHackathonId, users } = state;
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState('genkit@admin.com');
     const [password, setPassword] = useState('');
     const [showIntro, setShowIntro] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
@@ -41,11 +41,7 @@ export default function AdminPortal() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            if (email === 'genkit@admin.com') {
-                await api.loginAdmin({ email, password });
-            } else {
-                await api.loginFaculty(email, password);
-            }
+            await api.loginAdmin({ email, password });
         } finally {
             setIsLoading(false);
         }
@@ -69,7 +65,7 @@ export default function AdminPortal() {
 
 
     if (showIntro && !portalUser) {
-        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Shield className="w-full h-full" />} title="Admin & Faculty Portal" description="Manage projects, users, and evaluations." />;
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Shield className="w-full h-full" />} title="Admin Portal" description="Manage projects, users, and evaluations." />;
     }
 
     if (!portalUser) {
@@ -77,21 +73,21 @@ export default function AdminPortal() {
             <div className="container max-w-md mx-auto py-12 animate-fade-in">
                 <Card>
                      <CardHeader>
-                        <CardTitle className="text-2xl font-bold text-center font-headline">Admin & Faculty Login</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-center font-headline">Main Admin Login</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleAdminLogin} className="space-y-4">
                             <AuthMessage />
                             <div className="space-y-2">
                                 <Label htmlFor="admin-email">Email</Label>
-                                <Input id="admin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
+                                <Input id="admin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={true} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="admin-password">Password</Label>
                                 <Input id="admin-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} />
                             </div>
                             <Button type="submit" className="w-full" disabled={isLoading}>
-                                {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Logging in...</> : 'Login'}
+                                {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Logging in...</> : 'Login as Main Admin'}
                             </Button>
                         </form>
                     </CardContent>
@@ -170,5 +166,7 @@ export default function AdminPortal() {
         </div>
     );
 }
+
+    
 
     

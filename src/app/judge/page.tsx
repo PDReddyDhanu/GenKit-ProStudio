@@ -30,7 +30,7 @@ export default function FacultyPortal() {
         }
     };
 
-    if (showIntro) {
+    if (showIntro && !currentFaculty && !currentAdmin) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<Scale className="w-full h-full" />} title="Faculty Portal" description="Evaluate submissions, manage users, and run the project hub." />;
     }
     
@@ -55,13 +55,23 @@ export default function FacultyPortal() {
                                 <li className="flex items-center gap-3"><UserCheck className="h-5 w-5 text-secondary"/> Guides & Mentors</li>
                                 <li className="flex items-center gap-3"><Building className="h-5 w-5 text-secondary"/> HoDs & R&D Coordinators</li>
                                 <li className="flex items-center gap-3"><Briefcase className="h-5 w-5 text-secondary"/> External Evaluators</li>
-                                <li className="flex items-center gap-3"><Shield className="h-5 w-5 text-secondary"/> Administrators</li>
+                                <li className="flex items-center gap-3"><Shield className="h-5 w-5 text-secondary"/> College Sub-Admins</li>
                             </ul>
                             <div className="pt-6 border-t">
-                                <p className="text-sm text-muted-foreground">Are you a student?</p>
-                                 <Button variant="link" asChild className="px-0 -mt-1">
-                                    <Link href="/student">Go to Student Portal <ArrowRight className="ml-2 h-4 w-4"/></Link>
-                                 </Button>
+                                 <div className="flex flex-wrap gap-x-4 gap-y-2">
+                                     <div>
+                                        <p className="text-sm text-muted-foreground">Are you a student?</p>
+                                         <Button variant="link" asChild className="px-0 -mt-1 h-auto">
+                                            <Link href="/student">Go to Student Portal <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                                         </Button>
+                                     </div>
+                                      <div>
+                                        <p className="text-sm text-muted-foreground">Main Developer?</p>
+                                         <Button variant="link" asChild className="px-0 -mt-1 h-auto">
+                                            <Link href="/admin">Main Admin Login <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                                         </Button>
+                                     </div>
+                                 </div>
                             </div>
                         </CardContent>
                      </div>
@@ -76,7 +86,7 @@ export default function FacultyPortal() {
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                     <Input 
                                         type="email" 
-                                        placeholder="Email Id" 
+                                        placeholder="Faculty or Sub-Admin Email" 
                                         className="pl-10" 
                                         value={email}
                                         onChange={e => setEmail(e.target.value)}
@@ -108,5 +118,7 @@ export default function FacultyPortal() {
         </div>
     );
 }
+
+    
 
     
