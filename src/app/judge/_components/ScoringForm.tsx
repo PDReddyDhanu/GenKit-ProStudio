@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Project, Score, TeamMember } from '@/lib/types';
-import { JUDGING_RUBRIC, INDIVIDUAL_JUDGING_RUBRIC } from '@/lib/constants';
+import { EVALUATION_RUBRIC, INDIVIDUAL_EVALUATION_RUBRIC } from '@/lib/constants';
 import Link from 'next/link';
 import { Bot, Loader, User } from 'lucide-react';
 import { getAiProjectSummary } from '@/app/actions';
@@ -23,7 +23,7 @@ interface ScoringFormProps {
 
 export default function ScoringForm({ project, onBack }: ScoringFormProps) {
     const { state, api } = useHackathon();
-    const { currentJudge, teams, selectedHackathonId } = state;
+    const { currentFaculty, teams, selectedHackathonId } = state;
 
     const [scores, setScores] = useState<Record<string, Record<string, number>>>({}); // { [memberId/team]: { [criteriaId]: value } }
     const [comments, setComments] = useState<Record<string, Record<string, string>>>({}); // { [memberId/team]: { [criteriaId]: comment } }
@@ -35,24 +35,26 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
     const team = teams.find(t => t.id === project.teamId);
 
     useEffect(() => {
-        if (!currentJudge) return;
+        if (!currentFaculty) return;
 
         const initialScores: Record<string, Record<string, number>> = {};
         const initialComments: Record<string, Record<string, string>> = {};
 
         project.scores
-            .filter(s => s.judgeId === currentJudge.id)
+            .filter(s => s.evaluatorId === currentFaculty.id)
             .forEach(s => {
                 const targetId = s.memberId || 'team';
                 if (!initialScores[targetId]) initialScores[targetId] = {};
                 if (!initialComments[targetId]) initialComments[targetId] = {};
                 
                 initialScores[targetId][s.criteria] = s.value;
-                initialComments[targetId][s.criteria] = s.comment;
+                if(s.comment) {
+                  initialComments[targetId][s.criteria] = s.comment;
+                }
             });
         setScores(initialScores);
         setComments(initialComments);
-    }, [project, currentJudge]);
+    }, [project, currentFaculty]);
 
     const handleScoreChange = (targetId: string, criteriaId: string, value: number[]) => {
         setScores(prev => ({
@@ -73,7 +75,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
         setAiSummary('');
         try {
             const summary = await getAiProjectSummary({
-                projectName: project.name,
+                projectName: project.title,
                 projectDescription: project.description,
                 githubUrl: project.githubUrl,
             });
@@ -88,15 +90,15 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
 
     const handleSubmitScores = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (project && currentJudge && selectedHackathonId) {
+        if (project && currentFaculty && selectedHackathonId) {
             setIsSubmitting(true);
             
             const allScores: Score[] = [];
             
             // Team scores
-            JUDGING_RUBRIC.forEach(criteria => {
+            EVALUATION_RUBRIC.forEach(criteria => {
                 allScores.push({
-                    judgeId: currentJudge.id,
+                    evaluatorId: currentFaculty.id,
                     criteria: criteria.id,
                     value: scores['team']?.[criteria.id] || 0,
                     comment: comments['team']?.[criteria.id] || '',
@@ -105,9 +107,9 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
 
             // Individual scores
             team?.members.forEach(member => {
-                INDIVIDUAL_JUDGING_RUBRIC.forEach(criteria => {
+                INDIVIDUAL_EVALUATION_RUBRIC.forEach(criteria => {
                     allScores.push({
-                        judgeId: currentJudge.id,
+                        evaluatorId: currentFaculty.id,
                         memberId: member.id,
                         criteria: criteria.id,
                         value: scores[member.id]?.[criteria.id] || 0,
@@ -117,7 +119,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
             });
             
             try {
-                await api.scoreProject(selectedHackathonId, project.id, currentJudge.id, allScores);
+                await api.evaluateProject(project.id, currentFaculty.id, allScores);
                 onBack();
             } finally {
                 setIsSubmitting(false);
@@ -125,7 +127,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
         }
     };
     
-    const renderScoringBlock = (rubric: typeof JUDGING_RUBRIC, targetId: string) => (
+    const renderScoringBlock = (rubric: typeof EVALUATION_RUBRIC, targetId: string) => (
         <div className="space-y-6">
             {rubric.map(criteria => (
                 <div key={`${targetId}-${criteria.id}`}>
@@ -159,7 +161,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
             <BackButton />
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-3xl font-headline">{project.name}</CardTitle>
+                    <CardTitle className="text-3xl font-headline">{project.title}</CardTitle>
                     <CardDescription className="text-lg text-primary">by {(team?.name as string) || 'Unknown Team'}</CardDescription>
                     <p className="text-muted-foreground pt-2">{project.description}</p>
                     <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline pt-2 block">View on GitHub</Link>
@@ -184,7 +186,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
                 <form onSubmit={handleSubmitScores}>
                     <CardContent className="border-t pt-6">
                         <h3 className="text-xl font-bold font-headline mb-4">Team Scoring</h3>
-                        {renderScoringBlock(JUDGING_RUBRIC, 'team')}
+                        {renderScoringBlock(EVALUATION_RUBRIC, 'team')}
                     </CardContent>
 
                     <CardContent className="border-t pt-6">
@@ -196,7 +198,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
                                         <span className="flex items-center gap-2"><User className="h-4 w-4"/>{member.name}</span>
                                     </AccordionTrigger>
                                     <AccordionContent>
-                                        {renderScoringBlock(INDIVIDUAL_JUDGING_RUBRIC, member.id)}
+                                        {renderScoringBlock(INDIVIDUAL_EVALUATION_RUBRIC, member.id)}
                                     </AccordionContent>
                                 </AccordionItem>
                             ))}
