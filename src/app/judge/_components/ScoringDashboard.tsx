@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Project, Hackathon } from '@/lib/types';
+import { ProjectSubmission, Hackathon } from '@/lib/types';
 import ProjectList from './ProjectList';
 import ScoringForm from './ScoringForm';
 import { useHackathon } from '@/context/HackathonProvider';
@@ -14,7 +14,7 @@ interface ScoringDashboardProps {
 export default function ScoringDashboard({ event }: ScoringDashboardProps) {
     const { state } = useHackathon();
     const { projects } = state;
-    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+    const [selectedProject, setSelectedProject] = useState<ProjectSubmission | null>(null);
 
     const eventProjects = useMemo(() => {
         return projects.filter(p => p.hackathonId === event.id);
@@ -31,3 +31,4 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
         </div>
     );
 }
+

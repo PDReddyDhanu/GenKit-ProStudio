@@ -5,12 +5,12 @@ import React from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import type { Project } from '@/lib/types';
+import type { ProjectSubmission } from '@/lib/types';
 import { CheckCircle } from 'lucide-react';
 
 interface ProjectListProps {
-    projects: Project[];
-    onSelectProject: (project: Project) => void;
+    projects: ProjectSubmission[];
+    onSelectProject: (project: ProjectSubmission) => void;
 }
 
 export default function ProjectList({ projects, onSelectProject }: ProjectListProps) {
@@ -32,10 +32,11 @@ export default function ProjectList({ projects, onSelectProject }: ProjectListPr
             {projects.map(p => {
                 const team = teams.find(t => t.id === p.teamId);
                 const hasScored = p.scores.some(s => s.evaluatorId === currentFaculty?.id);
+                const primaryIdea = p.projectIdeas[0];
                 return (
                     <Card key={p.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <CardHeader>
-                            <CardTitle>{p.name}</CardTitle>
+                            <CardTitle>{primaryIdea?.title || "Untitled Project"}</CardTitle>
                             <CardDescription>by {team?.name}</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-0 sm:pt-6 flex items-center gap-4">
@@ -48,3 +49,4 @@ export default function ProjectList({ projects, onSelectProject }: ProjectListPr
         </div>
     );
 }
+

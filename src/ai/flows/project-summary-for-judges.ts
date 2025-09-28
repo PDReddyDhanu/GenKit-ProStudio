@@ -33,7 +33,7 @@ const prompt = ai.definePrompt({
   output: {schema: ProjectSummaryOutputSchema},
   prompt: `You are an AI assistant that summarizes student project abstracts for faculty reviewers.
 
-  Based on the project title and description, generate a concise summary (3-4 sentences).
+  Based on the project title and abstract text, generate a concise summary (3-4 sentences).
 
   The summary should cover:
   1. The core problem the project solves.

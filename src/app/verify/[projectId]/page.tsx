@@ -1,11 +1,12 @@
 
+
 "use client";
 
 import React, { useMemo, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
-import type { Project, Team } from '@/lib/types';
+import type { ProjectSubmission, Team } from '@/lib/types';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -27,7 +28,7 @@ const getRankSuffix = (rankNum: number | null) => {
 };
 
 interface VerificationData {
-    project?: Project;
+    project?: ProjectSubmission;
     team?: Team;
     rank?: number | null;
     performance?: { descriptor: string; remarks: string };
@@ -62,7 +63,7 @@ export default function CertificateVerifyPage() {
                 if (!projectDoc.exists()) {
                     throw new Error("Project not found.");
                 }
-                const project = { id: projectDoc.id, ...projectDoc.data() } as Project;
+                const project = { id: projectDoc.id, ...projectDoc.data() } as ProjectSubmission;
 
                 const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/teams/${project.teamId}`));
                 if (!teamDoc.exists()) {
@@ -130,7 +131,7 @@ export default function CertificateVerifyPage() {
                         </div>
                         <div>
                             <p className="text-muted-foreground text-sm">Project</p>
-                            <p className="font-bold text-xl">{project.name}</p>
+                            <p className="font-bold text-xl">{project.projectIdeas[0]?.title || 'Untitled Project'}</p>
                         </div>
                          <div>
                             <p className="text-muted-foreground text-sm">Team</p>
@@ -150,3 +151,4 @@ export default function CertificateVerifyPage() {
         </div>
     );
 };
+

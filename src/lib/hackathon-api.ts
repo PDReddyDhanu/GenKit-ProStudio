@@ -14,6 +14,12 @@ import {
     sendEmailVerification,
 } from 'firebase/auth';
 import { 
+    getStorage, 
+    ref, 
+    uploadBytes, 
+    getDownloadURL 
+} from "firebase/storage";
+import { 
     doc, 
     setDoc, 
     addDoc, 
@@ -30,11 +36,12 @@ import {
     limit,
     writeBatch
 } from 'firebase/firestore';
-import { User, Faculty, Team, Project, Score, UserProfileData, Announcement, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification } from './types';
+import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea } from './types';
 import { EVALUATION_RUBRIC, INDIVIDUAL_EVALUATION_RUBRIC } from './constants';
 import { generateProjectImage } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
 
+const storage = getStorage();
 
 async function getAuthUser(email: string, password: any) {
     try {
@@ -112,10 +119,10 @@ export async function changeAdminPassword(collegeId: string, { oldPassword, newP
     return { successMessage: "Admin password has been changed successfully for this session." };
 }
 
-export async function registerStudent(collegeId: string, { name, email, password, rollNo, branch, department, section, contactNumber }: any) {
+export async function registerStudent(collegeId: string, { name, email, password, rollNo, branch, department, section, contactNumber, projectType }: any) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user: Omit<User, 'projectType'> = {
+        const user: User = {
             id: userCredential.user.uid,
             name,
             email,
@@ -124,6 +131,7 @@ export async function registerStudent(collegeId: string, { name, email, password
             department,
             section,
             contactNumber,
+            projectType,
             status: 'pending',
             registeredAt: Date.now(),
             skills: [],
@@ -408,7 +416,7 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
      try {
         const studentAuthUser = await getAuthUser(email, password);
         
-        const newUser: Omit<User, 'projectType'> = {
+        const newUser: User = {
             id: studentAuthUser.uid,
             name,
             email,
@@ -416,6 +424,7 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             registeredAt: Date.now(),
             skills: [], bio: '', github: '', linkedin: '', workStyle: [], notifications: [],
             rollNo: '', branch: '', department: '', section: '', contactNumber: '',
+            projectType: 'Other',
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
@@ -499,7 +508,7 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
         hackathonId: hackathonId,
         joinCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         members: [{ ...user, role: 'Leader' }],
-        projectId: "",
+        submissionId: "",
         messages: [],
         joinRequests: [],
     };
@@ -666,55 +675,60 @@ export async function leaveTeam(collegeId: string, teamId: string, userId: strin
     return { successMessage: "You have left the team." };
 }
 
-export async function submitProject(collegeId: string, hackathonId: string, { title, description, githubUrl, teamId }: any) {
+export async function submitProject(collegeId: string, hackathonId: string, { teamId, ideas }: { teamId: string, ideas: ProjectIdea[] }) {
     const projectsCollection = collection(db, `colleges/${collegeId}/projects`);
     
-    const newProject: Omit<Project, 'id'> = {
+    const processedIdeas = await Promise.all(ideas.map(async (idea) => {
+        if (idea.abstractFile) {
+            const fileRef = ref(storage, `colleges/${collegeId}/abstracts/${teamId}/${idea.id}-${idea.abstractFile.name}`);
+            const snapshot = await uploadBytes(fileRef, idea.abstractFile);
+            idea.abstractFileUrl = await getDownloadURL(snapshot.ref);
+        }
+        // Remove the file object before saving to Firestore
+        const { abstractFile, ...ideaToSave } = idea;
+        return ideaToSave;
+    }));
+
+    const newSubmission: Omit<ProjectSubmission, 'id'> = {
         teamId,
         hackathonId,
-        title,
-        name: title,
-        description,
-        githubUrl,
+        projectIdeas: processedIdeas,
         scores: [],
         averageScore: 0,
         submittedAt: Date.now(),
         status: 'PendingGuide',
     };
 
-    const projectRef = await addDoc(projectsCollection, newProject);
-    await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { projectId: projectRef.id });
+    const submissionRef = await addDoc(projectsCollection, newSubmission);
+    await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { submissionId: submissionRef.id });
 
     // Asynchronously generate project image and don't block the return
-    generateProjectImage({ projectName: title, projectDescription: description })
+    generateProjectImage({ projectName: processedIdeas[0].title, projectDescription: processedIdeas[0].description })
         .then(async (result) => {
             if (result && result.imageUrl) {
-                await updateDoc(projectRef, { imageUrl: result.imageUrl });
+                await updateDoc(submissionRef, { imageUrl: result.imageUrl });
             }
         })
         .catch(error => {
             console.error("Background project image generation failed:", error);
         });
     
-    return { successMessage: "Project submitted successfully!" };
+    return { successMessage: "Project ideas submitted successfully!" };
 }
 
-export async function updateProject(collegeId: string, projectId: string, projectData: Partial<Pick<Project, 'title' | 'description' | 'githubUrl'>>) {
+export async function updateProject(collegeId: string, projectId: string, projectData: Partial<Pick<ProjectSubmission, 'projectIdeas'>>) {
     const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
     const projectDoc = await getDoc(projectRef);
 
     if (!projectDoc.exists()) {
         throw new Error("Project not found");
     }
-
-    const originalProject = projectDoc.data() as Project;
-    await updateDoc(projectRef, {
-      ...projectData,
-      name: projectData.title,
-    });
-
-    if (projectData.title !== originalProject.title || projectData.description !== originalProject.description) {
-         generateProjectImage({ projectName: projectData.title!, projectDescription: projectData.description! })
+    
+    await updateDoc(projectRef, projectData);
+    
+    const primaryIdea = projectData.projectIdeas?.[0];
+    if (primaryIdea) {
+         generateProjectImage({ projectName: primaryIdea.title!, projectDescription: primaryIdea.description! })
             .then(async (result) => {
                 if (result && result.imageUrl) {
                     await updateDoc(projectRef, { imageUrl: result.imageUrl });
@@ -762,7 +776,7 @@ export async function evaluateProject(collegeId: string, projectId: string, eval
     const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
     const projectDoc = await getDoc(projectRef);
     if(!projectDoc.exists()) throw new Error("Project not found.");
-    const project = projectDoc.data() as Project;
+    const project = projectDoc.data() as ProjectSubmission;
 
     const otherEvaluatorsScores = project.scores.filter(s => s.evaluatorId !== evaluatorId);
     const newScores = [...otherEvaluatorsScores, ...scores];
@@ -931,3 +945,4 @@ export async function resetAllUsers(collegeId: string) {
     
     return { successMessage: "All user records have been deleted from the database. Auth accounts may still exist and need to be manually removed from the Firebase console." };
 }
+

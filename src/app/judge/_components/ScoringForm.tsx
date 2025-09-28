@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -7,20 +8,21 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
-import { Project, Score, TeamMember } from '@/lib/types';
+import { ProjectSubmission, ProjectIdea, Score, TeamMember } from '@/lib/types';
 import { EVALUATION_RUBRIC, INDIVIDUAL_EVALUATION_RUBRIC } from '@/lib/constants';
 import Link from 'next/link';
-import { Bot, Loader, User } from 'lucide-react';
+import { Bot, Loader, User, Tags, FileText, Link as LinkIcon } from 'lucide-react';
 import { getAiProjectSummary } from '@/app/actions';
 import BackButton from '@/components/layout/BackButton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ScoringFormProps {
-    project: Project;
+    project: ProjectSubmission;
     onBack: () => void;
 }
 
-export default function ScoringForm({ project, onBack }: ScoringFormProps) {
+export default function ScoringForm({ project: submission, onBack }: ScoringFormProps) {
     const { state, api } = useHackathon();
     const { currentFaculty, teams, selectedHackathonId } = state;
 
@@ -31,7 +33,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
     const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    const team = teams.find(t => t.id === project.teamId);
+    const team = teams.find(t => t.id === submission.teamId);
 
     useEffect(() => {
         if (!currentFaculty) return;
@@ -39,7 +41,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
         const initialScores: Record<string, Record<string, number>> = {};
         const initialComments: Record<string, Record<string, string>> = {};
 
-        project.scores
+        submission.scores
             .filter(s => s.evaluatorId === currentFaculty.id)
             .forEach(s => {
                 const targetId = s.memberId || 'team';
@@ -53,7 +55,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
             });
         setScores(initialScores);
         setComments(initialComments);
-    }, [project, currentFaculty]);
+    }, [submission, currentFaculty]);
 
     const handleScoreChange = (targetId: string, criteriaId: string, value: number[]) => {
         setScores(prev => ({
@@ -69,14 +71,14 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
         }));
     };
 
-    const handleGenerateSummary = async () => {
+    const handleGenerateSummary = async (idea: ProjectIdea) => {
         setIsGeneratingSummary(true);
         setAiSummary('');
         try {
             const summary = await getAiProjectSummary({
-                projectName: project.title,
-                projectDescription: project.description,
-                githubUrl: project.githubUrl,
+                projectName: idea.title,
+                projectDescription: idea.abstractText, // Use the detailed abstract for summary
+                githubUrl: idea.githubUrl,
             });
             setAiSummary(summary);
         } catch (error) {
@@ -89,7 +91,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
 
     const handleSubmitScores = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (project && currentFaculty && selectedHackathonId) {
+        if (submission && currentFaculty && selectedHackathonId) {
             setIsSubmitting(true);
             
             const allScores: Score[] = [];
@@ -118,7 +120,7 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
             });
             
             try {
-                await api.evaluateProject(project.id, currentFaculty.id, allScores);
+                await api.evaluateProject(submission.id, currentFaculty.id, allScores);
                 onBack();
             } finally {
                 setIsSubmitting(false);
@@ -160,26 +162,69 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
             <BackButton />
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-3xl font-headline">{project.title}</CardTitle>
-                    <CardDescription className="text-lg text-primary">by {(team?.name as string) || 'Unknown Team'}</CardDescription>
-                    <p className="text-muted-foreground pt-2">{project.description}</p>
-                    <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline pt-2 block">View on GitHub</Link>
+                    <CardTitle className="text-3xl font-headline">Reviewing Ideas for: {team?.name}</CardTitle>
+                    <CardDescription className="text-lg text-primary">Team: {team?.name || 'Unknown Team'}</CardDescription>
                 </CardHeader>
-
+                
                 <CardContent>
-                    <div className="border-t pt-6 space-y-4">
-                        <h3 className="text-xl font-bold font-headline flex items-center gap-2"><Bot className="text-primary"/> AI Summary</h3>
-                        <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary} variant="outline">
-                            {isGeneratingSummary ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "Generate AI Project Summary"}
-                        </Button>
-                        {aiSummary && (
-                             <Card className="bg-muted/50">
+                    <Tabs defaultValue="idea-1" className="w-full">
+                        <TabsList className="grid w-full grid-cols-3">
+                            {submission.projectIdeas.map((idea, index) => (
+                                <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>Idea {index + 1}</TabsTrigger>
+                            ))}
+                        </TabsList>
+                        {submission.projectIdeas.map((idea, index) => (
+                             <TabsContent key={idea.id} value={`idea-${index + 1}`}>
+                                <Card className="mt-4 bg-muted/50">
+                                    <CardHeader>
+                                        <CardTitle>{idea.title}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div>
+                                            <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><FileText className="h-4 w-4" /> Description</h4>
+                                            <p>{idea.description}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><FileText className="h-4 w-4" /> Abstract</h4>
+                                            <p className="whitespace-pre-wrap">{idea.abstractText}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><Tags className="h-4 w-4" /> Keywords</h4>
+                                            <p>{idea.keywords}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-muted-foreground">GitHub</h4>
+                                            <Link href={idea.githubUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline break-all">{idea.githubUrl}</Link>
+                                        </div>
+                                         {idea.abstractFileUrl && (
+                                            <div>
+                                                <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Abstract Document</h4>
+                                                <Link href={idea.abstractFileUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">View Uploaded File</Link>
+                                            </div>
+                                        )}
+                                        <div className="border-t pt-4">
+                                            <Button onClick={() => handleGenerateSummary(idea)} disabled={isGeneratingSummary} variant="outline" size="sm">
+                                                {isGeneratingSummary ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "Generate AI Summary"}
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                             </TabsContent>
+                        ))}
+                    </Tabs>
+                </CardContent>
+                
+                <CardContent>
+                    {aiSummary && (
+                        <div className="border-t pt-6 space-y-4">
+                            <h3 className="text-xl font-bold font-headline flex items-center gap-2"><Bot className="text-primary"/> AI Summary</h3>
+                            <Card className="bg-muted/50">
                                 <CardContent className="pt-6">
                                     <p className="text-sm text-foreground">{aiSummary}</p>
                                 </CardContent>
                             </Card>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </CardContent>
                 
                 <form onSubmit={handleSubmitScores}>
@@ -214,3 +259,4 @@ export default function ScoringForm({ project, onBack }: ScoringFormProps) {
         </div>
     );
 }
+

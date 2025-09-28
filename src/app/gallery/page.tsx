@@ -69,6 +69,9 @@ export default function ProjectGallery() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {displayedProjects.map((project, index) => {
                                 const team = teams.find(t => t.id === project.teamId);
+                                const primaryIdea = project.projectIdeas[0];
+                                if (!primaryIdea) return null;
+
                                 return (
                                     <Card 
                                         key={project.id} 
@@ -79,7 +82,7 @@ export default function ProjectGallery() {
                                             <div className="relative h-48 w-full">
                                                 <Image 
                                                     src={project.imageUrl} 
-                                                    alt={`${project.name} visualization`} 
+                                                    alt={`${primaryIdea.title} visualization`} 
                                                     fill 
                                                     className="object-cover rounded-t-lg"
                                                     unoptimized
@@ -90,12 +93,12 @@ export default function ProjectGallery() {
                                         <div className="flex flex-col flex-grow p-6">
                                             <CardTitle className="flex items-center gap-3">
                                                 <GalleryVertical className="h-6 w-6 text-primary flex-shrink-0" />
-                                                {project.name}
+                                                {primaryIdea.title}
                                             </CardTitle>
                                             <CardDescription>by {team?.name || 'Unknown Team'}</CardDescription>
                                             
                                             <CardContent className="p-0 flex-grow pt-4">
-                                                <p className="text-sm text-muted-foreground line-clamp-3">{project.description}</p>
+                                                <p className="text-sm text-muted-foreground line-clamp-3">{primaryIdea.description}</p>
                                                 {project.achievements && project.achievements.length > 0 && (
                                                     <div className="flex flex-wrap gap-2 mt-4">
                                                         {project.achievements.map(achievement => (
@@ -116,7 +119,7 @@ export default function ProjectGallery() {
                                         </div>
                                         <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
                                              <Button asChild variant="secondary">
-                                                <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                                                <Link href={primaryIdea.githubUrl} target="_blank" rel="noopener noreferrer">
                                                     <Github className="mr-2 h-4 w-4" />
                                                     View on GitHub
                                                 </Link>
@@ -151,3 +154,4 @@ export default function ProjectGallery() {
         </div>
     );
 }
+

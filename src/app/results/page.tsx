@@ -9,11 +9,11 @@ import { Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { generateCertificate } from '@/lib/pdf';
 import { cn } from '@/lib/utils';
-import type { Project, Team, User } from '@/lib/types';
+import type { ProjectSubmission, Team, User } from '@/lib/types';
 import PageIntro from '@/components/PageIntro';
 
 interface Winner {
-    project: Project;
+    project: ProjectSubmission;
     team?: Team;
     rank: number;
 }
@@ -33,7 +33,7 @@ const WinnerCard = ({ winner, collegeName }: { winner: Winner, collegeName: stri
             setIsGenerating(true);
             try {
                 const teamMembers = winner.team.members.map((m: User) => m.name);
-                await generateCertificate(winner.team.name, winner.project.name, teamMembers, winner.project.id, winner.project.averageScore, collegeName, winner.rank);
+                await generateCertificate(winner.team.name, winner.project.projectIdeas[0].title, teamMembers, winner.project.id, winner.project.averageScore, collegeName, winner.rank);
             } catch (error) {
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
@@ -56,7 +56,7 @@ const WinnerCard = ({ winner, collegeName }: { winner: Winner, collegeName: stri
                 <Trophy className={cn("w-16 h-16 mb-4", trophyColor)} />
                 <h2 className="text-3xl font-bold font-headline">{rankText} Place</h2>
                 <h3 className="text-2xl font-bold text-secondary mt-4 font-headline">{winner.team.name}</h3>
-                <p className="text-lg italic text-muted-foreground mt-1 mb-4">for "{winner.project.name}"</p>
+                <p className="text-lg italic text-muted-foreground mt-1 mb-4">for "{winner.project.projectIdeas[0].title}"</p>
                 <p className="font-bold text-xl text-foreground">Score: {winner.project.averageScore.toFixed(2)}</p>
                 <Button onClick={handleDownloadCertificate} className="mt-6" disabled={isGenerating}>
                     {isGenerating ? 'Generating...' : 'Download Certificate of Achievement'}
@@ -152,3 +152,4 @@ export default function Results() {
         </div>
     );
 }
+

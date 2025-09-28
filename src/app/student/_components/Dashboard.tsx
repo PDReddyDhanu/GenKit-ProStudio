@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useHackathon } from '@/context/HackathonProvider';
@@ -60,7 +61,7 @@ export default function Dashboard() {
         );
     }, [teams, currentUser, selectedHackathonId]);
 
-    const currentProject = useMemo(() => {
+    const currentSubmission = useMemo(() => {
         if (!currentTeam?.id || !selectedHackathonId) return undefined;
         return projects.find(p => p.teamId === currentTeam.id && p.hackathonId === selectedHackathonId);
     }, [projects, currentTeam, selectedHackathonId]);
@@ -100,8 +101,8 @@ export default function Dashboard() {
                 <EventHeader event={currentEvent} />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <main className="lg:col-span-2">
-                        {currentProject ? (
-                            <ProjectView project={currentProject} onBack={() => setForceTeamView(true)} />
+                        {currentSubmission ? (
+                            <ProjectView submission={currentSubmission} onBack={() => setForceTeamView(true)} />
                         ) : (
                             <ProjectSubmission team={currentTeam} onBack={() => setForceTeamView(true)} />
                         )}
@@ -142,3 +143,4 @@ export default function Dashboard() {
         </div>
     );
 }
+

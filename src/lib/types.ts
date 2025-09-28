@@ -30,6 +30,7 @@ export interface User extends UserProfileData {
   notifications?: Notification[];
   registeredAt?: number;
   approvalReminderSentAt?: number;
+  projectType: 'RTP' | 'Mini' | 'Major' | 'Other';
 }
 
 export interface Department {
@@ -68,21 +69,29 @@ export interface Team {
   creatorId: string; // ID of the user who created the team
   joinCode: string;
   members: TeamMember[];
-  projectId?: string;
+  submissionId?: string;
   notifications?: Notification[];
   messages?: ChatMessage[];
   joinRequests?: JoinRequest[]; // Array of users who requested to join
   hackathonId?: string; 
 }
 
-export interface Project {
+export interface ProjectIdea {
+  id: string;
+  title: string;
+  description: string;
+  abstractText: string;
+  keywords: string;
+  githubUrl: string;
+  abstractFileUrl?: string;
+  abstractFile?: File; // For client-side handling
+}
+
+
+export interface ProjectSubmission {
   id: string;
   teamId: string;
-  title: string;
-  name: string; // TBD: Consolidate with title
-  description: string;
-  githubUrl: string;
-  deployedUrl?: string;
+  projectIdeas: ProjectIdea[];
   status: 'PendingGuide' | 'PendingR&D' | 'PendingHoD' | 'Approved' | 'Rejected';
   scores: Score[];
   averageScore: number;
@@ -91,6 +100,7 @@ export interface Project {
   achievements?: string[];
   imageUrl?: string;
 }
+
 
 export interface Faculty {
   id:string;
@@ -155,7 +165,7 @@ export interface SupportTicket {
 export interface AppData {
     users: User[];
     teams: Team[];
-    projects: Project[];
+    projects: ProjectSubmission[];
     faculty: Faculty[];
     announcements: Announcement[];
     supportTickets: SupportTicket[];

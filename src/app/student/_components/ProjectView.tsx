@@ -2,8 +2,8 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Project } from '@/lib/types';
-import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft } from 'lucide-react';
+import { ProjectSubmission, ProjectIdea } from '@/lib/types';
+import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { getAiCodeReview, generatePitchOutline } from '@/app/actions';
@@ -16,40 +16,71 @@ import { Textarea } from '@/components/ui/textarea';
 import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { marked } from 'marked';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ProjectViewProps {
-    project: Project;
+    submission: ProjectSubmission;
     onBack: () => void;
 }
 
-export default function ProjectView({ project, onBack }: ProjectViewProps) {
+const IdeaDisplay = ({ idea }: { idea: ProjectIdea }) => {
+    return (
+        <div className="space-y-4">
+            <div>
+                <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><FileText className="h-4 w-4" /> Description</h4>
+                <p>{idea.description}</p>
+            </div>
+            <div>
+                <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><FileText className="h-4 w-4" /> Abstract</h4>
+                <p className="whitespace-pre-wrap">{idea.abstractText}</p>
+            </div>
+            <div>
+                <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><Tags className="h-4 w-4" /> Keywords</h4>
+                <p>{idea.keywords}</p>
+            </div>
+            <div>
+                <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><Github className="h-4 w-4" /> GitHub</h4>
+                <Link href={idea.githubUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline break-all">{idea.githubUrl}</Link>
+            </div>
+            {idea.abstractFileUrl && (
+                <div>
+                    <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Abstract Document</h4>
+                    <Link href={idea.abstractFileUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">View Uploaded File</Link>
+                </div>
+            )}
+        </div>
+    )
+}
+
+export default function ProjectView({ submission: initialSubmission, onBack }: ProjectViewProps) {
     const { state, api } = useHackathon();
-    const { teams, selectedCollege } = state;
+    const { teams, selectedCollege, projects } = state;
+    const [submission, setSubmission] = useState(initialSubmission);
+
     const [isReviewing, setIsReviewing] = useState(false);
     const [review, setReview] = useState('');
     const [isGeneratingCert, setIsGeneratingCert] = useState(false);
     
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [projectName, setProjectName] = useState(project.title);
-    const [projectDesc, setProjectDesc] = useState(project.description);
-    const [githubUrl, setGithubUrl] = useState(project.githubUrl);
-
+    
     const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
     const [pitchOutline, setPitchOutline] = useState<GeneratePitchOutlineOutput | null>(null);
 
-     useEffect(() => {
-        setProjectName(project.title);
-        setProjectDesc(project.description);
-        setGithubUrl(project.githubUrl);
-    }, [project]);
+    // This effect ensures the view updates if the submission data changes in the provider
+    useEffect(() => {
+        const updatedSubmission = projects.find(p => p.id === initialSubmission.id);
+        if (updatedSubmission) {
+            setSubmission(updatedSubmission);
+        }
+    }, [projects, initialSubmission.id]);
 
 
-    const handleGetReview = async () => {
+    const handleGetReview = async (githubUrl: string) => {
         setIsReviewing(true);
         setReview('');
         try {
-            const result = await getAiCodeReview({ githubUrl: project.githubUrl });
+            const result = await getAiCodeReview({ githubUrl });
             setReview(result);
         } catch (error) {
             console.error("Error getting AI review:", error);
@@ -60,12 +91,12 @@ export default function ProjectView({ project, onBack }: ProjectViewProps) {
     };
     
     const handleDownloadCertificate = async () => {
-        const team = teams.find(t => t.id === project.teamId);
-        if (team && project && selectedCollege) {
+        const team = teams.find(t => t.id === submission.teamId);
+        if (team && submission && selectedCollege) {
             setIsGeneratingCert(true);
             try {
                 const teamMembers = team.members.map(m => m.name);
-                await generateCertificate(team.name, project.name, teamMembers, project.id, project.averageScore, selectedCollege);
+                await generateCertificate(team.name, submission.projectIdeas[0].title, teamMembers, submission.id, submission.averageScore, selectedCollege);
             } catch (error) {
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
@@ -75,13 +106,13 @@ export default function ProjectView({ project, onBack }: ProjectViewProps) {
         }
     };
 
-    const handleGenerateOutline = async () => {
+    const handleGenerateOutline = async (idea: ProjectIdea) => {
         setIsGeneratingOutline(true);
         setPitchOutline(null);
         try {
             const result = await generatePitchOutline({
-                projectName: project.name,
-                projectDescription: project.description,
+                projectName: idea.title,
+                projectDescription: idea.description,
                 aiCodeReview: review || undefined
             });
             setPitchOutline(result);
@@ -89,23 +120,6 @@ export default function ProjectView({ project, onBack }: ProjectViewProps) {
             setIsGeneratingOutline(false);
         }
     };
-    
-    const handleSaveChanges = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSaving(true);
-        try {
-            await api.updateProject(project.id, {
-                title: projectName,
-                description: projectDesc,
-                githubUrl,
-            });
-            setIsEditing(false);
-        } catch(error) {
-            console.error("Failed to save changes:", error);
-        } finally {
-            setIsSaving(false);
-        }
-    }
 
     return (
         <div className="container max-w-3xl mx-auto">
@@ -118,70 +132,58 @@ export default function ProjectView({ project, onBack }: ProjectViewProps) {
                          <div className="flex items-center gap-3">
                             <CheckCircle className="h-10 w-10 text-green-500" />
                             <div>
-                                <CardTitle className="text-3xl font-bold text-secondary font-headline">{project.title}</CardTitle>
-                                <CardDescription className="text-lg">Submission successful!</CardDescription>
+                                <CardTitle className="text-3xl font-bold text-secondary font-headline">Ideas Submitted!</CardTitle>
+                                <CardDescription className="text-lg">Your project ideas are awaiting faculty review.</CardDescription>
                             </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => setIsEditing(!isEditing)} disabled={isSaving}>
-                            <Pencil className="h-5 w-5" />
-                        </Button>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {isEditing ? (
-                        <form onSubmit={handleSaveChanges} className="space-y-6">
-                             <div className="space-y-2">
-                                <Label htmlFor="editProjectName">Project Name</Label>
-                                <Input id="editProjectName" value={projectName} onChange={e => setProjectName(e.target.value)} required disabled={isSaving} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="editProjectDesc">Project Description</Label>
-                                <Textarea id="editProjectDesc" value={projectDesc} onChange={e => setProjectDesc(e.target.value)} required disabled={isSaving} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="editGithubUrl">GitHub Repository URL</Label>
-                                <Input id="editGithubUrl" type="url" value={githubUrl} onChange={e => setGithubUrl(e.target.value)} required disabled={isSaving} />
-                            </div>
-                            <div className="flex gap-4">
-                                <Button type="submit" disabled={isSaving}>
-                                    {isSaving ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Changes"}
-                                </Button>
-                                <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancel</Button>
-                            </div>
-                        </form>
-                    ) : (
-                        <div className="space-y-3 text-sm">
-                            <p><span className="font-bold text-muted-foreground">Description:</span> {project.description}</p>
-                            <p><span className="font-bold text-muted-foreground">GitHub:</span> <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">{project.githubUrl}</Link></p>
-                        </div>
-                    )}
-
-                    <div className="mt-6 border-t pt-4 space-y-4">
-                        <Button onClick={handleDownloadCertificate} disabled={isGeneratingCert}>
-                            {isGeneratingCert ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : <><Download className="mr-2 h-4 w-4"/>Download Participation Certificate</>}
-                        </Button>
-                    </div>
-
-                    <div className="mt-6 border-t pt-4 space-y-4">
-                        <h4 className="font-bold flex items-center gap-2"><Bot className="text-primary"/> AI Code Review</h4>
-                        <Button onClick={handleGetReview} disabled={isReviewing} variant="outline">
-                            {isReviewing ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Generating...</> : "Get AI Feedback"}
-                        </Button>
-                        {review && (
+                    <Tabs defaultValue="idea-1" className="w-full">
+                        <TabsList className="grid w-full grid-cols-3">
+                            {submission.projectIdeas.map((idea, index) => (
+                                <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>Idea {index + 1}</TabsTrigger>
+                            ))}
+                        </TabsList>
+                        {submission.projectIdeas.map((idea, index) => (
+                            <TabsContent key={idea.id} value={`idea-${index + 1}`} className="mt-4">
+                                <Card className="bg-muted/50">
+                                    <CardHeader>
+                                        <CardTitle>{idea.title}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <IdeaDisplay idea={idea} />
+                                         <div className="mt-6 border-t pt-4 space-y-4">
+                                            <h4 className="font-bold flex items-center gap-2"><Bot className="text-primary"/> AI Tools for this Idea</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                <Button onClick={() => handleGetReview(idea.githubUrl)} disabled={isReviewing} variant="outline" size="sm">
+                                                    {isReviewing ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Reviewing Code...</> : "Get AI Code Review"}
+                                                </Button>
+                                                <Button onClick={() => handleGenerateOutline(idea)} disabled={isGeneratingOutline} variant="outline" size="sm">
+                                                    {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "AI Pitch Coach"}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                        ))}
+                    </Tabs>
+                    
+                    {review && (
+                        <div className="mt-6 border-t pt-4 space-y-4">
+                            <h4 className="font-bold flex items-center gap-2"><Bot className="text-primary"/> AI Code Review Result</h4>
                             <Card className="bg-muted/50">
                                 <CardContent className="pt-6">
                                     <pre className="text-sm whitespace-pre-wrap font-code text-foreground">{review}</pre>
                                 </CardContent>
                             </Card>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
-                    <div className="mt-6 border-t pt-4 space-y-4">
-                        <h4 className="font-bold flex items-center gap-2"><Presentation className="text-primary"/> AI Pitch Coach</h4>
-                        <Button onClick={handleGenerateOutline} disabled={isGeneratingOutline} variant="outline">
-                            {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "Generate Presentation Outline"}
-                        </Button>
-                        {pitchOutline && (
+                    {pitchOutline && (
+                        <div className="mt-6 border-t pt-4 space-y-4">
+                            <h4 className="font-bold flex items-center gap-2"><Presentation className="text-primary"/> Generated Presentation Outline</h4>
                             <Accordion type="single" collapsible className="w-full">
                                 {pitchOutline.slides.map((slide, index) => (
                                 <AccordionItem value={`item-${index}`} key={index}>
@@ -195,7 +197,13 @@ export default function ProjectView({ project, onBack }: ProjectViewProps) {
                                 </AccordionItem>
                                 ))}
                             </Accordion>
-                        )}
+                        </div>
+                    )}
+                    
+                    <div className="mt-6 border-t pt-4 space-y-4">
+                        <Button onClick={handleDownloadCertificate} disabled={isGeneratingCert}>
+                            {isGeneratingCert ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : <><Download className="mr-2 h-4 w-4"/>Download Participation Certificate</>}
+                        </Button>
                     </div>
 
                 </CardContent>
@@ -203,3 +211,4 @@ export default function ProjectView({ project, onBack }: ProjectViewProps) {
         </div>
     );
 }
+

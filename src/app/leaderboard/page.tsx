@@ -8,7 +8,7 @@ import PageIntro from '@/components/PageIntro';
 import { TrendingUp, Trophy, Award, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import type { Project, Team } from '@/lib/types';
+import type { ProjectSubmission, Team } from '@/lib/types';
 import {
   Tooltip,
   TooltipContent,
@@ -101,7 +101,7 @@ export default function Leaderboard() {
                 return {
                     rank: index + 1,
                     teamName: team?.name || 'Unknown Team',
-                    projectName: p.name,
+                    projectName: p.projectIdeas[0]?.title || 'Untitled Project',
                     score: parseFloat(p.averageScore.toFixed(2)),
                     achievements: p.achievements,
                 };

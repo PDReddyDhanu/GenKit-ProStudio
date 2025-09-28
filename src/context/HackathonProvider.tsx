@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import React, { createContext, useContext, ReactNode, useEffect, useReducer } from 'react';
-import { User, Team, Project, Judge, Announcement, Hackathon, SupportTicket, Faculty } from '../lib/types';
+import { User, Team, ProjectSubmission, Announcement, Hackathon, SupportTicket, Faculty } from '../lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -12,7 +13,7 @@ import * as hackathonApi from '@/lib/hackathon-api';
 interface AppState {
   users: User[];
   teams: Team[];
-  projects: Project[];
+  projects: ProjectSubmission[];
   faculty: Faculty[];
   announcements: Announcement[];
   hackathons: Hackathon[];
@@ -274,3 +275,4 @@ export const useHackathon = () => {
   }
   return context;
 };
+
