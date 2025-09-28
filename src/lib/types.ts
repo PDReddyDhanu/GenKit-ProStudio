@@ -21,6 +21,7 @@ export interface User extends UserProfileData {
   id: string;
   email: string;
   rollNo: string;
+  branch: string;
   department: string;
   section: string;
   status: 'pending' | 'approved';

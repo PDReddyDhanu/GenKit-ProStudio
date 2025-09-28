@@ -13,6 +13,7 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import AccountStatusDialog from '@/components/AccountStatusDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DEPARTMENTS_DATA } from '@/lib/constants';
 
 export default function Auth() {
     const { state, api, dispatch } = useHackathon();
@@ -22,6 +23,7 @@ export default function Auth() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rollNo, setRollNo] = useState('');
+    const [branch, setBranch] = useState('');
     const [department, setDepartment] = useState('');
     const [section, setSection] = useState('');
 
@@ -34,6 +36,7 @@ export default function Auth() {
         setEmail('');
         setPassword('');
         setRollNo('');
+        setBranch('');
         setDepartment('');
         setSection('');
         dispatch({ type: 'CLEAR_MESSAGES' });
@@ -55,7 +58,7 @@ export default function Auth() {
             }
         } else {
             try {
-                await api.registerStudent({ name, email, password, rollNo, department, section });
+                await api.registerStudent({ name, email, password, rollNo, branch, department, section });
                 // On successful registration, switch to login view with a success message
                 setIsLoginView(true);
                 clearForm();
@@ -66,6 +69,8 @@ export default function Auth() {
     };
 
     const sections = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    const branches = Object.keys(DEPARTMENTS_DATA);
+    const departments = branch ? DEPARTMENTS_DATA[branch as keyof typeof DEPARTMENTS_DATA] : [];
 
     return (
         <div className="container max-w-md mx-auto py-12 animate-fade-in">
@@ -114,17 +119,31 @@ export default function Auth() {
                                                 disabled={isLoading}
                                             />
                                         </div>
-                                         <div className="relative">
-                                            <Library className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input
-                                                type="text"
-                                                placeholder="Department (e.g., CSE, ECE)"
-                                                className="pl-10"
-                                                value={department}
-                                                onChange={e => setDepartment(e.target.value)}
-                                                required
-                                                disabled={isLoading}
-                                            />
+                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="relative">
+                                                <Select onValueChange={(value) => { setBranch(value); setDepartment(''); }} value={branch} required>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select Branch" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {branches.map(b => (
+                                                            <SelectItem key={b} value={b}>{b}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="relative">
+                                                <Select onValueChange={setDepartment} value={department} required disabled={!branch}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select Department" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {departments.map(d => (
+                                                            <SelectItem key={d} value={d}>{d}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
                                         </div>
                                         <div className="relative">
                                              <Select onValueChange={setSection} value={section} required>
@@ -144,7 +163,7 @@ export default function Auth() {
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                     <Input 
                                         type="email" 
-                                        placeholder="College Email Id" 
+                                        placeholder="Email Id" 
                                         className="pl-10" 
                                         value={email}
                                         onChange={e => setEmail(e.target.value)}

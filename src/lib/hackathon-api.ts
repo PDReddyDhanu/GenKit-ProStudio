@@ -112,7 +112,7 @@ export async function changeAdminPassword(collegeId: string, { oldPassword, newP
     return { successMessage: "Admin password has been changed successfully for this session." };
 }
 
-export async function registerStudent(collegeId: string, { name, email, password, rollNo, department, section }: any) {
+export async function registerStudent(collegeId: string, { name, email, password, rollNo, branch, department, section }: any) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user: User = {
@@ -120,6 +120,7 @@ export async function registerStudent(collegeId: string, { name, email, password
             name,
             email,
             rollNo,
+            branch,
             department,
             section,
             status: 'pending',
@@ -174,7 +175,7 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
     return { successMessage: 'Login successful!' };
 }
 
-export async function loginFaculty(collegeId: string, { email, password }: { email: string, password: any}) {
+export async function loginFaculty(collegeId: string, { email, password }: { email: string; password: any; }) {
     const collegeNamePrefix = collegeId.replace(/\s/g, '').toLowerCase();
     const subAdminEmail = `${collegeNamePrefix.substring(0, 6)}@subadmin.com`;
     const subAdminPassword = collegeNamePrefix.substring(0, 8);
@@ -355,7 +356,7 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             status: 'approved',
             registeredAt: Date.now(),
             skills: [], bio: '', github: '', linkedin: '', workStyle: [], notifications: [],
-            rollNo: '', department: '', section: '',
+            rollNo: '', branch: '', department: '', section: '',
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
