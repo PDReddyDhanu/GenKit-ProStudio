@@ -101,7 +101,7 @@ export async function changePassword(collegeId: string, { oldPassword, newPasswo
     }
 }
 
-let adminPassword = 'prostudio123';
+let adminPassword = 'prostudio0408';
 
 export async function changeAdminPassword(collegeId: string, { oldPassword, newPassword }: { oldPassword: string, newPassword: string }) {
     if (oldPassword !== adminPassword) {
@@ -170,10 +170,8 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
     return { successMessage: 'Login successful!' };
 }
 
-export async function loginFaculty(collegeId: string, credentials: { email: string, password: any}) {
-    const { email, password } = credentials;
+export async function loginFaculty(collegeId: string, { email, password }: { email: string, password: any}) {
     const collegeNamePrefix = collegeId.replace(/\s/g, '').toLowerCase();
-    
     const subAdminEmail = `${collegeNamePrefix.substring(0, 6)}@subadmin.com`;
     const subAdminPassword = collegeNamePrefix.substring(0, 8);
 
