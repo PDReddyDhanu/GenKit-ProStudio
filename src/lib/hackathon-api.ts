@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { auth, db } from './firebase';
@@ -118,7 +119,7 @@ export async function changeAdminPassword(collegeId: string, { oldPassword, newP
     return { successMessage: "Admin password has been changed successfully for this session." };
 }
 
-export async function registerStudent(collegeId: string, { name, email, password, rollNo, branch, department, section, contactNumber, projectType }: any) {
+export async function registerStudent(collegeId: string, { name, email, password, rollNo, branch, department, section, contactNumber }: any) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user: User = {
@@ -130,7 +131,7 @@ export async function registerStudent(collegeId: string, { name, email, password
             department,
             section,
             contactNumber,
-            projectType,
+            projectType: 'Other',
             status: 'pending',
             registeredAt: Date.now(),
             skills: [],
@@ -154,33 +155,40 @@ export async function registerStudent(collegeId: string, { name, email, password
 }
 
 export async function loginStudent(collegeId: string, { email, password }: any) {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const userDoc = await getDoc(doc(db, `colleges/${collegeId}/users`, userCredential.user.uid));
-    
-    const loggedInUser = auth.currentUser;
-    if (!loggedInUser) {
-        await firebaseSignOut(auth);
-        throw new Error("Could not verify user session. Please try again.");
-    }
-    
-    if (!userDoc.exists()) {
-        await firebaseSignOut(auth);
-        throw new Error("Student record not found for this college.");
-    }
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const userDoc = await getDoc(doc(db, `colleges/${collegeId}/users`, userCredential.user.uid));
+        
+        const loggedInUser = auth.currentUser;
+        if (!loggedInUser) {
+            await firebaseSignOut(auth);
+            throw new Error("Could not verify user session. Please try again.");
+        }
+        
+        if (!userDoc.exists()) {
+            await firebaseSignOut(auth);
+            throw new Error("Student record not found for this college.");
+        }
 
-    const user = userDoc.data() as User;
-    if (user.status !== 'approved') {
-        await firebaseSignOut(auth);
-        throw new Error("Your account is still pending approval by an admin. You can check your status using the 'Check Status' tool.");
-    }
+        const user = userDoc.data() as User;
+        if (user.status !== 'approved') {
+            await firebaseSignOut(auth);
+            throw new Error("Your account is still pending approval by an admin. You can check your status using the 'Check Status' tool.");
+        }
 
-    if (!loggedInUser.emailVerified) {
-        await sendEmailVerification(loggedInUser);
-        await firebaseSignOut(auth);
-        throw new Error("Your email is not verified. We've sent a new verification link to your inbox. Please check it and try again.");
+        if (!loggedInUser.emailVerified) {
+            await sendEmailVerification(loggedInUser);
+            await firebaseSignOut(auth);
+            throw new Error("Your email is not verified. We've sent a new verification link to your inbox. Please check it and try again.");
+        }
+        
+        return { successMessage: 'Login successful!' };
+    } catch (error: any) {
+        if (error.code === 'auth/invalid-credential') {
+             throw new Error("Invalid email or password. Please try again.");
+        }
+        throw error;
     }
-    
-    return { successMessage: 'Login successful!' };
 }
 
 export async function registerFaculty(collegeId: string, data: Partial<Faculty> & { password?: string }) {

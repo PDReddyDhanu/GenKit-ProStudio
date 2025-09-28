@@ -28,7 +28,7 @@ export default function Auth() {
     const [department, setDepartment] = useState('');
     const [section, setSection] = useState('');
     const [contactNumber, setContactNumber] = useState('');
-    const [projectType, setProjectType] = useState<UserType['projectType'] | ''>('');
+    
 
 
     const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +44,7 @@ export default function Auth() {
         setDepartment('');
         setSection('');
         setContactNumber('');
-        setProjectType('');
+        
         
         dispatch({ type: 'CLEAR_MESSAGES' });
     };
@@ -65,7 +65,7 @@ export default function Auth() {
             }
         } else {
             try {
-                await api.registerStudent({ name, email, password, rollNo, branch, department, section, contactNumber, projectType });
+                await api.registerStudent({ name, email, password, rollNo, branch, department, section, contactNumber });
                 // On successful registration, switch to login view with a success message
                 setIsLoginView(true);
                 clearForm();
@@ -174,19 +174,6 @@ export default function Auth() {
                                                     disabled={isLoading}
                                                     maxLength={2}
                                                 />
-                                            </div>
-                                             <div className="relative">
-                                                <Select onValueChange={(v) => setProjectType(v as UserType['projectType'])} value={projectType} required>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select Project Type" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="RTP">Real-Time Project (RTP)</SelectItem>
-                                                        <SelectItem value="Mini">Mini Project</SelectItem>
-                                                        <SelectItem value="Major">Major Project</SelectItem>
-                                                        <SelectItem value="Other">Other</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
                                             </div>
                                         </div>
                                         
