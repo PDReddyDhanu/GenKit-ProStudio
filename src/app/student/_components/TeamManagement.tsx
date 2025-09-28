@@ -9,7 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader } from 'lucide-react';
 import BackButton from '@/components/layout/BackButton';
 
-export default function TeamManagement() {
+interface TeamManagementProps {
+    onTeamCreated: () => void;
+}
+
+export default function TeamManagement({ onTeamCreated }: TeamManagementProps) {
     const { state, api } = useHackathon();
     const { currentUser, selectedHackathonId, teams } = state;
     const [teamName, setTeamName] = useState('');
@@ -31,6 +35,7 @@ export default function TeamManagement() {
             setIsCreating(true);
             try {
                 await api.createTeam(selectedHackathonId, teamName, currentUser);
+                onTeamCreated();
             } finally {
                 setIsCreating(false);
             }

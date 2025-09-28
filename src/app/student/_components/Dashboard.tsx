@@ -6,7 +6,7 @@ import TeamManagement from './TeamManagement';
 import ProjectSubmission from './ProjectSubmission';
 import ProjectView from './ProjectView';
 import { AuthMessage } from '@/components/AuthMessage';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Hackathon } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Countdown } from './Countdown';
@@ -15,7 +15,6 @@ import StudentHomeDashboard from './StudentHomeDashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import CompleteProfilePrompt from './CompleteProfilePrompt';
 
-// Mock event for display purposes since real events are static now
 const staticEventDetails: { [key: string]: Partial<Hackathon> } = {
     'real-time-project': { name: 'Real-Time Project', rules: 'Standard rules apply. Focus on live data processing and interaction.' },
     'mini-project': { name: 'Mini Project', rules: 'Standard rules apply. Scope should be manageable for a shorter timeframe.' },
@@ -26,7 +25,6 @@ const staticEventDetails: { [key: string]: Partial<Hackathon> } = {
 
 function EventHeader({ event }: { event: Partial<Hackathon> }) {
      if (!event.name) return null;
-    // A far-future deadline since these are ongoing categories, not timed events.
     const deadline = new Date('2099-12-31').getTime();
 
     return (
@@ -43,8 +41,10 @@ function EventHeader({ event }: { event: Partial<Hackathon> }) {
 export default function Dashboard() {
     const { state, dispatch } = useHackathon();
     const { currentUser, teams, projects, selectedHackathonId } = state;
+    const [forceTeamView, setForceTeamView] = useState(false);
 
     const handleEventChange = (hackathonId: string) => {
+        setForceTeamView(false);
         dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'default' ? null : hackathonId });
     }
 
@@ -87,11 +87,11 @@ export default function Dashboard() {
             )
         }
 
-        if (!currentTeam) {
+        if (!currentTeam || forceTeamView) {
             return (
                 <>
                     <EventHeader event={currentEvent} />
-                    <TeamManagement />
+                    <TeamManagement onTeamCreated={() => setForceTeamView(false)} />
                 </>
             );
         }
@@ -101,9 +101,9 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <main className="lg:col-span-2">
                         {currentProject ? (
-                            <ProjectView project={currentProject} />
+                            <ProjectView project={currentProject} onBack={() => setForceTeamView(true)} />
                         ) : (
-                            <ProjectSubmission team={currentTeam} />
+                            <ProjectSubmission team={currentTeam} onBack={() => setForceTeamView(true)} />
                         )}
                     </main>
                     <aside className="lg:col-span-1 space-y-8">

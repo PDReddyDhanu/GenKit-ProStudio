@@ -9,16 +9,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import type { Team } from '@/lib/types';
 import { generateProjectIdea, suggestThemes } from '@/app/actions';
-import { Loader, Wand2, Lightbulb } from 'lucide-react';
+import { Loader, Wand2, Lightbulb, ArrowLeft } from 'lucide-react';
 import BackButton from '@/components/layout/BackButton';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ProjectSubmissionProps {
     team: Team;
+    onBack: () => void;
 }
 
-export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
+export default function ProjectSubmission({ team, onBack }: ProjectSubmissionProps) {
     const { api, state } = useHackathon();
     const { selectedHackathonId } = state;
     const [projectName, setProjectName] = useState('');
@@ -77,7 +78,9 @@ export default function ProjectSubmission({ team }: ProjectSubmissionProps) {
 
     return (
         <div className="container max-w-3xl mx-auto">
-            <BackButton />
+            <Button variant="ghost" onClick={onBack} className="mb-4">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Team Management
+            </Button>
             <Card>
                  <CardHeader>
                     <CardTitle className="text-3xl font-bold font-headline">Submit Your Project</CardTitle>

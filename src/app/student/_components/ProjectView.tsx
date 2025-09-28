@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Project } from '@/lib/types';
-import { CheckCircle, Bot, Loader, Download, Pencil, Presentation } from 'lucide-react';
+import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { getAiCodeReview, generatePitchOutline } from '@/app/actions';
@@ -19,9 +19,10 @@ import { marked } from 'marked';
 
 interface ProjectViewProps {
     project: Project;
+    onBack: () => void;
 }
 
-export default function ProjectView({ project }: ProjectViewProps) {
+export default function ProjectView({ project, onBack }: ProjectViewProps) {
     const { state, api } = useHackathon();
     const { teams, selectedCollege } = state;
     const [isReviewing, setIsReviewing] = useState(false);
@@ -108,6 +109,9 @@ export default function ProjectView({ project }: ProjectViewProps) {
 
     return (
         <div className="container max-w-3xl mx-auto">
+             <Button variant="ghost" onClick={onBack} className="mb-4">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Team Management
+            </Button>
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-start">
