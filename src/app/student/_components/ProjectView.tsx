@@ -3,24 +3,23 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProjectSubmission, ProjectIdea } from '@/lib/types';
-import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github } from 'lucide-react';
+import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { getAiCodeReview, generatePitchOutline } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { useHackathon } from '@/context/HackathonProvider';
 import { generateCertificate } from '@/lib/pdf';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { marked } from 'marked';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ProjectSubmissionForm from './ProjectSubmission';
 
 interface ProjectViewProps {
     submission: ProjectSubmission;
     onBack: () => void;
+    onAddIdea: () => void;
 }
 
 const IdeaDisplay = ({ idea }: { idea: ProjectIdea }) => {
@@ -52,22 +51,19 @@ const IdeaDisplay = ({ idea }: { idea: ProjectIdea }) => {
     )
 }
 
-export default function ProjectView({ submission: initialSubmission, onBack }: ProjectViewProps) {
+export default function ProjectView({ submission: initialSubmission, onBack, onAddIdea }: ProjectViewProps) {
     const { state, api } = useHackathon();
     const { teams, selectedCollege, projects } = state;
     const [submission, setSubmission] = useState(initialSubmission);
+    const [showSubmissionForm, setShowSubmissionForm] = useState(false);
 
     const [isReviewing, setIsReviewing] = useState(false);
     const [review, setReview] = useState('');
     const [isGeneratingCert, setIsGeneratingCert] = useState(false);
     
-    const [isEditing, setIsEditing] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    
     const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
     const [pitchOutline, setPitchOutline] = useState<GeneratePitchOutlineOutput | null>(null);
 
-    // This effect ensures the view updates if the submission data changes in the provider
     useEffect(() => {
         const updatedSubmission = projects.find(p => p.id === initialSubmission.id);
         if (updatedSubmission) {
@@ -75,6 +71,11 @@ export default function ProjectView({ submission: initialSubmission, onBack }: P
         }
     }, [projects, initialSubmission.id]);
 
+    const team = teams.find(t => t.id === submission.teamId);
+
+    if (showSubmissionForm && team) {
+        return <ProjectSubmissionForm team={team} existingSubmission={submission} onBack={() => setShowSubmissionForm(false)} />;
+    }
 
     const handleGetReview = async (githubUrl: string) => {
         setIsReviewing(true);
@@ -91,7 +92,6 @@ export default function ProjectView({ submission: initialSubmission, onBack }: P
     };
     
     const handleDownloadCertificate = async () => {
-        const team = teams.find(t => t.id === submission.teamId);
         if (team && submission && selectedCollege) {
             setIsGeneratingCert(true);
             try {
@@ -101,7 +101,7 @@ export default function ProjectView({ submission: initialSubmission, onBack }: P
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
             } finally {
-                setIsGeneratingCert(null);
+                setIsGeneratingCert(false);
             }
         }
     };
@@ -120,6 +120,8 @@ export default function ProjectView({ submission: initialSubmission, onBack }: P
             setIsGeneratingOutline(false);
         }
     };
+    
+    const canAddMoreIdeas = submission.projectIdeas.length < 3;
 
     return (
         <div className="container max-w-3xl mx-auto">
@@ -136,11 +138,16 @@ export default function ProjectView({ submission: initialSubmission, onBack }: P
                                 <CardDescription className="text-lg">Your project ideas are awaiting faculty review.</CardDescription>
                             </div>
                         </div>
+                         {canAddMoreIdeas && (
+                            <Button onClick={() => setShowSubmissionForm(true)}>
+                                <PlusCircle className="mr-2 h-4 w-4"/> Add Another Idea
+                            </Button>
+                        )}
                     </div>
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="idea-1" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
+                        <TabsList className={`grid w-full grid-cols-${submission.projectIdeas.length}`}>
                             {submission.projectIdeas.map((idea, index) => (
                                 <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>Idea {index + 1}</TabsTrigger>
                             ))}
@@ -211,4 +218,3 @@ export default function ProjectView({ submission: initialSubmission, onBack }: P
         </div>
     );
 }
-

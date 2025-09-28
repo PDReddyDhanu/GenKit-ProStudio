@@ -42,9 +42,11 @@ export default function Dashboard() {
     const { state, dispatch } = useHackathon();
     const { currentUser, teams, projects, selectedHackathonId } = state;
     const [forceTeamView, setForceTeamView] = useState(false);
+    const [forceSubmissionView, setForceSubmissionView] = useState(false);
 
     const handleEventChange = (hackathonId: string) => {
         setForceTeamView(false);
+        setForceSubmissionView(false);
         dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'default' ? null : hackathonId });
     }
 
@@ -92,35 +94,62 @@ export default function Dashboard() {
             return (
                 <>
                     <EventHeader event={currentEvent} />
-                    <TeamManagement onTeamCreated={() => setForceTeamView(false)} />
+                    <TeamManagement onTeamCreated={() => { setForceTeamView(false); setForceSubmissionView(true); }} />
                 </>
             );
         }
-        return (
-            <>
-                <EventHeader event={currentEvent} />
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <main className="lg:col-span-2">
-                        {currentSubmission ? (
-                            <ProjectView submission={currentSubmission} onBack={() => setForceTeamView(true)} />
-                        ) : (
-                            <ProjectSubmission team={currentTeam} onBack={() => setForceTeamView(true)} />
-                        )}
-                    </main>
-                    <aside className="lg:col-span-1 space-y-8">
-                        <TeamHub team={currentTeam} />
-                         <Card>
-                            <CardHeader>
-                                <CardTitle className="font-headline">Rules & Regulations</CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-6">
-                                <p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentEvent.rules || "Standard project submission rules apply."}</p>
-                            </CardContent>
-                        </Card>
-                    </aside>
-                </div>
-            </>
-        );
+
+        const canSubmitMore = !currentSubmission || currentSubmission.projectIdeas.length < 3;
+        
+        if (forceSubmissionView || (!currentSubmission && currentTeam) || (currentSubmission && canSubmitMore)) {
+             return (
+                <>
+                    <EventHeader event={currentEvent} />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <main className="lg:col-span-2">
+                             {currentSubmission ? (
+                                <ProjectView submission={currentSubmission} onBack={() => setForceTeamView(true)} onAddIdea={() => setForceSubmissionView(true)}/>
+                            ) : (
+                                <ProjectSubmission team={currentTeam} existingSubmission={currentSubmission} onBack={() => setForceTeamView(true)} />
+                            )}
+                        </main>
+                        <aside className="lg:col-span-1 space-y-8">
+                            <TeamHub team={currentTeam} />
+                            <Card>
+                                <CardHeader><CardTitle className="font-headline">Rules</CardTitle></CardHeader>
+                                <CardContent><p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentEvent.rules || "Standard rules apply."}</p></CardContent>
+                            </Card>
+                        </aside>
+                    </div>
+                </>
+            );
+        }
+
+        if (currentSubmission) {
+             return (
+                <>
+                    <EventHeader event={currentEvent} />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                         <main className="lg:col-span-2">
+                            <ProjectView submission={currentSubmission} onBack={() => setForceTeamView(true)} onAddIdea={() => setForceSubmissionView(true)} />
+                         </main>
+                        <aside className="lg:col-span-1 space-y-8">
+                            <TeamHub team={currentTeam} />
+                             <Card>
+                                <CardHeader>
+                                    <CardTitle className="font-headline">Rules & Regulations</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentEvent.rules || "Standard project submission rules apply."}</p>
+                                </CardContent>
+                            </Card>
+                        </aside>
+                    </div>
+                </>
+            );
+        }
+
+         return <p>Loading...</p>
     };
 
     return (
@@ -143,4 +172,3 @@ export default function Dashboard() {
         </div>
     );
 }
-

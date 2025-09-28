@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { auth, db } from './firebase';
@@ -675,71 +674,53 @@ export async function leaveTeam(collegeId: string, teamId: string, userId: strin
     return { successMessage: "You have left the team." };
 }
 
-export async function submitProject(collegeId: string, hackathonId: string, { teamId, ideas }: { teamId: string, ideas: ProjectIdea[] }) {
-    const projectsCollection = collection(db, `colleges/${collegeId}/projects`);
-    
-    const processedIdeas = await Promise.all(ideas.map(async (idea) => {
-        if (idea.abstractFile) {
-            const fileRef = ref(storage, `colleges/${collegeId}/abstracts/${teamId}/${idea.id}-${idea.abstractFile.name}`);
-            const snapshot = await uploadBytes(fileRef, idea.abstractFile);
-            idea.abstractFileUrl = await getDownloadURL(snapshot.ref);
-        }
-        // Remove the file object before saving to Firestore
-        const { abstractFile, ...ideaToSave } = idea;
-        return ideaToSave;
-    }));
-
-    const newSubmission: Omit<ProjectSubmission, 'id'> = {
-        teamId,
-        hackathonId,
-        projectIdeas: processedIdeas,
-        scores: [],
-        averageScore: 0,
-        submittedAt: Date.now(),
-        status: 'PendingGuide',
-    };
-
-    const submissionRef = await addDoc(projectsCollection, newSubmission);
-    await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { submissionId: submissionRef.id });
-
-    // Asynchronously generate project image and don't block the return
-    generateProjectImage({ projectName: processedIdeas[0].title, projectDescription: processedIdeas[0].description })
-        .then(async (result) => {
-            if (result && result.imageUrl) {
-                await updateDoc(submissionRef, { imageUrl: result.imageUrl });
-            }
-        })
-        .catch(error => {
-            console.error("Background project image generation failed:", error);
-        });
-    
-    return { successMessage: "Project ideas submitted successfully!" };
-}
-
-export async function updateProject(collegeId: string, projectId: string, projectData: Partial<Pick<ProjectSubmission, 'projectIdeas'>>) {
-    const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
-    const projectDoc = await getDoc(projectRef);
-
-    if (!projectDoc.exists()) {
-        throw new Error("Project not found");
+export async function submitProject(collegeId: string, hackathonId: string, teamId: string, idea: ProjectIdea, submissionId?: string) {
+    let processedIdea = { ...idea };
+    if (idea.abstractFile) {
+        const fileRef = ref(storage, `colleges/${collegeId}/abstracts/${teamId}/${idea.id}-${idea.abstractFile.name}`);
+        const snapshot = await uploadBytes(fileRef, idea.abstractFile);
+        processedIdea.abstractFileUrl = await getDownloadURL(snapshot.ref);
     }
-    
-    await updateDoc(projectRef, projectData);
-    
-    const primaryIdea = projectData.projectIdeas?.[0];
-    if (primaryIdea) {
-         generateProjectImage({ projectName: primaryIdea.title!, projectDescription: primaryIdea.description! })
+    const { abstractFile, ...ideaToSave } = processedIdea;
+
+    if (submissionId) {
+        // This is an additional idea for an existing submission
+        const submissionRef = doc(db, `colleges/${collegeId}/projects`, submissionId);
+        const submissionDoc = await getDoc(submissionRef);
+        if (submissionDoc.exists() && submissionDoc.data().projectIdeas.length < 3) {
+            await updateDoc(submissionRef, {
+                projectIdeas: arrayUnion(ideaToSave)
+            });
+        } else {
+            throw new Error("Cannot add more than 3 ideas.");
+        }
+    } else {
+        // This is the first idea, create a new submission
+        const newSubmission: Omit<ProjectSubmission, 'id'> = {
+            teamId,
+            hackathonId,
+            projectIdeas: [ideaToSave],
+            scores: [],
+            averageScore: 0,
+            submittedAt: Date.now(),
+            status: 'PendingGuide',
+        };
+        const submissionRef = await addDoc(collection(db, `colleges/${collegeId}/projects`), newSubmission);
+        await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { submissionId: submissionRef.id });
+
+        // Asynchronously generate project image and don't block the return
+        generateProjectImage({ projectName: ideaToSave.title, projectDescription: ideaToSave.description })
             .then(async (result) => {
                 if (result && result.imageUrl) {
-                    await updateDoc(projectRef, { imageUrl: result.imageUrl });
+                    await updateDoc(submissionRef, { imageUrl: result.imageUrl });
                 }
             })
             .catch(error => {
-                console.error("Background re-generation of project image failed:", error);
+                console.error("Background project image generation failed:", error);
             });
     }
-
-    return { successMessage: "Project updated successfully." };
+    
+    return { successMessage: "Project idea submitted successfully!" };
 }
 
 
@@ -945,4 +926,3 @@ export async function resetAllUsers(collegeId: string) {
     
     return { successMessage: "All user records have been deleted from the database. Auth accounts may still exist and need to be manually removed from the Firebase console." };
 }
-

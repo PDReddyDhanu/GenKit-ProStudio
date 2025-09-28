@@ -8,10 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import type { Team, ProjectIdea } from '@/lib/types';
+import type { Team, ProjectIdea, ProjectSubmission } from '@/lib/types';
 import { Loader, ArrowLeft, UploadCloud, Wand2, Sparkles } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateDetailedProjectIdeaAction } from '@/app/actions';
 import type { GenerateDetailedProjectIdeaOutput } from '@/ai/flows/generate-detailed-project-idea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -19,6 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ProjectSubmissionProps {
     team: Team;
+    existingSubmission: ProjectSubmission | undefined;
     onBack: () => void;
 }
 
@@ -117,16 +117,18 @@ const IdeaGeneratorDialog = ({ open, onOpenChange, onUseIdea, generatedIdea, onR
 };
 
 
-export default function ProjectSubmission({ team, onBack }: ProjectSubmissionProps) {
+export default function ProjectSubmission({ team, existingSubmission, onBack }: ProjectSubmissionProps) {
     const { api, state } = useHackathon();
     const { selectedHackathonId } = state;
-    const [projectIdeas, setProjectIdeas] = useState<ProjectIdea[]>([
-        { id: '1', title: '', description: '', abstractText: '', keywords: '', githubUrl: '' },
-        { id: '2', title: '', description: '', abstractText: '', keywords: '', githubUrl: '' },
-        { id: '3', title: '', description: '', abstractText: '', keywords: '', githubUrl: '' },
-    ]);
+    
+    const ideaCount = existingSubmission?.projectIdeas.length || 0;
+    
+    const [projectIdea, setProjectIdea] = useState<ProjectIdea>({ 
+        id: `${ideaCount + 1}`, 
+        title: '', description: '', abstractText: '', keywords: '', githubUrl: '' 
+    });
+    
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [activeTab, setActiveTab] = useState('idea-1');
 
     const [generatorTheme, setGeneratorTheme] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
@@ -135,25 +137,19 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
 
     const isTeamSizeValid = team.members.length >= 2 && team.members.length <= 6;
 
-    const handleSetIdea = (updatedIdea: ProjectIdea) => {
-        setProjectIdeas(prev => prev.map(idea => idea.id === updatedIdea.id ? updatedIdea : idea));
-    }
-
     const handleSubmitProject = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        // Ensure at least the first idea has a title
-        if (!projectIdeas[0].title) {
-            alert("Please provide details for at least the first project idea.");
+        if (!projectIdea.title) {
+            alert("Please provide a title for your project idea.");
             return;
         }
 
         if (selectedHackathonId && isTeamSizeValid) {
             setIsSubmitting(true);
             try {
-                // Filter out empty ideas, but always include the first one for validation
-                const ideasToSubmit = projectIdeas.filter((idea, index) => index === 0 || idea.title.trim() !== '');
-                await api.submitProject(selectedHackathonId, { teamId: team.id, ideas: ideasToSubmit });
+                await api.submitProject(selectedHackathonId, team.id, projectIdea, existingSubmission?.id);
+                // The provider will update the state, which will hide this component
             } finally {
                 setIsSubmitting(false);
             }
@@ -188,28 +184,25 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
     const handleUseGeneratedIdea = () => {
         if (!generatedIdea) return;
         
-        const ideaIndex = parseInt(activeTab.split('-')[1]) - 1;
-        const ideasCopy = [...projectIdeas];
-        ideasCopy[ideaIndex] = {
-            ...ideasCopy[ideaIndex],
+        setProjectIdea({
+            ...projectIdea,
             title: generatedIdea.title,
             description: generatedIdea.description,
             abstractText: generatedIdea.abstract,
             keywords: generatedIdea.keywords,
-        };
-        setProjectIdeas(ideasCopy);
+        });
         setIsDialogVisible(false);
     };
 
     return (
         <div className="container max-w-3xl mx-auto">
             <Button variant="ghost" onClick={onBack} className="mb-4">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Team Management
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Team Hub
             </Button>
             <Card>
                  <CardHeader>
-                    <CardTitle className="text-3xl font-bold font-headline">Submit Your Project Ideas</CardTitle>
-                    <CardDescription>Fill out the details for up to three project ideas. The first idea is mandatory. Faculty will review and approve one.</CardDescription>
+                    <CardTitle className="text-3xl font-bold font-headline">Submit Project Idea ({ideaCount + 1}/3)</CardTitle>
+                    <CardDescription>Fill out the details for your project idea. You can submit up to 3 ideas. Faculty will review and approve one.</CardDescription>
                 </CardHeader>
 
                 <CardContent>
@@ -234,29 +227,14 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
                     </Card>
 
                     <form onSubmit={handleSubmitProject} className="space-y-6">
-                         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-                            <TabsList className="grid w-full grid-cols-3">
-                                <TabsTrigger value="idea-1">Idea 1</TabsTrigger>
-                                <TabsTrigger value="idea-2">Idea 2</TabsTrigger>
-                                <TabsTrigger value="idea-3">Idea 3</TabsTrigger>
-                            </TabsList>
-                            <TabsContent value="idea-1" className="mt-4">
-                                <ProjectIdeaForm idea={projectIdeas[0]} setIdea={(idea) => setProjectIdeas(prev => [idea, prev[1], prev[2]])} isSubmitting={isSubmitting} />
-                            </TabsContent>
-                            <TabsContent value="idea-2" className="mt-4">
-                                <ProjectIdeaForm idea={projectIdeas[1]} setIdea={(idea) => setProjectIdeas(prev => [prev[0], idea, prev[2]])} isSubmitting={isSubmitting} />
-                            </TabsContent>
-                            <TabsContent value="idea-3" className="mt-4">
-                                <ProjectIdeaForm idea={projectIdeas[2]} setIdea={(idea) => setProjectIdeas(prev => [prev[0], prev[1], idea])} isSubmitting={isSubmitting} />
-                            </TabsContent>
-                        </Tabs>
+                        <ProjectIdeaForm idea={projectIdea} setIdea={setProjectIdea} isSubmitting={isSubmitting} />
 
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <div className="w-full">
                                         <Button type="submit" className="w-full" disabled={isSubmitting || !isTeamSizeValid}>
-                                            {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Project Ideas'}
+                                            {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : `Submit Idea ${ideaCount + 1}`}
                                         </Button>
                                     </div>
                                 </TooltipTrigger>
