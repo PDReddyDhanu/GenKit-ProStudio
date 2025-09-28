@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { auth, db } from './firebase';
@@ -131,7 +130,6 @@ export async function registerStudent(collegeId: string, { name, email, password
             department,
             section,
             contactNumber,
-            projectType: 'Other',
             status: 'pending',
             registeredAt: Date.now(),
             skills: [],
@@ -140,6 +138,7 @@ export async function registerStudent(collegeId: string, { name, email, password
             linkedin: '',
             workStyle: [],
             notifications: [],
+            projectType: 'Other',
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, user.id), user);
         
@@ -166,8 +165,13 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
         }
         
         if (!userDoc.exists()) {
+             // Check if they are a faculty member trying to log in as a student
+            const facultyDoc = await getDoc(doc(db, `colleges/${collegeId}/faculty`, userCredential.user.uid));
             await firebaseSignOut(auth);
-            throw new Error("Student record not found for this college.");
+            if (facultyDoc.exists()) {
+                throw new Error("This is a faculty account. Please use the Faculty/Admin portal to log in.");
+            }
+            throw new Error("Student record not found for this college. Please ensure you have selected the correct college or have registered.");
         }
 
         const user = userDoc.data() as User;
