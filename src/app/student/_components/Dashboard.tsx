@@ -15,14 +15,26 @@ import StudentHomeDashboard from './StudentHomeDashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import CompleteProfilePrompt from './CompleteProfilePrompt';
 
+// Mock event for display purposes since real events are static now
+const staticEventDetails: { [key: string]: Partial<Hackathon> } = {
+    'real-time-project': { name: 'Real-Time Project', rules: 'Standard rules apply. Focus on live data processing and interaction.' },
+    'mini-project': { name: 'Mini Project', rules: 'Standard rules apply. Scope should be manageable for a shorter timeframe.' },
+    'major-project': { name: 'Major Project', rules: 'Standard rules apply. This is a comprehensive project, documentation is key.' },
+    'other-project': { name: 'Other Project', rules: 'Standard rules apply. Present your unique and innovative ideas.' },
+};
 
-function EventHeader({ event }: { event: Hackathon }) {
+
+function EventHeader({ event }: { event: Partial<Hackathon> }) {
+     if (!event.name) return null;
+    // A far-future deadline since these are ongoing categories, not timed events.
+    const deadline = new Date('2099-12-31').getTime();
+
     return (
         <div className="mb-8 p-6 bg-card border rounded-lg shadow-sm">
             <h1 className="text-4xl font-bold font-headline text-primary">{event.name}</h1>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-2 text-muted-foreground">
-                <p><strong>Prize/Award:</strong> {event.prizeMoney}</p>
-                <Countdown deadline={event.deadline} />
+                <p><strong>Prize/Award:</strong> College Grade / Recognition</p>
+                <Countdown deadline={deadline} />
             </div>
         </div>
     );
@@ -30,15 +42,16 @@ function EventHeader({ event }: { event: Hackathon }) {
 
 export default function Dashboard() {
     const { state, dispatch } = useHackathon();
-    const { currentUser, teams, projects, selectedHackathonId, hackathons } = state;
+    const { currentUser, teams, projects, selectedHackathonId } = state;
 
     const handleEventChange = (hackathonId: string) => {
         dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'default' ? null : hackathonId });
     }
 
     const currentEvent = useMemo(() => {
-        return hackathons.find(h => h.id === selectedHackathonId);
-    }, [hackathons, selectedHackathonId]);
+        if (!selectedHackathonId) return null;
+        return staticEventDetails[selectedHackathonId] || { name: selectedHackathonId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) };
+    }, [selectedHackathonId]);
 
     const currentTeam = useMemo(() => {
         if (!currentUser?.id || !selectedHackathonId) return undefined;
@@ -100,7 +113,7 @@ export default function Dashboard() {
                                 <CardTitle className="font-headline">Rules & Regulations</CardTitle>
                             </CardHeader>
                             <CardContent className="pt-6">
-                                <p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentEvent.rules}</p>
+                                <p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentEvent.rules || "Standard project submission rules apply."}</p>
                             </CardContent>
                         </Card>
                     </aside>
@@ -118,9 +131,9 @@ export default function Dashboard() {
                         <SelectValue placeholder="Select a Project Event" />
                     </SelectTrigger>
                     <SelectContent>
-                         <SelectItem value="default">Default View</SelectItem>
-                        {hackathons.map(h => (
-                            <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                         <SelectItem value="default">Back to Project Selection</SelectItem>
+                        {Object.entries(staticEventDetails).map(([id, { name }]) => (
+                            <SelectItem key={id} value={id}>{name}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
