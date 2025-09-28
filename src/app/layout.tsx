@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import './globals.css';
@@ -100,7 +99,7 @@ export default function RootLayout({
        <head>
         <title>GenKit ProStudio - Project Management Hub</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>" />
+        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23FFC700'/%3E%3Cstop offset='100%25' stop-color='%23FF9A00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='%231E293B' d='M50 0 L95 15 L95 50 L50 95 L5 50 L5 15 Z'/%3E%3Cpath fill='url(%23a)' d='M50 5 L90 20 L90 50 L50 90 L10 50 L10 20 Z'/%3E%3Cpath fill='%231E293B' d='M30 20 h20 v15 h15 v20 h-15 v15 h-20 z'/%3E%3Cpath fill='white' d='M50 20 l-10 10 l10 10 l-10 10' stroke='white' stroke-width='4'/%3E%3Cpath fill='none' stroke='white' stroke-width='5' d='M30 25 v40'/%3E%3C/svg%3E" />
       </head>
       <body className={cn("font-body antialiased", inter.variable, spaceGrotesk.variable)}>
         <ThemeProvider
