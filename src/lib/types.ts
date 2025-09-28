@@ -1,4 +1,5 @@
 
+
 export interface UserProfileData {
   name: string;
   skills: string[];
@@ -19,8 +20,9 @@ export interface Notification {
 export interface User extends UserProfileData {
   id: string;
   email: string;
-  rollNo?: string;
-  // password is not stored in Firestore record for security
+  rollNo: string;
+  department: string;
+  section: string;
   status: 'pending' | 'approved';
   guidanceHistory?: ChatMessage[];
   notifications?: Notification[];

@@ -8,17 +8,23 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AuthMessage } from '@/components/AuthMessage';
-import { Loader, Mail, Lock, User, CheckSquare } from 'lucide-react';
+import { Loader, Mail, Lock, User, CheckSquare, Library, BookUser, Building } from 'lucide-react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import AccountStatusDialog from '@/components/AccountStatusDialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function Auth() {
-    const { api, dispatch } = useHackathon();
+    const { state, api, dispatch } = useHackathon();
+    const { selectedCollege } = state;
     const [isLoginView, setIsLoginView] = useState(true);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [rollNo, setRollNo] = useState('');
+    const [department, setDepartment] = useState('');
+    const [section, setSection] = useState('');
+
     const [isLoading, setIsLoading] = useState(false);
     const [isForgotPassOpen, setIsForgotPassOpen] = useState(false);
     const [isStatusCheckOpen, setIsStatusCheckOpen] = useState(false);
@@ -27,6 +33,9 @@ export default function Auth() {
         setName('');
         setEmail('');
         setPassword('');
+        setRollNo('');
+        setDepartment('');
+        setSection('');
         dispatch({ type: 'CLEAR_MESSAGES' });
     };
 
@@ -46,7 +55,7 @@ export default function Auth() {
             }
         } else {
             try {
-                await api.registerStudent({ name, email, password });
+                await api.registerStudent({ name, email, password, rollNo, department, section });
                 // On successful registration, switch to login view with a success message
                 setIsLoginView(true);
                 clearForm();
@@ -56,6 +65,8 @@ export default function Auth() {
         }
     };
 
+    const sections = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+
     return (
         <div className="container max-w-md mx-auto py-12 animate-fade-in">
             <Dialog open={isForgotPassOpen} onOpenChange={setIsForgotPassOpen}>
@@ -64,35 +75,76 @@ export default function Auth() {
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-lg blur-lg opacity-0 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-glowing-border"></div>
                     <div className="relative bg-card rounded-lg">
                         <CardHeader className="text-center">
+                             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-2">
+                                <Building className="h-4 w-4"/> {selectedCollege}
+                            </div>
                             <CardTitle className="text-3xl font-bold font-headline text-primary">
-                                {isLoginView ? 'Login' : 'Signup'}
+                                {isLoginView ? 'Student Login' : 'Student Signup'}
                             </CardTitle>
                             <CardDescription>
-                                {isLoginView ? 'Login to your student account!' : 'Create a new student account!'}
+                                {isLoginView ? 'Login to your student account!' : 'Create a new student account to get started.'}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <AuthMessage />
                                 {!isLoginView && (
-                                    <div className="relative">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                        <Input
-                                            type="text"
-                                            placeholder="Full Name"
-                                            className="pl-10"
-                                            value={name}
-                                            onChange={e => setName(e.target.value)}
-                                            required
-                                            disabled={isLoading}
-                                        />
-                                    </div>
+                                    <>
+                                        <div className="relative">
+                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                            <Input
+                                                type="text"
+                                                placeholder="Full Name"
+                                                className="pl-10"
+                                                value={name}
+                                                onChange={e => setName(e.target.value)}
+                                                required
+                                                disabled={isLoading}
+                                            />
+                                        </div>
+                                         <div className="relative">
+                                            <BookUser className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                            <Input
+                                                type="text"
+                                                placeholder="Roll Number"
+                                                className="pl-10"
+                                                value={rollNo}
+                                                onChange={e => setRollNo(e.target.value)}
+                                                required
+                                                disabled={isLoading}
+                                            />
+                                        </div>
+                                         <div className="relative">
+                                            <Library className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                            <Input
+                                                type="text"
+                                                placeholder="Department (e.g., CSE, ECE)"
+                                                className="pl-10"
+                                                value={department}
+                                                onChange={e => setDepartment(e.target.value)}
+                                                required
+                                                disabled={isLoading}
+                                            />
+                                        </div>
+                                        <div className="relative">
+                                             <Select onValueChange={setSection} value={section} required>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Select Section" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {sections.map(s => (
+                                                        <SelectItem key={s} value={s}>Section {s}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </>
                                 )}
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                     <Input 
                                         type="email" 
-                                        placeholder="Email Id" 
+                                        placeholder="College Email Id" 
                                         className="pl-10" 
                                         value={email}
                                         onChange={e => setEmail(e.target.value)}
