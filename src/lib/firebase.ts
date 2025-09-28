@@ -4,13 +4,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  "projectId": "hacksprint-duplicate-idy24",
-  "appId": "1:840556866018:web:d12b7cebb615068cf371bb",
-  "storageBucket": "hacksprint-duplicate-idy24.firebasestorage.app",
-  "apiKey": "AIzaSyDCd3bvNvmEwZ1lh78sXLWvCmpDeMOE3VU",
-  "authDomain": "hacksprint-duplicate-idy24.firebaseapp.com",
+  "projectId": "genkit-prostudio-8404114-90b54",
+  "appId": "1:257904682165:web:eb834e7f6d292dab304afc",
+  "apiKey": "AIzaSyCJtJyvFEV3IKW4xH1IwIFb8yHChq_7_7U",
+  "authDomain": "genkit-prostudio-8404114-90b54.firebaseapp.com",
   "measurementId": "",
-  "messagingSenderId": "840556866018"
+  "messagingSenderId": "257904682165"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
