@@ -172,12 +172,12 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
 
 export async function loginFaculty(collegeId: string, credentials: { email: string, password: any}) {
     const { email, password } = credentials;
-    const collegeNamePrefix = collegeId.replace(/\s/g, '').substring(0, 6).toLowerCase();
-    const subAdminEmail = `${collegeNamePrefix}@subadmin.com`;
+    const collegeNamePrefix = collegeId.replace(/\s/g, '').toLowerCase();
+    
+    const subAdminEmail = `${collegeNamePrefix.substring(0, 6)}@subadmin.com`;
+    const subAdminPassword = collegeNamePrefix.substring(0, 8);
 
-    if (email.toLowerCase() === subAdminEmail && password === "genkit0408") {
-        // This is a sub-admin login. We don't need to check Firebase Auth.
-        // We will create a temporary "sub-admin" faculty object in the state.
+    if (email.toLowerCase() === subAdminEmail && password === subAdminPassword) {
         const subAdminUser: Faculty = {
             id: 'subadmin',
             name: `${collegeId} Sub-Admin`,
