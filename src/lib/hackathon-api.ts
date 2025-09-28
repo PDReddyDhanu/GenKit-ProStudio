@@ -625,20 +625,21 @@ export async function addTeammate(collegeId: string, teamId: string, user: User)
 
 export async function removeTeammate(collegeId: string, teamId: string, memberToRemove: TeamMember) {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
-
     const teamDoc = await getDoc(teamRef);
-    if (!teamDoc.exists()) throw new Error("Team not found");
+    if (!teamDoc.exists()) {
+        throw new Error("Team not found");
+    }
     const team = teamDoc.data() as Team;
 
-    const memberObject = team.members.find(m => m.id === memberToRemove.id);
-    if (!memberObject) throw new Error("Member not found in team");
+    const updatedMembers = team.members.filter(m => m.id !== memberToRemove.id);
 
     await updateDoc(teamRef, {
-        members: arrayRemove(memberObject)
+        members: updatedMembers
     });
     
     return { successMessage: `${memberToRemove.name} has been removed from the team.` };
 }
+
 
 export async function updateMemberRole(collegeId: string, teamId: string, memberId: string, newRole: string) {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
