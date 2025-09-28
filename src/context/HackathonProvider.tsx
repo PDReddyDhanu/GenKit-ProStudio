@@ -226,6 +226,20 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
                     return result;
                 }
                 
+                if (fnName === 'loginFaculty') {
+                    // Special handling for sub-admin login
+                    collegeId = args[0]; // The collegeId is the first argument for loginFaculty
+                    const result = await (fn as any)(...args);
+                     if (result?.successMessage) {
+                        dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage });
+                    }
+                    if (result?.faculty) {
+                        dispatch({ type: 'SET_FACULTY', payload: result.faculty });
+                    }
+                    return result;
+                }
+
+
                 if (!collegeId) {
                     throw new Error("No college selected. Please select a college first.");
                 }
@@ -259,3 +273,5 @@ export const useHackathon = () => {
   }
   return context;
 };
+
+    
