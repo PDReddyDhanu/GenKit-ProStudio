@@ -30,7 +30,7 @@ export default function ProjectView({ project }: ProjectViewProps) {
     
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [projectName, setProjectName] = useState(project.name);
+    const [projectName, setProjectName] = useState(project.title);
     const [projectDesc, setProjectDesc] = useState(project.description);
     const [githubUrl, setGithubUrl] = useState(project.githubUrl);
 
@@ -38,7 +38,7 @@ export default function ProjectView({ project }: ProjectViewProps) {
     const [pitchOutline, setPitchOutline] = useState<GeneratePitchOutlineOutput | null>(null);
 
      useEffect(() => {
-        setProjectName(project.name);
+        setProjectName(project.title);
         setProjectDesc(project.description);
         setGithubUrl(project.githubUrl);
     }, [project]);
@@ -69,7 +69,7 @@ export default function ProjectView({ project }: ProjectViewProps) {
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
             } finally {
-                setIsGeneratingCert(false);
+                setIsGeneratingCert(null);
             }
         }
     };
@@ -94,7 +94,7 @@ export default function ProjectView({ project }: ProjectViewProps) {
         setIsSaving(true);
         try {
             await api.updateProject(project.id, {
-                name: projectName,
+                title: projectName,
                 description: projectDesc,
                 githubUrl,
             });
@@ -114,7 +114,7 @@ export default function ProjectView({ project }: ProjectViewProps) {
                          <div className="flex items-center gap-3">
                             <CheckCircle className="h-10 w-10 text-green-500" />
                             <div>
-                                <CardTitle className="text-3xl font-bold text-secondary font-headline">{project.name}</CardTitle>
+                                <CardTitle className="text-3xl font-bold text-secondary font-headline">{project.title}</CardTitle>
                                 <CardDescription className="text-lg">Submission successful!</CardDescription>
                             </div>
                         </div>
