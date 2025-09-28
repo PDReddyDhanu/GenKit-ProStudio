@@ -108,6 +108,7 @@ export interface Faculty {
   branch?: string;
   department?: string;
   collegeName?: string; // For external faculty
+  status?: 'pending' | 'approved'; // Added for approval workflow
 }
 
 export interface Score {

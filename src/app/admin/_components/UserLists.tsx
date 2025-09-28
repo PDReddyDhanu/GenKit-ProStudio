@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -52,8 +53,8 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
             </Card>
              <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline">Faculty & Admins ({faculty.length})</CardTitle>
-                    <CardDescription>List of all faculty and admin accounts.</CardDescription>
+                    <CardTitle className="font-headline">Approved Faculty & Admins ({faculty.length})</CardTitle>
+                    <CardDescription>List of all approved faculty and admin accounts.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-96 pr-4">
@@ -73,7 +74,7 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
                                         Remove
                                     </Button>
                                 </div>
-                            )) : <p className="text-muted-foreground text-center pt-8">No faculty or admins have been added yet.</p>}
+                            )) : <p className="text-muted-foreground text-center pt-8">No faculty or admins have been approved yet.</p>}
                         </div>
                     </ScrollArea>
                 </CardContent>

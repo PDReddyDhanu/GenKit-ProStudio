@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useMemo } from 'react';
@@ -17,6 +18,10 @@ export default function AdminDashboard() {
         const approved = users.filter(u => u.status === 'approved');
         return { pendingUsers: pending, approvedUsers: approved };
     }, [users]);
+
+    const pendingFaculty = useMemo(() => {
+        return faculty.filter(f => f.status === 'pending');
+    }, [faculty]);
     
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -25,8 +30,8 @@ export default function AdminDashboard() {
                 <AddStudentForm />
             </div>
             <div className="lg:col-span-2 space-y-8">
-                <PendingApprovals users={pendingUsers} />
-                <UserLists approvedStudents={approvedUsers} faculty={faculty} />
+                <PendingApprovals users={pendingUsers} faculty={pendingFaculty} />
+                <UserLists approvedStudents={approvedUsers} faculty={faculty.filter(f => f.status === 'approved')} />
             </div>
         </div>
     );

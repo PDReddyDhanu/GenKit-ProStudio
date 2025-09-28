@@ -175,6 +175,32 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
     return { successMessage: 'Login successful!' };
 }
 
+export async function registerFaculty(collegeId: string, data: Partial<Faculty> & { password?: string }) {
+    const { name, email, password, role } = data;
+    if (!email || !password || !name || !role) {
+        throw new Error("Missing required fields for faculty registration.");
+    }
+
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const facultyData: Omit<Faculty, 'id'> = {
+            ...data,
+            status: 'pending',
+            notifications: [],
+        };
+        await setDoc(doc(db, `colleges/${collegeId}/faculty`, userCredential.user.uid), facultyData);
+
+        await sendEmailVerification(userCredential.user);
+        await firebaseSignOut(auth);
+        return { successMessage: 'Registration successful! An admin will review your request. Please wait for approval.' };
+    } catch (error: any) {
+        if (error.code === 'auth/email-already-in-use') {
+            throw new Error('This email address is already registered.');
+        }
+        throw error;
+    }
+}
+
 export async function loginFaculty(collegeId: string, { email, password }: { email: string; password: any; }) {
     const collegeNamePrefix = collegeId.replace(/\s/g, '').toLowerCase();
     const subAdminEmail = `${collegeNamePrefix.substring(0, 6)}@subadmin.com`;
@@ -197,6 +223,13 @@ export async function loginFaculty(collegeId: string, { email, password }: { ema
         await firebaseSignOut(auth);
         throw new Error("Faculty record not found for this college.");
     }
+    
+    const faculty = facultyDoc.data() as Faculty;
+    if (faculty.status !== 'approved') {
+        await firebaseSignOut(auth);
+        throw new Error("Your faculty account is pending admin approval.");
+    }
+    
     return { successMessage: 'Login successful!' };
 }
 
@@ -215,31 +248,38 @@ export async function signOut() {
 }
 
 export async function getAccountStatus(collegeId: string, email: string) {
-    const q = query(collection(db, `colleges/${collegeId}/users`), where("email", "==", email), limit(1));
-    const querySnapshot = await getDocs(q);
+    const userQuery = query(collection(db, `colleges/${collegeId}/users`), where("email", "==", email), limit(1));
+    const userSnapshot = await getDocs(userQuery);
 
-    if (querySnapshot.empty) {
-        return null;
+    if (!userSnapshot.empty) {
+        const userDoc = userSnapshot.docs[0];
+        const userData = userDoc.data() as User;
+        
+        let emailVerified = auth.currentUser?.email === email ? auth.currentUser.emailVerified : userData.status === 'approved';
+
+        return {
+            userId: userData.id,
+            approvalStatus: userData.status,
+            emailVerified: emailVerified,
+            registeredAt: userData.registeredAt || null,
+        };
     }
-
-    const userDoc = querySnapshot.docs[0];
-    const userData = userDoc.data() as User;
     
-    let emailVerified = false;
-    const currentUser = auth.currentUser;
-    if (currentUser && currentUser.email === email) {
-        await currentUser.reload();
-        emailVerified = currentUser.emailVerified;
-    } else {
-        emailVerified = userData.status === 'approved';
+    const facultyQuery = query(collection(db, `colleges/${collegeId}/faculty`), where("email", "==", email), limit(1));
+    const facultySnapshot = await getDocs(facultyQuery);
+
+    if (!facultySnapshot.empty) {
+        const facultyDoc = facultySnapshot.docs[0];
+        const facultyData = facultyDoc.data() as Faculty;
+        return {
+            userId: facultyData.id,
+            approvalStatus: facultyData.status,
+            emailVerified: auth.currentUser?.email === email ? auth.currentUser.emailVerified : facultyData.status === 'approved',
+            registeredAt: null, // Faculty doesn't have this field yet
+        };
     }
 
-    return {
-        userId: userData.id,
-        approvalStatus: userData.status,
-        emailVerified: emailVerified,
-        registeredAt: userData.registeredAt || null,
-    };
+    return null;
 }
 
 export async function remindAdminForApproval(collegeId: string, userId: string, studentEmail: string) {
@@ -300,19 +340,16 @@ export async function addFaculty(collegeId: string, data: Partial<Faculty> & { p
             education,
             branch,
             department,
-            collegeName
+            collegeName,
+            status: 'approved', // Directly approve when admin adds
         };
         await setDoc(doc(db, `colleges/${collegeId}/faculty`, facultyAuthUser.uid), facultyMember);
 
-        // This logic to re-sign-in the admin is complex and often fails in a web environment.
-        // It's better to handle this by just signing out the new user and letting the admin's session persist.
         if (auth.currentUser?.uid !== currentAuthUser?.uid) {
             await firebaseSignOut(auth);
         }
         
-        // If an admin was logged in, we assume their auth state is managed by the frontend and don't force a sign-in.
-
-        return { successMessage: 'Faculty member added successfully! They can now log in.' };
+        return { successMessage: 'Faculty member added and approved successfully! They can now log in.' };
     } catch (error: any) {
         console.error("Error creating faculty member:", error);
         if (error.code === 'auth/email-already-in-use') {
@@ -324,6 +361,11 @@ export async function addFaculty(collegeId: string, data: Partial<Faculty> & { p
     }
 }
 
+export async function approveFaculty(collegeId: string, facultyId: string) {
+    await updateDoc(doc(db, `colleges/${collegeId}/faculty`, facultyId), { status: 'approved' });
+    return { successMessage: 'Faculty member has been approved.' };
+}
+
 export async function updateFacultyProfile(collegeId: string, facultyId: string, profileData: Partial<Pick<Faculty, 'name' | 'gender' | 'contactNumber' | 'bio'>>) {
     await updateDoc(doc(db, `colleges/${collegeId}/faculty`, facultyId), profileData);
     return { successMessage: "Profile updated successfully." };
@@ -332,8 +374,7 @@ export async function updateFacultyProfile(collegeId: string, facultyId: string,
 
 export async function removeFaculty(collegeId: string, facultyId: string) {
     await deleteDoc(doc(db, `colleges/${collegeId}/faculty`, facultyId));
-    // Note: This does not delete the user from Firebase Auth to prevent accidental irreversible deletion.
-    // An admin would need to do that manually from the Firebase Console if required.
+    // Note: This does not delete the user from Firebase Auth.
     return { successMessage: "Faculty member removed successfully." };
 }
 
@@ -369,8 +410,6 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             rollNo: '', branch: '', department: '', section: '',
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
-        
-        // Don't sign out the current admin
         
         return { successMessage: `${name} has been registered and approved.` };
     } catch(error: any) {
