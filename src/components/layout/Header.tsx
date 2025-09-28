@@ -83,7 +83,7 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
                         {currentAdmin || currentFaculty ? (
                             <>
                                 <DropdownMenuItem asChild><Link href="/admin" onClick={onLinkClick}>Dashboard</Link></DropdownMenuItem>
-                                <DropdownMenuItem asChild><Link href="/faculty/profile" onClick={onLinkClick}>Profile</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/admin/profile" onClick={onLinkClick}>Profile</Link></DropdownMenuItem>
                             </>
                         ) : (
                             <>
@@ -103,7 +103,7 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
                         <Link href="/student" onClick={onLinkClick}>Student</Link>
                     </Button>
                     <Button variant="secondary" size="sm" asChild>
-                        <Link href="/faculty" onClick={onLinkClick}>Faculty/Admin</Link>
+                        <Link href="/judge" onClick={onLinkClick}>Faculty/Admin</Link>
                     </Button>
                 </div>
             )}

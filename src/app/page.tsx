@@ -27,8 +27,10 @@ const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNod
             style={{ animationDelay: `${index * 100}ms` }}
         >
             <div className="relative">
-                <div className="mb-4 text-primary w-12 h-12 mx-auto flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
-                    {icon}
+                <div className="relative">
+                    <div className="mb-4 text-primary w-12 h-12 mx-auto flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
+                        {icon}
+                    </div>
                 </div>
                 <h3 className="text-xl font-bold font-headline text-foreground">{title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{description}</p>
@@ -229,7 +231,7 @@ export default function Home() {
                     <Link href="/student">Get Started as Student</Link>
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
-                   <Link href="/faculty">Enter as Faculty or Admin</Link>
+                   <Link href="/judge">Enter as Faculty or Admin</Link>
                 </Button>
             </div>
         </section>
@@ -519,7 +521,7 @@ export default function Home() {
                     <Link href="/student">I'm a Student</Link>
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
-                   <Link href="/faculty">I'm a Faculty / Admin</Link>
+                   <Link href="/judge">I'm a Faculty / Admin</Link>
                 </Button>
             </div>
         </section>

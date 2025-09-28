@@ -23,10 +23,10 @@ export default function JudgePortal() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            if (email === 'hacksprint@admin.com') {
+            if (email === 'genkit@admin.com') {
                 await api.loginAdmin({ email, password });
             } else {
-                await api.loginJudge({ email, password });
+                await api.loginFaculty({ email, password });
             }
         } finally {
             setIsLoading(false);
@@ -34,7 +34,7 @@ export default function JudgePortal() {
     };
 
     if (showIntro) {
-        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Scale className="w-full h-full" />} title="Judge & Admin Portal" description="Evaluate submissions, manage users, and run the event." />;
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Scale className="w-full h-full" />} title="Faculty & Admin Portal" description="Evaluate submissions, manage users, and run the project hub." />;
     }
     
     if (currentAdmin || currentJudge) {
@@ -49,7 +49,7 @@ export default function JudgePortal() {
                     <div className="relative bg-card rounded-lg">
                         <CardHeader className="text-center">
                             <CardTitle className="text-3xl font-bold font-headline text-primary">Login</CardTitle>
-                            <CardDescription>Login to your Judge or Admin account!</CardDescription>
+                            <CardDescription>Login to your Faculty or Admin account!</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleLogin} className="space-y-6">
@@ -67,7 +67,7 @@ export default function JudgePortal() {
                                     />
                                 </div>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1.2 h-5 w-5 text-muted-foreground" />
                                     <Input 
                                         type="password" 
                                         placeholder="Password" 
