@@ -30,12 +30,12 @@ export const AppLogo = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-full h-full">
         <defs>
             <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="hsl(var(--primary))" />
-                <stop offset="100%" stop-color="hsl(var(--secondary))" />
+                <stop offset="0%" stopColor="hsl(var(--primary))" />
+                <stop offset="100%" stopColor="hsl(var(--secondary))" />
             </linearGradient>
         </defs>
         <g transform="translate(50 50) scale(0.9)">
-            <path fill="none" stroke="url(#logoGradient)" stroke-width="4" d="M0 -35 L30.31 -17.5 M0 -35 L-30.31 -17.5 M0 35 L30.31 17.5 M0 35 L-30.31 17.5 M-30.31 -17.5 L-30.31 17.5 M30.31 -17.5 L30.31 17.5"/>
+            <path fill="none" stroke="url(#logoGradient)" strokeWidth="4" d="M0 -35 L30.31 -17.5 M0 -35 L-30.31 -17.5 M0 35 L30.31 17.5 M0 35 L-30.31 17.5 M-30.31 -17.5 L-30.31 17.5 M30.31 -17.5 L30.31 17.5"/>
             <path fill="url(#logoGradient)" d="M0 -15 L13 -7.5 V7.5 L0 15 L-13 7.5 V-7.5 Z"/>
             <circle cx="0" cy="-35" r="6" fill="url(#logoGradient)"/>
             <circle cx="30.31" cy="-17.5" r="6" fill="url(#logoGradient)"/>

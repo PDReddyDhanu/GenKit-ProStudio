@@ -355,14 +355,48 @@ export default function Home() {
              </div>
          </section>
 
-        <section className="py-24 scroll-m-20" data-animate-on-scroll>
+         <section className="py-24 scroll-m-20" data-animate-on-scroll>
              <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Meet Your AI Co-pilot</h2>
-             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">GenKit ProStudio integrates powerful AI tools at every stage of your project journey, acting as your personal assistant to help you succeed.</p>
+             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">HackSprint integrates powerful AI tools at every stage of your hackathon journey, acting as your personal assistant to help you succeed.</p>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                  <div className="relative flex justify-center items-center">
-                    <div className="w-[250px] h-[250px] text-primary drop-shadow-[0_0_15px_hsl(var(--primary))]">
-                      <Sun className="w-full h-full" />
-                    </div>
+                    <svg width="250" height="250" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_15px_hsl(var(--primary))]">
+                        <defs>
+                            <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                <stop offset="0%" style={{stopColor: 'hsl(var(--secondary))', stopOpacity: 1}} />
+                                <stop offset="70%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 0.9}} />
+                                <stop offset="100%" style={{stopColor: 'hsl(var(--background))', stopOpacity: 0}} />
+                            </radialGradient>
+                            <filter id="sunGlow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <g filter="url(#sunGlow)" transform="translate(50 50)">
+                            {[...Array(12)].map((_, i) => (
+                                <g key={i} transform={`rotate(${i * 30})`}>
+                                    <path d="M 0 -40 C 10 -30, 10 -10, 0 -2" stroke="hsl(var(--primary) / 0.8)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: `${i * 100}ms`}}/>
+                                    <path d="M 0 -40 C -10 -30, -10 -10, 0 -2" stroke="hsl(var(--primary) / 0.8)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: `${i * 100}ms`}}/>
+                                </g>
+                            ))}
+                            <circle cx="0" cy="0" r="22" fill="url(#sunGradient)" />
+                            <circle cx="0" cy="0" r="18" fill="hsl(var(--background))" />
+                            <text
+                                x="0"
+                                y="4"
+                                fontFamily="monospace"
+                                fontSize="12"
+                                fill="hsl(var(--secondary))"
+                                textAnchor="middle"
+                                fontWeight="bold"
+                            >
+                                PDR
+                            </text>
+                        </g>
+                    </svg>
                  </div>
                  <div className="space-y-8">
                      <div className="flex gap-4 items-start">
@@ -395,7 +429,6 @@ export default function Home() {
                  </div>
              </div>
         </section>
-
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">A Feature for Every Step</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
