@@ -68,7 +68,6 @@ export default function Auth() {
         }
     };
 
-    const sections = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
     const branches = Object.keys(DEPARTMENTS_DATA);
     const departments = branch ? DEPARTMENTS_DATA[branch as keyof typeof DEPARTMENTS_DATA] : [];
 
@@ -146,16 +145,15 @@ export default function Auth() {
                                             </div>
                                         </div>
                                         <div className="relative">
-                                             <Select onValueChange={setSection} value={section} required>
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Select Section" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {sections.map(s => (
-                                                        <SelectItem key={s} value={s}>Section {s}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <Input
+                                                type="text"
+                                                placeholder="Enter Section (e.g., A, B, C)"
+                                                value={section}
+                                                onChange={(e) => setSection(e.target.value.toUpperCase())}
+                                                required
+                                                disabled={isLoading}
+                                                maxLength={2}
+                                            />
                                         </div>
                                     </>
                                 )}
