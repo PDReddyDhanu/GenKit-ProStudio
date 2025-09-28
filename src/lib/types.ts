@@ -1,5 +1,4 @@
 
-
 export interface UserProfileData {
   name: string;
   skills: string[];
@@ -24,7 +23,6 @@ export interface User extends UserProfileData {
   // password is not stored in Firestore record for security
   status: 'pending' | 'approved';
   guidanceHistory?: ChatMessage[];
-  teamId?: string; // Added to easily find a user's team
   notifications?: Notification[];
   registeredAt?: number;
   approvalReminderSentAt?: number;
@@ -70,7 +68,7 @@ export interface Team {
   notifications?: Notification[];
   messages?: ChatMessage[];
   joinRequests?: JoinRequest[]; // Array of users who requested to join
-  hackathonId?: string; // TBD: This might be deprecated or changed
+  hackathonId?: string; 
 }
 
 export interface Project {
@@ -95,15 +93,13 @@ export interface Faculty {
   id:string;
   name: string;
   email: string;
-  role: 'guide' | 'hod' | 'rnd' | 'external' | 'admin';
+  role: 'guide' | 'hod' | 'rnd' | 'external' | 'admin' | 'sub-admin';
   guidanceHistory?: ChatMessage[];
   gender?: string;
   contactNumber?: string;
 bio?: string;
 notifications?: Notification[];
 }
-
-export type Judge = Faculty;
 
 export interface Score {
   evaluatorId: string;

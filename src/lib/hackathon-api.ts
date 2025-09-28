@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { auth, db } from './firebase';
@@ -31,7 +30,7 @@ import {
     writeBatch
 } from 'firebase/firestore';
 import { User, Faculty, Team, Project, Score, UserProfileData, Announcement, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification } from './types';
-import { EVALUATION_RUBRIC } from './constants';
+import { EVALUATION_RUBRIC, INDIVIDUAL_EVALUATION_RUBRIC } from './constants';
 import { generateProjectImage } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
 
@@ -172,6 +171,22 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
 }
 
 export async function loginFaculty(collegeId: string, { email, password }: any) {
+    const collegeNamePrefix = collegeId.replace(/\s/g, '').substring(0, 6).toLowerCase();
+    const subAdminEmail = `${collegeNamePrefix}@subadmin.com`;
+
+    if (email.toLowerCase() === subAdminEmail && password === "genkit0408") {
+        // This is a sub-admin login. We don't need to check Firebase Auth.
+        // We will create a temporary "sub-admin" faculty object in the state.
+        const subAdminUser: Faculty = {
+            id: 'subadmin',
+            name: `${collegeId} Sub-Admin`,
+            email: email,
+            role: 'admin', // Treat as admin for permissions
+            notifications: [],
+        };
+        return { successMessage: 'Sub-Admin login successful!', faculty: subAdminUser };
+    }
+
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const facultyDoc = await getDoc(doc(db, `colleges/${collegeId}/faculty`, userCredential.user.uid));
     if (!facultyDoc.exists()) {
@@ -274,13 +289,17 @@ export async function addFaculty(collegeId: string, { name, email, password, rol
         };
         await setDoc(doc(db, `colleges/${collegeId}/faculty`, facultyMember.id), facultyMember);
         
-        await firebaseSignOut(tempAuth);
+        // Don't sign out the currently logged-in admin/faculty
+        if (currentAuthUser && currentAuthUser.uid !== facultyAuthUser.uid) {
+            // This part is tricky as we can't just "switch back". 
+            // The frontend state will handle keeping the admin logged in.
+            // We just need to avoid signing out the admin.
+        } else if (!currentAuthUser) {
+             await firebaseSignOut(tempAuth);
+        }
 
         return { successMessage: 'Faculty member added successfully! They can log in with the provided credentials.' };
     } catch (error: any) {
-        if (tempAuth.currentUser && tempAuth.currentUser.email === email) {
-            await firebaseSignOut(tempAuth).catch(() => {});
-        }
         console.error("Error creating faculty member:", error);
         if (error.code === 'auth/email-already-in-use') {
              throw new Error('This email is already in use by a different user. Please use another email.');
@@ -297,6 +316,8 @@ export async function updateFacultyProfile(collegeId: string, facultyId: string,
 
 export async function removeFaculty(collegeId: string, facultyId: string) {
     await deleteDoc(doc(db, `colleges/${collegeId}/faculty`, facultyId));
+    // Note: This does not delete the user from Firebase Auth to prevent accidental irreversible deletion.
+    // An admin would need to do that manually from the Firebase Console if required.
     return { successMessage: "Faculty member removed successfully." };
 }
 
@@ -319,9 +340,6 @@ export async function approveStudent(collegeId: string, userId: string) {
 }
 
 export async function registerAndApproveStudent(collegeId: string, { name, email, password }: any) {
-     const tempAuth = auth;
-     const currentAuthUser = tempAuth.currentUser;
-
      try {
         const studentAuthUser = await getAuthUser(email, password);
         
@@ -335,13 +353,10 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
-        await firebaseSignOut(tempAuth);
-
+        // Don't sign out the current admin
+        
         return { successMessage: `${name} has been registered and approved.` };
     } catch(error: any) {
-        if (tempAuth.currentUser && tempAuth.currentUser.email === email) {
-             await firebaseSignOut(auth).catch(() => {});
-        }
         if (error.code === 'auth/email-already-in-use') {
             throw new Error('This email is already in use by a different account. Please use another email.');
         }
@@ -413,10 +428,11 @@ export async function deleteAnnouncement(collegeId: string, announcementId: stri
 }
 
 // --- Student ---
-export async function createTeam(collegeId: string, teamName: string, user: User) {
+export async function createTeam(collegeId: string, hackathonId: string, teamName: string, user: User) {
     const newTeam: Omit<Team, 'id'> = {
         name: teamName,
         creatorId: user.id,
+        hackathonId: hackathonId,
         joinCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         members: [{ ...user, role: 'Leader' }],
         projectId: "",
@@ -424,40 +440,42 @@ export async function createTeam(collegeId: string, teamName: string, user: User
         joinRequests: [],
     };
     const teamRef = await addDoc(collection(db, `colleges/${collegeId}/teams`), newTeam);
-    await updateDoc(doc(db, `colleges/${collegeId}/users`, user.id), { teamId: teamRef.id });
 
     return { successMessage: "Team created successfully!", teamId: teamRef.id };
 }
 
-export async function requestToJoinTeamByCode(collegeId: string, joinCode: string, user: User) {
+export async function requestToJoinTeamByCode(collegeId: string, hackathonId: string, joinCode: string, user: User) {
     const userTeamsQuery = query(
         collection(db, `colleges/${collegeId}/teams`), 
+        where("hackathonId", "==", hackathonId),
         where("members", "array-contains", {id: user.id, name: user.name, email: user.email})
     );
     const userTeamsSnapshot = await getDocs(userTeamsQuery);
     if (!userTeamsSnapshot.empty) {
-        throw new Error("You are already in a team.");
+        throw new Error("You are already in a team for this event.");
     }
     
-    const q = query(collection(db, `colleges/${collegeId}/teams`), where("joinCode", "==", joinCode));
+    const q = query(collection(db, `colleges/${collegeId}/teams`), where("hackathonId", "==", hackathonId), where("joinCode", "==", joinCode));
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-        throw new Error("Invalid join code.");
+        throw new Error("Invalid join code for this event.");
     }
 
     const teamDoc = querySnapshot.docs[0];
-    return requestToJoinTeamById(collegeId, teamDoc.id, user);
+    return requestToJoinTeamById(collegeId, hackathonId, teamDoc.id, user);
 }
 
-export async function requestToJoinTeamById(collegeId: string, teamId: string, user: User) {
-    const userTeamsQuery = query(collection(db, `colleges/${collegeId}/teams`), 
+export async function requestToJoinTeamById(collegeId: string, hackathonId: string, teamId: string, user: User) {
+    const userTeamsQuery = query(
+        collection(db, `colleges/${collegeId}/teams`), 
+        where("hackathonId", "==", hackathonId),
         where('members', 'array-contains', {id: user.id, name: user.name, email: user.email})
     );
 
     const userTeamsSnapshot = await getDocs(userTeamsQuery);
     if (!userTeamsSnapshot.empty) {
-        throw new Error("You are already in a team.");
+        throw new Error("You are already in a team for this event.");
     }
 
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
@@ -503,7 +521,6 @@ export async function handleJoinRequest(collegeId: string, teamId: string, reque
             members: arrayUnion(newMember),
             joinRequests: arrayRemove(request)
         });
-        await updateDoc(doc(db, `colleges/${collegeId}/users`, request.id), { teamId: teamId });
         return { successMessage: `${request.name} has been added to the team.` };
     } else { // reject
         await updateDoc(teamRef, {
@@ -515,7 +532,6 @@ export async function handleJoinRequest(collegeId: string, teamId: string, reque
 
 export async function removeTeammate(collegeId: string, teamId: string, memberToRemove: TeamMember) {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
-    const userRef = doc(db, `colleges/${collegeId}/users`, memberToRemove.id);
 
     const teamDoc = await getDoc(teamRef);
     if (!teamDoc.exists()) throw new Error("Team not found");
@@ -526,10 +542,6 @@ export async function removeTeammate(collegeId: string, teamId: string, memberTo
 
     await updateDoc(teamRef, {
         members: arrayRemove(memberObject)
-    });
-    
-    await updateDoc(userRef, {
-      teamId: null
     });
     
     return { successMessage: `${memberToRemove.name} has been removed from the team.` };
@@ -553,7 +565,6 @@ export async function updateMemberRole(collegeId: string, teamId: string, member
 }
 
 export async function leaveTeam(collegeId: string, teamId: string, userId: string) {
-    const userRef = doc(db, `colleges/${collegeId}/users`, userId);
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
     
     const teamDoc = await getDoc(teamRef);
@@ -578,18 +589,18 @@ export async function leaveTeam(collegeId: string, teamId: string, userId: strin
             }
         }
     }
-
-    await updateDoc(userRef, { teamId: null });
     
     return { successMessage: "You have left the team." };
 }
 
-export async function submitProject(collegeId: string, { title, description, githubUrl, teamId }: any) {
+export async function submitProject(collegeId: string, hackathonId: string, { title, description, githubUrl, teamId }: any) {
     const projectsCollection = collection(db, `colleges/${collegeId}/projects`);
     
     const newProject: Omit<Project, 'id'> = {
         teamId,
+        hackathonId,
         title,
+        name: title,
         description,
         githubUrl,
         scores: [],
@@ -624,7 +635,10 @@ export async function updateProject(collegeId: string, projectId: string, projec
     }
 
     const originalProject = projectDoc.data() as Project;
-    await updateDoc(projectRef, projectData);
+    await updateDoc(projectRef, {
+      ...projectData,
+      name: projectData.title,
+    });
 
     if (projectData.title !== originalProject.title || projectData.description !== originalProject.description) {
          generateProjectImage({ projectName: projectData.title!, projectDescription: projectData.description! })
@@ -740,7 +754,7 @@ export async function updateSupportTicketStatus(collegeId: string, ticketId: str
 export async function sendSupportResponse(collegeId: string, ticketId: string, responder: User | Faculty, message: string) {
     const ticketRef = doc(db, `colleges/${collegeId}/supportTickets`, ticketId);
     const ticketDoc = await getDoc(ticketRef);
-    if (!ticketDoc.exists()) throw new Error("Ticket not found.");
+if (!ticketDoc.exists()) throw new Error("Ticket not found.");
     const ticket = ticketDoc.data() as SupportTicket;
     
     const response: SupportResponse = {
@@ -786,21 +800,46 @@ export async function markNotificationsAsRead(collegeId: string, userId: string,
     return { successMessage: "Notifications marked as read." };
 }
 
+// --- Data Management (Admin) ---
 
-// --- Data Reset Functions ---
+export async function createHackathon(collegeId: string, data: Omit<Hackathon, 'id'>) {
+    await addDoc(collection(db, `colleges/${collegeId}/hackathons`), data);
+    return { successMessage: "Project Event created successfully." };
+}
 
-export async function resetAllDataForCollege(collegeId: string) {
+export async function updateHackathon(collegeId: string, hackathonId: string, data: Partial<Hackathon>) {
+    await updateDoc(doc(db, `colleges/${collegeId}/hackathons`, hackathonId), data);
+    return { successMessage: "Project Event updated successfully." };
+}
+
+export async function resetCurrentHackathon(collegeId: string, hackathonId: string) {
     const batch = writeBatch(db);
 
-    const collectionsToReset = ['projects', 'teams', 'announcements', 'supportTickets'];
-    for (const col of collectionsToReset) {
+    const teamsQuery = query(collection(db, `colleges/${collegeId}/teams`), where('hackathonId', '==', hackathonId));
+    const teamsSnapshot = await getDocs(teamsQuery);
+    teamsSnapshot.forEach(doc => batch.delete(doc.ref));
+
+    const projectsQuery = query(collection(db, `colleges/${collegeId}/projects`), where('hackathonId', '==', hackathonId));
+    const projectsSnapshot = await getDocs(projectsQuery);
+    projectsSnapshot.forEach(doc => batch.delete(doc.ref));
+
+    await batch.commit();
+    return { successMessage: "All teams and projects for the current event have been deleted." };
+}
+
+export async function resetAllHackathons(collegeId: string) {
+    const batch = writeBatch(db);
+    const collectionsToDelete = ['hackathons', 'teams', 'projects'];
+
+    for (const col of collectionsToDelete) {
         const querySnapshot = await getDocs(collection(db, `colleges/${collegeId}/${col}`));
         querySnapshot.forEach(doc => batch.delete(doc.ref));
     }
 
     await batch.commit();
-    return { successMessage: "All project, team, and announcement data has been reset for this college." };
+    return { successMessage: "All events, teams, and projects have been deleted." };
 }
+
 
 export async function resetAllUsers(collegeId: string) {
     const batch = writeBatch(db);
@@ -817,5 +856,5 @@ export async function resetAllUsers(collegeId: string) {
 
     await batch.commit();
     
-    return { successMessage: "All user records have been deleted from the database. Auth accounts may still exist." };
+    return { successMessage: "All user records have been deleted from the database. Auth accounts may still exist and need to be manually removed from the Firebase console." };
 }
