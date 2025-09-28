@@ -64,13 +64,14 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 The application should now be running at [http://localhost:9002](http://localhost:9002).
 
-### **IMPORTANT: Manual Firebase Setup**
+### **CRITICAL: Manual Firebase Setup**
 
 For the application to function correctly, you must perform these two steps in your [Firebase Console](https://console.firebase.google.com/):
 
 1.  **Enable Email/Password Authentication:**
     *   Navigate to **Authentication** -> **Sign-in method**.
-    *   Click on **"Email/Password"** and enable it.
+    *   Find and click on **"Email/Password"** in the list of sign-in providers.
+    *   **Enable** the provider and click **Save**. This is required to fix login errors.
 
 2.  **Set Firestore Security Rules:**
     *   Navigate to **Firestore Database** -> **Rules**.
