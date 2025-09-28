@@ -10,9 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Team } from '@/lib/types';
 import { generateProjectIdea, suggestThemes } from '@/app/actions';
 import { Loader, Wand2, Lightbulb, ArrowLeft } from 'lucide-react';
-import BackButton from '@/components/layout/BackButton';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProjectSubmissionProps {
     team: Team;
@@ -25,7 +25,6 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
     const [projectName, setProjectName] = useState('');
     const [projectDesc, setProjectDesc] = useState('');
     const [githubUrl, setGithubUrl] = useState('');
-    const [projectType, setProjectType] = useState<'Real-Time' | 'Mini' | 'Major' | 'Other' | ''>('');
     
     const [interest, setInterest] = useState('');
     const [themes, setThemes] = useState<string[]>([]);
@@ -35,17 +34,19 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const isTeamSizeValid = team.members.length >= 2 && team.members.length <= 6;
+
     const handleSubmitProject = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (selectedHackathonId && projectType) {
+        if (selectedHackathonId && isTeamSizeValid) {
             setIsSubmitting(true);
             try {
-                await api.submitProject(selectedHackathonId, { title: projectName, description: projectDesc, githubUrl, teamId: team.id, projectType });
+                await api.submitProject(selectedHackathonId, { title: projectName, description: projectDesc, githubUrl, teamId: team.id });
             } finally {
                 setIsSubmitting(false);
             }
         } else {
-            alert("Please select a project type.");
+            alert("Your team size must be between 2 and 6 members to submit a project.");
         }
     };
 
@@ -84,7 +85,7 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
             <Card>
                  <CardHeader>
                     <CardTitle className="text-3xl font-bold font-headline">Submit Your Project</CardTitle>
-                    <CardDescription>Fill out the details for your team's submission.</CardDescription>
+                    <CardDescription>Fill out the details for your team's submission. This can only be done once your team has at least 2 members.</CardDescription>
                 </CardHeader>
                 <CardContent className="border-t pt-6">
                      <div className="space-y-6 mb-8 p-4 border border-dashed border-border rounded-lg">
@@ -139,20 +140,6 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
 
                     <form onSubmit={handleSubmitProject} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="projectType">Project Type</Label>
-                            <Select onValueChange={(v) => setProjectType(v as any)} value={projectType} required>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select the type of your project" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Real-Time">Real-Time Project</SelectItem>
-                                    <SelectItem value="Mini">Mini Project</SelectItem>
-                                    <SelectItem value="Major">Major Project</SelectItem>
-                                    <SelectItem value="Other">Other</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
                             <Label htmlFor="projectName">Project Name</Label>
                             <Input id="projectName" value={projectName} onChange={e => setProjectName(e.target.value)} required disabled={isSubmitting} />
                         </div>
@@ -164,9 +151,22 @@ export default function ProjectSubmission({ team, onBack }: ProjectSubmissionPro
                             <Label htmlFor="githubUrl">GitHub Repository URL</Label>
                             <Input id="githubUrl" type="url" value={githubUrl} onChange={e => setGithubUrl(e.target.value)} required disabled={isSubmitting} />
                         </div>
-                        <Button type="submit" className="w-full" disabled={isSubmitting}>
-                           {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Project'}
-                        </Button>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="w-full">
+                                        <Button type="submit" className="w-full" disabled={isSubmitting || !isTeamSizeValid}>
+                                            {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Project'}
+                                        </Button>
+                                    </div>
+                                </TooltipTrigger>
+                                {!isTeamSizeValid && (
+                                     <TooltipContent>
+                                        <p>Your team must have between 2 and 6 members to submit a project.</p>
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
+                        </TooltipProvider>
                     </form>
                 </CardContent>
             </Card>

@@ -594,6 +594,15 @@ export async function handleJoinRequest(collegeId: string, teamId: string, reque
     }
 }
 
+export async function addTeammate(collegeId: string, teamId: string, user: User) {
+    const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
+    const newMember: TeamMember = { ...user, role: 'Member' };
+    await updateDoc(teamRef, {
+        members: arrayUnion(newMember)
+    });
+    return { successMessage: `${user.name} has been added to the team.` };
+}
+
 export async function removeTeammate(collegeId: string, teamId: string, memberToRemove: TeamMember) {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
 
@@ -657,7 +666,7 @@ export async function leaveTeam(collegeId: string, teamId: string, userId: strin
     return { successMessage: "You have left the team." };
 }
 
-export async function submitProject(collegeId: string, hackathonId: string, { title, description, githubUrl, teamId, projectType }: any) {
+export async function submitProject(collegeId: string, hackathonId: string, { title, description, githubUrl, teamId }: any) {
     const projectsCollection = collection(db, `colleges/${collegeId}/projects`);
     
     const newProject: Omit<Project, 'id'> = {
@@ -666,7 +675,6 @@ export async function submitProject(collegeId: string, hackathonId: string, { ti
         title,
         name: title,
         description,
-        projectType,
         githubUrl,
         scores: [],
         averageScore: 0,

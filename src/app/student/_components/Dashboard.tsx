@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useHackathon } from '@/context/HackathonProvider';
@@ -70,7 +69,8 @@ export default function Dashboard() {
         if (!currentUser) return false;
         const hasSkills = currentUser.skills && currentUser.skills.length > 0;
         const hasWorkStyle = currentUser.workStyle && currentUser.workStyle.length > 0;
-        return hasSkills && hasWorkStyle;
+        const hasRollNo = !!currentUser.rollNo;
+        return hasSkills && hasWorkStyle && hasRollNo;
     }, [currentUser]);
 
     const renderContent = () => {
@@ -79,7 +79,7 @@ export default function Dashboard() {
         }
         
         if (!isProfileComplete) {
-            return (
+             return (
                  <>
                     <EventHeader event={currentEvent} />
                     <CompleteProfilePrompt />

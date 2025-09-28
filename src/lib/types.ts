@@ -81,8 +81,6 @@ export interface Project {
   title: string;
   name: string; // TBD: Consolidate with title
   description: string;
-  projectType: 'Real-Time' | 'Mini' | 'Major' | 'Other';
-  abstractFileUrl?: string;
   githubUrl: string;
   deployedUrl?: string;
   status: 'PendingGuide' | 'PendingR&D' | 'PendingHoD' | 'Approved' | 'Rejected';
