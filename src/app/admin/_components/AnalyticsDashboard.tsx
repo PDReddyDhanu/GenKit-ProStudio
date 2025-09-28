@@ -5,7 +5,7 @@ import React, { useMemo } from 'react';
 import { Bar, BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useHackathon } from '@/context/HackathonProvider';
-import { JUDGING_RUBRIC } from '@/lib/constants';
+import { EVALUATION_RUBRIC } from '@/lib/constants';
 import type { Hackathon, Project } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -26,7 +26,7 @@ export default function AnalyticsDashboard({ hackathon }: AnalyticsDashboardProp
 
     const criteriaAverages = useMemo(() => {
         const criteriaTotals: { [key: string]: { total: number; count: number } } = {};
-        JUDGING_RUBRIC.forEach(c => criteriaTotals[c.id] = { total: 0, count: 0 });
+        EVALUATION_RUBRIC.forEach(c => criteriaTotals[c.id] = { total: 0, count: 0 });
 
         hackathonProjects.forEach(project => {
             const teamScores = project.scores.filter(s => !s.memberId);
@@ -38,7 +38,7 @@ export default function AnalyticsDashboard({ hackathon }: AnalyticsDashboardProp
             });
 
             Object.values(scoresByJudge).forEach(judgeScores => {
-                 JUDGING_RUBRIC.forEach(criteria => {
+                 EVALUATION_RUBRIC.forEach(criteria => {
                     if (judgeScores[criteria.id] !== undefined) {
                         criteriaTotals[criteria.id].total += (judgeScores[criteria.id] / criteria.max) * 10;
                         criteriaTotals[criteria.id].count += 1;
@@ -47,7 +47,7 @@ export default function AnalyticsDashboard({ hackathon }: AnalyticsDashboardProp
             });
         });
 
-        return JUDGING_RUBRIC.map(c => ({
+        return EVALUATION_RUBRIC.map(c => ({
             name: c.name,
             average: criteriaTotals[c.id].count > 0 ? (criteriaTotals[c.id].total / criteriaTotals[c.id].count) : 0,
         }));
@@ -58,7 +58,7 @@ export default function AnalyticsDashboard({ hackathon }: AnalyticsDashboardProp
         const project = hackathonProjects.find(p => p.id === selectedProjectId);
         if (!project) return null;
 
-        return JUDGING_RUBRIC.map(criteria => {
+        return EVALUATION_RUBRIC.map(criteria => {
             const criteriaScores = project.scores.filter(s => s.criteria === criteria.id && !s.memberId);
             const total = criteriaScores.reduce((sum, s) => sum + s.value, 0);
             const average = criteriaScores.length > 0 ? total / criteriaScores.length : 0;
@@ -76,7 +76,7 @@ export default function AnalyticsDashboard({ hackathon }: AnalyticsDashboardProp
                 <BarChart2 className="h-4 w-4" />
                 <AlertTitle>No Data Yet</AlertTitle>
                 <AlertDescription>
-                    Analytics will be displayed here once projects for "{hackathon.name}" have been scored by judges.
+                    Analytics will be displayed here once projects for "{hackathon.name}" have been scored by faculty.
                 </AlertDescription>
             </Alert>
         )
@@ -119,7 +119,7 @@ export default function AnalyticsDashboard({ hackathon }: AnalyticsDashboardProp
                             </SelectTrigger>
                             <SelectContent>
                                 {hackathonProjects.map(p => (
-                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                    <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
