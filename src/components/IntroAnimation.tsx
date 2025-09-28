@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Trophy } from 'lucide-react';
+import { BrainCircuit } from 'lucide-react';
 
 interface ConfettiParticle {
     id: number;
@@ -38,11 +38,11 @@ export default function IntroAnimation() {
 
         const timer = setTimeout(() => {
             setIsVisible(false);
-        }, 10000); // Total duration of the animation
+        }, 4000); // Total duration of the animation
 
         const finishTimer = setTimeout(() => {
             setIsFinished(true);
-        }, 10000); // Duration + fade out time
+        }, 5000); // Duration + fade out time
 
         return () => {
             clearTimeout(timer);
@@ -72,14 +72,14 @@ export default function IntroAnimation() {
             </div>
             
             <div className="z-10 text-center animate-slow-zoom-in">
-                <Trophy className="h-16 w-16 mx-auto mb-4 text-primary animate-trophy-shine" style={{ filter: 'drop-shadow(0 0 20px hsl(var(--secondary)))' }}/>
+                <BrainCircuit className="h-16 w-16 mx-auto mb-4 text-primary animate-trophy-shine" style={{ filter: 'drop-shadow(0 0 20px hsl(var(--secondary)))' }}/>
                 <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-gray-400 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-gray-100 dark:to-gray-400 font-headline animate-title-reveal"
                     style={{ textShadow: 'var(--intro-text-shadow, none)' }}
                 >
-                    HackSprint
+                    GenKit ProStudio
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 opacity-0 animate-credits-fade-in">
-                    Developed By Dhanunjay Reddy Palakolanu
+                    AI-Powered Academic Project Management
                 </p>
             </div>
         </div>

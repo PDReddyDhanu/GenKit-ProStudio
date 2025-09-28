@@ -30,8 +30,8 @@ import {
     limit,
     writeBatch
 } from 'firebase/firestore';
-import { User, Judge, Team, Project, Score, UserProfileData, Announcement, Hackathon, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportTicketResponse, Notification } from './types';
-import { JUDGING_RUBRIC, INDIVIDUAL_JUDGING_RUBRIC } from './constants';
+import { User, Faculty, Team, Project, Score, UserProfileData, Announcement, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification } from './types';
+import { EVALUATION_RUBRIC } from './constants';
 import { generateProjectImage } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
 
@@ -66,10 +66,6 @@ export async function sendPasswordResetEmail(collegeId: string, email: string) {
 }
 
 export async function resendVerificationEmail(collegeId: string, email: string) {
-    // This is a placeholder. The actual logic is now in `loginStudent`.
-    // We attempt a sign-in with a dummy password to get the user object if they are not logged in.
-    // This is not a secure method for production but works for this demo.
-    // A production app should use a backend function to handle this.
      try {
         const tempUser = auth.currentUser;
         if(tempUser && tempUser.email === email && !tempUser.emailVerified) {
@@ -106,7 +102,7 @@ export async function changePassword(collegeId: string, { oldPassword, newPasswo
     }
 }
 
-let adminPassword = 'hack123';
+let adminPassword = 'admin123';
 
 export async function changeAdminPassword(collegeId: string, { oldPassword, newPassword }: { oldPassword: string, newPassword: string }) {
     if (oldPassword !== adminPassword) {
@@ -175,18 +171,18 @@ export async function loginStudent(collegeId: string, { email, password }: any) 
     return { successMessage: 'Login successful!' };
 }
 
-export async function loginJudge(collegeId: string, { email, password }: any) {
+export async function loginFaculty(collegeId: string, { email, password }: any) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const judgeDoc = await getDoc(doc(db, `colleges/${collegeId}/judges`, userCredential.user.uid));
-    if (!judgeDoc.exists()) {
+    const facultyDoc = await getDoc(doc(db, `colleges/${collegeId}/faculty`, userCredential.user.uid));
+    if (!facultyDoc.exists()) {
         await firebaseSignOut(auth);
-        throw new Error("Judge record not found for this college.");
+        throw new Error("Faculty record not found for this college.");
     }
     return { successMessage: 'Login successful!' };
 }
 
 export async function loginAdmin({ email, password }: any) {
-    if (email !== 'hacksprint@admin.com' || password !== adminPassword) {
+    if (email !== 'admin@genkit.pro' || password !== adminPassword) {
         throw new Error('Invalid admin credentials.');
     }
     return { successMessage: 'Admin login successful!', isAdmin: true };
@@ -209,19 +205,12 @@ export async function getAccountStatus(collegeId: string, email: string) {
     const userDoc = querySnapshot.docs[0];
     const userData = userDoc.data() as User;
     
-    // This is a simplified check for the demo. In a production environment,
-    // you would use a backend function (e.g., Firebase Cloud Function)
-    // to securely query the auth server for the user's `emailVerified` status.
-    // For this client-side implementation, we rely on the currently authenticated user's state.
     let emailVerified = false;
     const currentUser = auth.currentUser;
     if (currentUser && currentUser.email === email) {
-        await currentUser.reload(); // Refresh the user's state
+        await currentUser.reload();
         emailVerified = currentUser.emailVerified;
     } else {
-        // If the user checking is not the one logged in, we cannot get a live status from the client.
-        // As a fallback for the demo, we assume `true` if they are approved, otherwise `false`.
-        // This won't be real-time if a user verifies but is not yet approved.
         emailVerified = userData.status === 'approved';
     }
 
@@ -247,74 +236,68 @@ export async function remindAdminForApproval(collegeId: string, userId: string, 
         isRead: false,
     };
 
-    const judgesQuery = query(collection(db, `colleges/${collegeId}/judges`));
-    const judgesSnapshot = await getDocs(judgesQuery);
+    const facultyQuery = query(collection(db, `colleges/${collegeId}/faculty`));
+    const facultySnapshot = await getDocs(facultyQuery);
 
     const batch = writeBatch(db);
-    judgesSnapshot.forEach(judgeDoc => {
-        const judgeRef = doc(db, `colleges/${collegeId}/judges`, judgeDoc.id);
+    facultySnapshot.forEach(facultyDoc => {
+        const facultyRef = doc(db, `colleges/${collegeId}/faculty`, facultyDoc.id);
         const newNotification = { ...notification, id: doc(collection(db, 'dummy')).id };
-        batch.update(judgeRef, {
+        batch.update(facultyRef, {
             notifications: arrayUnion(newNotification)
         });
     });
 
     await batch.commit();
     
-    return { successMessage: "A reminder has been sent to all administrators and judges." };
+    return { successMessage: "A reminder has been sent to all administrators and faculty." };
 }
 
-// --- Admin & Judge ---
+// --- Admin & Faculty ---
 
-export async function addJudge(collegeId: string, { name, email, password, gender, contactNumber, bio }: any) {
-    if (!email.toLowerCase().endsWith('@judge.com')) {
-        throw new Error('Judge email must end with @judge.com');
-    }
-
+export async function addFaculty(collegeId: string, { name, email, password, role, gender, contactNumber, bio }: any) {
     const tempAuth = auth;
     const currentAuthUser = tempAuth.currentUser;
     
     try {
-        const judgeAuthUser = await getAuthUser(email, password);
+        const facultyAuthUser = await getAuthUser(email, password);
         
-        const judge: Judge = { 
-            id: judgeAuthUser.uid,
+        const facultyMember: Faculty = { 
+            id: facultyAuthUser.uid,
             name, 
             email,
+            role,
             gender,
             contactNumber,
             bio,
             notifications: [],
         };
-        await setDoc(doc(db, `colleges/${collegeId}/judges`, judge.id), judge);
+        await setDoc(doc(db, `colleges/${collegeId}/faculty`, facultyMember.id), facultyMember);
         
         await firebaseSignOut(tempAuth);
-        
-        if (currentAuthUser && currentAuthUser.email !== email) {
-        }
 
-        return { successMessage: 'Judge added successfully! They can log in with the provided credentials.' };
+        return { successMessage: 'Faculty member added successfully! They can log in with the provided credentials.' };
     } catch (error: any) {
         if (tempAuth.currentUser && tempAuth.currentUser.email === email) {
             await firebaseSignOut(tempAuth).catch(() => {});
         }
-        console.error("Error creating judge:", error);
+        console.error("Error creating faculty member:", error);
         if (error.code === 'auth/email-already-in-use') {
              throw new Error('This email is already in use by a different user. Please use another email.');
         }
-        throw new Error(`Failed to create judge account: ${error.message}`);
+        throw new Error(`Failed to create faculty account: ${error.message}`);
     }
 }
 
-export async function updateJudgeProfile(collegeId: string, judgeId: string, profileData: Partial<Pick<Judge, 'name' | 'gender' | 'contactNumber' | 'bio'>>) {
-    await updateDoc(doc(db, `colleges/${collegeId}/judges`, judgeId), profileData);
+export async function updateFacultyProfile(collegeId: string, facultyId: string, profileData: Partial<Pick<Faculty, 'name' | 'gender' | 'contactNumber' | 'bio'>>) {
+    await updateDoc(doc(db, `colleges/${collegeId}/faculty`, facultyId), profileData);
     return { successMessage: "Profile updated successfully." };
 }
 
 
-export async function removeJudge(collegeId: string, judgeId: string) {
-    await deleteDoc(doc(db, `colleges/${collegeId}/judges`, judgeId));
-    return { successMessage: "Judge removed successfully." };
+export async function removeFaculty(collegeId: string, facultyId: string) {
+    await deleteDoc(doc(db, `colleges/${collegeId}/faculty`, facultyId));
+    return { successMessage: "Faculty member removed successfully." };
 }
 
 export async function approveStudent(collegeId: string, userId: string) {
@@ -323,7 +306,7 @@ export async function approveStudent(collegeId: string, userId: string) {
 
     const notification = {
         id: doc(collection(db, 'dummy')).id,
-        message: "Welcome to HackSprint! Your registration has been approved. Time to build something amazing.",
+        message: "Welcome to GenKit ProStudio! Your registration has been approved. Time to build something amazing.",
         link: `/student`,
         timestamp: Date.now(),
         isRead: false,
@@ -353,9 +336,6 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
         
         await firebaseSignOut(tempAuth);
-
-        if (currentAuthUser && currentAuthUser.email !== email) {
-        }
 
         return { successMessage: `${name} has been registered and approved.` };
     } catch(error: any) {
@@ -392,16 +372,6 @@ export async function removeStudent(collegeId: string, userId: string) {
     await deleteDoc(doc(db, `colleges/${collegeId}/users`, userId));
 
     return { successMessage: `Student ${user.name} has been removed.` };
-}
-
-export async function createHackathon(collegeId: string, hackathonData: Omit<Hackathon, 'id'>) {
-    const newHackathonRef = await addDoc(collection(db, `colleges/${collegeId}/hackathons`), hackathonData);
-    return { successMessage: `Hackathon "${hackathonData.name}" created successfully.`, id: newHackathonRef.id };
-}
-
-export async function updateHackathon(collegeId: string, hackathonId: string, hackathonData: Partial<Omit<Hackathon, 'id'>>) {
-    await updateDoc(doc(db, `colleges/${collegeId}/hackathons`, hackathonId), hackathonData);
-    return { successMessage: `Hackathon "${hackathonData.name}" updated successfully.` };
 }
 
 export async function updateProjectImage(collegeId: string, projectId: string, imageUrl: string) {
@@ -443,13 +413,12 @@ export async function deleteAnnouncement(collegeId: string, announcementId: stri
 }
 
 // --- Student ---
-export async function createTeam(collegeId: string, hackathonId: string, teamName: string, user: User) {
+export async function createTeam(collegeId: string, teamName: string, user: User) {
     const newTeam: Omit<Team, 'id'> = {
         name: teamName,
         creatorId: user.id,
         joinCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         members: [{ ...user, role: 'Leader' }],
-        hackathonId,
         projectId: "",
         messages: [],
         joinRequests: [],
@@ -460,37 +429,35 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
     return { successMessage: "Team created successfully!", teamId: teamRef.id };
 }
 
-export async function requestToJoinTeamByCode(collegeId: string, hackathonId: string, joinCode: string, user: User) {
+export async function requestToJoinTeamByCode(collegeId: string, joinCode: string, user: User) {
     const userTeamsQuery = query(
         collection(db, `colleges/${collegeId}/teams`), 
-        where("hackathonId", "==", hackathonId),
         where("members", "array-contains", {id: user.id, name: user.name, email: user.email})
     );
     const userTeamsSnapshot = await getDocs(userTeamsQuery);
     if (!userTeamsSnapshot.empty) {
-        throw new Error("You are already in a team for this hackathon.");
+        throw new Error("You are already in a team.");
     }
     
-    const q = query(collection(db, `colleges/${collegeId}/teams`), where("joinCode", "==", joinCode), where("hackathonId", "==", hackathonId));
+    const q = query(collection(db, `colleges/${collegeId}/teams`), where("joinCode", "==", joinCode));
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-        throw new Error("Invalid join code for this hackathon.");
+        throw new Error("Invalid join code.");
     }
 
     const teamDoc = querySnapshot.docs[0];
-    return requestToJoinTeamById(collegeId, hackathonId, teamDoc.id, user);
+    return requestToJoinTeamById(collegeId, teamDoc.id, user);
 }
 
-export async function requestToJoinTeamById(collegeId: string, hackathonId: string, teamId: string, user: User) {
+export async function requestToJoinTeamById(collegeId: string, teamId: string, user: User) {
     const userTeamsQuery = query(collection(db, `colleges/${collegeId}/teams`), 
-        where('hackathonId', '==', hackathonId), 
         where('members', 'array-contains', {id: user.id, name: user.name, email: user.email})
     );
 
     const userTeamsSnapshot = await getDocs(userTeamsQuery);
     if (!userTeamsSnapshot.empty) {
-        throw new Error("You are already in a team for this hackathon.");
+        throw new Error("You are already in a team.");
     }
 
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
@@ -524,17 +491,8 @@ export async function handleJoinRequest(collegeId: string, teamId: string, reque
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
     const teamDoc = await getDoc(teamRef);
     if (!teamDoc.exists()) throw new Error("Team not found.");
-    const teamData = teamDoc.data() as Team;
-    const hackathonDoc = await getDoc(doc(db, `colleges/${collegeId}/hackathons`, teamData.hackathonId));
-    if (!hackathonDoc.exists()) throw new Error("Hackathon not found.");
-    const hackathon = hackathonDoc.data() as Hackathon;
 
     if (action === 'accept') {
-        if (teamData.members.length >= hackathon.teamSizeLimit) {
-            await updateDoc(teamRef, { joinRequests: arrayRemove(request) });
-            throw new Error(`Team has reached its maximum size of ${hackathon.teamSizeLimit} members.`);
-        }
-        
         const userDoc = await getDoc(doc(db, `colleges/${collegeId}/users`, request.id));
         if(!userDoc.exists()) throw new Error("User trying to join does not exist.");
         
@@ -626,29 +584,25 @@ export async function leaveTeam(collegeId: string, teamId: string, userId: strin
     return { successMessage: "You have left the team." };
 }
 
-export async function submitProject(collegeId: string, hackathonId: string, { name, description, githubUrl, teamId }: any) {
+export async function submitProject(collegeId: string, { title, description, githubUrl, teamId }: any) {
     const projectsCollection = collection(db, `colleges/${collegeId}/projects`);
-    const q = query(projectsCollection, where("hackathonId", "==", hackathonId));
-    const querySnapshot = await getDocs(q);
-    const isFirstSubmission = querySnapshot.empty;
     
     const newProject: Omit<Project, 'id'> = {
         teamId,
-        hackathonId,
-        name,
+        title,
         description,
         githubUrl,
         scores: [],
         averageScore: 0,
-        achievements: isFirstSubmission ? ['First Blood'] : [],
         submittedAt: Date.now(),
+        status: 'PendingGuide',
     };
 
     const projectRef = await addDoc(projectsCollection, newProject);
     await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { projectId: projectRef.id });
 
     // Asynchronously generate project image and don't block the return
-    generateProjectImage({ projectName: name, projectDescription: description })
+    generateProjectImage({ projectName: title, projectDescription: description })
         .then(async (result) => {
             if (result && result.imageUrl) {
                 await updateDoc(projectRef, { imageUrl: result.imageUrl });
@@ -661,7 +615,7 @@ export async function submitProject(collegeId: string, hackathonId: string, { na
     return { successMessage: "Project submitted successfully!" };
 }
 
-export async function updateProject(collegeId: string, projectId: string, projectData: Partial<Pick<Project, 'name' | 'description' | 'githubUrl'>>) {
+export async function updateProject(collegeId: string, projectId: string, projectData: Partial<Pick<Project, 'title' | 'description' | 'githubUrl'>>) {
     const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
     const projectDoc = await getDoc(projectRef);
 
@@ -672,8 +626,8 @@ export async function updateProject(collegeId: string, projectId: string, projec
     const originalProject = projectDoc.data() as Project;
     await updateDoc(projectRef, projectData);
 
-    if (projectData.name !== originalProject.name || projectData.description !== originalProject.description) {
-         generateProjectImage({ projectName: projectData.name!, projectDescription: projectData.description! })
+    if (projectData.title !== originalProject.title || projectData.description !== originalProject.description) {
+         generateProjectImage({ projectName: projectData.title!, projectDescription: projectData.description! })
             .then(async (result) => {
                 if (result && result.imageUrl) {
                     await updateDoc(projectRef, { imageUrl: result.imageUrl });
@@ -701,70 +655,56 @@ export async function postTeamMessage(collegeId: string, teamId: string, message
     return { successMessage: "Message sent." };
 }
 
-export async function saveGuidanceHistory(collegeId: string, userOrJudgeId: string, history: ChatMessage[], role: 'user' | 'judge') {
-    const collectionName = role === 'user' ? 'users' : 'judges';
-    const userRef = doc(db, `colleges/${collegeId}/${collectionName}`, userOrJudgeId);
+export async function saveGuidanceHistory(collegeId: string, userOrFacultyId: string, history: ChatMessage[], role: 'user' | 'faculty') {
+    const collectionName = role === 'user' ? 'users' : 'faculty';
+    const userRef = doc(db, `colleges/${collegeId}/${collectionName}`, userOrFacultyId);
     await updateDoc(userRef, { guidanceHistory: history });
     return { successMessage: "History saved." };
 }
 
-export async function clearGuidanceHistory(collegeId: string, userOrJudgeId: string, role: 'user' | 'judge') {
-    const collectionName = role === 'user' ? 'users' : 'judges';
-    const userRef = doc(db, `colleges/${collegeId}/${collectionName}`, userOrJudgeId);
+export async function clearGuidanceHistory(collegeId: string, userOrFacultyId: string, role: 'user' | 'faculty') {
+    const collectionName = role === 'user' ? 'users' : 'faculty';
+    const userRef = doc(db, `colleges/${collegeId}/${collectionName}`, userOrFacultyId);
     await updateDoc(userRef, { guidanceHistory: [] });
     return { successMessage: "Chat history cleared." };
 }
 
 
-// --- Judge ---
-export async function scoreProject(collegeId: string, hackathonId: string, projectId: string, judgeId: string, scores: Score[]) {
+// --- Faculty ---
+export async function evaluateProject(collegeId: string, projectId: string, evaluatorId: string, scores: Score[]) {
     const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
     const projectDoc = await getDoc(projectRef);
     if(!projectDoc.exists()) throw new Error("Project not found.");
     const project = projectDoc.data() as Project;
 
-    const otherJudgesScores = project.scores.filter(s => s.judgeId !== judgeId);
-    const newScores = [...otherJudgesScores, ...scores];
+    const otherEvaluatorsScores = project.scores.filter(s => s.evaluatorId !== evaluatorId);
+    const newScores = [...otherEvaluatorsScores, ...scores];
 
     const teamScores = newScores.filter(s => !s.memberId);
     
-    const uniqueJudges = new Set(teamScores.map(s => s.judgeId));
+    const uniqueEvaluators = new Set(teamScores.map(s => s.evaluatorId));
     let totalScore = 0;
     
-    uniqueJudges.forEach(id => {
-        const judgeScores = teamScores.filter(s => s.judgeId === id);
-        const rubricMax = JUDGING_RUBRIC.reduce((sum, c) => sum + c.max, 0);
-        const judgeTotal = judgeScores.reduce((sum, score) => sum + score.value, 0);
-        const scoredCriteriaIds = new Set(judgeScores.map(s => s.criteria));
-        const scoredRubricMax = JUDGING_RUBRIC.filter(c => scoredCriteriaIds.has(c.id)).reduce((sum, c) => sum + c.max, 0);
+    uniqueEvaluators.forEach(id => {
+        const evaluatorScores = teamScores.filter(s => s.evaluatorId === id);
+        const rubricMax = EVALUATION_RUBRIC.reduce((sum, c) => sum + c.max, 0);
+        const evaluatorTotal = evaluatorScores.reduce((sum, score) => sum + score.value, 0);
+        const scoredCriteriaIds = new Set(evaluatorScores.map(s => s.criteria));
+        const scoredRubricMax = EVALUATION_RUBRIC.filter(c => scoredCriteriaIds.has(c.id)).reduce((sum, c) => sum + c.max, 0);
         
         if (scoredRubricMax > 0) {
-            const scaledJudgeTotal = (judgeTotal / scoredRubricMax) * 10;
-            totalScore += scaledJudgeTotal;
+            const scaledEvaluatorTotal = (evaluatorTotal / scoredRubricMax) * 10;
+            totalScore += scaledEvaluatorTotal;
         }
     });
 
-    const averageScore = uniqueJudges.size > 0 ? (totalScore / uniqueJudges.size) : 0;
+    const averageScore = uniqueEvaluators.size > 0 ? (totalScore / uniqueEvaluators.size) : 0;
     
-    const newAchievements = new Set(project.achievements || []);
-    scores.forEach(score => {
-        if (score.criteria === 'innovation' && score.value === 10) {
-            newAchievements.add("Innovator's Spark");
-        }
-        if (score.criteria === 'ui_ux' && score.value === 10) {
-            newAchievements.add("Design Virtuoso");
-        }
-         if (score.criteria === 'technical_complexity' && score.value === 10) {
-            newAchievements.add("Code Wizard");
-        }
-    });
-
     await updateDoc(projectRef, { 
         scores: newScores, 
         averageScore: averageScore,
-        achievements: Array.from(newAchievements),
     });
-    return { successMessage: "Scores submitted successfully." };
+    return { successMessage: "Evaluation submitted successfully." };
 }
 
 // --- Support ---
@@ -772,7 +712,7 @@ export async function submitSupportTicket(collegeId: string, ticketData: Omit<Su
     
     const triageResult = await triageSupportTicket({
         subject: ticketData.subject,
-        question: ticketData.question,
+        question: ticketData.description,
         studentName: ticketData.studentName
     });
     
@@ -797,16 +737,16 @@ export async function updateSupportTicketStatus(collegeId: string, ticketId: str
     return { successMessage: "Ticket status updated." };
 }
 
-export async function sendSupportResponse(collegeId: string, ticketId: string, admin: User | Judge, message: string) {
+export async function sendSupportResponse(collegeId: string, ticketId: string, responder: User | Faculty, message: string) {
     const ticketRef = doc(db, `colleges/${collegeId}/supportTickets`, ticketId);
     const ticketDoc = await getDoc(ticketRef);
     if (!ticketDoc.exists()) throw new Error("Ticket not found.");
     const ticket = ticketDoc.data() as SupportTicket;
     
-    const response: SupportTicketResponse = {
+    const response: SupportResponse = {
         id: doc(collection(db, 'dummy')).id,
-        adminId: admin.id,
-        adminName: admin.name,
+        responderId: responder.id,
+        responderName: responder.name,
         message,
         timestamp: Date.now(),
     };
@@ -819,7 +759,7 @@ export async function sendSupportResponse(collegeId: string, ticketId: string, a
     const studentRef = doc(db, `colleges/${collegeId}/users`, ticket.studentId);
     const notification = {
         id: doc(collection(db, 'dummy')).id,
-        message: `Admin ${admin.name.split(' ')[0]} replied to your ticket: "${ticket.subject}"`,
+        message: `Faculty member ${responder.name.split(' ')[0]} replied to your ticket: "${ticket.subject}"`,
         link: `/support/tickets/${ticketId}`,
         timestamp: Date.now(),
         isRead: false,
@@ -831,13 +771,13 @@ export async function sendSupportResponse(collegeId: string, ticketId: string, a
     return { successMessage: "Response sent to student." };
 }
 
-export async function markNotificationsAsRead(collegeId: string, userId: string, notificationIds: string[], role: 'user' | 'judge') {
-    const collectionName = role === 'user' ? 'users' : 'judges';
+export async function markNotificationsAsRead(collegeId: string, userId: string, notificationIds: string[], role: 'user' | 'faculty') {
+    const collectionName = role === 'user' ? 'users' : 'faculty';
     const userRef = doc(db, `colleges/${collegeId}/${collectionName}`, userId);
     const userDoc = await getDoc(userRef);
     if (!userDoc.exists()) throw new Error("User not found");
 
-    const user = userDoc.data() as User | Judge;
+    const user = userDoc.data() as User | Faculty;
     const updatedNotifications = (user.notifications || []).map(n => 
         notificationIds.includes(n.id) ? { ...n, isRead: true } : n
     );
@@ -849,32 +789,17 @@ export async function markNotificationsAsRead(collegeId: string, userId: string,
 
 // --- Data Reset Functions ---
 
-export async function resetCurrentHackathon(collegeId: string, hackathonId: string) {
+export async function resetAllDataForCollege(collegeId: string) {
     const batch = writeBatch(db);
 
-    const projectsQuery = query(collection(db, `colleges/${collegeId}/projects`), where("hackathonId", "==", hackathonId));
-    const projectsSnapshot = await getDocs(projectsQuery);
-    projectsSnapshot.forEach(doc => batch.delete(doc.ref));
-
-    const teamsQuery = query(collection(db, `colleges/${collegeId}/teams`), where("hackathonId", "==", hackathonId));
-    const teamsSnapshot = await getDocs(teamsQuery);
-    teamsSnapshot.forEach(doc => batch.delete(doc.ref));
-
-    await batch.commit();
-    return { successMessage: "Current hackathon data has been reset." };
-}
-
-export async function resetAllHackathons(collegeId: string) {
-    const batch = writeBatch(db);
-
-    const collectionsToReset = ['hackathons', 'projects', 'teams'];
+    const collectionsToReset = ['projects', 'teams', 'announcements', 'supportTickets'];
     for (const col of collectionsToReset) {
         const querySnapshot = await getDocs(collection(db, `colleges/${collegeId}/${col}`));
         querySnapshot.forEach(doc => batch.delete(doc.ref));
     }
 
     await batch.commit();
-    return { successMessage: "All hackathon data has been reset." };
+    return { successMessage: "All project, team, and announcement data has been reset for this college." };
 }
 
 export async function resetAllUsers(collegeId: string) {

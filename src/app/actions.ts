@@ -9,7 +9,7 @@ import { fetchGuidanceInfo as fetchGuidanceInfoFlow, FetchGuidanceInfoInput } fr
 import { generateProjectImage as generateProjectImageFlow, GenerateProjectImageInput } from '@/ai/flows/generate-project-image';
 import { generatePitchOutline as generatePitchOutlineFlow, GeneratePitchOutlineInput, GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
 import { findTeammateMatches as findTeammateMatchesFlow, FindTeammateMatchesInput, FindTeammateMatchesOutput } from '@/ai/flows/find-teammate-matches';
-import { generateHackathonReport as generateHackathonReportFlow, GenerateHackathonReportInput } from '@/ai/flows/generate-hackathon-summary-report';
+import { generateSummaryReport as generateSummaryReportFlow, GenerateSummaryReportInput } from '@/ai/flows/generate-hackathon-summary-report';
 import { triageSupportTicket as triageSupportTicketFlow, TriageSupportTicketInput, TriageSupportTicketOutput } from '@/ai/flows/triage-support-ticket';
 import { generateSupportResponse as generateSupportResponseFlow, GenerateSupportResponseInput, GenerateSupportResponseOutput } from '@/ai/flows/generate-support-response';
 
@@ -93,12 +93,12 @@ export async function findTeammateMatches(input: FindTeammateMatchesInput): Prom
     }
 }
 
-export async function generateHackathonReport(input: GenerateHackathonReportInput): Promise<string | null> {
+export async function generateSummaryReport(input: GenerateSummaryReportInput): Promise<string | null> {
     try {
-        const result = await generateHackathonReportFlow(input);
+        const result = await generateSummaryReportFlow(input);
         return result.report;
     } catch (error) {
-        console.error("Error generating hackathon report:", error);
+        console.error("Error generating summary report:", error);
         return "Failed to generate report. Please try again.";
     }
 }

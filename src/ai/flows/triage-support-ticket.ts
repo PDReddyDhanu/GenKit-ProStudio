@@ -1,7 +1,8 @@
 
+
 'use server';
 /**
- * @fileOverview An AI agent that triages student support tickets.
+ * @fileOverview An AI agent that triages student support tickets for an academic project platform.
  *
  * - triageSupportTicket - A function that categorizes a ticket and suggests a response.
  * - TriageSupportTicketInput - The input type for the function.
@@ -19,12 +20,12 @@ const TriageSupportTicketInputSchema = z.object({
 export type TriageSupportTicketInput = z.infer<typeof TriageSupportTicketInputSchema>;
 
 const TriageSupportTicketOutputSchema = z.object({
-  category: z.enum(['Technical Issue', 'Rule Clarification', 'Team Dispute', 'Scoring Question', 'General Inquiry'])
+  category: z.enum(['Technical Issue', 'Approval Question', 'Team Dispute', 'Evaluation Question', 'General Inquiry'])
     .describe('The best category for this ticket.'),
   priority: z.enum(['Low', 'Medium', 'High'])
     .describe("The urgency of the ticket. 'Team Dispute' or 'Technical Issue' blocking submission should be High."),
   suggestedResponse: z.string()
-    .describe('A polite, helpful, and templated first response to the student. It should acknowledge their question and let them know an admin will look into it. Address the student by name.'),
+    .describe('A polite, helpful, and templated first response to the student. It should acknowledge their question and let them know a faculty member or admin will look into it. Address the student by name.'),
 });
 export type TriageSupportTicketOutput = z.infer<typeof TriageSupportTicketOutputSchema>;
 
@@ -36,9 +37,9 @@ const prompt = ai.definePrompt({
   name: 'triageSupportTicketPrompt',
   input: {schema: TriageSupportTicketInputSchema},
   output: {schema: TriageSupportTicketOutputSchema},
-  prompt: `You are an AI assistant for a hackathon platform called HackSprint. Your job is to triage support tickets from students.
+  prompt: `You are an AI assistant for a college project management platform called GenKit ProStudio. Your job is to triage support tickets from students.
 
-Analyze the following ticket and determine its category and priority. Then, craft a suggested first response for the admin to send.
+Analyze the following ticket and determine its category and priority. Then, craft a suggested first response for the admin/faculty to send.
 
 **Ticket Details:**
 - **From:** {{{studentName}}}
@@ -46,10 +47,10 @@ Analyze the following ticket and determine its category and priority. Then, craf
 - **Question:** {{{question}}}
 
 **Categorization Rules:**
-- **Technical Issue:** Problems with the website, submission errors, login issues, AI features not working.
-- **Rule Clarification:** Questions about hackathon rules, deadlines, or judging criteria.
+- **Technical Issue:** Problems with the website, submission errors, login issues.
+- **Approval Question:** Questions about the project approval workflow, status, or deadlines.
 - **Team Dispute:** Inter-personal problems within a team. These are always HIGH priority.
-- **Scoring Question:** Questions or disputes about how a project was scored.
+- **Evaluation Question:** Questions or disputes about how a project was scored or evaluated.
 - **General Inquiry:** Anything that doesn't fit into the other categories.
 
 Based on this, provide the category, priority, and a suggested response in the required JSON format. The response should be empathetic and reassuring.`,

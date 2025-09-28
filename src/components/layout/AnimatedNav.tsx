@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { path: "/", name: "Home" },
   { path: "/guidance", name: "Guidance" },
-  { path: "/gallery", name: "Gallery" },
+  { path: "/gallery", name: "Showcase" },
   { path: "/teams", name: "Teams" },
   { path: "/leaderboard", name: "Leaderboard" },
   { path: "/results", name: "Results" },
@@ -19,7 +19,7 @@ const navItems = [
 
 export function AnimatedNav() {
   let pathname = usePathname() || "/";
-  if (pathname.includes("/student")) pathname = "/";
+  if (pathname.includes("/student") || pathname.includes("/faculty")) pathname = "/";
 
   const [hoveredPath, setHoveredPath] = useState(pathname);
 
@@ -40,7 +40,7 @@ export function AnimatedNav() {
             <span className={cn("relative z-10", { "text-foreground": hoveredPath === item.path })}>{item.name}</span>
             {item.path === hoveredPath && (
               <motion.div
-                className="absolute inset-0 rounded-full bg-orange-500 dark:bg-black"
+                className="absolute inset-0 rounded-full bg-background shadow-sm"
                 layoutId="animated-nav-underline"
                 transition={{
                   type: "spring",

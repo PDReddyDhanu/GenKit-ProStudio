@@ -1,7 +1,8 @@
 
+
 'use server';
 /**
- * @fileOverview An AI agent for matching students with potential teammates.
+ * @fileOverview An AI agent for matching students with potential teammates for academic projects.
  *
  * - findTeammateMatches - A function that finds compatible teammates.
  * - FindTeammateMatchesInput - The input type for the function.
@@ -44,10 +45,10 @@ const prompt = ai.definePrompt({
   name: 'findTeammateMatchesPrompt',
   input: {schema: FindTeammateMatchesInputSchema},
   output: {schema: FindTeammateMatchesOutputSchema},
-  prompt: `You are an expert at building high-performing hackathon teams. Your task is to analyze a student's profile and suggest the best possible teammates from a list of available students.
+  prompt: `You are an expert at building high-performing student project teams. Your task is to analyze a student's profile and suggest the best possible teammates from a list of available students.
 
 Your analysis should be based on two main factors:
-1.  **Skill Complementarity:** Find users who have skills that the current user lacks, and vice-versa. A good team has a mix of frontend, backend, design, and presentation skills.
+1.  **Skill Complementarity:** Find users who have skills that the current user lacks, and vice-versa. A good team has a mix of frontend, backend, design, and documentation skills.
 2.  **Work Style Harmony:** Find users with similar or compatible work styles. For example, two 'late-night coders' might work well together. A 'strong presenter' is a great match for a team that needs to sell their idea.
 
 **Current User Profile:**

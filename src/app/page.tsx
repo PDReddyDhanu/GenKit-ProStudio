@@ -39,13 +39,13 @@ const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNod
 
 
 const features = [
-    { icon: <Users className="w-8 h-8" />, title: "Team Formation", description: "Easily register, create, and join teams to start collaborating." },
+    { icon: <Users className="w-8 h-8" />, title: "Team Formation", description: "Easily register, create, and join teams to start collaborating on projects." },
     { icon: <Lightbulb className="w-8 h-8" />, title: "AI Idea Generation", description: "Brainstorm project ideas with our intelligent suggestion system." },
-    { icon: <Github className="w-8 h-8" />, title: "Project Submissions", description: "Seamlessly submit your projects with GitHub repository integration." },
-    { icon: <BarChart className="w-8 h-8" />, title: "Live Leaderboard", description: "Track team progress in real-time with our dynamic leaderboard." },
-    { icon: <FileText className="w-8 h-8" />, title: "AI Code Review", description: "Get instant, AI-powered feedback on your code submissions." },
-    { icon: <GalleryVertical className="w-8 h-8" />, title: "Project Showcase", description: "A gallery of all submitted projects to celebrate the work." },
-    { icon: <Scale className="w-8 h-8" />, title: "Fair Judging", description: "A dedicated portal for judges to score projects, enhanced with AI summaries." },
+    { icon: <Github className="w-8 h-8" />, title: "Project Submissions", description: "Seamlessly submit your project proposals and track their approval status." },
+    { icon: <BarChart className="w-8 h-8" />, title: "Live Leaderboard", description: "Track project progress and performance with our dynamic leaderboard." },
+    { icon: <FileText className="w-8 h-8" />, title: "AI Code Review", description: "Get instant, AI-powered feedback on your code." },
+    { icon: <GalleryVertical className="w-8 h-8" />, title: "Project Showcase", description: "A gallery of all submitted projects to celebrate student work." },
+    { icon: <Scale className="w-8 h-8" />, title: "Fair Evaluation", description: "A dedicated portal for faculty to evaluate projects with AI summaries." },
     { icon: <Handshake className="w-8 h-8" />, title: "Team Finder", description: "Discover teams or recruit members based on skills and interests." },
 ];
 
@@ -60,89 +60,69 @@ const partners = [
 
 const testimonials = [
   {
-    quote: "HackSprint's AI tools gave our team the edge we needed. The code review was like having a senior dev on call 24/7!",
+    quote: "GenKit ProStudio's AI tools gave our team the edge we needed. The abstract summarizer was a lifesaver!",
     name: "Aarav Sharma",
-    role: "Winning Student, CodeCrafters",
+    role: "Student, CodeCrafters",
   },
   {
-    quote: "As a judge, the AI-generated summaries were a game-changer. I could grasp the core of each project instantly, making the scoring process faster and fairer.",
-    name: "Priya Menon",
-    role: "Hackathon Judge",
+    quote: "As a guide, the AI-generated summaries were a game-changer. I could grasp the core of each project instantly.",
+    name: "Dr. Priya Menon",
+    role: "Faculty Guide",
   },
   {
-    quote: "Managing the entire event was seamless. The admin dashboard gave me a bird's-eye view of everything, from registrations to final reports.",
+    quote: "Managing the entire project lifecycle was seamless. The admin dashboard gave me a bird's-eye view of everything.",
     name: "Dr. Rajesh Kumar",
-    role: "Faculty Coordinator",
+    role: "Head of Department",
   },
   {
     quote: "The AI Teammate Matchmaker is genius! It connected me with a team that had the exact skills we were missing.",
     name: "Sofia Chen",
-    role: "Participant, Data Dynamos",
+    role: "Student, Data Dynamos",
   },
   {
-    quote: "I've never seen a student hackathon platform this comprehensive. It handles everything from A to Z.",
+    quote: "I've never seen a student project platform this comprehensive. It handles everything from A to Z.",
     name: "Ben Carter",
     role: "Industry Mentor",
   },
   {
-    quote: "Generating a pitch outline with the AI coach saved us hours. We could focus on building instead of worrying about slides.",
+    quote: "Generating a presentation outline with the AI coach saved us hours. We could focus on building instead of worrying about slides.",
     name: "Fatima Al-Jamil",
-    role: "Finalist, Cloud Nine",
-  },
-  {
-    quote: "The real-time leaderboard created such an exciting and competitive atmosphere. We were hooked!",
-    name: "Leo Gonzalez",
-    role: "Participant, The Algo-Rhythms",
-  },
-  {
-    quote: "Support was incredible. We had an issue, submitted a ticket, and the AI triage got us a helpful response almost immediately.",
-    name: "Chloe Wilson",
-    role: "Student, Bug Busters",
-  },
-  {
-    quote: "From an organizational standpoint, HackSprint is a dream. The automated reports and analytics are invaluable.",
-    name: "Prof. David Lee",
-    role: "University IT Department",
-  },
-  {
-    quote: "The platform is incredibly intuitive for students. Our adoption rate was nearly 100% from day one.",
-    name: "Isabelle Moreau",
-    role: "Student Body President",
+    role: "Student, Cloud Nine",
   },
 ];
 
 
 const faqItems = [
     {
-        question: "How do I register for a hackathon?",
-        answer: "To register, navigate to the Student Portal, sign up for an account, and wait for admin approval. Once approved, you can select an active hackathon for your college and join or create a team."
+        question: "How do I register as a student?",
+        answer: "To register, navigate to the Student Portal, sign up for an account, and wait for admin approval. Once approved, you can start creating or joining project teams."
     },
     {
-        question: "Can I join a hackathon without a team?",
+        question: "Can I join a project without a team?",
         answer: "Yes! You can register as an individual and then use our 'Team Finder' page. You can browse existing teams that are looking for members or use the AI Matchmaker to find students with complementary skills."
     },
     {
-        question: "What kind of AI assistance does HackSprint offer?",
-        answer: "HackSprint integrates AI at multiple stages. This includes an AI Idea Generator to brainstorm projects, an AI Code Reviewer for instant feedback on your code, an AI Pitch Coach to structure your presentation, and an AI Teammate Matchmaker to help you find the perfect collaborators."
+        question: "What kind of AI assistance does GenKit ProStudio offer?",
+        answer: "The platform integrates AI at multiple stages, including an AI Idea Generator, an AI Code Reviewer, an AI Pitch Coach, and an AI Teammate Matchmaker to help you find collaborators."
     },
     {
-        question: "Is HackSprint free to use for our college?",
-        answer: "Yes, HackSprint is offered free of charge for internal college hackathons. Our goal is to foster innovation and learning within educational institutions by providing a powerful, accessible platform."
+        question: "Is GenKit ProStudio free to use for our college?",
+        answer: "Yes, GenKit ProStudio is offered free of charge for internal college project management. Our goal is to foster innovation and learning within educational institutions."
     },
 ];
 
 const HowItWorksAnimation = () => {
     const steps = [
-        { title: "Sign Up", description: "Register as a student for your college's event.", icon: <User className="w-6 h-6" />, position: { top: '8%', left: '10%' } },
+        { title: "Sign Up", description: "Register as a student for your college's portal.", icon: <User className="w-6 h-6" />, position: { top: '8%', left: '10%' } },
         { title: "Form Team", description: "Create a new team or join an existing one with a code.", icon: <Users className="w-6 h-6" />, position: { top: '40%', left: '85%' } },
-        { title: "Build & Submit", description: "Use AI tools, collaborate, and submit your project.", icon: <Code className="w-6 h-6" />, position: { top: '70%', left: '5%' } },
-        { title: "Compete & Win", description: "Get judged, climb the leaderboard, and win prizes!", icon: <Trophy className="w-6 h-6" />, position: { top: '92%', left: '90%' } },
+        { title: "Build & Submit", description: "Use AI tools, collaborate, and submit your project proposal.", icon: <Code className="w-6 h-6" />, position: { top: '70%', left: '5%' } },
+        { title: "Get Evaluated", description: "Receive feedback and grades from faculty on the platform.", icon: <Trophy className="w-6 h-6" />, position: { top: '92%', left: '90%' } },
     ];
     
     const roadPath = "M 50 20 C 200 80, 200 120, 350 180 S 200 280, 50 320 S 200 420, 350 380";
     
-    const arrowPath = "M2,2 L10,6 L2,10 L4,6 Z"; // Simple arrow shape
-    const archerPath = "M45,15 C40,15 35,20 35,25 M45,15 C50,15 55,20 55,25 M45,15 L45,5 M35,25 L45,35 L55,25"; // Simple archer figure
+    const arrowPath = "M2,2 L10,6 L2,10 L4,6 Z";
+    const archerPath = "M45,15 C40,15 35,20 35,25 M45,15 C50,15 55,20 55,25 M45,15 L45,5 M35,25 L45,35 L55,25";
 
     return (
         <div className="relative w-full max-w-lg mx-auto h-[450px] md:h-[500px] md:max-w-2xl lg:max-w-4xl">
@@ -226,6 +206,7 @@ const HowItWorksAnimation = () => {
         </div>
     );
 };
+
 export default function Home() {
   const { state } = useHackathon();
   const { selectedCollege } = state;
@@ -238,24 +219,24 @@ export default function Home() {
                 animationSpeed={5}
                 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 font-headline animate-slide-in-down"
             >
-                Welcome to HackSprint
+                Welcome to GenKit ProStudio
             </GradientText>
             <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
-                Your all-in-one platform for managing internal college hackathons. From registration to results, we've got you covered.
+                Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
             </p>
             <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
                 <Button size="lg" asChild>
                     <Link href="/student">Get Started as Student</Link>
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
-                   <Link href="/judge">Enter as Judge or Admin</Link>
+                   <Link href="/faculty">Enter as Faculty or Admin</Link>
                 </Button>
             </div>
         </section>
 
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Why Choose HackSprint?</h2>
-            <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">An integrated platform designed to elevate your hackathon experience from start to finish.</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Why GenKit ProStudio?</h2>
+            <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">An integrated platform designed to elevate your academic project experience from start to finish.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <ElectricBorder
                     color="orange"
@@ -267,7 +248,7 @@ export default function Home() {
                     <Card className="text-center p-6 h-full">
                         <BrainCircuit className="w-12 h-12 mx-auto mb-4 text-primary"/>
                         <h3 className="text-xl font-bold font-headline">AI-Powered Assistance</h3>
-                        <p className="text-muted-foreground mt-2">Leverage cutting-edge AI for idea generation, code reviews, project summaries, and more.</p>
+                        <p className="text-muted-foreground mt-2">Leverage cutting-edge AI for idea generation, code reviews, abstract summaries, and more.</p>
                     </Card>
                 </ElectricBorder>
                 <ElectricBorder
@@ -292,8 +273,8 @@ export default function Home() {
                  >
                     <Card className="text-center p-6 h-full">
                         <BarChart className="w-12 h-12 mx-auto mb-4 text-primary"/>
-                        <h3 className="text-xl font-bold font-headline">Real-time Tracking</h3>
-                        <p className="text-muted-foreground mt-2">Stay updated with a live leaderboard, announcements, and clear submission tracking.</p>
+                        <h3 className="text-xl font-bold font-headline">Transparent Tracking</h3>
+                        <p className="text-muted-foreground mt-2">Stay updated with a live leaderboard, announcements, and clear project approval tracking.</p>
                     </Card>
                 </ElectricBorder>
             </div>
@@ -306,7 +287,7 @@ export default function Home() {
 
         <section className="py-24 scroll-m-20" id="roles" data-animate-on-scroll>
              <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Tailored for Everyone</h2>
-             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">A unique set of tools designed for every role in the hackathon ecosystem.</p>
+             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">A unique set of tools designed for every role in the academic ecosystem.</p>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                  <ElectricBorder
                     color="orange"
@@ -322,9 +303,9 @@ export default function Home() {
                          <CardContent className="flex-grow space-y-3">
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Join teams or use the AI Matchmaker to find collaborators.</span></p>
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Brainstorm ideas with the AI Idea Generator.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Submit projects easily via GitHub.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Submit project proposals easily.</span></p>
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Get instant AI-powered code reviews.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Track your rank on a live leaderboard.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Track your project's approval and evaluation status.</span></p>
                          </CardContent>
                      </Card>
                  </ElectricBorder>
@@ -337,13 +318,13 @@ export default function Home() {
                  >
                      <Card className="flex flex-col h-full">
                          <CardHeader>
-                             <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Scale className="text-primary"/> For Judges</CardTitle>
+                             <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Scale className="text-primary"/> For Faculty</CardTitle>
                          </CardHeader>
                          <CardContent className="flex-grow space-y-3">
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Access all submissions in one place.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Read AI-generated project summaries for quick evaluation.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Access all student submissions in one dashboard.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Read AI-generated abstracts for quick evaluation.</span></p>
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Use a standardized rubric for fair and consistent scoring.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>View project analytics and score distributions.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Follow a multi-level approval workflow (Guide → R&D → HoD).</span></p>
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Score both teams and individual contributions.</span></p>
                          </CardContent>
                      </Card>
@@ -360,8 +341,8 @@ export default function Home() {
                              <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Shield className="text-primary"/> For Admins</CardTitle>
                          </CardHeader>
                          <CardContent className="flex-grow space-y-3">
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage multiple hackathon events seamlessly.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Approve student registrations and add judges.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage departments, users, and faculty roles.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Approve student and faculty registrations.</span></p>
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Broadcast announcements to all participants.</span></p>
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Monitor real-time analytics and generate reports.</span></p>
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage support tickets with AI triage.</span></p>
@@ -373,7 +354,7 @@ export default function Home() {
 
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
              <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Meet Your AI Co-pilot</h2>
-             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">HackSprint integrates powerful AI tools at every stage of your hackathon journey, acting as your personal assistant to help you succeed.</p>
+             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">GenKit ProStudio integrates powerful AI tools at every stage of your project journey, acting as your personal assistant to help you succeed.</p>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                  <div className="relative flex justify-center items-center">
                     <svg width="250" height="250" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_15px_hsl(var(--primary))]">
@@ -409,7 +390,7 @@ export default function Home() {
                                 textAnchor="middle"
                                 fontWeight="bold"
                             >
-                                PDR
+                                AI
                             </text>
                         </g>
                     </svg>
@@ -529,16 +510,16 @@ export default function Home() {
 
 
          <section className="py-24 text-center scroll-m-20" data-animate-on-scroll>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-headline">Ready to Start Hacking?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-headline">Ready to Start Building?</h2>
             <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
-                Join your college's next big event. Register as a student or sign in as a judge to begin.
+                Join your college's project hub. Register as a student or sign in as a faculty member to begin.
             </p>
              <div className="flex justify-center gap-4">
                 <Button size="lg" asChild>
                     <Link href="/student">I'm a Student</Link>
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
-                   <Link href="/judge">I'm a Judge / Admin</Link>
+                   <Link href="/faculty">I'm a Faculty / Admin</Link>
                 </Button>
             </div>
         </section>

@@ -1,15 +1,15 @@
 
 
-export const JUDGING_RUBRIC = [
-    { id: 'innovation', name: 'Innovation & Originality', max: 10 },
-    { id: 'technical_complexity', name: 'Technical Complexity & Execution', max: 10 },
-    { id: 'ui_ux', name: 'UI/UX Design & Presentation', max: 10 },
+export const EVALUATION_RUBRIC = [
+    { id: 'problem_statement', name: 'Problem Statement & Originality', max: 10 },
+    { id: 'technical_execution', name: 'Technical Execution & Complexity', max: 10 },
+    { id: 'documentation', name: 'Documentation & Report', max: 10 },
     { id: 'collaboration', name: 'Team Collaboration', max: 5 },
-    { id: 'problem_solving', name: 'Problem-Solving Approach', max: 5 },
+    { id: 'presentation', name: 'Presentation & Viva', max: 5 },
 ];
 
-export const INDIVIDUAL_JUDGING_RUBRIC = [
-    { id: 'contribution', name: 'Technical Contribution & Impact', max: 10 },
+export const INDIVIDUAL_EVALUATION_RUBRIC = [
+    { id: 'contribution', name: 'Individual Contribution & Impact', max: 10 },
     { id: 'teamwork', name: 'Teamwork & Communication', max: 10 },
 ];
 

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -17,7 +18,7 @@ const GenerateProjectIdeaInputSchema = z.object({
 export type GenerateProjectIdeaInput = z.infer<typeof GenerateProjectIdeaInputSchema>;
 
 const GenerateProjectIdeaOutputSchema = z.object({
-  idea: z.string().describe('A creative and concise hackathon project idea with a title and description.'),
+  idea: z.string().describe('A creative and concise academic project idea with a title and description.'),
 });
 export type GenerateProjectIdeaOutput = z.infer<typeof GenerateProjectIdeaOutputSchema>;
 
@@ -29,7 +30,7 @@ const prompt = ai.definePrompt({
   name: 'generateProjectIdeaPrompt',
   input: {schema: GenerateProjectIdeaInputSchema},
   output: {schema: GenerateProjectIdeaOutputSchema},
-  prompt: `Generate a creative and concise hackathon project idea based on the user's interest: "{{{theme}}}". The idea should be suitable for a 24-48 hour hackathon. Provide a short project name and a one-sentence description. For example, if the user interest is "animal conservation", you might suggest: "Project: WildTrack. Description: An app that uses citizen-submitted photos to track and map local wildlife populations."`,
+  prompt: `Generate a creative and concise academic project idea based on the user's interest: "{{{theme}}}". The idea should be suitable for a semester-long project. Provide a short project title and a one-sentence description. For example, if the user interest is "computer vision for agriculture", you might suggest: "Project: AgroVision. Description: An AI-powered system to detect and classify crop diseases from drone imagery."`,
   config: {
     temperature: 0.8,
     maxOutputTokens: 100,
@@ -44,7 +45,6 @@ const generateProjectIdeaFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    // The output from the prompt is already the structured object we need.
     return output!;
   }
 );

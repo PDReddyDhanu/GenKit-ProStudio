@@ -1,7 +1,8 @@
 
+
 'use server';
 /**
- * @fileOverview An AI agent that generates a presentation outline for a hackathon project.
+ * @fileOverview An AI agent that generates a presentation outline for a student project.
  *
  * - generatePitchOutline - A function that handles the pitch outline generation process.
  * - GeneratePitchOutlineInput - The input type for the generatePitchOutline function.
@@ -37,14 +38,14 @@ const prompt = ai.definePrompt({
   name: 'generatePitchOutlinePrompt',
   input: {schema: GeneratePitchOutlineInputSchema},
   output: {schema: GeneratePitchOutlineOutputSchema},
-  prompt: `You are a world-class pitch coach for hackathons. Your task is to create a concise and effective 5-slide presentation outline for a team based on their project details.
+  prompt: `You are a world-class academic presentation coach. Your task is to create a concise and effective 5-slide presentation outline for a student team based on their project details.
 
-The presentation should be structured as follows:
-1.  **Introduction:** Project Name and a catchy one-liner.
-2.  **The Problem:** Clearly state the problem the project solves.
-3.  **Our Solution:** Describe the project, its key features, and the technology stack used.
-4.  **Impact & Future:** Explain the potential impact and what the next steps for the project would be.
-5.  **Thank You & Q&A:** A concluding slide.
+The presentation should be structured for a typical academic review:
+1.  **Introduction:** Project Title and a one-sentence problem statement.
+2.  **Background & Objectives:** Briefly explain the problem area and list the project's key objectives.
+3.  **Methodology & Implementation:** Describe the approach, key features, and the technology stack used.
+4.  **Results & Future Work:** Explain the results achieved, potential impact, and what the next steps for the project would be.
+5.  **Conclusion & Q&A:** A summary slide and an invitation for questions.
 
 For each slide, provide a title and 2-4 bullet points for the content.
 

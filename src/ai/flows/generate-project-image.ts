@@ -1,4 +1,5 @@
 
+
 'use server';
 
 /**
@@ -36,7 +37,7 @@ const generateProjectImageFlow = ai.defineFlow(
     async (input) => {
         const { media } = await ai.generate({
             model: 'googleai/imagen-4.0-fast-generate-001',
-            prompt: `Generate a visually stunning, iconic, and abstract representation of a hackathon project. 
+            prompt: `Generate a visually stunning, iconic, and abstract representation of an academic project. 
             The image should be symbolic and evocative, not literal.
             Project Name: "${input.projectName}"
             Description: "${input.projectDescription}"

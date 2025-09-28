@@ -1,3 +1,4 @@
+
 # Product Requirements Document: GenKit ProStudio
 
 **Version:** 1.0
@@ -9,12 +10,12 @@
 ## 1. Introduction
 
 ### 1.1. Project Vision
-GenKit Pro Studio is an all-in-one SaaS platform for colleges that enables structured management of student academic projects. By digitizing the project lifecycle—from team formation, abstract submission, faculty assignment, approvals, to final reporting—the platform fosters innovation, reduces faculty workload, and ensures transparent, department-wise project tracking.
+GenKit ProStudio is an all-in-one SaaS platform for colleges that enables structured management of student academic projects. By digitizing the project lifecycle—from team formation, abstract submission, faculty assignment, approvals, to final reporting—the platform fosters innovation, reduces faculty workload, and ensures transparent, department-wise project tracking.
 
 The platform integrates AI-powered features to summarize abstracts, assist in issue resolution, and streamline communication, ensuring both students and faculty have a seamless experience.
 
 ### 1.2. Purpose of this Document
-This document defines the product requirements for GenKit Pro Studio. It captures:
+This document defines the product requirements for GenKit ProStudio. It captures:
 - The needs of students, faculty, and administrators.
 - Core features and technical requirements.
 - Data models and workflows.

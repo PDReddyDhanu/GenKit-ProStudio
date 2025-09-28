@@ -6,7 +6,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Trophy, Rss, LogOut, Building2, UserCircle, Bell, ChevronsUpDown, Menu } from 'lucide-react';
+import { BrainCircuit, Rss, LogOut, Building2, UserCircle, Bell, ChevronsUpDown, Menu } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -30,7 +30,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
     const { state, api, dispatch } = useHackathon();
-    const { currentUser, currentJudge, currentAdmin, selectedCollege } = state;
+    const { currentUser, currentFaculty, currentAdmin, selectedCollege } = state;
     const router = useRouter();
 
     const handleAction = (action: () => void) => {
@@ -43,8 +43,8 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
         router.push('/');
     };
     
-    const loggedInUser = currentUser || currentJudge || currentAdmin;
-    const userDisplayName = currentJudge?.name || currentUser?.name || 'Admin';
+    const loggedInUser = currentUser || currentFaculty || currentAdmin;
+    const userDisplayName = currentFaculty?.name || currentUser?.name || 'Admin';
 
     const handleChangeCollege = () => {
         dispatch({ type: 'SET_SELECTED_COLLEGE', payload: null });
@@ -80,15 +80,10 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        {currentAdmin ? (
+                        {currentAdmin || currentFaculty ? (
                             <>
                                 <DropdownMenuItem asChild><Link href="/admin" onClick={onLinkClick}>Dashboard</Link></DropdownMenuItem>
-                                <DropdownMenuItem asChild><Link href="/admin/profile" onClick={onLinkClick}>Profile</Link></DropdownMenuItem>
-                            </>
-                        ) : currentJudge ? (
-                            <>
-                                <DropdownMenuItem asChild><Link href="/admin" onClick={onLinkClick}>Dashboard</Link></DropdownMenuItem>
-                                <DropdownMenuItem asChild><Link href="/judge/profile" onClick={onLinkClick}>Profile</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/faculty/profile" onClick={onLinkClick}>Profile</Link></DropdownMenuItem>
                             </>
                         ) : (
                             <>
@@ -108,7 +103,7 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
                         <Link href="/student" onClick={onLinkClick}>Student</Link>
                     </Button>
                     <Button variant="secondary" size="sm" asChild>
-                        <Link href="/judge" onClick={onLinkClick}>Judge/Admin</Link>
+                        <Link href="/faculty" onClick={onLinkClick}>Faculty/Admin</Link>
                     </Button>
                 </div>
             )}
@@ -121,7 +116,7 @@ const MobileNavMenu = ({ onLinkClick }: { onLinkClick: () => void }) => {
         <div className="flex flex-col gap-4 pt-8">
             <Link href="/" className="text-lg font-medium" onClick={onLinkClick}>Home</Link>
             <Link href="/guidance" className="text-lg font-medium" onClick={onLinkClick}>Guidance</Link>
-            <Link href="/gallery" className="text-lg font-medium" onClick={onLinkClick}>Gallery</Link>
+            <Link href="/gallery" className="text-lg font-medium" onClick={onLinkClick}>Showcase</Link>
             <Link href="/teams" className="text-lg font-medium" onClick={onLinkClick}>Teams</Link>
             <Link href="/leaderboard" className="text-lg font-medium" onClick={onLinkClick}>Leaderboard</Link>
             <Link href="/results" className="text-lg font-medium" onClick={onLinkClick}>Results</Link>
@@ -133,7 +128,7 @@ const MobileNavMenu = ({ onLinkClick }: { onLinkClick: () => void }) => {
 
 export function Header() {
     const { state, api } = useHackathon();
-    const { announcements, currentUser, currentJudge, currentAdmin } = state;
+    const { announcements, currentUser, currentFaculty, currentAdmin } = state;
     const router = useRouter();
 
     const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
@@ -153,7 +148,7 @@ export function Header() {
             .sort((a, b) => (b.publishAt || b.timestamp) - (a.publishAt || a.timestamp));
     }, [announcements]);
     
-    const loggedInUser = currentUser || currentJudge;
+    const loggedInUser = currentUser || currentFaculty;
     const notifications = loggedInUser?.notifications || [];
     const unreadNotifications = useMemo(() => {
         return notifications.filter(n => !n.isRead);
@@ -177,7 +172,7 @@ export function Header() {
     const handleNotificationsOpen = async () => {
         if (unreadNotifications.length > 0 && loggedInUser) {
             const ids = unreadNotifications.map(n => n.id);
-            const role = currentUser ? 'user' : 'judge';
+            const role = currentUser ? 'user' : 'faculty';
             await api.markNotificationsAsRead(loggedInUser.id, ids, role);
         }
         setIsNotificationsOpen(true);
@@ -198,8 +193,8 @@ export function Header() {
                 <div className="container flex h-14 max-w-screen-2xl items-center">
                      <div className="mr-4 flex items-center gap-2">
                          <Link href="/" className="flex items-center gap-2">
-                             <Trophy className="h-6 w-6 text-primary" />
-                             <span className="font-bold font-headline">HackSprint</span>
+                             <BrainCircuit className="h-6 w-6 text-primary" />
+                             <span className="font-bold font-headline">GenKit ProStudio</span>
                          </Link>
                      </div>
 
@@ -212,7 +207,7 @@ export function Header() {
                             <Rss className="h-4 w-4" />
                             {hasUnreadAnnouncements && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />}
                         </Button>
-                        {(currentUser || currentJudge || currentAdmin) && (
+                        {(currentUser || currentFaculty || currentAdmin) && (
                              <Button variant="ghost" size="icon" onClick={handleNotificationsOpen} className="relative">
                                 <Bell className="h-4 w-4" />
                                 {unreadNotifications.length > 0 && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />}
@@ -221,7 +216,7 @@ export function Header() {
                         <ThemeToggle />
                         
                         <div className="hidden md:flex items-center gap-2">
-                            <AuthButtons />
+                            <AuthButtons onLinkClick={() => setIsMobileMenuOpen(false)}/>
                         </div>
                         
                          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>

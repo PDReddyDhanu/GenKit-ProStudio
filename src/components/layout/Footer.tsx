@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Github, Linkedin, Instagram, Youtube } from 'lucide-react';
 import Link from 'next/link';
@@ -43,7 +44,7 @@ export function Footer() {
                 </Link>
             </div>
         </div>
-         <p className="text-sm text-muted-foreground text-center">&copy; 2025 HackSprint. (Dhanunjay Reddy) All rights reserved.</p>
+         <p className="text-sm text-muted-foreground text-center">&copy; 2025 GenKit ProStudio. All rights reserved.</p>
       </div>
     </footer>
   );

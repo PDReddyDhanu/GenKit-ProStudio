@@ -20,6 +20,7 @@ export interface Notification {
 export interface User extends UserProfileData {
   id: string;
   email: string;
+  rollNo?: string;
   // password is not stored in Firestore record for security
   status: 'pending' | 'approved';
   guidanceHistory?: ChatMessage[];
@@ -29,15 +30,17 @@ export interface User extends UserProfileData {
   approvalReminderSentAt?: number;
 }
 
-export interface Hackathon {
-  id: string;
-  name: string;
-  prizeMoney: string;
-  rules: string;
-  teamSizeLimit: number;
-  deadline: number; // timestamp
-  summaryImageUrl?: string;
+export interface Department {
+    id: string;
+    name: string;
 }
+
+export interface College {
+    id: string;
+    name: string;
+    departments: Department[];
+}
+
 
 export interface ChatMessage {
   id: string;
@@ -65,28 +68,29 @@ export interface Team {
   members: TeamMember[];
   joinRequests?: JoinRequest[]; // Array of users who requested to join
   projectId?: string;
-  hackathonId: string;
+  notifications?: Notification[];
   messages?: ChatMessage[];
 }
 
 export interface Project {
   id: string;
   teamId: string;
-  hackathonId: string;
-  name:string;
+  title: string;
   description: string;
+  abstractFileUrl?: string;
   githubUrl: string;
-  imageUrl?: string;
+  deployedUrl?: string;
+  status: 'PendingGuide' | 'PendingR&D' | 'PendingHoD' | 'Approved' | 'Rejected';
   scores: Score[];
   averageScore: number;
-  achievements?: string[];
   submittedAt?: number;
 }
 
-export interface Judge {
+export interface Faculty {
   id:string;
   name: string;
   email: string;
+  role: 'guide' | 'hod' | 'rnd' | 'external' | 'admin';
   guidanceHistory?: ChatMessage[];
   gender?: string;
   contactNumber?: string;
@@ -95,7 +99,7 @@ export interface Judge {
 }
 
 export interface Score {
-  judgeId: string;
+  evaluatorId: string;
   criteria: string;
   value: number; // e.g., 1-10
   comment: string;
@@ -108,13 +112,12 @@ export interface Announcement {
   timestamp: number; // Creation timestamp
   publishAt?: number; // Optional: when the announcement becomes visible
   expiresAt?: number; // Optional: when the announcement is hidden
-  hackathonId?: string; // Optional: scope announcements to a hackathon
 }
 
-export interface SupportTicketResponse {
+export interface SupportResponse {
     id: string;
-    adminName: string;
-    adminId: string;
+    responderId: string;
+    responderName: string;
     message: string;
     timestamp: number;
 }
@@ -126,23 +129,21 @@ export interface SupportTicket {
     studentName: string;
     studentEmail: string;
     subject: string;
-    question: string;
+    description: string;
     submittedAt: number;
     status: 'New' | 'In Progress' | 'Resolved';
-    category: string;
     priority: 'Low' | 'Medium' | 'High';
-    suggestedResponse: string;
-    hackathonId: string | null;
-    responses?: SupportTicketResponse[];
+    category: string;
+    suggestedResponse?: string;
+    responses?: SupportResponse[];
 }
 
 
-export interface HackathonData {
+export interface AppData {
     users: User[];
     teams: Team[];
     projects: Project[];
-    judges: Judge[];
+    faculty: Faculty[];
     announcements: Announcement[];
-    hackathons: Hackathon[];
     supportTickets: SupportTicket[];
 }

@@ -1,6 +1,7 @@
+
 'use server';
 /**
- * @fileOverview An AI agent that provides guidance on hackathons and career development.
+ * @fileOverview An AI agent that provides guidance on academic projects and career development.
  *
  * - fetchGuidanceInfo - A function that provides helpful information based on a user query.
  * - FetchGuidanceInfoInput - The input type for the fetchGuidanceInfo function.
@@ -11,7 +12,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const FetchGuidanceInfoInputSchema = z.object({
-  query: z.string().describe('The user\'s question about hackathons or careers.'),
+  query: z.string().describe('The user\'s question about academic projects or careers.'),
 });
 export type FetchGuidanceInfoInput = z.infer<typeof FetchGuidanceInfoInputSchema>;
 
@@ -28,7 +29,7 @@ const prompt = ai.definePrompt({
   name: 'guidancePrompt',
   input: {schema: FetchGuidanceInfoInputSchema},
   output: {schema: FetchGuidanceInfoOutputSchema},
-  prompt: `You are a friendly and knowledgeable AI career and hackathon coach. Your goal is to provide clear, concise, and encouraging guidance to students.
+  prompt: `You are a friendly and knowledgeable AI academic and career coach for college students. Your goal is to provide clear, concise, and encouraging guidance.
 
 Answer the following user query: {{{query}}}
 

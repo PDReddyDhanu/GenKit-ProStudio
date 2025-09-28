@@ -1,9 +1,10 @@
 
+
 'use server';
 /**
  * @fileOverview An AI agent that suggests a detailed resolution for a support ticket.
  *
- * - generateSupportResponse - A function that generates a helpful response for an admin.
+ * - generateSupportResponse - A function that generates a helpful response for an admin/faculty.
  * - GenerateSupportResponseInput - The input type for the function.
  * - GenerateSupportResponseOutput - The return type for the function.
  */
@@ -31,7 +32,7 @@ const prompt = ai.definePrompt({
   name: 'generateSupportResponsePrompt',
   input: {schema: GenerateSupportResponseInputSchema},
   output: {schema: GenerateSupportResponseOutputSchema},
-  prompt: `You are an expert support agent for a hackathon platform called HackSprint. Your task is to provide a complete and helpful resolution to a student's support ticket. The admin will use your response to help the student.
+  prompt: `You are an expert support agent for a college project management platform called GenKit ProStudio. Your task is to provide a complete and helpful resolution to a student's support ticket. The faculty member or admin will use your response to help the student.
 
 The response should be empathetic, clear, and if possible, provide step-by-step instructions.
 
