@@ -1,23 +1,21 @@
-# HackSprint: All-in-One Hackathon Management Platform
+# GenKit ProStudio: College Project Management Hub
 
-HackSprint is a comprehensive, AI-powered SaaS platform built with Next.js and Firebase to streamline the organization and management of internal college hackathons. It provides a seamless experience for students, judges, and administrators, from registration and team formation to final project judging and results announcement.
+GenKit ProStudio is a comprehensive, AI-powered SaaS platform built with Next.js and Firebase to streamline the lifecycle of academic projects in colleges. It provides a seamless, transparent, and efficient experience for students, faculty guides, HoDs, and administrators, from project proposal and team formation to final evaluation and reporting.
 
-![HackSprint Homepage](https://i.imgur.com/your-screenshot.png) <!-- Replace with a real screenshot URL -->
+![GenKit ProStudio Homepage](https://i.imgur.com/your-screenshot.png) <!-- Replace with a real screenshot URL -->
 
 ## ✨ Key Features
 
-- **Role-Based Portals:** Separate, dedicated interfaces for Students, Judges, and Administrators.
-- **Team Management:** Students can easily create new teams or join existing ones with a unique code.
+- **Role-Based Workflows:** Dedicated portals and dashboards for Students, Guides, R&D Coordinators, HoDs, and Admins.
+- **Multi-Level Approval System:** A transparent and structured workflow for project proposals: Guide → R&D Coordinator → HoD.
+- **Comprehensive Team Management:** Students can easily create teams, invite members via code, and assign roles.
 - **AI-Powered Assistance:**
-    - **Idea Generation:** Stuck for an idea? The AI suggests creative project ideas based on user interests.
-    - **Code Review:** Get instant, AI-powered feedback on submitted GitHub repositories.
-    - **Project Summaries:** AI generates concise summaries of projects to assist judges in their evaluation.
-    - **Guidance Hub:** An AI chatbot to answer questions about hackathons, career paths, and more.
-- **Real-time Leaderboard:** A live, dynamic leaderboard visualizes team scores and rankings as they come in.
-- **Project Showcase:** A gallery to display all submitted projects, celebrating the participants' work.
-- **Fair & Easy Judging:** A dedicated portal for judges to view submissions, score projects against a defined rubric, and view AI-generated summaries.
-- **Admin Dashboard:** Centralized control for admins to manage users, approve registrations, add judges, and post announcements.
-- **Automated Certificate Generation:** Winners can download a verifiable PDF certificate of achievement.
+    - **Abstract Summarizer:** AI generates concise summaries of project abstracts to help faculty review submissions faster.
+    - **Support Triage:** Student-submitted issues are automatically categorized and prioritized by an AI agent.
+    - **Draft Generation:** AI helps faculty draft detailed responses to common student queries.
+- **Centralized Evaluation:** A dedicated portal for internal and external faculty to evaluate projects against standardized rubrics and score individual contributions.
+- **Analytics & Reporting:** Admins and HoDs can view departmental analytics, track project progress, and download reports on students, teams, and scores.
+- **Integrated Communication:** A discussion tab on each project for seamless communication between students and their assigned faculty guide.
 
 ---
 
@@ -26,8 +24,8 @@ HackSprint is a comprehensive, AI-powered SaaS platform built with Next.js and F
 - **Framework:** [Next.js](https://nextjs.org/) (with App Router)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/) & [ShadCN UI](https://ui.shadcn.com/) for componentry.
 - **AI Integration:** [Google AI (Gemini) via Genkit](https://firebase.google.com/docs/genkit)
-- **Database & Auth (Simulated):** State management using React Context and `localStorage` to simulate a Firebase backend.
-- **Deployment:** Ready for [Vercel](https://vercel.com/) or [Firebase App Hosting](https://firebase.google.com/docs/app-hosting).
+- **Database & Auth:** [Firebase](https://firebase.google.com/) (Firestore, Firebase Auth)
+- **File Storage:** [Firebase Storage](https://firebase.google.com/docs/storage) for document uploads.
 
 ---
 
@@ -44,8 +42,8 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/PDR-Dhanu/hacksprint_
-    cd hacksprint
+    git clone https://github.com/your-username/genkit-pro-studio
+    cd genkit-pro-studio
     ```
 
 2.  **Install dependencies:**
@@ -54,9 +52,10 @@ Follow these instructions to get a copy of the project up and running on your lo
     ```
 
 3.  **Set up environment variables:**
-    Create a `.env` file in the root of the project and add your Google Gemini API key. You can get a free key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+    Create a `.env` file in the root of the project and add your Google Gemini API key and Firebase configuration.
     ```env
-    NEXT_PUBLIC_GEMINI_API_KEY=YOUR_API_KEY_HERE
+    NEXT_PUBLIC_GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+    NEXT_PUBLIC_FIREBASE_CONFIG=YOUR_FIREBASE_CONFIG_JSON
     ```
 
 4.  **Run the development server:**
@@ -70,38 +69,30 @@ The application should now be running at [http://localhost:9002](http://localhos
 
 ## 📂 Project Structure
 
-The project follows a standard Next.js App Router structure:
-
 ```
 /
-├── public/               # Static assets
+├── public/
 ├── src/
-│   ├── app/              # Main application routes and pages
-│   │   ├── (portals)/    # Route groups for admin, judge, student, etc.
-│   │   │   ├── page.tsx
-│   │   │   └── _components/
-│   │   ├── layout.tsx    # Root layout
+│   ├── app/              # Main application routes
+│   │   ├── (portals)/    # Route groups for admin, faculty, student
 │   │   └── page.tsx      # Homepage
 │   ├── ai/               # Genkit AI flows and configuration
-│   │   ├── flows/
-│   │   └── genkit.ts
-│   ├── components/       # Shared UI components (layout, ShadCN UI)
+│   ├── components/       # Shared UI components
 │   ├── context/          # React Context for state management
-│   ├── hooks/            # Custom React hooks
-│   ├── lib/              # Helper functions, constants, types
-└── ...                   # Config files (tailwind, next, etc.)
+│   ├── lib/              # Firebase config, API functions, types
+└── ...                   # Config files
 ```
 
 ---
 
 ## 🤖 AI Integration with Genkit
 
-This project leverages **Genkit**, a framework for building AI-powered features, to connect to the Gemini API.
+This project leverages **Genkit** to connect to the Gemini API for its AI features.
 
-- **Location:** All AI-related logic is located in `src/ai/`.
-- **Configuration:** The central Genkit configuration is in `src/ai/genkit.ts`, which initializes the Google AI plugin with the API key from the `.env` file.
-- **Flows:** Individual AI features (like idea generation or code review) are defined as "flows" in `src/ai/flows/`. Each flow encapsulates a prompt and the logic for interacting with the Gemini model.
-- **Server Actions:** The frontend communicates with these flows via Next.js Server Actions defined in `src/app/actions.ts`.
+- **Location:** AI logic resides in `src/ai/`.
+- **Configuration:** `src/ai/genkit.ts` initializes the Google AI plugin.
+- **Flows:** Features like abstract summarization are defined as "flows" in `src/ai/flows/`.
+- **Server Actions:** The frontend communicates with these flows via Next.js Server Actions.
 
 ---
 
@@ -109,21 +100,7 @@ This project leverages **Genkit**, a framework for building AI-powered features,
 
 This application is optimized for deployment on Vercel or Firebase App Hosting.
 
-### Deploying with Vercel
-
-1.  Push your code to a Git repository (GitHub, GitLab, Bitbucket).
+1.  Push your code to a Git repository.
 2.  Import the repository into your Vercel dashboard.
-3.  Vercel will automatically detect the Next.js framework.
-4.  **Important:** Add your `NEXT_PUBLIC_GEMINI_API_KEY` as an environment variable in the Vercel project settings.
-5.  Click "Deploy". Vercel will build and deploy your application.
-
----
-
-## 👨‍💻 Author
-
-This project was developed by **Dhanunjay Reddy Palakolanu**.
-
-- **GitHub:** [@PDR-Dhanu](https://github.com/PDR-Dhanu)
-- **LinkedIn:** [dhanunjay-reddy-palakolanu-pdr](https://www.linkedin.com/in/dhanunjay-reddy-palakolanu-pdr/)
-- **X (Twitter):** [@PDReddyDhanu](https://x.com/PDReddyDhanu)
-- **YouTube:** [@pdreddy](https://www.youtube.com/@pdreddy)
+3.  **Important:** Add your `NEXT_PUBLIC_GEMINI_API_KEY` and `NEXT_PUBLIC_FIREBASE_CONFIG` as environment variables in the Vercel project settings.
+4.  Click "Deploy".

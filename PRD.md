@@ -1,4 +1,4 @@
-# Product Requirements Document: HackSprint
+# Product Requirements Document: GenKit ProStudio
 
 **Version:** 1.0
 **Date:** 2024-08-01
@@ -9,32 +9,45 @@
 ## 1. Introduction
 
 ### 1.1. Project Vision
-To create a seamless, all-in-one SaaS platform that empowers colleges to effortlessly organize, manage, and execute internal hackathons. By leveraging AI-powered assistance and providing dedicated portals for every user role, HackSprint aims to foster innovation, streamline administration, and enhance the overall hackathon experience for students, judges, and organizers.
+GenKit Pro Studio is an all-in-one SaaS platform for colleges that enables structured management of student academic projects. By digitizing the project lifecycle—from team formation, abstract submission, faculty assignment, approvals, to final reporting—the platform fosters innovation, reduces faculty workload, and ensures transparent, department-wise project tracking.
+
+The platform integrates AI-powered features to summarize abstracts, assist in issue resolution, and streamline communication, ensuring both students and faculty have a seamless experience.
 
 ### 1.2. Purpose of this Document
-This document outlines the product requirements for the HackSprint platform. It defines the target users, their needs, the features of the platform, and the technical specifications required to build it. It serves as the single source of truth for all stakeholders involved in the project.
+This document defines the product requirements for GenKit Pro Studio. It captures:
+- The needs of students, faculty, and administrators.
+- Core features and technical requirements.
+- Data models and workflows.
+- AI-driven enhancements.
+
+This serves as the single source of truth for designers, developers, and stakeholders.
 
 ### 1.3. Target Audience
-The platform is designed for three primary user roles:
--   **Students:** Participants of the hackathon.
--   **Judges:** Industry experts or faculty responsible for evaluating projects.
--   **Administrators:** Faculty or event organizers responsible for managing the entire hackathon.
+The platform is designed for multiple stakeholders within colleges:
+- **Students** (project creators & team members)
+- **Guides/Internal Faculty**
+- **HoDs** (Heads of Departments)
+- **R&D Coordinators**
+- **External Faculty** (Evaluators)
+- **Admins** (Super Admin & Sub Admin/College Admins)
 
 ---
 
 ## 2. Goals and Objectives
 
 ### 2.1. Business Goals
--   **Streamline Hackathon Management:** Significantly reduce the administrative overhead of organizing a college hackathon.
--   **Enhance Participant Engagement:** Provide a rich, interactive, and helpful experience for students.
--   **Foster Innovation:** Equip students with AI tools that help them brainstorm, build, and improve their projects.
--   **Ensure Fair & Transparent Judging:** Create a structured and efficient evaluation process for judges.
+- **Streamline Academic Project Management:** Eliminate manual workflows and paperwork.
+- **Ensure Transparent Approvals:** Multi-level approval system with real-time status tracking.
+- **Enhance Student Collaboration:** Easy team creation, task assignment, and communication.
+- **Reduce Faculty Burden:** AI-assisted summaries, evaluation tools, and auto-reporting.
+- **Enable Department-Wise Insights:** Analytics, scoring trends, and downloadable reports.
 
 ### 2.2. Success Metrics
--   Time saved by administrators in managing registrations, submissions, and reporting.
--   High adoption and satisfaction rates among students and judges.
--   Number of projects successfully submitted through the platform.
--   Usage frequency of AI-powered assistance features (Idea Generation, Code Review, etc.).
+- % reduction in faculty workload during project approvals and evaluations.
+- Number of projects successfully approved and completed via the platform.
+- Average student satisfaction score (via in-app feedback).
+- Usage rate of AI features (summaries, support triage, auto responses).
+- Adoption rate across colleges and departments.
 
 ---
 
@@ -42,138 +55,116 @@ The platform is designed for three primary user roles:
 
 ### 3.1. User Personas
 
-#### 3.1.1. Student (e.g., "Priya")
--   **Needs:** To easily register for the hackathon, find a team with complementary skills, get help with project ideas, submit her project without hassle, track her team's progress, and see the final results.
--   **Pain Points:** Difficulty finding teammates, uncertainty about project ideas, complex submission processes, lack of feedback on her work.
+#### 3.1.1. Student (e.g., "Ravi")
+- **Needs:** Register with personal details, form a team, submit abstracts, track approvals, tag members by skill, and get evaluations.
+- **Pain Points:** Confusing approval stages, difficulty forming teams, lack of feedback on rejected projects.
 
-#### 3.1.2. Judge (e.g., "Mr. Sharma")
--   **Needs:** A centralized place to view all project submissions, clear and consistent scoring rubrics, quick ways to understand the core of each project, and tools to manage their evaluation workload.
--   **Pain Points:** Disorganized submissions (spreadsheets, emails), subjective scoring, time-consuming evaluation process.
+#### 3.1.2. Guide (e.g., "Dr. Priya")
+- **Needs:** View assigned teams, check abstracts with AI-generated summaries, approve/reject projects, provide remarks, and assign preliminary marks.
+- **Pain Points:** Reviewing large volumes of documents manually, tracking multiple student teams.
 
-#### 3.1.3. Administrator (e.g., "Dr. Davis")
--   **Needs:** A dashboard to manage the entire event, approve users, add judges, broadcast announcements, monitor analytics, and generate final reports.
--   **Pain Points:** Manual user registration, chaotic communication channels, difficulty tracking submissions and scores, tedious report creation after the event.
+#### 3.1.3. R&D Coordinator (e.g., "Mr. Arjun")
+- **Needs:** Review projects forwarded by guides, approve/reject, interact with students, and escalate approvals to HoD.
+- **Pain Points:** Manual coordination with guides and HoDs, lack of structured reporting.
+
+#### 3.1.4. HoD (e.g., "Prof. Meena")
+- **Needs:** Approve final projects, assign external faculty, track departmental projects, download lists/reports.
+- **Pain Points:** Difficulty tracking status across sections, time-consuming report preparation.
+
+#### 3.1.5. External Faculty (e.g., "Mr. Sharma")
+- **Needs:** Evaluate assigned projects, score teams/individuals, view reports, and provide feedback.
+- **Pain Points:** Disorganized project information, lack of evaluation standardization.
+
+#### 3.1.6. Admin (Super + Sub Admin)
+- **Needs:** Super Admin manages platform-wide data. Sub Admin (college-level) manages users, departments, HoDs, and guides.
+- **Pain Points:** Manual student and faculty assignment, scattered data across spreadsheets.
 
 ### 3.2. Feature Matrix
 
-| Feature                         | Student | Judge | Admin | Description                                                                                |
-| ------------------------------- | :-----: | :---: | :---: | ------------------------------------------------------------------------------------------ |
-| **User Authentication**         |    ✅    |  ✅   |  ✅   | Secure login/signup, email verification, and role-based access.                            |
-| **College Selection**           |    ✅    |  ✅   |  ✅   | Users select their college to enter the specific hackathon portal.                         |
-| **Dashboard**                   |    ✅    |  ✅   |  ✅   | Role-specific landing pages with relevant information and actions.                         |
-| **Team Management**             |    ✅    |   -   |  ✅   | Create teams, join with a code, manage members, and view team details.                     |
-| **Project Submission**          |    ✅    |   -   |  ✅   | Submit project name, description, and GitHub URL.                                          |
-| **Project Showcase**            |    ✅    |  ✅   |  ✅   | A public gallery of all submitted projects for a selected hackathon.                       |
-| **Live Leaderboard**            |    ✅    |  ✅   |  ✅   | Real-time ranking of teams based on judges' scores.                                        |
-| **Judging Portal**              |    -    |  ✅   |  ✅   | Interface for judges to view submissions and score them against a defined rubric.          |
-| **Admin Management**            |    -    |   -   |  ✅   | Manage users (approve/remove), add/remove judges, and oversee event data.                |
-| **Announcements**               |    ✅    |  ✅   |  ✅   | Admins can post announcements, which appear in a real-time feed for all users.             |
-| **Certificate Generation**      |    ✅    |   -   |  ✅   | Winners can download a verifiable PDF Certificate of Achievement.                          |
-| **AI Idea Generation**          |    ✅    |   -   |   -   | AI suggests project themes and ideas based on user interests.                              |
-| **AI Code Review**              |    ✅    |  ✅   |   -   | Get instant, AI-powered feedback on code quality from a GitHub repository.                 |
-| **AI Project Summary**          |    -    |  ✅   |   -   | Judges can generate concise summaries of projects to speed up evaluation.                  |
-| **AI Guidance Hub**             |    ✅    |  ✅   |  ✅   | An AI chatbot to answer questions about hackathons, careers, and more.                     |
-| **AI Team Finder**              |    ✅    |   -   |   -   | AI suggests compatible teammates based on skills and work styles.                          |
-| **AI Report Generation**        |    -    |  ✅   |  ✅   | Admins can generate a full hackathon summary report with statistics and winner announcements.|
-| **AI Support Triage**           |    ✅    |   -   |  ✅   | AI automatically categorizes and prioritizes student support tickets for admins.           |
-| **AI Pitch Coach**              |    ✅    |   -   |   -   | AI generates a 5-slide presentation outline for a student's project.                     |
-| **AI Project Image Generation** |    ✅    |   -   |  ✅   | AI generates an abstract hero image for each project submission.                           |
+| Feature                   | Student | Guide | R&D | HoD | External Faculty | Admin | Description                                                                      |
+| ------------------------- | :-----: | :---: | :-: | :-: | :--------------: | :---: | -------------------------------------------------------------------------------- |
+| User Authentication       |    ✅    |  ✅   |  ✅ |  ✅ |        ✅        |  ✅   | Secure login/signup (Google/Email), forgot password, role-based dashboards.    |
+| College & Dept Selection  |    ✅    |  ✅   |  ✅ |  ✅ |        ✅        |  ✅   | Users select their college & department for context-specific portal.             |
+| Profile Management        |    ✅    |  ✅   |  -  |  -  |        -         |  ✅   | Students add Roll No, skills, GitHub/LinkedIn; faculty update basic info.        |
+| Team Management           |    ✅    |   -   |  -  |  -  |        -         |  ✅   | Create/join teams (max 6), invite by link/code, assign member roles.             |
+| Project Submission        |    ✅    |  ✅   |  ✅ |  ✅ |        ✅        |  ✅   | Students submit abstracts, docs, deployed link; guides & HoDs review.            |
+| Approval Workflow         |    -    |  ✅   |  ✅ |  ✅ |        -         |  ✅   | Multi-level approvals: Guide → R&D → HoD.                                      |
+| Evaluation & Scoring      |    -    |  ✅   |  -  |  ✅ |        ✅        |  ✅   | Guides & external faculty assign marks (team + individual).                        |
+| AI Abstract Summarizer    |    ✅    |  ✅   |  ✅ |  ✅ |        ✅        |   -   | Summarizes project abstracts for faster reviews.                               |
+| AI Issue Support          |    ✅    |  ✅   |  ✅ |  ✅ |        -         |  ✅   | Students submit issues → AI triages → faculty/admin respond.                     |
+| Discussion/Remarks Tab    |    ✅    |  ✅   |  ✅ |  ✅ |        -         |   -   | Chat-like interface for feedback & clarifications.                               |
+| Announcements             |    ✅    |  ✅   |  ✅ |  ✅ |        ✅        |  ✅   | Broadcast updates with start/end dates.                                        |
+| Reports & Downloads       |    -    |  ✅   |  ✅ |  ✅ |        ✅        |  ✅   | Export CSV/Excel lists of students, teams, projects, scores.                     |
+| Analytics Dashboard       |    -    |  ✅   |  ✅ |  ✅ |        ✅        |  ✅   | Visual insights: team distribution, workload, project progress.                  |
 
 ---
 
 ## 4. Technical Specifications
 
 ### 4.1. Tech Stack
--   **Framework:** Next.js (with App Router)
--   **Language:** TypeScript
--   **Styling:** Tailwind CSS with ShadCN UI components
--   **Generative AI:** Google AI (Gemini) via Genkit
--   **Database & Auth (Simulated):** React Context and `localStorage` are used to simulate a Firebase backend. In a real-world scenario, this would be replaced with Firebase (Firestore, Firebase Auth).
+- **Frontend Framework:** Next.js (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS + ShadCN UI components
+- **AI Layer:** Genkit + Google Gemini models
+- **Database & Auth:** Firebase (Firestore, Auth)
+- **File Storage:** Firebase Storage (for abstracts, reports, docs)
 
 ### 4.2. Data Models (Simplified)
 
 #### `College`
--   `id`: string (e.g., "Vidya Jyothi Institute of Technology")
--   Contains sub-collections for `users`, `judges`, `teams`, `projects`, etc.
+- `id`: string
+- `name`: string
+- `departments`: `Department[]`
 
 #### `User`
--   `id`: string (UID)
--   `name`: string
--   `email`: string
--   `status`: 'pending' | 'approved'
--   `skills`: string[]
--   `workStyle`: string[]
--   `bio`: string
--   `github`: string
--   `notifications`: Notification[]
+- `id`: string
+- `role`: 'student' | 'guide' | 'hod' | 'rnd' | 'external' | 'admin'
+- `name`: string
+- `email`: string
+- `rollNo`: string (students only)
+- `skills`: string[]
+- `github`: string
+- `linkedin`: string
+- `notifications`: `Notification[]`
 
 #### `Team`
--   `id`: string
--   `name`: string
--   `creatorId`: string (User ID)
--   `joinCode`: string
--   `members`: Member[]
--   `joinRequests`: Request[]
--   `hackathonId`: string
--   `messages`: ChatMessage[]
+- `id`: string
+- `name`: string
+- `creatorId`: string
+- `joinCode`: string
+- `members`: `Member[]`
+- `projects`: `Project[]`
 
 #### `Project`
--   `id`: string
--   `teamId`: string
--   `hackathonId`: string
--   `name`: string
--   `description`: string
--   `githubUrl`: string
--   `imageUrl`: string (AI-generated)
--   `scores`: Score[]
--   `averageScore`: number
+- `id`: string
+- `teamId`: string
+- `title`: string
+- `description`: string
+- `abstractFileUrl`: string
+- `githubUrl`: string
+- `deployedUrl`: string
+- `status`: 'PendingGuide' | 'PendingR&D' | 'PendingHoD' | 'Approved' | 'Rejected'
+- `scores`: `Score[]`
 
-#### `Judge`
--   `id`: string (UID)
--   `name`: string
--   `email`: string
--   `bio`: string
--   `notifications`: Notification[]
-
-#### `Hackathon`
--   `id`: string
--   `name`: string
--   `prizeMoney`: string
--   `rules`: string
--   `deadline`: number (timestamp)
+#### `Evaluation`
+- `id`: string
+- `projectId`: string
+- `evaluatorId`: string
+- `marks`: number
+- `remarks`: string
 
 #### `SupportTicket`
--   `id`: string
--   `studentId`: string
--   `subject`: string
--   `question`: string
--   `status`: 'New' | 'In Progress' | 'Resolved'
--   `category`: string (AI-triaged)
--   `priority`: 'Low' | 'Medium' | 'High' (AI-triaged)
--   `responses`: Response[]
+- `id`: string
+- `studentId`: string
+- `subject`: string
+- `description`: string
+- `status`: 'New' | 'In Progress' | 'Resolved'
+- `priority`: 'Low' | 'Medium' | 'High'
+- `responses`: `Response[]`
 
 ### 4.3. AI Integration (Genkit Flows)
-The platform uses Genkit, a framework for building AI features, to connect to the Google Gemini models. All AI logic is encapsulated in "flows" located in `src/ai/flows/`.
-
--   **`ai-project-idea-suggestions`**: Generates hackathon themes.
--   **`generate-project-idea`**: Generates a specific project idea from a theme.
--   **`ai-code-review-for-submissions`**: Analyzes a GitHub repo and provides feedback.
--   **`project-summary-for-judges`**: Summarizes a project for judges.
--   **`fetch-guidance-info`**: Powers the AI Guidance Hub chatbot.
--   **`generate-project-image`**: Creates an abstract image for a project.
--   **`generate-pitch-outline`**: Creates a 5-slide presentation structure.
--   **`find-teammate-matches`**: Matches students based on skills and work style.
--   **`generate-hackathon-summary-report`**: Creates a full Markdown report of the event.
--   **`triage-support-ticket`**: Categorizes and prioritizes incoming support requests.
--   **`generate-support-response`**: Drafts a detailed response to a support ticket.
-
----
-
-## 5. Out of Scope
-
-The following features are explicitly out of scope for this version of the project:
--   Direct integration with third-party project management tools (e.g., Jira, Trello).
--   Real-time video or voice chat for team collaboration.
--   Payment processing for registration fees or sponsorships.
--   Public, inter-college hackathons (the focus is on internal events).
--   A native mobile application (the web app is designed to be mobile-responsive).
+- **`summarize-abstract`**: Generates summaries of student abstracts.
+- **`triage-support-ticket`**: Categorizes and prioritizes student issues.
+- **`generate-support-draft`**: Suggests draft responses for faculty.
+- **`auto-project-status`**: Predicts likely project outcome (experimental).
+- **`analytics-helper`**: Creates auto-insights for faculty dashboards.
