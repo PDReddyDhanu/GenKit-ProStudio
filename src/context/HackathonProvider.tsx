@@ -220,8 +220,10 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
                 let collegeId = state.selectedCollege;
                 
                 if (fnName === 'loginFaculty') {
-                    // loginFaculty is special, it needs the college from its args to check for sub-admin
-                    const result = await (fn as any)(args[0], args[1]);
+                    if (!collegeId) {
+                        throw new Error("No college selected. Please select a college first.");
+                    }
+                    const result = await (fn as any)(collegeId, args[0]);
                      if (result?.successMessage) {
                         dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: result.successMessage });
                     }
