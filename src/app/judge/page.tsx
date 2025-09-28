@@ -31,7 +31,7 @@ export default function FacultyPortal() {
     };
 
     if (showIntro) {
-        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Scale className="w-full h-full" />} title="Faculty & Admin Portal" description="Evaluate submissions, manage users, and run the project hub." />;
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<Scale className="w-full h-full" />} title="Faculty Portal" description="Evaluate submissions, manage users, and run the project hub." />;
     }
     
     if (currentAdmin || currentFaculty) {
@@ -47,15 +47,15 @@ export default function FacultyPortal() {
                         <CardHeader className="p-0">
                             <CardTitle className="text-3xl font-bold font-headline text-primary">Welcome Back</CardTitle>
                             <CardDescription>
-                                Login to access your dedicated portal. This is the entry point for:
+                                Login to access your dedicated portal for all faculty and administrative roles.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-0 mt-6 space-y-4">
-                            <ul className="space-y-3 text-muted-foreground">
-                                <li className="flex items-center gap-3"><UserCheck className="h-5 w-5 text-secondary"/> Guides / Internal Faculty</li>
+                             <ul className="space-y-3 text-muted-foreground">
+                                <li className="flex items-center gap-3"><UserCheck className="h-5 w-5 text-secondary"/> Guides & Mentors</li>
                                 <li className="flex items-center gap-3"><Building className="h-5 w-5 text-secondary"/> HoDs & R&D Coordinators</li>
-                                <li className="flex items-center gap-3"><Briefcase className="h-5 w-5 text-secondary"/> External Faculty / Evaluators</li>
-                                <li className="flex items-center gap-3"><Shield className="h-5 w-5 text-secondary"/> Admins (College & Super)</li>
+                                <li className="flex items-center gap-3"><Briefcase className="h-5 w-5 text-secondary"/> External Evaluators</li>
+                                <li className="flex items-center gap-3"><Shield className="h-5 w-5 text-secondary"/> Administrators</li>
                             </ul>
                             <div className="pt-6 border-t">
                                 <p className="text-sm text-muted-foreground">Are you a student?</p>
@@ -67,7 +67,7 @@ export default function FacultyPortal() {
                      </div>
                      <div className="p-8">
                         <CardHeader className="p-0 text-center">
-                            <CardTitle className="text-2xl font-bold font-headline">Faculty & Admin Login</CardTitle>
+                            <CardTitle className="text-2xl font-bold font-headline">Faculty Login</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0 mt-6">
                             <form onSubmit={handleLogin} className="space-y-6">
