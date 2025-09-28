@@ -102,7 +102,7 @@ export async function changePassword(collegeId: string, { oldPassword, newPasswo
     }
 }
 
-let adminPassword = 'admin123';
+let adminPassword = 'prostudio123';
 
 export async function changeAdminPassword(collegeId: string, { oldPassword, newPassword }: { oldPassword: string, newPassword: string }) {
     if (oldPassword !== adminPassword) {
@@ -182,7 +182,7 @@ export async function loginFaculty(collegeId: string, { email, password }: any) 
 }
 
 export async function loginAdmin({ email, password }: any) {
-    if (email !== 'admin@genkit.pro' || password !== adminPassword) {
+    if (email !== 'genkit@admin.com' || password !== adminPassword) {
         throw new Error('Invalid admin credentials.');
     }
     return { successMessage: 'Admin login successful!', isAdmin: true };
