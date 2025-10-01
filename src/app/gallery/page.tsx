@@ -1,152 +1,197 @@
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
-import Link from 'next/link';
-import { Github, GalleryVertical, Award } from 'lucide-react';
-import PageIntro from '@/components/PageIntro';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Github, GalleryVertical, Users, CheckCircle, Clock, Search } from 'lucide-react';
+import PageIntro from '@/components/PageIntro';
+import { AuthMessage } from '@/components/AuthMessage';
+import { ProjectSubmission, Team, User } from '@/lib/types';
+import { DEPARTMENTS_DATA } from '@/lib/constants';
 
+const projectTypes = [
+    { id: 'real-time-project', name: 'Real-Time Project' },
+    { id: 'mini-project', name: 'Mini Project' },
+    { id: 'major-project', name: 'Major Project' },
+    { id: 'other-project', name: 'Other Project' }
+];
+
+const TeamProjectCard = ({ team, projects }: { team: Team, projects: ProjectSubmission[] }) => {
+    if (projects.length === 0) return null;
+
+    const primaryProject = projects[0];
+    const teamProjects = projects.flatMap(p => p.projectIdeas.map(idea => ({ ...idea, submissionStatus: p.status })));
+    
+    return (
+        <Card className="group relative flex flex-col transition-all duration-300 transform-gpu hover:scale-[1.02] hover:shadow-xl">
+            {primaryProject.imageUrl && (
+                <div className="relative h-48 w-full">
+                    <Image 
+                        src={primaryProject.imageUrl} 
+                        alt={`${teamProjects[0].title} visualization`} 
+                        fill 
+                        className="object-cover rounded-t-lg"
+                        unoptimized
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"/>
+                </div>
+            )}
+            <CardHeader className="pt-4">
+                <CardTitle className="font-headline text-xl">{team.name}</CardTitle>
+                <CardDescription className="flex items-center gap-2">
+                    <Users className="h-4 w-4" /> {team.members.length} members
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-grow">
+                <Tabs defaultValue="idea-0" className="w-full">
+                    <TabsList className={`grid w-full grid-cols-${teamProjects.length}`}>
+                        {teamProjects.map((idea, index) => (
+                            <TabsTrigger key={idea.id} value={`idea-${index}`}>Idea {index + 1}</TabsTrigger>
+                        ))}
+                    </TabsList>
+                    {teamProjects.map((idea, index) => (
+                        <TabsContent key={idea.id} value={`idea-${index}`} className="mt-4">
+                             <div className="space-y-2">
+                                <h4 className="font-bold text-primary">{idea.title}</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-2 h-[40px]">{idea.description}</p>
+                                <div className="flex items-center gap-2 text-xs">
+                                    {idea.submissionStatus === 'Approved' ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Clock className="h-4 w-4 text-yellow-500" />}
+                                    <span>Status: {idea.submissionStatus}</span>
+                                </div>
+                                {idea.githubUrl && (
+                                     <Button asChild variant="link" size="sm" className="p-0 h-auto">
+                                        <Link href={idea.githubUrl} target="_blank" rel="noopener noreferrer">
+                                            <Github className="mr-2 h-4 w-4" /> View on GitHub
+                                        </Link>
+                                    </Button>
+                                )}
+                            </div>
+                        </TabsContent>
+                    ))}
+                </Tabs>
+            </CardContent>
+        </Card>
+    );
+};
 
 export default function ProjectGallery() {
-    const { state, dispatch } = useHackathon();
-    const { projects, teams, selectedHackathonId, hackathons, selectedCollege } = state;
+    const { state } = useHackathon();
+    const { projects, teams, users, currentUser, currentFaculty } = state;
     const [showIntro, setShowIntro] = useState(true);
-    const router = useRouter();
 
-    const handleEventChange = (hackathonId: string) => {
-        dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'all' ? null : hackathonId });
-    };
+    const [selectedProjectType, setSelectedProjectType] = useState<string>('all');
+    const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
+    const [selectedSection, setSelectedSection] = useState<string>('all');
 
-    const displayedProjects = useMemo(() => {
-        if (!selectedHackathonId) {
-            return [];
-        }
-        return projects.filter(p => p.hackathonId === selectedHackathonId);
-    }, [projects, selectedHackathonId]);
+    const loggedInUser = currentUser || currentFaculty;
 
+    const { filteredTeams, sections } = useMemo(() => {
+        if (!loggedInUser) return { filteredTeams: [], sections: [] };
+
+        const userDepartment = (loggedInUser as User).department || (loggedInUser as any).branch || 'all';
+
+        const departmentFilter = selectedDepartment === 'all' ? userDepartment : selectedDepartment;
+
+        const allSections = Array.from(new Set(users.filter(u => u.department === departmentFilter || u.branch === departmentFilter).map(u => u.section).filter(Boolean)));
+
+        const teamsWithProjects = teams.filter(team => projects.some(p => p.teamId === team.id));
+
+        const filtered = teamsWithProjects.filter(team => {
+            const teamMembers = team.members.map(m => users.find(u => u.id === m.id)).filter(Boolean) as User[];
+            if (teamMembers.length === 0) return false;
+
+            const teamDepartment = teamMembers[0].department || teamMembers[0].branch;
+            const teamSection = teamMembers[0].section;
+            const teamProjectType = projects.find(p => p.teamId === team.id)?.hackathonId;
+
+            const departmentMatch = departmentFilter === 'all' || teamDepartment === departmentFilter;
+            const sectionMatch = selectedSection === 'all' || teamSection === selectedSection;
+            const projectTypeMatch = selectedProjectType === 'all' || teamProjectType === selectedProjectType;
+
+            return departmentMatch && sectionMatch && projectTypeMatch;
+        });
+
+        return { filteredTeams: filtered, sections: allSections };
+    }, [loggedInUser, teams, projects, users, selectedDepartment, selectedSection, selectedProjectType]);
     
     if (showIntro) {
-        return <PageIntro onFinished={() => setShowIntro(false)} icon={<GalleryVertical className="w-full h-full" />} title="Project Showcase" description="A gallery of all submitted projects to celebrate the work." />;
+        return <PageIntro onFinished={() => setShowIntro(false)} icon={<GalleryVertical className="w-full h-full" />} title="Project Showcase" description="A gallery of all submitted projects to celebrate student work." />;
     }
 
+    if (!loggedInUser) {
+        return (
+            <div className="container max-w-2xl mx-auto py-12 animate-fade-in text-center">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">Access Restricted</CardTitle>
+                        <CardDescription>You must be logged in to view the project showcase.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <AuthMessage />
+                        <div className="flex gap-4 justify-center">
+                             <Button asChild><Link href="/student">Student Portal</Link></Button>
+                             <Button asChild variant="secondary"><Link href="/judge">Faculty Portal</Link></Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+    
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-fade-in">
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-12">
-                 <div className="text-center sm:text-left">
-                    <h1 className="text-4xl font-bold mb-2 font-headline">Project Showcase</h1>
-                    <p className="text-lg text-muted-foreground">Celebrating the incredible work from {state.selectedCollege}</p>
-                </div>
-                 <div>
-                     <Select onValueChange={handleEventChange} value={selectedHackathonId || "all"}>
-                        <SelectTrigger className="w-full sm:w-[280px]">
-                            <SelectValue placeholder="Select an Event to view projects" />
-                        </SelectTrigger>
+            <div className="text-center mb-8">
+                <h1 className="text-4xl font-bold mb-2 font-headline">Project Showcase</h1>
+                <p className="text-lg text-muted-foreground">Explore projects from {state.selectedCollege}</p>
+            </div>
+
+            <Card className="p-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Select onValueChange={setSelectedProjectType} defaultValue="all">
+                        <SelectTrigger><SelectValue placeholder="Filter by Project Type..." /></SelectTrigger>
                         <SelectContent>
-                             <SelectItem value="all">Select an Event</SelectItem>
-                            {hackathons.map(h => (
-                                <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
+                            <SelectItem value="all">All Project Types</SelectItem>
+                            {projectTypes.map(pt => <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                    <Select onValueChange={setSelectedDepartment} defaultValue={(loggedInUser as User).department || (loggedInUser as any).branch || 'all'}>
+                        <SelectTrigger><SelectValue placeholder="Filter by Department..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Departments</SelectItem>
+                            {Object.keys(DEPARTMENTS_DATA).map(branch => (
+                                <SelectItem key={branch} value={branch}>{branch}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
+                     <Select onValueChange={setSelectedSection} defaultValue="all" disabled={selectedDepartment === 'all'}>
+                        <SelectTrigger><SelectValue placeholder="Filter by Section..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Sections</SelectItem>
+                            {sections.map(sec => <SelectItem key={sec} value={sec}>Section {sec}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
                 </div>
-            </div>
+            </Card>
             
-            {selectedHackathonId ? (
-                displayedProjects.length > 0 ? (
-                    <TooltipProvider>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {displayedProjects.map((project, index) => {
-                                const team = teams.find(t => t.id === project.teamId);
-                                const primaryIdea = project.projectIdeas[0];
-                                if (!primaryIdea) return null;
-
-                                return (
-                                    <Card 
-                                        key={project.id} 
-                                        className="group relative flex flex-col animate-card-in"
-                                        style={{ animationDelay: `${index * 100}ms` }}
-                                    >
-                                         {project.imageUrl && (
-                                            <div className="relative h-48 w-full">
-                                                <Image 
-                                                    src={project.imageUrl} 
-                                                    alt={`${primaryIdea.title} visualization`} 
-                                                    fill 
-                                                    className="object-cover rounded-t-lg"
-                                                    unoptimized
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"/>
-                                            </div>
-                                        )}
-                                        <div className="flex flex-col flex-grow p-6">
-                                            <CardTitle className="flex items-center gap-3">
-                                                <GalleryVertical className="h-6 w-6 text-primary flex-shrink-0" />
-                                                {primaryIdea.title}
-                                            </CardTitle>
-                                            <CardDescription>by {team?.name || 'Unknown Team'}</CardDescription>
-                                            
-                                            <CardContent className="p-0 flex-grow pt-4">
-                                                <p className="text-sm text-muted-foreground line-clamp-3">{primaryIdea.description}</p>
-                                                {project.achievements && project.achievements.length > 0 && (
-                                                    <div className="flex flex-wrap gap-2 mt-4">
-                                                        {project.achievements.map(achievement => (
-                                                            <Tooltip key={achievement}>
-                                                                <TooltipTrigger asChild>
-                                                                    <Button variant="outline" size="icon" className="border-yellow-400 text-yellow-400 h-8 w-8">
-                                                                        <Award className="w-4 h-4" />
-                                                                    </Button>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>{achievement}</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </CardContent>
-                                        </div>
-                                        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
-                                             <Button asChild variant="secondary">
-                                                <Link href={primaryIdea.githubUrl} target="_blank" rel="noopener noreferrer">
-                                                    <Github className="mr-2 h-4 w-4" />
-                                                    View on GitHub
-                                                </Link>
-                                            </Button>
-                                        </div>
-                                    </Card>
-                                );
-                            })}
-                        </div>
-                    </TooltipProvider>
-                ) : (
-                    <Card>
-                        <CardContent className="py-16">
-                            <div className="text-center text-muted-foreground">
-                                <GalleryVertical className="h-12 w-12 mx-auto" />
-                                 <p className="mt-4 text-lg">No projects have been submitted for this event yet.</p>
-                                 <p>The gallery is waiting to be filled!</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )
+            {filteredTeams.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredTeams.map((team) => {
+                        const teamProjects = projects.filter(p => p.teamId === team.id);
+                        return <TeamProjectCard key={team.id} team={team} projects={teamProjects} />;
+                    })}
+                </div>
             ) : (
-                 <Card>
+                <Card>
                     <CardContent className="py-16">
                         <div className="text-center text-muted-foreground">
-                            <GalleryVertical className="h-12 w-12 mx-auto" />
-                             <p className="mt-4 text-lg">Please select an event from the dropdown above to view its project showcase.</p>
+                            <Search className="h-12 w-12 mx-auto" />
+                            <p className="mt-4 text-lg">No projects found for the selected filters.</p>
+                            <p>Try adjusting your search criteria.</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -154,4 +199,3 @@ export default function ProjectGallery() {
         </div>
     );
 }
-
