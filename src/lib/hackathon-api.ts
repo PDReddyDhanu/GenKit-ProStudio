@@ -660,27 +660,24 @@ export async function updateMemberRole(collegeId: string, teamId: string, member
 
 export async function leaveTeam(collegeId: string, teamId: string, userId: string) {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
-    
     const teamDoc = await getDoc(teamRef);
+
     if (teamDoc.exists()) {
         const team = teamDoc.data() as Team;
-        const memberObject = team.members.find(m => m.id === userId);
-
-        if (!memberObject) return { successMessage: "You are not on this team." };
-
         const updatedMembers = team.members.filter(m => m.id !== userId);
 
         if (updatedMembers.length === 0) {
+            // If the leaving member is the last one, delete the team
             await deleteDoc(teamRef);
+        } else if (team.creatorId === userId) {
+            // If the leader is leaving, assign a new leader
+            await updateDoc(teamRef, { 
+                members: updatedMembers,
+                creatorId: updatedMembers[0].id // Assign the next person as leader
+            });
         } else {
-            if (team.creatorId === userId) {
-                await updateDoc(teamRef, { 
-                    members: arrayRemove(memberObject),
-                    creatorId: updatedMembers[0].id
-                });
-            } else {
-                 await updateDoc(teamRef, { members: arrayRemove(memberObject) });
-            }
+            // Just remove the member
+            await updateDoc(teamRef, { members: updatedMembers });
         }
     }
     
