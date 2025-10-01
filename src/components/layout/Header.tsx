@@ -34,11 +34,10 @@ export const AppLogo = () => (
                 <stop offset="100%" stopColor="hsl(var(--secondary))" />
             </linearGradient>
         </defs>
-        <g transform="translate(50 50) scale(0.9) rotate(-15)">
-            <path d="M25,43.3 L-25,43.3 L-50,0 L-25,-43.3 L25,-43.3 L50,0 Z" stroke="url(#logoGradient)" strokeWidth="5" fill="none" />
-            <path d="M0,0 L-25,43.3" stroke="url(#logoGradient)" strokeWidth="5" fill="none" />
-            <path d="M0,0 L25,-43.3" stroke="url(#logoGradient)" strokeWidth="5" fill="none" />
-            <path d="M-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0" fill="url(#logoGradient)" />
+        <g transform="translate(50 50) scale(0.9)">
+            <path d="M50,0 L25,43.3 L-25,43.3 L-50,0 L-25,-43.3 L25,-43.3 Z" stroke="url(#logoGradient)" strokeWidth="5" fill="none"/>
+            <path d="M0,0 L-25,43.3 M0,0 L25,43.3 M0,0 L-25,-43.3 M0,0 L25,-43.3 M-25,43.3 L-50,0 M25,43.3 L50,0" stroke="url(#logoGradient)" strokeWidth="2" fill="none" />
+            <circle cx="0" cy="0" r="12" fill="url(#logoGradient)" />
         </g>
     </svg>
 );
