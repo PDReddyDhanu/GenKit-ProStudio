@@ -42,6 +42,8 @@ export default function Dashboard() {
     const { state, dispatch } = useHackathon();
     const { currentUser, teams, projects, selectedHackathonId } = state;
     const [forceTeamView, setForceTeamView] = useState(false);
+    
+    // This state will now control whether we show the submission form or the project view.
     const [forceSubmissionView, setForceSubmissionView] = useState(false);
 
     const handleEventChange = (hackathonId: string) => {
@@ -75,6 +77,12 @@ export default function Dashboard() {
         const hasRollNo = !!currentUser.rollNo;
         return hasSkills && hasWorkStyle && hasRollNo;
     }, [currentUser]);
+    
+    // Callback to be passed to the submission form
+    const handleSubmissionFinished = () => {
+        setForceSubmissionView(false); 
+    };
+
 
     const renderContent = () => {
         if (!selectedHackathonId || !currentEvent) {
@@ -98,34 +106,9 @@ export default function Dashboard() {
                 </>
             );
         }
-
-        const canSubmitMore = !currentSubmission || currentSubmission.projectIdeas.length < 3;
         
-        if (forceSubmissionView || (!currentSubmission && currentTeam) || (currentSubmission && canSubmitMore)) {
-             return (
-                <>
-                    <EventHeader event={currentEvent} />
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <main className="lg:col-span-2">
-                             {currentSubmission ? (
-                                <ProjectView submission={currentSubmission} onBack={() => setForceTeamView(true)} onAddIdea={() => setForceSubmissionView(true)}/>
-                            ) : (
-                                <ProjectSubmission team={currentTeam} existingSubmission={currentSubmission} onBack={() => setForceTeamView(true)} />
-                            )}
-                        </main>
-                        <aside className="lg:col-span-1 space-y-8">
-                            <TeamHub team={currentTeam} />
-                            <Card>
-                                <CardHeader><CardTitle className="font-headline">Rules</CardTitle></CardHeader>
-                                <CardContent><p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentEvent.rules || "Standard rules apply."}</p></CardContent>
-                            </Card>
-                        </aside>
-                    </div>
-                </>
-            );
-        }
-
-        if (currentSubmission) {
+        // If a submission exists and we are not forcing the form view, show the project view.
+        if (currentSubmission && !forceSubmissionView) {
              return (
                 <>
                     <EventHeader event={currentEvent} />
@@ -149,7 +132,24 @@ export default function Dashboard() {
             );
         }
 
-         return <p>Loading...</p>
+        // Otherwise, show the submission form (for new submissions or adding more ideas).
+        return (
+            <>
+                <EventHeader event={currentEvent} />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <main className="lg:col-span-2">
+                         <ProjectSubmission team={currentTeam} existingSubmission={currentSubmission} onBack={() => setForceTeamView(true)} onSubmissionFinished={handleSubmissionFinished} />
+                    </main>
+                    <aside className="lg:col-span-1 space-y-8">
+                        <TeamHub team={currentTeam} />
+                        <Card>
+                            <CardHeader><CardTitle className="font-headline">Rules</CardTitle></CardHeader>
+                            <CardContent><p className="text-sm whitespace-pre-wrap text-muted-foreground">{currentEvent.rules || "Standard rules apply."}</p></CardContent>
+                        </Card>
+                    </aside>
+                </div>
+            </>
+        );
     };
 
     return (

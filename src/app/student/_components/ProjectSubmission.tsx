@@ -20,6 +20,7 @@ interface ProjectSubmissionProps {
     team: Team;
     existingSubmission: ProjectSubmission | undefined;
     onBack: () => void;
+    onSubmissionFinished: () => void;
 }
 
 const ProjectIdeaForm = ({ idea, setIdea, isSubmitting }: { idea: ProjectIdea, setIdea: (idea: ProjectIdea) => void, isSubmitting: boolean }) => {
@@ -117,7 +118,7 @@ const IdeaGeneratorDialog = ({ open, onOpenChange, onUseIdea, generatedIdea, onR
 };
 
 
-export default function ProjectSubmission({ team, existingSubmission, onBack }: ProjectSubmissionProps) {
+export default function ProjectSubmission({ team, existingSubmission, onBack, onSubmissionFinished }: ProjectSubmissionProps) {
     const { api, state } = useHackathon();
     const { selectedHackathonId } = state;
     
@@ -149,7 +150,7 @@ export default function ProjectSubmission({ team, existingSubmission, onBack }: 
             setIsSubmitting(true);
             try {
                 await api.submitProject(selectedHackathonId, team.id, projectIdea, existingSubmission?.id);
-                // The provider will update the state, which will hide this component
+                onSubmissionFinished(); // Call the callback to hide the form
             } finally {
                 setIsSubmitting(false);
             }
