@@ -34,15 +34,11 @@ export const AppLogo = () => (
                 <stop offset="100%" stopColor="hsl(var(--secondary))" />
             </linearGradient>
         </defs>
-        <g transform="translate(50 50) scale(0.9)">
-            <path fill="none" stroke="url(#logoGradient)" strokeWidth="4" d="M0 -35 L30.31 -17.5 M0 -35 L-30.31 -17.5 M0 35 L30.31 17.5 M0 35 L-30.31 17.5 M-30.31 -17.5 L-30.31 17.5 M30.31 -17.5 L30.31 17.5"/>
-            <path fill="url(#logoGradient)" d="M0 -15 L13 -7.5 V7.5 L0 15 L-13 7.5 V-7.5 Z"/>
-            <circle cx="0" cy="-35" r="6" fill="url(#logoGradient)"/>
-            <circle cx="30.31" cy="-17.5" r="6" fill="url(#logoGradient)"/>
-            <circle cx="30.31" cy="17.5" r="6" fill="url(#logoGradient)"/>
-            <circle cx="0" cy="35" r="6" fill="url(#logoGradient)"/>
-            <circle cx="-30.31" cy="17.5" r="6" fill="url(#logoGradient)"/>
-            <circle cx="-30.31" cy="-17.5" r="6" fill="url(#logoGradient)"/>
+        <g transform="translate(50 50) scale(0.9) rotate(-15)">
+            <path d="M25,43.3 L-25,43.3 L-50,0 L-25,-43.3 L25,-43.3 L50,0 Z" stroke="url(#logoGradient)" strokeWidth="5" fill="none" />
+            <path d="M0,0 L-25,43.3" stroke="url(#logoGradient)" strokeWidth="5" fill="none" />
+            <path d="M0,0 L25,-43.3" stroke="url(#logoGradient)" strokeWidth="5" fill="none" />
+            <path d="M-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0" fill="url(#logoGradient)" />
         </g>
     </svg>
 );
