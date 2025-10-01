@@ -1,14 +1,15 @@
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Github, GalleryVertical, Users, CheckCircle, Clock, Search } from 'lucide-react';
+import { Github, GalleryVertical, Users, CheckCircle, Clock, Search, User as UserIcon } from 'lucide-react';
 import PageIntro from '@/components/PageIntro';
 import { AuthMessage } from '@/components/AuthMessage';
 import { ProjectSubmission, Team, User } from '@/lib/types';
@@ -21,11 +22,15 @@ const projectTypes = [
     { id: 'other-project', name: 'Other Project' }
 ];
 
-const TeamProjectCard = ({ team, projects }: { team: Team, projects: ProjectSubmission[] }) => {
+const TeamProjectCard = ({ team, projects, users }: { team: Team, projects: ProjectSubmission[], users: User[] }) => {
     if (projects.length === 0) return null;
 
     const primaryProject = projects[0];
     const teamProjects = projects.flatMap(p => p.projectIdeas.map(idea => ({ ...idea, submissionStatus: p.status })));
+    
+    const teamMembersWithDetails = useMemo(() => {
+        return team.members.map(member => users.find(u => u.id === member.id)).filter(Boolean) as User[];
+    }, [team.members, users]);
     
     return (
         <Card className="group relative flex flex-col transition-all duration-300 transform-gpu hover:scale-[1.02] hover:shadow-xl">
@@ -48,31 +53,52 @@ const TeamProjectCard = ({ team, projects }: { team: Team, projects: ProjectSubm
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
-                <Tabs defaultValue="idea-0" className="w-full">
-                    <TabsList className={`grid w-full grid-cols-${teamProjects.length}`}>
-                        {teamProjects.map((idea, index) => (
-                            <TabsTrigger key={idea.id} value={`idea-${index}`}>Idea {index + 1}</TabsTrigger>
-                        ))}
+                <Tabs defaultValue="projects" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="projects">Projects</TabsTrigger>
+                        <TabsTrigger value="members">Members</TabsTrigger>
                     </TabsList>
-                    {teamProjects.map((idea, index) => (
-                        <TabsContent key={idea.id} value={`idea-${index}`} className="mt-4">
-                             <div className="space-y-2">
-                                <h4 className="font-bold text-primary">{idea.title}</h4>
-                                <p className="text-sm text-muted-foreground line-clamp-2 h-[40px]">{idea.description}</p>
-                                <div className="flex items-center gap-2 text-xs">
-                                    {idea.submissionStatus === 'Approved' ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Clock className="h-4 w-4 text-yellow-500" />}
-                                    <span>Status: {idea.submissionStatus}</span>
-                                </div>
-                                {idea.githubUrl && (
-                                     <Button asChild variant="link" size="sm" className="p-0 h-auto">
-                                        <Link href={idea.githubUrl} target="_blank" rel="noopener noreferrer">
-                                            <Github className="mr-2 h-4 w-4" /> View on GitHub
-                                        </Link>
-                                    </Button>
-                                )}
-                            </div>
-                        </TabsContent>
-                    ))}
+                    <TabsContent value="projects" className="mt-4">
+                        <Tabs defaultValue="idea-0" className="w-full">
+                            <TabsList className={`grid w-full grid-cols-${teamProjects.length}`}>
+                                {teamProjects.map((idea, index) => (
+                                    <TabsTrigger key={idea.id} value={`idea-${index}`}>Idea {index + 1}</TabsTrigger>
+                                ))}
+                            </TabsList>
+                            {teamProjects.map((idea, index) => (
+                                <TabsContent key={idea.id} value={`idea-${index}`} className="mt-4">
+                                    <div className="space-y-2">
+                                        <h4 className="font-bold text-primary">{idea.title}</h4>
+                                        <p className="text-sm text-muted-foreground line-clamp-2 h-[40px]">{idea.description}</p>
+                                        <div className="flex items-center gap-2 text-xs">
+                                            {idea.submissionStatus === 'Approved' ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Clock className="h-4 w-4 text-yellow-500" />}
+                                            <span>Status: {idea.submissionStatus}</span>
+                                        </div>
+                                        {idea.githubUrl && (
+                                            <Button asChild variant="link" size="sm" className="p-0 h-auto">
+                                                <Link href={idea.githubUrl} target="_blank" rel="noopener noreferrer">
+                                                    <Github className="mr-2 h-4 w-4" /> View on GitHub
+                                                </Link>
+                                            </Button>
+                                        )}
+                                    </div>
+                                </TabsContent>
+                            ))}
+                        </Tabs>
+                    </TabsContent>
+                    <TabsContent value="members" className="mt-4">
+                        <ul className="space-y-3">
+                            {teamMembersWithDetails.map(member => (
+                                <li key={member.id} className="flex items-center gap-3 text-sm">
+                                    <UserIcon className="h-4 w-4 text-muted-foreground" />
+                                    <div>
+                                        <p className="font-semibold">{member.name}</p>
+                                        <p className="text-xs text-muted-foreground">{member.rollNo}</p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </TabsContent>
                 </Tabs>
             </CardContent>
         </Card>
@@ -93,30 +119,39 @@ export default function ProjectGallery() {
     const { filteredTeams, sections } = useMemo(() => {
         if (!loggedInUser) return { filteredTeams: [], sections: [] };
 
-        const userDepartment = (loggedInUser as User).department || (loggedInUser as any).branch || 'all';
+        const userBranch = (loggedInUser as User)?.branch || (loggedInUser as any)?.branch;
+        const userDepartment = (loggedInUser as User)?.department || (loggedInUser as any)?.department;
+        const defaultDepartmentFilter = userBranch || userDepartment || 'all';
 
-        const departmentFilter = selectedDepartment === 'all' ? userDepartment : selectedDepartment;
+        const departmentFilter = selectedDepartment === 'all' ? defaultDepartmentFilter : selectedDepartment;
 
-        const allSections = Array.from(new Set(users.filter(u => u.department === departmentFilter || u.branch === departmentFilter).map(u => u.section).filter(Boolean)));
+        const allSectionsForDept = Array.from(new Set(users
+            .filter(u => (u.branch === departmentFilter || u.department === departmentFilter) && u.section)
+            .map(u => u.section)
+        )).sort();
 
         const teamsWithProjects = teams.filter(team => projects.some(p => p.teamId === team.id));
 
         const filtered = teamsWithProjects.filter(team => {
-            const teamMembers = team.members.map(m => users.find(u => u.id === m.id)).filter(Boolean) as User[];
-            if (teamMembers.length === 0) return false;
+            const teamMembersDetails = team.members.map(m => users.find(u => u.id === m.id)).filter(Boolean) as User[];
+            if (teamMembersDetails.length === 0) return false;
 
-            const teamDepartment = teamMembers[0].department || teamMembers[0].branch;
-            const teamSection = teamMembers[0].section;
-            const teamProjectType = projects.find(p => p.teamId === team.id)?.hackathonId;
+            const representativeMember = teamMembersDetails[0];
+            const teamBranch = representativeMember.branch;
+            const teamDepartment = representativeMember.department;
+            const teamSection = representativeMember.section;
 
-            const departmentMatch = departmentFilter === 'all' || teamDepartment === departmentFilter;
+            const project = projects.find(p => p.teamId === team.id);
+            const teamProjectType = project?.hackathonId;
+
+            const departmentMatch = departmentFilter === 'all' || teamBranch === departmentFilter || teamDepartment === departmentFilter;
             const sectionMatch = selectedSection === 'all' || teamSection === selectedSection;
             const projectTypeMatch = selectedProjectType === 'all' || teamProjectType === selectedProjectType;
 
             return departmentMatch && sectionMatch && projectTypeMatch;
         });
 
-        return { filteredTeams: filtered, sections: allSections };
+        return { filteredTeams: filtered, sections: allSectionsForDept };
     }, [loggedInUser, teams, projects, users, selectedDepartment, selectedSection, selectedProjectType]);
     
     if (showIntro) {
@@ -168,7 +203,7 @@ export default function ProjectGallery() {
                             ))}
                         </SelectContent>
                     </Select>
-                     <Select onValueChange={setSelectedSection} defaultValue="all" disabled={selectedDepartment === 'all'}>
+                     <Select onValueChange={setSelectedSection} defaultValue="all" disabled={selectedDepartment === 'all' && sections.length === 0}>
                         <SelectTrigger><SelectValue placeholder="Filter by Section..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Sections</SelectItem>
@@ -182,7 +217,7 @@ export default function ProjectGallery() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredTeams.map((team) => {
                         const teamProjects = projects.filter(p => p.teamId === team.id);
-                        return <TeamProjectCard key={team.id} team={team} projects={teamProjects} />;
+                        return <TeamProjectCard key={team.id} team={team} projects={teamProjects} users={users} />;
                     })}
                 </div>
             ) : (
