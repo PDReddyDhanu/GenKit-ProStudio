@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { auth, db } from './firebase';
@@ -791,6 +792,48 @@ export async function evaluateProject(collegeId: string, projectId: string, eval
         averageScore: averageScore,
     });
     return { successMessage: "Evaluation submitted successfully." };
+}
+
+export async function assignGuideToTeam(collegeId: string, teamId: string, guide: Faculty) {
+    const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
+    const guideData = { id: guide.id, name: guide.name };
+    await updateDoc(teamRef, { guide: guideData });
+
+    // Notify the guide
+    const guideRef = doc(db, `colleges/${collegeId}/faculty`, guide.id);
+    const guideNotification = {
+        id: doc(collection(db, 'dummy')).id,
+        message: `You have been assigned as the guide for team ${teamDoc.data()?.name}.`,
+        link: `/admin`, // Link to their dashboard
+        timestamp: Date.now(),
+        isRead: false,
+    };
+    await updateDoc(guideRef, {
+        notifications: arrayUnion(guideNotification)
+    });
+
+    // Notify the team members
+    const teamDoc = await getDoc(teamRef);
+    if (teamDoc.exists()) {
+        const teamData = teamDoc.data() as Team;
+        const studentNotification = {
+            id: doc(collection(db, 'dummy')).id,
+            message: `${guide.name} has been assigned as your project guide.`,
+            link: `/student`,
+            timestamp: Date.now(),
+            isRead: false,
+        };
+        const batch = writeBatch(db);
+        teamData.members.forEach(member => {
+            const studentRef = doc(db, `colleges/${collegeId}/users`, member.id);
+            batch.update(studentRef, {
+                notifications: arrayUnion(studentNotification)
+            });
+        });
+        await batch.commit();
+    }
+
+    return { successMessage: `Successfully assigned ${guide.name} to the team.` };
 }
 
 // --- Support ---

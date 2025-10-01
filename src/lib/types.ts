@@ -74,6 +74,10 @@ export interface Team {
   messages?: ChatMessage[];
   joinRequests?: JoinRequest[]; // Array of users who requested to join
   hackathonId?: string; 
+  guide?: {
+    id: string;
+    name: string;
+  }
 }
 
 export interface ProjectIdea {

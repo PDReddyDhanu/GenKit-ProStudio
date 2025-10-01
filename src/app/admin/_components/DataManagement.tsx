@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -65,10 +66,11 @@ export default function DataManagement() {
         const data = eventProjects.map(p => {
             const team = eventTeams.find(t => t.id === p.teamId);
             const teamMembers = team?.members.map(m => m.name).join('; ') || '';
+            const primaryIdea = p.projectIdeas[0];
             return [
-                `"${p.name.replace(/"/g, '""')}"`,
-                `"${p.description.replace(/"/g, '""')}"`,
-                p.githubUrl,
+                `"${(primaryIdea?.title || 'N/A').replace(/"/g, '""')}"`,
+                `"${(primaryIdea?.description || 'N/A').replace(/"/g, '""')}"`,
+                primaryIdea?.githubUrl || 'N/A',
                 `"${team?.name.replace(/"/g, '""') || 'N/A'}"`,
                 `"${teamMembers.replace(/"/g, '""')}"`,
                 p.averageScore.toFixed(2)
@@ -249,3 +251,4 @@ export default function DataManagement() {
         </div>
     );
 }
+
