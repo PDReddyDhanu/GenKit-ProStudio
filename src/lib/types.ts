@@ -84,7 +84,6 @@ export interface ProjectIdea {
   keywords: string;
   githubUrl: string;
   abstractFileUrl?: string;
-  abstractFile?: File; // For client-side handling
 }
 
 

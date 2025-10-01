@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import type { Team, ProjectIdea, ProjectSubmission } from '@/lib/types';
-import { Loader, ArrowLeft, UploadCloud, Wand2, Sparkles } from 'lucide-react';
+import { Loader, ArrowLeft, UploadCloud, Wand2, Sparkles, Link as LinkIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { generateDetailedProjectIdeaAction } from '@/app/actions';
 import type { GenerateDetailedProjectIdeaOutput } from '@/ai/flows/generate-detailed-project-idea';
@@ -24,23 +24,6 @@ interface ProjectSubmissionProps {
 }
 
 const ProjectIdeaForm = ({ idea, setIdea, isSubmitting }: { idea: ProjectIdea, setIdea: (idea: ProjectIdea) => void, isSubmitting: boolean }) => {
-    const [file, setFile] = useState<File | null>(null);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = e.target.files?.[0];
-        if (selectedFile) {
-            if (selectedFile.size > 1024 * 1024) { // 1MB limit
-                alert("File size exceeds 1MB. Please choose a smaller file.");
-                return;
-            }
-            if (!['application/pdf', 'image/jpeg', 'image/png'].includes(selectedFile.type)) {
-                alert("Invalid file type. Please upload a PDF, JPG, or PNG.");
-                return;
-            }
-            setFile(selectedFile);
-            setIdea({ ...idea, abstractFile: selectedFile });
-        }
-    };
     
     return (
         <div className="space-y-4">
@@ -65,12 +48,11 @@ const ProjectIdeaForm = ({ idea, setIdea, isSubmitting }: { idea: ProjectIdea, s
                 <Input id={`github-${idea.id}`} type="url" value={idea.githubUrl} onChange={e => setIdea({ ...idea, githubUrl: e.target.value })} required disabled={isSubmitting} placeholder="https://github.com/team/repo"/>
             </div>
             <div className="space-y-2">
-                <Label htmlFor={`file-${idea.id}`}>Abstract Document (PDF, JPG, PNG - Max 1MB)</Label>
+                <Label htmlFor={`file-url-${idea.id}`}>Abstract Document URL (Optional)</Label>
                  <div className="flex items-center gap-2 p-2 border-2 border-dashed rounded-md">
-                    <UploadCloud className="h-6 w-6 text-muted-foreground" />
-                    <Input id={`file-${idea.id}`} type="file" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" className="border-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" disabled={isSubmitting} />
+                    <LinkIcon className="h-6 w-6 text-muted-foreground" />
+                    <Input id={`file-url-${idea.id}`} type="url" value={idea.abstractFileUrl || ''} onChange={e => setIdea({ ...idea, abstractFileUrl: e.target.value })} placeholder="https://docs.google.com/document/..." disabled={isSubmitting} />
                 </div>
-                 {file && <p className="text-sm text-muted-foreground">Selected file: {file.name}</p>}
             </div>
         </div>
     )

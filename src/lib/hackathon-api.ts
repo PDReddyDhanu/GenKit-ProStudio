@@ -685,14 +685,8 @@ export async function leaveTeam(collegeId: string, teamId: string, userId: strin
 }
 
 export async function submitProject(collegeId: string, hackathonId: string, teamId: string, idea: ProjectIdea, submissionId?: string) {
-    let processedIdea = { ...idea };
-    if (idea.abstractFile) {
-        const fileRef = ref(storage, `colleges/${collegeId}/abstracts/${teamId}/${idea.id}-${idea.abstractFile.name}`);
-        const snapshot = await uploadBytes(fileRef, idea.abstractFile);
-        processedIdea.abstractFileUrl = await getDownloadURL(snapshot.ref);
-    }
-    const { abstractFile, ...ideaToSave } = processedIdea;
-
+    const ideaToSave = { ...idea };
+    
     if (submissionId) {
         // This is an additional idea for an existing submission
         const submissionRef = doc(db, `colleges/${collegeId}/projects`, submissionId);
