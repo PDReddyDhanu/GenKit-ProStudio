@@ -25,6 +25,25 @@ import { useRouter } from 'next/navigation';
 import UrgentApprovalsDashboard from './_components/UrgentApprovalsDashboard';
 import { Badge } from '@/components/ui/badge';
 
+const projectEvents = [
+    {
+        id: 'real-time-project',
+        name: 'Real-Time Project',
+    },
+    {
+        id: 'mini-project',
+        name: 'Mini Project',
+    },
+    {
+        id: 'major-project',
+        name: 'Major Project',
+    },
+    {
+        id: 'other-project',
+        name: 'Other Project',
+    }
+];
+
 
 export default function AdminPortal() {
     const { state, api, dispatch } = useHackathon();
@@ -52,7 +71,13 @@ export default function AdminPortal() {
         dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'default' ? null : hackathonId });
     }
      const currentEvent = useMemo(() => {
-        return hackathons.find(h => h.id === selectedHackathonId);
+        const dynamicEvent = hackathons.find(h => h.id === selectedHackathonId);
+        if (dynamicEvent) return dynamicEvent;
+        
+        const staticEvent = projectEvents.find(p => p.id === selectedHackathonId);
+        if(staticEvent) return { ...staticEvent, rules: '', prizeMoney: '', teamSizeLimit: 6, deadline: 0, id: staticEvent.id };
+
+        return null;
     }, [hackathons, selectedHackathonId]);
 
     const urgentApprovalsCount = useMemo(() => {
@@ -108,6 +133,9 @@ export default function AdminPortal() {
                         </SelectTrigger>
                         <SelectContent>
                              <SelectItem value="default">Default View (No Event Selected)</SelectItem>
+                             {projectEvents.map(p => (
+                                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                             ))}
                             {hackathons.map(h => (
                                 <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                             ))}
@@ -167,7 +195,3 @@ export default function AdminPortal() {
         </div>
     );
 }
-
-    
-
-    
