@@ -35,7 +35,7 @@ import {
     limit,
     writeBatch
 } from 'firebase/firestore';
-import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate } from './types';
+import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate } from './types';
 import { INDIVIDUAL_EVALUATION_RUBRIC, INTERNAL_STAGE_1_RUBRIC, INTERNAL_STAGE_2_RUBRIC, INTERNAL_FINAL_RUBRIC, EXTERNAL_FINAL_RUBRIC } from './constants';
 import { generateProjectImage } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
@@ -532,6 +532,7 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
         submissionId: "",
         teamMessages: [],
         guideMessages: [],
+        personalMessages: [],
         joinRequests: [],
     };
     const teamRef = await addDoc(collection(db, `colleges/${collegeId}/teams`), newTeam);
@@ -776,6 +777,24 @@ export async function postTeamMessage(collegeId: string, teamId: string, message
         teamMessages: arrayUnion(newMessage)
     });
     return { successMessage: "Message sent." };
+}
+
+export async function postPersonalMessage(collegeId: string, teamId: string, message: Omit<PersonalChatMessage, 'id'>) {
+    const newMessage = { ...message, id: doc(collection(db, 'dummy')).id };
+    await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), {
+        personalMessages: arrayUnion(newMessage)
+    });
+    // For personal messages, notifications are good to have
+    const recipientRef = doc(db, `colleges/${collegeId}/users`, message.recipientId);
+    const notification = {
+        id: doc(collection(db, 'dummy')).id,
+        message: `You have a new message from ${message.userName}.`,
+        link: '/student', // Or a more specific link if available
+        timestamp: Date.now(),
+        isRead: false
+    };
+    await updateDoc(recipientRef, { notifications: arrayUnion(notification) });
+    return { successMessage: "Personal message sent." };
 }
 
 export async function postGuideMessage(collegeId: string, teamId: string, message: Omit<ChatMessage, 'id'>) {

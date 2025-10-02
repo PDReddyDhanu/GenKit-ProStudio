@@ -52,6 +52,11 @@ export interface ChatMessage {
   timestamp: number;
 }
 
+export interface PersonalChatMessage extends ChatMessage {
+    recipientId: string;
+}
+
+
 export interface JoinRequest {
     id: string;
     name: string;
@@ -72,6 +77,7 @@ export interface Team {
   notifications?: Notification[];
   teamMessages?: ChatMessage[];
   guideMessages?: ChatMessage[];
+  personalMessages?: PersonalChatMessage[];
   joinRequests?: JoinRequest[]; // Array of users who requested to join
   hackathonId?: string; 
   guide?: {
