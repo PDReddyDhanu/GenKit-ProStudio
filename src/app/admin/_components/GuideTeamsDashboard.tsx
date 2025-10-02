@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -12,10 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { getAiCodeReview, generatePitchOutline } from '@/app/actions';
-import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
 import Link from 'next/link';
-import { marked } from 'marked';
 
 const GuideChatDialog = ({ team, guide, open, onOpenChange }: { team: Team, guide: any, open: boolean, onOpenChange: (open: boolean) => void }) => {
     const { api } = useHackathon();
@@ -101,40 +99,6 @@ const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubm
     const { currentFaculty } = state;
     const [isChatOpen, setIsChatOpen] = useState(false);
     
-    const [isReviewing, setIsReviewing] = useState(false);
-    const [review, setReview] = useState('');
-    const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
-    const [pitchOutline, setPitchOutline] = useState<GeneratePitchOutlineOutput | null>(null);
-
-    const handleGetReview = async (githubUrl: string) => {
-        setIsReviewing(true);
-        setReview('');
-        try {
-            const result = await getAiCodeReview({ githubUrl });
-            setReview(result);
-        } catch (error) {
-            console.error("Error getting AI review:", error);
-            setReview("Sorry, we couldn't generate a review at this time. Please try again later.");
-        } finally {
-            setIsReviewing(false);
-        }
-    };
-
-    const handleGenerateOutline = async (idea: ProjectIdea) => {
-        setIsGeneratingOutline(true);
-        setPitchOutline(null);
-        try {
-            const result = await generatePitchOutline({
-                projectName: idea.title,
-                projectDescription: idea.description,
-                aiCodeReview: review || undefined
-            });
-            setPitchOutline(result);
-        } finally {
-            setIsGeneratingOutline(false);
-        }
-    };
-
     return (
         <>
             <Card className="bg-muted/50 flex flex-col">
@@ -179,34 +143,6 @@ const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubm
                             ))}
                         </Accordion>
                     )}
-                     {review && (
-                        <div className="mt-4 space-y-2">
-                            <h4 className="font-bold flex items-center gap-2 text-sm"><Bot className="text-primary"/> AI Code Review</h4>
-                            <ScrollArea className="h-40 bg-background p-3 rounded-md border">
-                                <pre className="text-xs whitespace-pre-wrap font-code text-foreground">{review}</pre>
-                            </ScrollArea>
-                        </div>
-                    )}
-                    {pitchOutline && (
-                        <div className="mt-4 space-y-2">
-                            <h4 className="font-bold flex items-center gap-2 text-sm"><Presentation className="text-primary"/> Generated Pitch Outline</h4>
-                            <ScrollArea className="h-40 bg-background p-1 rounded-md border">
-                                <Accordion type="single" collapsible className="w-full">
-                                    {pitchOutline.slides.map((slide, index) => (
-                                    <AccordionItem value={`item-${index}`} key={index}>
-                                        <AccordionTrigger className="text-sm px-2 py-1">{index + 1}. {slide.title}</AccordionTrigger>
-                                        <AccordionContent className="px-2">
-                                            <div
-                                                className="prose prose-sm dark:prose-invert text-foreground max-w-none"
-                                                dangerouslySetInnerHTML={{ __html: marked(slide.content) as string }}
-                                            />
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                    ))}
-                                </Accordion>
-                            </ScrollArea>
-                        </div>
-                    )}
                 </CardContent>
             </Card>
             <GuideChatDialog 
@@ -222,12 +158,15 @@ const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubm
 
 export default function GuideTeamsDashboard() {
     const { state } = useHackathon();
-    const { teams, projects, currentFaculty } = state;
+    const { teams, projects, currentFaculty, selectedHackathonId } = state;
 
     const myAssignedTeams = useMemo(() => {
-        if (!currentFaculty) return [];
-        return teams.filter(team => team.guide?.id === currentFaculty.id);
-    }, [teams, currentFaculty]);
+        if (!currentFaculty || !selectedHackathonId) return [];
+        return teams.filter(team => 
+            team.guide?.id === currentFaculty.id &&
+            team.hackathonId === selectedHackathonId
+        );
+    }, [teams, currentFaculty, selectedHackathonId]);
 
     if (!currentFaculty || !['guide', 'class-mentor'].includes(currentFaculty.role)) {
         return (
@@ -239,12 +178,23 @@ export default function GuideTeamsDashboard() {
         );
     }
     
+    if (!selectedHackathonId) {
+        return (
+            <Card>
+                <CardContent className="py-16 text-center">
+                    <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <p className="mt-4 text-muted-foreground">Please select a project type from the top to view your assigned teams.</p>
+                </CardContent>
+            </Card>
+        );
+    }
+    
     if (myAssignedTeams.length === 0) {
         return (
              <Card>
                 <CardContent className="py-16 text-center">
                     <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <p className="mt-4 text-muted-foreground">You have not been assigned to any teams yet.</p>
+                    <p className="mt-4 text-muted-foreground">You have not been assigned to any teams for this project type yet.</p>
                 </CardContent>
             </Card>
         )
