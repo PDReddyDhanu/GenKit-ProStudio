@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -18,30 +17,39 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AlertTriangle, Trash2, Loader, Download } from 'lucide-react';
+import { AlertTriangle, Trash2, Loader, Download, Filter } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import Link from 'next/link';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DEPARTMENTS_DATA } from '@/lib/constants';
 
 export default function DataManagement() {
     const { state, api } = useHackathon();
     const { users, teams, projects, selectedHackathonId, hackathons } = state;
     const [isLoading, setIsLoading] = useState<string | null>(null);
+    const [selectedDepartment, setSelectedDepartment] = useState('all');
 
-    const handleRemoveStudent = async (userId: string) => {
-        await api.removeStudent(userId);
-    }
-    
     const currentEvent = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
 
-    const eventTeams = useMemo(() => teams.filter(t => t.hackathonId === selectedHackathonId), [teams, selectedHackathonId]);
+    const { eventParticipants, eventTeams, eventProjects } = useMemo(() => {
+        if (!selectedHackathonId) return { eventParticipants: [], eventTeams: [], eventProjects: [] };
 
-    const eventParticipants = useMemo(() => {
-        if (!selectedHackathonId) return [];
-        const participantIds = new Set(eventTeams.flatMap(t => t.members.map(m => m.id)));
-        return users.filter(u => participantIds.has(u.id));
-    }, [users, eventTeams, selectedHackathonId]);
-    
-    const eventProjects = useMemo(() => projects.filter(p => p.hackathonId === selectedHackathonId), [projects, selectedHackathonId]);
+        const departmentUsers = selectedDepartment === 'all'
+            ? users
+            : users.filter(u => u.branch === selectedDepartment || u.department === selectedDepartment);
+        
+        const departmentUserIds = new Set(departmentUsers.map(u => u.id));
+
+        const teamsForEvent = teams.filter(t => t.hackathonId === selectedHackathonId);
+        
+        const teamsInDepartment = teamsForEvent.filter(t => t.members.some(m => departmentUserIds.has(m.id)));
+        const teamIdsInDepartment = new Set(teamsInDepartment.map(t => t.id));
+        
+        const participantsInDepartment = departmentUsers.filter(u => teamsInDepartment.some(t => t.members.some(m => m.id === u.id)));
+
+        const projectsInDepartment = projects.filter(p => p.hackathonId === selectedHackathonId && teamIdsInDepartment.has(p.teamId));
+
+        return { eventParticipants: participantsInDepartment, eventTeams: teamsInDepartment, eventProjects: projectsInDepartment };
+    }, [users, teams, projects, selectedHackathonId, selectedDepartment]);
 
 
     const createCsv = (headers: string[], data: string[][]) => {
@@ -60,32 +68,44 @@ export default function DataManagement() {
         link.click();
         document.body.removeChild(link);
     }
+    
+    const handleExportStudents = () => {
+        const headers = ["Name", "Email", "Roll No", "Branch", "Department", "Section"];
+        const data = eventParticipants.map(u => [
+            u.name, 
+            u.email, 
+            u.rollNo || 'N/A', 
+            u.branch || 'N/A', 
+            u.department || 'N/A', 
+            u.section || 'N/A'
+        ]);
 
-    const handleExportSubmissions = () => {
-        const headers = ["Project Name", "Project Description", "GitHub URL", "Team Name", "Team Members", "Average Score"];
-        const data = eventProjects.map(p => {
+        const csvString = createCsv(headers, data);
+        const eventName = currentEvent?.name || 'event';
+        const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment;
+        downloadCsv(csvString, `${eventName}_${deptName}_RegisteredStudents.csv`);
+    };
+
+    const handleExportProjects = () => {
+        const headers = ["Project Title", "Project Description", "GitHub URL", "Team Name", "Team Members", "Project Status", "Average Score"];
+        const data = eventProjects.flatMap(p => {
             const team = eventTeams.find(t => t.id === p.teamId);
             const teamMembers = team?.members.map(m => m.name).join('; ') || '';
-            const primaryIdea = p.projectIdeas[0];
-            return [
-                `"${(primaryIdea?.title || 'N/A').replace(/"/g, '""')}"`,
-                `"${(primaryIdea?.description || 'N/A').replace(/"/g, '""')}"`,
-                primaryIdea?.githubUrl || 'N/A',
+            return p.projectIdeas.map(idea => ([
+                `"${(idea.title || 'N/A').replace(/"/g, '""')}"`,
+                `"${(idea.description || 'N/A').replace(/"/g, '""')}"`,
+                idea.githubUrl || 'N/A',
                 `"${team?.name.replace(/"/g, '""') || 'N/A'}"`,
                 `"${teamMembers.replace(/"/g, '""')}"`,
+                p.status,
                 p.averageScore.toFixed(2)
-            ];
+            ]));
         });
 
         const csvString = createCsv(headers, data);
-        downloadCsv(csvString, `${currentEvent?.name}_Submissions.csv`);
-    };
-
-    const handleExportParticipants = () => {
-        const headers = ["Name", "Email"];
-        const data = eventParticipants.map(u => [u.name, u.email]);
-        const csvString = createCsv(headers, data);
-        downloadCsv(csvString, `${currentEvent?.name}_Participants.csv`);
+        const eventName = currentEvent?.name || 'event';
+        const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment;
+        downloadCsv(csvString, `${eventName}_${deptName}_TeamsAndProjects.csv`);
     };
 
     const handleResetCurrentEvent = async () => {
@@ -126,47 +146,87 @@ export default function DataManagement() {
     return (
         <div className="space-y-8">
             <Card>
-                <CardHeader className="flex flex-row justify-between items-center">
+                <CardHeader className="flex-col md:flex-row justify-between md:items-center gap-4">
                     <div>
-                        <CardTitle className="font-headline">Event Participants ({eventParticipants.length})</CardTitle>
-                        <CardDescription>Students registered for "{currentEvent?.name || 'the selected event'}"</CardDescription>
+                        <CardTitle className="font-headline">Data Export & Management</CardTitle>
+                        <CardDescription>Export detailed lists based on the selected project type and department.</CardDescription>
                     </div>
                      {currentEvent && (
-                        <div className="flex gap-2">
-                             <Button variant="outline" size="sm" onClick={handleExportSubmissions} disabled={eventProjects.length === 0}>
-                                <Download className="mr-2 h-4 w-4"/> Export Submissions
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={handleExportParticipants} disabled={eventParticipants.length === 0}>
-                                <Download className="mr-2 h-4 w-4"/> Export Participants
-                            </Button>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                             <Select onValueChange={setSelectedDepartment} defaultValue="all">
+                                <SelectTrigger className="w-full sm:w-[240px]">
+                                    <SelectValue placeholder="Filter by Department..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Departments</SelectItem>
+                                    {Object.keys(DEPARTMENTS_DATA).map(branch => (
+                                        <SelectItem key={branch} value={branch}>{branch}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     )}
                 </CardHeader>
-                <CardContent>
-                    <ScrollArea className="h-72">
-                         <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Team</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {eventParticipants.length > 0 ? eventParticipants.map(user => {
-                                    const team = eventTeams.find(t => t.members.some(m => m.id === user.id));
-                                    return (
-                                        <TableRow key={user.id}>
-                                            <TableCell className="font-medium">{user.name}</TableCell>
-                                            <TableCell>{user.email}</TableCell>
-                                            <TableCell>{team?.name || 'No Team'}</TableCell>
-                                        </TableRow>
-                                    )
-                                }) : <TableRow><TableCell colSpan={3} className="text-center">No participants for this event yet.</TableCell></TableRow>}
-                            </TableBody>
-                        </Table>
-                    </ScrollArea>
-                </CardContent>
+                 {currentEvent && (
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Card className="bg-muted/50">
+                                <CardHeader>
+                                    <CardTitle className="text-lg font-semibold">Student Data</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground mb-4">Export a CSV of all registered students for this project type and department.</p>
+                                    <Button variant="outline" size="sm" onClick={handleExportStudents} disabled={eventParticipants.length === 0}>
+                                        <Download className="mr-2 h-4 w-4"/> Export Registered Students ({eventParticipants.length})
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                            <Card className="bg-muted/50">
+                                <CardHeader>
+                                    <CardTitle className="text-lg font-semibold">Project Data</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground mb-4">Export a detailed CSV of all teams, their members, project ideas, status, and scores.</p>
+                                    <Button variant="outline" size="sm" onClick={handleExportProjects} disabled={eventProjects.length === 0}>
+                                        <Download className="mr-2 h-4 w-4"/> Export Teams & Projects ({eventTeams.length})
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="font-headline">Participant Overview</CardTitle>
+                                <CardDescription>Students participating in "{currentEvent?.name || 'the selected event'}" from "{selectedDepartment === 'all' ? 'All Departments' : selectedDepartment}"</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ScrollArea className="h-72">
+                                     <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Name</TableHead>
+                                                <TableHead>Email</TableHead>
+                                                <TableHead>Team</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {eventParticipants.length > 0 ? eventParticipants.map(user => {
+                                                const team = eventTeams.find(t => t.members.some(m => m.id === user.id));
+                                                return (
+                                                    <TableRow key={user.id}>
+                                                        <TableCell className="font-medium">{user.name}</TableCell>
+                                                        <TableCell>{user.email}</TableCell>
+                                                        <TableCell>{team?.name || 'No Team'}</TableCell>
+                                                    </TableRow>
+                                                )
+                                            }) : <TableRow><TableCell colSpan={3} className="text-center">No participants match the current filters.</TableCell></TableRow>}
+                                        </TableBody>
+                                    </Table>
+                                </ScrollArea>
+                            </CardContent>
+                        </Card>
+                    </CardContent>
+                 )}
             </Card>
 
             <Card className="border-destructive">
@@ -177,7 +237,7 @@ export default function DataManagement() {
                 <CardContent className="space-y-4">
                      <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
                         <div>
-                            <h4 className="font-bold">Reset Current Event Data</h4>
+                            <h4 className="font-bold">Reset Current Project Type Data</h4>
                             <p className="text-sm text-muted-foreground">Deletes all teams, projects, and scores for "{currentEvent?.name || 'N/A'}".</p>
                         </div>
                          <AlertDialog>
@@ -193,7 +253,7 @@ export default function DataManagement() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleResetCurrentEvent} className="bg-destructive hover:bg-destructive/80">Yes, reset event data</AlertDialogAction>
+                                    <AlertDialogAction onClick={handleResetCurrentEvent} className="bg-destructive hover:bg-destructive/80">Yes, reset data</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -201,7 +261,7 @@ export default function DataManagement() {
 
                      <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
                         <div>
-                            <h4 className="font-bold">Reset All Events</h4>
+                            <h4 className="font-bold">Reset All Project Events</h4>
                             <p className="text-sm text-muted-foreground">Deletes all project events, teams, and projects. Users and faculty will remain.</p>
                         </div>
                         <AlertDialog>
@@ -251,4 +311,3 @@ export default function DataManagement() {
         </div>
     );
 }
-
