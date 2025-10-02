@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AlertTriangle, Trash2, Loader, Download, Filter } from 'lucide-react';
+import { AlertTriangle, Trash2, Loader, Download } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DEPARTMENTS_DATA } from '@/lib/constants';
@@ -31,24 +31,24 @@ export default function DataManagement() {
     const currentEvent = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
 
     const { eventParticipants, eventTeams, eventProjects } = useMemo(() => {
-        if (!selectedHackathonId) return { eventParticipants: [], eventTeams: [], eventProjects: [] };
-
         const departmentUsers = selectedDepartment === 'all'
             ? users
             : users.filter(u => u.branch === selectedDepartment || u.department === selectedDepartment);
+
+        if (!selectedHackathonId) {
+            return { eventParticipants: departmentUsers, eventTeams: [], eventProjects: [] };
+        }
+        
+        const teamsForEvent = teams.filter(t => t.hackathonId === selectedHackathonId);
         
         const departmentUserIds = new Set(departmentUsers.map(u => u.id));
-
-        const teamsForEvent = teams.filter(t => t.hackathonId === selectedHackathonId);
         
         const teamsInDepartment = teamsForEvent.filter(t => t.members.some(m => departmentUserIds.has(m.id)));
         const teamIdsInDepartment = new Set(teamsInDepartment.map(t => t.id));
         
-        const participantsInDepartment = departmentUsers.filter(u => teamsInDepartment.some(t => t.members.some(m => m.id === u.id)));
-
         const projectsInDepartment = projects.filter(p => p.hackathonId === selectedHackathonId && teamIdsInDepartment.has(p.teamId));
 
-        return { eventParticipants: participantsInDepartment, eventTeams: teamsInDepartment, eventProjects: projectsInDepartment };
+        return { eventParticipants: departmentUsers, eventTeams: teamsInDepartment, eventProjects: projectsInDepartment };
     }, [users, teams, projects, selectedHackathonId, selectedDepartment]);
 
 
@@ -151,82 +151,78 @@ export default function DataManagement() {
                         <CardTitle className="font-headline">Data Export & Management</CardTitle>
                         <CardDescription>Export detailed lists based on the selected project type and department.</CardDescription>
                     </div>
-                     {currentEvent && (
-                        <div className="flex flex-col sm:flex-row gap-2">
-                             <Select onValueChange={setSelectedDepartment} defaultValue="all">
-                                <SelectTrigger className="w-full sm:w-[240px]">
-                                    <SelectValue placeholder="Filter by Department..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Departments</SelectItem>
-                                    {Object.keys(DEPARTMENTS_DATA).map(branch => (
-                                        <SelectItem key={branch} value={branch}>{branch}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    )}
+                    <div className="flex flex-col sm:flex-row gap-2">
+                            <Select onValueChange={setSelectedDepartment} defaultValue="all">
+                            <SelectTrigger className="w-full sm:w-[240px]">
+                                <SelectValue placeholder="Filter by Department..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Departments</SelectItem>
+                                {Object.keys(DEPARTMENTS_DATA).map(branch => (
+                                    <SelectItem key={branch} value={branch}>{branch}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </CardHeader>
-                 {currentEvent && (
-                    <CardContent className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Card className="bg-muted/50">
-                                <CardHeader>
-                                    <CardTitle className="text-lg font-semibold">Student Data</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground mb-4">Export a CSV of all registered students for this project type and department.</p>
-                                    <Button variant="outline" size="sm" onClick={handleExportStudents} disabled={eventParticipants.length === 0}>
-                                        <Download className="mr-2 h-4 w-4"/> Export Registered Students ({eventParticipants.length})
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                            <Card className="bg-muted/50">
-                                <CardHeader>
-                                    <CardTitle className="text-lg font-semibold">Project Data</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground mb-4">Export a detailed CSV of all teams, their members, project ideas, status, and scores.</p>
-                                    <Button variant="outline" size="sm" onClick={handleExportProjects} disabled={eventProjects.length === 0}>
-                                        <Download className="mr-2 h-4 w-4"/> Export Teams & Projects ({eventTeams.length})
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        <Card>
+                <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Card className="bg-muted/50">
                             <CardHeader>
-                                <CardTitle className="font-headline">Participant Overview</CardTitle>
-                                <CardDescription>Students participating in "{currentEvent?.name || 'the selected event'}" from "{selectedDepartment === 'all' ? 'All Departments' : selectedDepartment}"</CardDescription>
+                                <CardTitle className="text-lg font-semibold">Student Data</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <ScrollArea className="h-72">
-                                     <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Name</TableHead>
-                                                <TableHead>Email</TableHead>
-                                                <TableHead>Team</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {eventParticipants.length > 0 ? eventParticipants.map(user => {
-                                                const team = eventTeams.find(t => t.members.some(m => m.id === user.id));
-                                                return (
-                                                    <TableRow key={user.id}>
-                                                        <TableCell className="font-medium">{user.name}</TableCell>
-                                                        <TableCell>{user.email}</TableCell>
-                                                        <TableCell>{team?.name || 'No Team'}</TableCell>
-                                                    </TableRow>
-                                                )
-                                            }) : <TableRow><TableCell colSpan={3} className="text-center">No participants match the current filters.</TableCell></TableRow>}
-                                        </TableBody>
-                                    </Table>
-                                </ScrollArea>
+                                <p className="text-sm text-muted-foreground mb-4">Export a CSV of all registered students for the selected department.</p>
+                                <Button variant="outline" size="sm" onClick={handleExportStudents} disabled={eventParticipants.length === 0}>
+                                    <Download className="mr-2 h-4 w-4"/> Export Registered Students ({eventParticipants.length})
+                                </Button>
                             </CardContent>
                         </Card>
-                    </CardContent>
-                 )}
+                        <Card className="bg-muted/50">
+                            <CardHeader>
+                                <CardTitle className="text-lg font-semibold">Project Data</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground mb-4">Export a detailed CSV of all teams, their members, project ideas, status, and scores for the selected event and department.</p>
+                                <Button variant="outline" size="sm" onClick={handleExportProjects} disabled={eventProjects.length === 0 || !currentEvent}>
+                                    <Download className="mr-2 h-4 w-4"/> Export Teams & Projects ({eventProjects.length})
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="font-headline">Participant Overview</CardTitle>
+                            <CardDescription>Students from "{selectedDepartment === 'all' ? 'All Departments' : selectedDepartment}"</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ScrollArea className="h-72">
+                                    <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>Email</TableHead>
+                                            <TableHead>Team (for current event)</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {eventParticipants.length > 0 ? eventParticipants.map(user => {
+                                            const team = eventTeams.find(t => t.members.some(m => m.id === user.id));
+                                            return (
+                                                <TableRow key={user.id}>
+                                                    <TableCell className="font-medium">{user.name}</TableCell>
+                                                    <TableCell>{user.email}</TableCell>
+                                                    <TableCell>{team?.name || 'No Team'}</TableCell>
+                                                </TableRow>
+                                            )
+                                        }) : <TableRow><TableCell colSpan={3} className="text-center">No participants match the current filters.</TableCell></TableRow>}
+                                    </TableBody>
+                                </Table>
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </CardContent>
             </Card>
 
             <Card className="border-destructive">
@@ -235,12 +231,12 @@ export default function DataManagement() {
                     <CardDescription>These are irreversible actions. Please proceed with caution.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                     <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
+                        <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
                         <div>
                             <h4 className="font-bold">Reset Current Project Type Data</h4>
                             <p className="text-sm text-muted-foreground">Deletes all teams, projects, and scores for "{currentEvent?.name || 'N/A'}".</p>
                         </div>
-                         <AlertDialog>
+                            <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button variant="destructive" disabled={!selectedHackathonId || !!isLoading}>
                                     {isLoading === 'reset-current' ? <Loader className="animate-spin" /> : <Trash2 />}
@@ -259,7 +255,7 @@ export default function DataManagement() {
                         </AlertDialog>
                     </div>
 
-                     <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
+                        <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
                         <div>
                             <h4 className="font-bold">Reset All Project Events</h4>
                             <p className="text-sm text-muted-foreground">Deletes all project events, teams, and projects. Users and faculty will remain.</p>
@@ -267,7 +263,7 @@ export default function DataManagement() {
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button variant="destructive" disabled={!!isLoading}>
-                                     {isLoading === 'reset-all-events' ? <Loader className="animate-spin" /> : <Trash2 />}
+                                        {isLoading === 'reset-all-events' ? <Loader className="animate-spin" /> : <Trash2 />}
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
@@ -283,12 +279,12 @@ export default function DataManagement() {
                         </AlertDialog>
                     </div>
 
-                     <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
+                        <div className="flex flex-wrap gap-4 justify-between items-center p-4 border rounded-lg">
                         <div>
                             <h4 className="font-bold">Reset All Users</h4>
                             <p className="text-sm text-muted-foreground">Deletes all student user accounts from Firestore and Firebase Auth.</p>
                         </div>
-                         <AlertDialog>
+                            <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button variant="destructive" disabled={!!isLoading}>
                                     {isLoading === 'reset-all-users' ? <Loader className="animate-spin" /> : <Trash2 />}
