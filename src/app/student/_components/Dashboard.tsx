@@ -158,7 +158,7 @@ export default function Dashboard() {
              <div className="mb-8">
                  <Select onValueChange={handleEventChange} value={selectedHackathonId || "default"}>
                     <SelectTrigger className="w-full sm:w-[280px]">
-                        <SelectValue placeholder="Select a Project Event" />
+                        <SelectValue placeholder="Select a Project Type" />
                     </SelectTrigger>
                     <SelectContent>
                          <SelectItem value="default">Back to Project Selection</SelectItem>

@@ -43,7 +43,7 @@ export default function EventSelector() {
         <div className="container max-w-4xl mx-auto space-y-8">
             <div className="text-center">
                 <h1 className="text-3xl font-bold font-headline">Select a Project Event</h1>
-                <p className="text-muted-foreground">Choose an event to join and start competing.</p>
+                <p className="text-muted-foreground">Choose an event to join and start your project.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {hackathons.map(event => (
@@ -54,7 +54,7 @@ export default function EventSelector() {
                         </CardHeader>
                         <CardContent className="flex-grow space-y-3">
                             <p><strong className="text-muted-foreground">Prize/Award:</strong> {event.prizeMoney}</p>
-                            <p><strong className="text-muted-foreground">Team Size:</strong> Up to {event.teamSizeLimit} members</p>
+                            <p><strong className="text-muted-foreground">Max Team Size:</strong> {event.teamSizeLimit}</p>
                              <div className="pt-2">
                                  <h4 className="font-semibold mb-1">Rules:</h4>
                                 <p className="text-sm whitespace-pre-wrap">{event.rules}</p>
@@ -62,7 +62,7 @@ export default function EventSelector() {
                         </CardContent>
                         <div className="p-6 pt-0">
                            <Button className="w-full" onClick={() => handleSelectEvent(event.id)}>
-                                <Rocket className="mr-2 h-4 w-4" /> Join Event
+                                <Rocket className="mr-2 h-4 w-4" /> Select Event
                            </Button>
                         </div>
                     </Card>

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -273,7 +272,7 @@ export default function TeamFinder() {
                     {filteredTeams.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredTeams.map(team => {
-                                const isFull = team.members.length >= (currentEvent?.teamSizeLimit || 4);
+                                const isFull = team.members.length >= 6;
                                 const isMyTeam = team.id === myTeamId;
                                 const hasPendingRequest = myPendingRequests.includes(team.id);
                                 const canJoin = !isFull && !isMyTeam && !hasPendingRequest && !!currentUser && isProfileComplete;
@@ -291,7 +290,7 @@ export default function TeamFinder() {
                                             <CardHeader>
                                                 <CardTitle className="font-headline">{team.name}</CardTitle>
                                                 <CardDescription className="flex items-center gap-2">
-                                                    <Users className="h-4 w-4" /> {team.members.length} / {currentEvent?.teamSizeLimit || 4} members
+                                                    <Users className="h-4 w-4" /> {team.members.length} / 6 members
                                                 </CardDescription>
                                             </CardHeader>
                                             <CardContent className="flex-grow">

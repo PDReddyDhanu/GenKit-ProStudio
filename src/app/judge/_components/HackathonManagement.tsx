@@ -18,7 +18,7 @@ import type { Hackathon } from '@/lib/types';
 
 const sampleRules = [
     // Sample 1: General Purpose
-    "1. All team members must be current students of this college.\n2. Teams can have a maximum of 4 members.\n3. All code must be written during the project timeline.\n4. Use of open-source libraries is permitted.\n5. Projects will be evaluated on innovation, technical execution, and presentation.",
+    "1. All team members must be current students of this college.\n2. Teams can have a maximum of 6 members.\n3. All code must be written during the project timeline.\n4. Use of open-source libraries is permitted.\n5. Projects will be evaluated on innovation, technical execution, and presentation.",
     // Sample 2: Focus on Originality
     "1. Your project must be a new idea, not a continuation of a previous project.\n2. Plagiarism is strictly forbidden and will result in immediate disqualification.\n3. All assets (code, design, sound) must be created during the event or be properly licensed.\n4. Teams must be prepared to show their commit history to verify work.",
     // Sample 3: Code of Conduct Focus
@@ -27,26 +27,6 @@ const sampleRules = [
     "1. All submissions must be made through the official portal before the deadline.\n2. A link to a public GitHub repository is mandatory.\n3. A short video demonstration (max 3 minutes) must be included in your submission.\n4. Late submissions will not be accepted under any circumstances.",
     // Sample 5: API Usage Rules
     "1. All teams are encouraged to use the sponsored APIs.\n2. Usage must adhere to the API provider's terms of service.\n3. Special prizes are available for the best use of specific APIs.\n4. Keys and tokens should be stored securely and not hardcoded.",
-    // Sample 6: Hardware Track Rules
-    "1. Teams are responsible for their own hardware.\n2. The organizers are not liable for any damage to personal equipment.\n3. A separate demonstration area will be provided for hardware projects.\n4. Safety first: all projects must be electrically safe.",
-    // Sample 7: Beginner-Friendly Rules
-    "1. This is a learning event! All skill levels are welcome.\n2. Mentors are available to help you. Don't be afraid to ask questions.\n3. The goal is to learn and build something you're proud of, not necessarily to win.\n4. Evaluation will consider the learning curve and effort of the team.",
-    // Sample 8: Themed Event
-    "1. All projects must adhere to this year's theme: [Insert Theme Here].\n2. The connection to the theme should be clearly explained in your project description and presentation.\n3. Creativity in interpreting the theme is highly encouraged.",
-    // Sample 9: IP Rights
-    "1. All intellectual property (IP) rights to the projects are retained by the participating teams.\n2. By submitting, you grant the organizers rights to showcase your project for promotional purposes.\n3. You are responsible for ensuring your project does not infringe on existing patents or copyrights.",
-    // Sample 10: Detailed Evaluation Criteria
-    "1. Evaluation will be based on: Technical Difficulty (30%), Creativity (30%), Impact (20%), and Presentation (20%).\n2. Each team will have 5 minutes to present, followed by a 3-minute Q&A with the faculty.\n3. The faculty's decisions are final.",
-    // Sample 11: Team Formation Rules
-    "1. You can form your team before or during the event.\n2. Individuals looking for a team can join the 'Team Finder' channel on our communication platform.\n3. Changes to team members are not allowed after the first 6 hours of the event.",
-    // Sample 12: Minimalist Rules
-    "1. Be excellent to each other.\n2. Build something cool.\n3. Submit on time.\n4. Have fun and learn something new.",
-    // Sample 13: Corporate/Internal Project Rules
-    "1. All participants must be employees of [Company Name].\n2. Projects should aim to solve an existing business problem or propose a new internal tool.\n3. Use of internal company APIs and data is encouraged, following security protocols.\n4. Top projects may be considered for further development and integration.",
-    // Sample 14: Data Science/AI Project
-    "1. All teams must use the provided dataset.\n2. External datasets can be used but must be publicly available and declared.\n3. Models must be trained during the project period.\n4. Your submission must include your model, training code, and a detailed report of your methodology.",
-    // Sample 15: Health Tech Project
-    "1. All projects must comply with data privacy standards (like HIPAA, if applicable).\n2. Solutions should address a real-world problem in healthcare or wellness.\n3. Consultation with medical professional mentors is highly recommended.\n4. Prototypes should be user-friendly for patients or healthcare providers."
 ];
 
 
@@ -148,7 +128,7 @@ export default function EventManagement() {
     const [name, setName] = useState('');
     const [prizeMoney, setPrizeMoney] = useState('');
     const [rules, setRules] = useState('');
-    const [teamSizeLimit, setTeamSizeLimit] = useState(4);
+    const [teamSizeLimit, setTeamSizeLimit] = useState(6);
     const [deadline, setDeadline] = useState<Date>();
     const [isLoading, setIsLoading] = useState(false);
     const [sampleIndex, setSampleIndex] = useState(-1);
@@ -173,7 +153,7 @@ export default function EventManagement() {
             setName('');
             setPrizeMoney('');
             setRules('');
-            setTeamSizeLimit(4);
+            setTeamSizeLimit(6);
             setDeadline(undefined);
             setSampleIndex(-1);
         } finally {

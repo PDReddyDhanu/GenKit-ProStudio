@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import type { Team, ProjectIdea, ProjectSubmission } from '@/lib/types';
-import { Loader, ArrowLeft, UploadCloud, Wand2, Sparkles, Link as LinkIcon } from 'lucide-react';
+import { Loader, ArrowLeft, Wand2, Sparkles, Link as LinkIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { generateDetailedProjectIdeaAction } from '@/app/actions';
 import type { GenerateDetailedProjectIdeaOutput } from '@/ai/flows/generate-detailed-project-idea';
