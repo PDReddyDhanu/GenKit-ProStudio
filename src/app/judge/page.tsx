@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React, { useState } from 'react';
@@ -17,6 +15,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DEPARTMENTS_DATA } from '@/lib/constants';
 import type { Faculty } from '@/lib/types';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 
 const ROLES: Faculty['role'][] = ['guide', 'hod', 'rnd', 'external', 'academic-coordinator', 'class-mentor'];
 const DESIGNATIONS: Faculty['designation'][] = ['Professor', 'Associate Professor', 'Assistant Professor'];
@@ -27,6 +27,7 @@ export default function FacultyPortal() {
     const { currentFaculty, currentAdmin } = state;
     const [showIntro, setShowIntro] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [isForgotPassOpen, setIsForgotPassOpen] = useState(false);
     
     // Unified state for both login and registration
     const [isLoginView, setIsLoginView] = useState(true);
@@ -116,154 +117,165 @@ export default function FacultyPortal() {
     }
 
     return (
-        <div className="container max-w-4xl mx-auto py-12 animate-fade-in">
-             <Card className="relative group overflow-hidden">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-lg blur-lg opacity-0 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-glowing-border"></div>
-                <div className="relative bg-card rounded-lg grid md:grid-cols-2">
-                     <div className="p-8 bg-muted/30 rounded-l-lg">
-                        <CardHeader className="p-0">
-                            <CardTitle className="text-3xl font-bold font-headline text-primary">Faculty Portal</CardTitle>
-                            <CardDescription>
-                                A unified entry point for all faculty and administrative roles.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-0 mt-6 space-y-4">
-                             <ul className="space-y-3 text-muted-foreground">
-                                <li className="flex items-center gap-3"><UserCheck className="h-5 w-5 text-secondary"/> Guides & Mentors</li>
-                                <li className="flex items-center gap-3"><Building className="h-5 w-5 text-secondary"/> HoDs & R&D Coordinators</li>
-                                <li className="flex items-center gap-3"><Briefcase className="h-5 w-5 text-secondary"/> External Evaluators</li>
-                                <li className="flex items-center gap-3"><Shield className="h-5 w-5 text-secondary"/> College Sub-Admins</li>
-                            </ul>
-                            <div className="pt-6 border-t">
-                                 <div className="flex flex-wrap gap-x-4 gap-y-2">
-                                     <div>
-                                        <p className="text-sm text-muted-foreground">Are you a student?</p>
-                                         <Button variant="link" asChild className="px-0 -mt-1 h-auto">
-                                            <Link href="/student">Go to Student Portal <ArrowRight className="ml-2 h-4 w-4"/></Link>
-                                         </Button>
+        <Dialog open={isForgotPassOpen} onOpenChange={setIsForgotPassOpen}>
+            <div className="container max-w-4xl mx-auto py-12 animate-fade-in">
+                 <Card className="relative group overflow-hidden">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-lg blur-lg opacity-0 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-glowing-border"></div>
+                    <div className="relative bg-card rounded-lg grid md:grid-cols-2">
+                         <div className="p-8 bg-muted/30 rounded-l-lg">
+                            <CardHeader className="p-0">
+                                <CardTitle className="text-3xl font-bold font-headline text-primary">Faculty Portal</CardTitle>
+                                <CardDescription>
+                                    A unified entry point for all faculty and administrative roles.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0 mt-6 space-y-4">
+                                 <ul className="space-y-3 text-muted-foreground">
+                                    <li className="flex items-center gap-3"><UserCheck className="h-5 w-5 text-secondary"/> Guides & Mentors</li>
+                                    <li className="flex items-center gap-3"><Building className="h-5 w-5 text-secondary"/> HoDs & R&D Coordinators</li>
+                                    <li className="flex items-center gap-3"><Briefcase className="h-5 w-5 text-secondary"/> External Evaluators</li>
+                                    <li className="flex items-center gap-3"><Shield className="h-5 w-5 text-secondary"/> College Sub-Admins</li>
+                                </ul>
+                                <div className="pt-6 border-t">
+                                     <div className="flex flex-wrap gap-x-4 gap-y-2">
+                                         <div>
+                                            <p className="text-sm text-muted-foreground">Are you a student?</p>
+                                             <Button variant="link" asChild className="px-0 -mt-1 h-auto">
+                                                <Link href="/student">Go to Student Portal <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                                             </Button>
+                                         </div>
+                                          <div>
+                                            <p className="text-sm text-muted-foreground">Main Developer?</p>
+                                             <Button variant="link" asChild className="px-0 -mt-1 h-auto">
+                                                <Link href="/admin">Main Admin Login <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                                             </Button>
+                                         </div>
                                      </div>
-                                      <div>
-                                        <p className="text-sm text-muted-foreground">Main Developer?</p>
-                                         <Button variant="link" asChild className="px-0 -mt-1 h-auto">
-                                            <Link href="/admin">Main Admin Login <ArrowRight className="ml-2 h-4 w-4"/></Link>
-                                         </Button>
-                                     </div>
-                                 </div>
-                            </div>
-                        </CardContent>
-                     </div>
-                     <div className="p-8">
-                        <CardHeader className="p-0 text-center">
-                            <CardTitle className="text-2xl font-bold font-headline">{isLoginView ? 'Faculty Login' : 'Faculty Registration'}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0 mt-6">
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <AuthMessage />
-                                {!isLoginView && (
-                                    <>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="role">Your Role</Label>
-                                                <Select onValueChange={(v) => setRole(v as any)} value={role} required>
-                                                    <SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger>
-                                                    <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r} className="capitalize">{r.replace('-', ' ')}</SelectItem>)}</SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="faculty-name">Full Name</Label>
-                                                <Input id="faculty-name" value={name} onChange={e => setName(e.target.value)} required disabled={isLoading} />
-                                            </div>
-                                        </div>
-                                         <div className="space-y-2">
-                                            <Label>Gender</Label>
-                                            <RadioGroup onValueChange={(v) => setGender(v as any)} value={gender} className="flex gap-4 pt-2">
-                                                <div className="flex items-center space-x-2"><RadioGroupItem value="Male" id="male" /><Label htmlFor="male">Male</Label></div>
-                                                <div className="flex items-center space-x-2"><RadioGroupItem value="Female" id="female" /><Label htmlFor="female">Female</Label></div>
-                                                <div className="flex items-center space-x-2"><RadioGroupItem value="Other" id="other" /><Label htmlFor="other">Other</Label></div>
-                                            </RadioGroup>
-                                        </div>
-                                         <div className="space-y-2">
-                                            <Label htmlFor="contact-number">Contact Number</Label>
-                                            <Input id="contact-number" value={contactNumber} onChange={e => setContactNumber(e.target.value)} required disabled={isLoading} />
-                                        </div>
-                                         {role === 'external' ? (
-                                            <div className="space-y-2">
-                                                <Label htmlFor="college-name">Your College Name</Label>
-                                                <Input id="college-name" value={collegeName} onChange={e => setCollegeName(e.target.value)} required disabled={isLoading} />
-                                            </div>
-                                        ) : (
+                                </div>
+                            </CardContent>
+                         </div>
+                         <div className="p-8">
+                            <CardHeader className="p-0 text-center">
+                                <CardTitle className="text-2xl font-bold font-headline">{isLoginView ? 'Faculty Login' : 'Faculty Registration'}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0 mt-6">
+                                <form onSubmit={handleSubmit} className="space-y-4">
+                                    <AuthMessage />
+                                    {!isLoginView && (
+                                        <>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <Label>Designation</Label>
-                                                    <Select onValueChange={(v) => setDesignation(v as any)} value={designation} required>
-                                                        <SelectTrigger><SelectValue placeholder="Select Designation" /></SelectTrigger>
-                                                        <SelectContent>{DESIGNATIONS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                                    <Label htmlFor="role">Your Role</Label>
+                                                    <Select onValueChange={(v) => setRole(v as any)} value={role} required>
+                                                        <SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger>
+                                                        <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r} className="capitalize">{r.replace('-', ' ')}</SelectItem>)}</SelectContent>
                                                     </Select>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label>Education</Label>
-                                                    <Select onValueChange={(v) => setEducation(v as any)} value={education} required>
-                                                        <SelectTrigger><SelectValue placeholder="Select Education" /></SelectTrigger>
-                                                        <SelectContent>{EDUCATIONS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label>Branch</Label>
-                                                    <Select onValueChange={(value) => { setBranch(value); setDepartment(''); }} value={branch} required>
-                                                        <SelectTrigger><SelectValue placeholder="Select Branch" /></SelectTrigger>
-                                                        <SelectContent>{branches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label>Department</Label>
-                                                    <Select onValueChange={setDepartment} value={department} required disabled={!branch}>
-                                                        <SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger>
-                                                        <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                                                    </Select>
+                                                    <Label htmlFor="faculty-name">Full Name</Label>
+                                                    <Input id="faculty-name" value={name} onChange={e => setName(e.target.value)} required disabled={isLoading} />
                                                 </div>
                                             </div>
-                                        )}
-                                    </>
-                                )}
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                    <Input 
-                                        type="email" 
-                                        placeholder="Email" 
-                                        className="pl-10" 
-                                        value={email}
-                                        onChange={e => setEmail(e.target.value)}
-                                        required 
-                                        disabled={isLoading} 
-                                    />
-                                </div>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                    <Input 
-                                        type="password" 
-                                        placeholder="Password" 
-                                        className="pl-10" 
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                        required 
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                                
-                                <Button type="submit" className="w-full font-bold text-lg" disabled={isLoading}>
-                                    {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Please wait...</> : (isLoginView ? 'Login' : 'Register')}
-                                </Button>
-                                 <div className="text-center text-sm text-muted-foreground">
-                                    {isLoginView ? "Don't have an account?" : "Already have an account?"}
-                                    <Button variant="link" type="button" onClick={toggleView} className="p-1">
-                                        {isLoginView ? "Register" : "Login"}
+                                             <div className="space-y-2">
+                                                <Label>Gender</Label>
+                                                <RadioGroup onValueChange={(v) => setGender(v as any)} value={gender} className="flex gap-4 pt-2">
+                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="Male" id="male" /><Label htmlFor="male">Male</Label></div>
+                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="Female" id="female" /><Label htmlFor="female">Female</Label></div>
+                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="Other" id="other" /><Label htmlFor="other">Other</Label></div>
+                                                </RadioGroup>
+                                            </div>
+                                             <div className="space-y-2">
+                                                <Label htmlFor="contact-number">Contact Number</Label>
+                                                <Input id="contact-number" value={contactNumber} onChange={e => setContactNumber(e.target.value)} required disabled={isLoading} />
+                                            </div>
+                                             {role === 'external' ? (
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="college-name">Your College Name</Label>
+                                                    <Input id="college-name" value={collegeName} onChange={e => setCollegeName(e.target.value)} required disabled={isLoading} />
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label>Designation</Label>
+                                                        <Select onValueChange={(v) => setDesignation(v as any)} value={designation} required>
+                                                            <SelectTrigger><SelectValue placeholder="Select Designation" /></SelectTrigger>
+                                                            <SelectContent>{DESIGNATIONS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Education</Label>
+                                                        <Select onValueChange={(v) => setEducation(v as any)} value={education} required>
+                                                            <SelectTrigger><SelectValue placeholder="Select Education" /></SelectTrigger>
+                                                            <SelectContent>{EDUCATIONS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Branch</Label>
+                                                        <Select onValueChange={(value) => { setBranch(value); setDepartment(''); }} value={branch} required>
+                                                            <SelectTrigger><SelectValue placeholder="Select Branch" /></SelectTrigger>
+                                                            <SelectContent>{branches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Department</Label>
+                                                        <Select onValueChange={setDepartment} value={department} required disabled={!branch}>
+                                                            <SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger>
+                                                            <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                    <div className="relative">
+                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                        <Input 
+                                            type="email" 
+                                            placeholder="Email" 
+                                            className="pl-10" 
+                                            value={email}
+                                            onChange={e => setEmail(e.target.value)}
+                                            required 
+                                            disabled={isLoading} 
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                        <Input 
+                                            type="password" 
+                                            placeholder="Password" 
+                                            className="pl-10" 
+                                            value={password}
+                                            onChange={e => setPassword(e.target.value)}
+                                            required 
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+                                    
+                                     {isLoginView && (
+                                        <div className="text-right text-sm">
+                                            <DialogTrigger asChild>
+                                                <Button variant="link" size="sm" className="p-0 h-auto text-muted-foreground" onClick={() => setIsForgotPassOpen(true)}>Forgot password?</Button>
+                                            </DialogTrigger>
+                                        </div>
+                                    )}
+
+                                    <Button type="submit" className="w-full font-bold text-lg" disabled={isLoading}>
+                                        {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Please wait...</> : (isLoginView ? 'Login' : 'Register')}
                                     </Button>
-                                </div>
-                            </form>
-                        </CardContent>
+                                     <div className="text-center text-sm text-muted-foreground">
+                                        {isLoginView ? "Don't have an account?" : "Already have an account?"}
+                                        <Button variant="link" type="button" onClick={toggleView} className="p-1">
+                                            {isLoginView ? "Register" : "Login"}
+                                        </Button>
+                                    </div>
+                                </form>
+                            </CardContent>
+                        </div>
                     </div>
-                </div>
-            </Card>
-        </div>
+                </Card>
+                <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={email} />
+            </div>
+        </Dialog>
     );
 }

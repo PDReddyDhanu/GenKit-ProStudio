@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -13,7 +11,7 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare } from 'lucide-react';
+import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import ScoringDashboard from '@/app/judge/_components/ScoringDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
@@ -25,6 +23,7 @@ import { useRouter } from 'next/navigation';
 import UrgentApprovalsDashboard from './_components/UrgentApprovalsDashboard';
 import { Badge } from '@/components/ui/badge';
 import ProjectApprovalDashboard from './_components/ProjectApprovalDashboard';
+import GuideAssignmentDashboard from './_components/GuideAssignmentDashboard';
 
 const projectEvents = [
     {
@@ -147,7 +146,7 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue={currentFaculty ? "scoring" : "events"} className="w-full" onValueChange={handleTabChange}>
-                <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
+                <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-11">
                     {currentFaculty && <TabsTrigger value="scoring"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="events">Events</TabsTrigger>
                      <TabsTrigger value="urgent-approvals" className="relative">
@@ -157,6 +156,7 @@ export default function AdminPortal() {
                         )}
                     </TabsTrigger>
                     <TabsTrigger value="approvals"><GanttChartSquare className="mr-2 h-4 w-4" /> Project Approvals</TabsTrigger>
+                    {currentFaculty?.role === 'hod' && <TabsTrigger value="assign-guides"><User className="mr-2 h-4 w-4" /> Assign Guides</TabsTrigger>}
                     <TabsTrigger value="management">User Management</TabsTrigger>
                     <TabsTrigger value="announcements"><Rss className="mr-2 h-4 w-4" /> Announcements</TabsTrigger>
                     <TabsTrigger value="analytics"><LineChart className="mr-2 h-4 w-4" /> Analytics</TabsTrigger>
@@ -178,6 +178,11 @@ export default function AdminPortal() {
                 <TabsContent value="approvals" className="mt-6">
                     <ProjectApprovalDashboard />
                 </TabsContent>
+                 {currentFaculty?.role === 'hod' && (
+                    <TabsContent value="assign-guides" className="mt-6">
+                        <GuideAssignmentDashboard />
+                    </TabsContent>
+                )}
                 <TabsContent value="management" className="mt-6">
                     <AdminDashboard />
                 </TabsContent>

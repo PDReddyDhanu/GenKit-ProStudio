@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { auth, db } from './firebase';
@@ -204,10 +202,10 @@ export async function registerFaculty(collegeId: string, data: Partial<Faculty> 
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const facultyData = {
-            name: data.name,
-            email: data.email,
-            role: data.role,
+        const facultyData: Omit<Faculty, 'id'> = {
+            name: data.name!,
+            email: data.email!,
+            role: data.role!,
             gender: data.gender || '',
             contactNumber: data.contactNumber || '',
             bio: data.bio || '',
@@ -858,29 +856,33 @@ export async function updateProjectStatus(collegeId: string, projectId: string, 
 
 export async function assignGuideToTeam(collegeId: string, teamId: string, guide: Faculty) {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
-    const guideData = { id: guide.id, name: guide.name };
+    const guideData = guide.id ? { id: guide.id, name: guide.name } : {};
     await updateDoc(teamRef, { guide: guideData });
 
     // Notify the guide
-    const guideRef = doc(db, `colleges/${collegeId}/faculty`, guide.id);
-    const teamDoc = await getDoc(teamRef);
-    const guideNotification = {
-        id: doc(collection(db, 'dummy')).id,
-        message: `You have been assigned as the guide for team ${teamDoc.data()?.name}.`,
-        link: `/admin`, // Link to their dashboard
-        timestamp: Date.now(),
-        isRead: false,
-    };
-    await updateDoc(guideRef, {
-        notifications: arrayUnion(guideNotification)
-    });
+    if (guide.id) {
+        const guideRef = doc(db, `colleges/${collegeId}/faculty`, guide.id);
+        const teamDoc = await getDoc(teamRef);
+        const guideNotification = {
+            id: doc(collection(db, 'dummy')).id,
+            message: `You have been assigned as the guide for team ${teamDoc.data()?.name}.`,
+            link: `/admin?tab=assign-guides`, // Link to their dashboard
+            timestamp: Date.now(),
+            isRead: false,
+        };
+        await updateDoc(guideRef, {
+            notifications: arrayUnion(guideNotification)
+        });
+    }
+
 
     // Notify the team members
+    const teamDoc = await getDoc(teamRef);
     if (teamDoc.exists()) {
         const teamData = teamDoc.data() as Team;
         const studentNotification = {
             id: doc(collection(db, 'dummy')).id,
-            message: `${guide.name} has been assigned as your project guide.`,
+            message: guide.id ? `${guide.name} has been assigned as your project guide.` : `Your assigned guide has been removed by the HOD.`,
             link: `/student`,
             timestamp: Date.now(),
             isRead: false,
@@ -895,7 +897,7 @@ export async function assignGuideToTeam(collegeId: string, teamId: string, guide
         await batch.commit();
     }
 
-    return { successMessage: `Successfully assigned ${guide.name} to the team.` };
+    return { successMessage: guide.id ? `Successfully assigned ${guide.name} to the team.` : 'Guide has been unassigned.' };
 }
 
 // --- Support ---
