@@ -4,14 +4,14 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-const firebaseConfigString = process.env.NEXT_PUBLIC_FIREBASE_CONFIG;
-
-if (!firebaseConfigString) {
-    throw new Error("Missing Firebase configuration. Please set NEXT_PUBLIC_FIREBASE_CONFIG in your .env file.");
-}
-
-// Safely parse the config. It might be a stringified JSON or a plain object.
-const firebaseConfig = JSON.parse(firebaseConfigString);
+const firebaseConfig = {
+  "projectId": "genkit-prostudio-8404114-90b54",
+  "appId": "1:257904682165:web:eb834e7f6d292dab304afc",
+  "apiKey": "AIzaSyCJtJyvFEV3IKW4xH1IwIFb8yHChq_7_7U",
+  "authDomain": "genkit-prostudio-8404114-90b54.firebaseapp.com",
+  "measurementId": "",
+  "messagingSenderId": "257904682165"
+};
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
