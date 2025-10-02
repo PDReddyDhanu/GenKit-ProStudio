@@ -1,17 +1,24 @@
 
+
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
-import { ProjectSubmission, ProjectIdea, Score, TeamMember } from '@/lib/types';
-import { EVALUATION_RUBRIC, INDIVIDUAL_EVALUATION_RUBRIC } from '@/lib/constants';
+import { ProjectSubmission, ProjectIdea, Score, TeamMember, ReviewType, ReviewStage } from '@/lib/types';
+import { 
+    INDIVIDUAL_EVALUATION_RUBRIC, 
+    INTERNAL_STAGE_1_RUBRIC, 
+    INTERNAL_STAGE_2_RUBRIC, 
+    INTERNAL_FINAL_RUBRIC, 
+    EXTERNAL_FINAL_RUBRIC 
+} from '@/lib/constants';
 import Link from 'next/link';
-import { Bot, Loader, User, Tags, FileText, Link as LinkIcon } from 'lucide-react';
+import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle } from 'lucide-react';
 import { getAiProjectSummary } from '@/app/actions';
 import BackButton from '@/components/layout/BackButton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -22,9 +29,12 @@ interface ScoringFormProps {
     onBack: () => void;
 }
 
+type RubricItem = { id: string; name: string; max: number };
+
 export default function ScoringForm({ project: submission, onBack }: ScoringFormProps) {
     const { state, api } = useHackathon();
-    const { currentFaculty, teams, selectedHackathonId } = state;
+    const { currentFaculty, teams } = state;
+    const isExternal = currentFaculty?.role === 'external';
 
     const [scores, setScores] = useState<Record<string, Record<string, number>>>({}); // { [memberId/team]: { [criteriaId]: value } }
     const [comments, setComments] = useState<Record<string, Record<string, string>>>({}); // { [memberId/team]: { [criteriaId]: comment } }
@@ -35,14 +45,26 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
     
     const team = teams.find(t => t.id === submission.teamId);
 
+    const { currentReviewType, currentTeamRubric } = useMemo((): { currentReviewType: ReviewType | null, currentTeamRubric: RubricItem[] } => {
+        if (isExternal) {
+            return { currentReviewType: 'ExternalFinal', currentTeamRubric: EXTERNAL_FINAL_RUBRIC };
+        }
+        switch (submission.reviewStage) {
+            case 'Stage1': return { currentReviewType: 'InternalStage1', currentTeamRubric: INTERNAL_STAGE_1_RUBRIC };
+            case 'Stage2': return { currentReviewType: 'InternalStage2', currentTeamRubric: INTERNAL_STAGE_2_RUBRIC };
+            case 'InternalFinal': return { currentReviewType: 'InternalFinal', currentTeamRubric: INTERNAL_FINAL_RUBRIC };
+            default: return { currentReviewType: null, currentTeamRubric: [] };
+        }
+    }, [submission.reviewStage, isExternal]);
+
     useEffect(() => {
-        if (!currentFaculty) return;
+        if (!currentFaculty || !currentReviewType) return;
 
         const initialScores: Record<string, Record<string, number>> = {};
         const initialComments: Record<string, Record<string, string>> = {};
 
         submission.scores
-            .filter(s => s.evaluatorId === currentFaculty.id)
+            .filter(s => s.evaluatorId === currentFaculty.id && s.reviewType === currentReviewType)
             .forEach(s => {
                 const targetId = s.memberId || 'team';
                 if (!initialScores[targetId]) initialScores[targetId] = {};
@@ -55,7 +77,7 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
             });
         setScores(initialScores);
         setComments(initialComments);
-    }, [submission, currentFaculty]);
+    }, [submission, currentFaculty, currentReviewType]);
 
     const handleScoreChange = (targetId: string, criteriaId: string, value: number[]) => {
         setScores(prev => ({
@@ -77,7 +99,7 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
         try {
             const summary = await getAiProjectSummary({
                 projectName: idea.title,
-                projectDescription: idea.abstractText, // Use the detailed abstract for summary
+                projectDescription: idea.abstractText,
                 githubUrl: idea.githubUrl,
             });
             setAiSummary(summary);
@@ -91,44 +113,48 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
 
     const handleSubmitScores = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (submission && currentFaculty && selectedHackathonId) {
-            setIsSubmitting(true);
-            
-            const allScores: Score[] = [];
-            
-            // Team scores
-            EVALUATION_RUBRIC.forEach(criteria => {
-                allScores.push({
-                    evaluatorId: currentFaculty.id,
-                    criteria: criteria.id,
-                    value: scores['team']?.[criteria.id] || 0,
-                    comment: comments['team']?.[criteria.id] || '',
-                });
-            });
+        if (!submission || !currentFaculty || !currentReviewType) return;
 
-            // Individual scores
+        setIsSubmitting(true);
+        
+        const newScores: Score[] = [];
+        
+        // Team scores
+        currentTeamRubric.forEach(criteria => {
+            newScores.push({
+                evaluatorId: currentFaculty.id,
+                criteria: criteria.id,
+                value: scores['team']?.[criteria.id] || 0,
+                comment: comments['team']?.[criteria.id] || '',
+                reviewType: currentReviewType,
+            });
+        });
+
+        // Individual scores (only for final reviews)
+        if (currentReviewType === 'InternalFinal' || currentReviewType === 'ExternalFinal') {
             team?.members.forEach(member => {
                 INDIVIDUAL_EVALUATION_RUBRIC.forEach(criteria => {
-                    allScores.push({
+                    newScores.push({
                         evaluatorId: currentFaculty.id,
                         memberId: member.id,
                         criteria: criteria.id,
                         value: scores[member.id]?.[criteria.id] || 0,
                         comment: comments[member.id]?.[criteria.id] || '',
+                        reviewType: currentReviewType,
                     });
                 });
             });
-            
-            try {
-                await api.evaluateProject(submission.id, currentFaculty.id, allScores);
-                onBack();
-            } finally {
-                setIsSubmitting(false);
-            }
+        }
+        
+        try {
+            await api.evaluateProject(submission.id, currentFaculty.id, newScores);
+            onBack();
+        } finally {
+            setIsSubmitting(false);
         }
     };
     
-    const renderScoringBlock = (rubric: typeof EVALUATION_RUBRIC, targetId: string) => (
+    const renderScoringBlock = (rubric: RubricItem[], targetId: string) => (
         <div className="space-y-6">
             {rubric.map(criteria => (
                 <div key={`${targetId}-${criteria.id}`}>
@@ -156,13 +182,36 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
             ))}
         </div>
     );
+    
+    const renderReviewSection = (title: string, rubric: RubricItem[], targetId: string) => (
+         <CardContent className="border-t pt-6">
+            <h3 className="text-xl font-bold font-headline mb-4">{title}</h3>
+            {renderScoringBlock(rubric, targetId)}
+        </CardContent>
+    )
+
+    if (!currentReviewType) {
+        return (
+             <div className="container max-w-3xl mx-auto py-12">
+                 <BackButton />
+                 <Card className="text-center">
+                    <CardHeader>
+                        <CardTitle className="flex items-center justify-center gap-2"><AlertTriangle /> Invalid Stage</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p>This project is not in a valid state for review.</p>
+                    </CardContent>
+                 </Card>
+            </div>
+        )
+    }
 
     return (
         <div className="container max-w-3xl mx-auto py-12 animate-slide-in-up">
             <BackButton />
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-3xl font-headline">Reviewing Ideas for: {team?.name}</CardTitle>
+                    <CardTitle className="text-3xl font-headline">Reviewing: {team?.name}</CardTitle>
                     <CardDescription className="text-lg text-primary">Team: {team?.name || 'Unknown Team'}</CardDescription>
                 </CardHeader>
                 
@@ -228,26 +277,34 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                 </CardContent>
                 
                 <form onSubmit={handleSubmitScores}>
-                    <CardContent className="border-t pt-6">
-                        <h3 className="text-xl font-bold font-headline mb-4">Team Scoring</h3>
-                        {renderScoringBlock(EVALUATION_RUBRIC, 'team')}
-                    </CardContent>
+                    {isExternal ? (
+                        renderReviewSection("Final External Evaluation (50 Marks)", EXTERNAL_FINAL_RUBRIC, 'team')
+                    ) : (
+                        <>
+                           {submission.reviewStage === 'Stage1' && renderReviewSection("Project Stage 1 Review", INTERNAL_STAGE_1_RUBRIC, 'team')}
+                           {submission.reviewStage === 'Stage2' && renderReviewSection("Project Stage 2 Review", INTERNAL_STAGE_2_RUBRIC, 'team')}
+                           {submission.reviewStage === 'InternalFinal' && renderReviewSection("Final Internal Review (50 Marks)", INTERNAL_FINAL_RUBRIC, 'team')}
+                        </>
+                    )}
 
-                    <CardContent className="border-t pt-6">
-                        <h3 className="text-xl font-bold font-headline mb-4">Individual Scoring</h3>
-                         <Accordion type="single" collapsible className="w-full">
-                            {team?.members.map(member => (
-                                <AccordionItem value={member.id} key={member.id}>
-                                    <AccordionTrigger>
-                                        <span className="flex items-center gap-2"><User className="h-4 w-4"/>{member.name}</span>
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        {renderScoringBlock(INDIVIDUAL_EVALUATION_RUBRIC, member.id)}
-                                    </AccordionContent>
-                                </AccordionItem>
-                            ))}
-                        </Accordion>
-                    </CardContent>
+                    {(currentReviewType === 'InternalFinal' || currentReviewType === 'ExternalFinal') && (
+                        <CardContent className="border-t pt-6">
+                            <h3 className="text-xl font-bold font-headline mb-4">Individual Scoring</h3>
+                             <Accordion type="single" collapsible className="w-full">
+                                {team?.members.map(member => (
+                                    <AccordionItem value={member.id} key={member.id}>
+                                        <AccordionTrigger>
+                                            <span className="flex items-center gap-2"><User className="h-4 w-4"/>{member.name}</span>
+                                        </AccordionTrigger>
+                                        <AccordionContent>
+                                            {renderScoringBlock(INDIVIDUAL_EVALUATION_RUBRIC, member.id)}
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                        </CardContent>
+                    )}
+
 
                     <CardFooter className="border-t pt-6">
                         <Button type="submit" className="w-full" disabled={isSubmitting}>
@@ -259,4 +316,3 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
         </div>
     );
 }
-

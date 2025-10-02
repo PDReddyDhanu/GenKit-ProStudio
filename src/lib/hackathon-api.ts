@@ -37,7 +37,7 @@ import {
     writeBatch
 } from 'firebase/firestore';
 import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea } from './types';
-import { EVALUATION_RUBRIC, INDIVIDUAL_EVALUATION_RUBRIC } from './constants';
+import { INDIVIDUAL_EVALUATION_RUBRIC, INTERNAL_STAGE_1_RUBRIC, INTERNAL_STAGE_2_RUBRIC, INTERNAL_FINAL_RUBRIC, EXTERNAL_FINAL_RUBRIC } from './constants';
 import { generateProjectImage } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
 
@@ -706,9 +706,12 @@ export async function submitProject(collegeId: string, hackathonId: string, team
             hackathonId,
             projectIdeas: [ideaToSave],
             scores: [],
-            averageScore: 0,
+            internalScore: 0,
+            externalScore: 0,
+            totalScore: 0,
             submittedAt: Date.now(),
             status: 'PendingGuide',
+            reviewStage: 'Pending',
         };
         const submissionRef = await addDoc(collection(db, `colleges/${collegeId}/projects`), newSubmission);
         await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { submissionId: submissionRef.id });
@@ -758,39 +761,39 @@ export async function clearGuidanceHistory(collegeId: string, userOrFacultyId: s
 
 
 // --- Faculty ---
-export async function evaluateProject(collegeId: string, projectId: string, evaluatorId: string, scores: Score[]) {
+export async function evaluateProject(collegeId: string, projectId: string, evaluatorId: string, newScores: Score[]) {
     const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
     const projectDoc = await getDoc(projectRef);
     if(!projectDoc.exists()) throw new Error("Project not found.");
     const project = projectDoc.data() as ProjectSubmission;
 
-    const otherEvaluatorsScores = project.scores.filter(s => s.evaluatorId !== evaluatorId);
-    const newScores = [...otherEvaluatorsScores, ...scores];
+    const otherScores = project.scores.filter(s => s.evaluatorId !== evaluatorId);
+    const allScores = [...otherScores, ...newScores];
 
-    const teamScores = newScores.filter(s => !s.memberId);
-    
-    const uniqueEvaluators = new Set(teamScores.map(s => s.evaluatorId));
-    let totalScore = 0;
-    
-    uniqueEvaluators.forEach(id => {
-        const evaluatorScores = teamScores.filter(s => s.evaluatorId === id);
-        const rubricMax = EVALUATION_RUBRIC.reduce((sum, c) => sum + c.max, 0);
-        const evaluatorTotal = evaluatorScores.reduce((sum, score) => sum + score.value, 0);
-        const scoredCriteriaIds = new Set(evaluatorScores.map(s => s.criteria));
-        const scoredRubricMax = EVALUATION_RUBRIC.filter(c => scoredCriteriaIds.has(c.id)).reduce((sum, c) => sum + c.max, 0);
-        
-        if (scoredRubricMax > 0) {
-            const scaledEvaluatorTotal = (evaluatorTotal / scoredRubricMax) * 10;
-            totalScore += scaledEvaluatorTotal;
-        }
-    });
+    const internalScores = allScores.filter(s => s.reviewType.startsWith('Internal'));
+    const externalScores = allScores.filter(s => s.reviewType.startsWith('External'));
 
-    const averageScore = uniqueEvaluators.size > 0 ? (totalScore / uniqueEvaluators.size) : 0;
-    
+    // Calculate Internal Score (50% weight)
+    const internalRubrics = [...INTERNAL_STAGE_1_RUBRIC, ...INTERNAL_STAGE_2_RUBRIC, ...INTERNAL_FINAL_RUBRIC];
+    const internalMaxScore = internalRubrics.reduce((sum, c) => sum + c.max, 0);
+    const internalTotal = internalScores.reduce((sum, score) => sum + score.value, 0);
+    const finalInternalScore = (internalTotal / internalMaxScore) * 50;
+
+    // Calculate External Score (50% weight)
+    const externalRubrics = [...EXTERNAL_FINAL_RUBRIC, ...INDIVIDUAL_EVALUATION_RUBRIC];
+    const externalMaxScore = externalRubrics.reduce((sum, c) => sum + c.max, 0);
+    const externalTotal = externalScores.reduce((sum, score) => sum + score.value, 0);
+    const finalExternalScore = (externalTotal / externalMaxScore) * 50;
+
+    const totalScore = finalInternalScore + finalExternalScore;
+
     await updateDoc(projectRef, { 
-        scores: newScores, 
-        averageScore: averageScore,
+        scores: allScores, 
+        internalScore: finalInternalScore,
+        externalScore: finalExternalScore,
+        totalScore: totalScore,
     });
+
     return { successMessage: "Evaluation submitted successfully." };
 }
 
@@ -801,6 +804,7 @@ export async function assignGuideToTeam(collegeId: string, teamId: string, guide
 
     // Notify the guide
     const guideRef = doc(db, `colleges/${collegeId}/faculty`, guide.id);
+    const teamDoc = await getDoc(teamRef);
     const guideNotification = {
         id: doc(collection(db, 'dummy')).id,
         message: `You have been assigned as the guide for team ${teamDoc.data()?.name}.`,
@@ -813,7 +817,6 @@ export async function assignGuideToTeam(collegeId: string, teamId: string, guide
     });
 
     // Notify the team members
-    const teamDoc = await getDoc(teamRef);
     if (teamDoc.exists()) {
         const teamData = teamDoc.data() as Team;
         const studentNotification = {

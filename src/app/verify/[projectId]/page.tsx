@@ -11,11 +11,11 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 const getPerformanceDetails = (score: number) => {
-    const roundedScore = Math.round(score);
-    if (roundedScore >= 9) return { descriptor: 'Outstanding', remarks: 'Passed' };
-    if (roundedScore >= 8) return { descriptor: 'Very Satisfactory', remarks: 'Passed' };
-    if (roundedScore >= 7) return { descriptor: 'Satisfactory', remarks: 'Passed' };
-    if (roundedScore >= 5) return { descriptor: 'Fairly Satisfactory', remarks: 'Passed' };
+    const totalPercentage = score; // Score is already out of 100
+    if (totalPercentage >= 90) return { descriptor: 'Outstanding', remarks: 'Passed' };
+    if (totalPercentage >= 80) return { descriptor: 'Very Satisfactory', remarks: 'Passed' };
+    if (totalPercentage >= 70) return { descriptor: 'Satisfactory', remarks: 'Passed' };
+    if (totalPercentage >= 50) return { descriptor: 'Fairly Satisfactory', remarks: 'Passed' };
     return { descriptor: 'Did Not Meet Expectations', remarks: 'Failed' };
 };
 
@@ -72,7 +72,7 @@ export default function CertificateVerifyPage() {
                 const team = { id: teamDoc.id, ...teamDoc.data() } as Team;
 
                 const rank = rankParam ? parseInt(rankParam, 10) : null;
-                const performance = getPerformanceDetails(project.averageScore);
+                const performance = getPerformanceDetails(project.totalScore);
 
                 setData({ project, team, rank, performance, collegeName: collegeId });
 
@@ -127,7 +127,7 @@ export default function CertificateVerifyPage() {
                         </div>
                          <div>
                             <p className="text-muted-foreground text-sm">Final Score</p>
-                            <p className="font-bold text-xl text-secondary">{project.averageScore.toFixed(2)} / 10</p>
+                            <p className="font-bold text-xl text-secondary">{project.totalScore.toFixed(2)} / 100</p>
                         </div>
                         <div>
                             <p className="text-muted-foreground text-sm">Project</p>
@@ -151,4 +151,3 @@ export default function CertificateVerifyPage() {
         </div>
     );
 };
-

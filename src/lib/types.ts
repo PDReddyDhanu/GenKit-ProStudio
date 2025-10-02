@@ -90,6 +90,7 @@ export interface ProjectIdea {
   abstractFileUrl?: string;
 }
 
+export type ReviewStage = 'Pending' | 'Stage1' | 'Stage2' | 'InternalFinal' | 'ExternalFinal' | 'Completed';
 
 export interface ProjectSubmission {
   id: string;
@@ -97,11 +98,14 @@ export interface ProjectSubmission {
   projectIdeas: ProjectIdea[];
   status: 'PendingGuide' | 'PendingR&D' | 'PendingHoD' | 'Approved' | 'Rejected';
   scores: Score[];
-  averageScore: number;
+  internalScore: number;
+  externalScore: number;
+  totalScore: number;
   submittedAt?: number;
-  hackathonId?: string; // This links the project to an event/term
+  hackathonId?: string;
   achievements?: string[];
   imageUrl?: string;
+  reviewStage: ReviewStage;
 }
 
 
@@ -123,11 +127,14 @@ export interface Faculty {
   status?: 'pending' | 'approved'; // Added for approval workflow
 }
 
+export type ReviewType = 'InternalStage1' | 'InternalStage2' | 'InternalFinal' | 'ExternalFinal';
+
 export interface Score {
   evaluatorId: string;
   criteria: string;
   value: number; // e.g., 1-10
   comment: string;
+  reviewType: ReviewType;
   memberId?: string; // Optional: to score individual members
 }
 

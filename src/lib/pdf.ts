@@ -22,12 +22,12 @@ const getRankSuffix = (rankNum: number) => {
 };
 
 
-const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectName: string, teamMembers: string[], projectId: string, averageScore: number, collegeName: string, rank: number) => {
+const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectName: string, teamMembers: string[], projectId: string, totalScore: number, collegeName: string, rank: number) => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const verificationUrl = `${window.location.origin}/verify/${projectId}?college=${encodeURIComponent(collegeName)}&rank=${rank}`;
     
-    const performance = getPerformanceDetails(averageScore);
+    const performance = getPerformanceDetails(totalScore / 10); // Assuming total score is out of 100
 
     // --- Colors & Fonts ---
     const primaryGold = '#FFD700'; 
@@ -90,7 +90,7 @@ const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectNa
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
     doc.setTextColor(textColor);
-    doc.text(`Awarded with a performance rating of "${performance.descriptor}" and a final score of ${averageScore.toFixed(2)} / 10.`, pageWidth / 2, 121, { align: 'center' });
+    doc.text(`Awarded with a performance rating of "${performance.descriptor}" and a final score of ${totalScore.toFixed(2)} / 100.`, pageWidth / 2, 121, { align: 'center' });
 
     // Team Members
     doc.setFont("helvetica", "bold");
@@ -260,7 +260,7 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
 
 };
 
-export const generateCertificate = async (teamName: string, projectName: string, teamMembers: string[], projectId: string, averageScore: number, collegeName: string, rank?: number) => {
+export const generateCertificate = async (teamName: string, projectName: string, teamMembers: string[], projectId: string, totalScore: number, collegeName: string, rank?: number) => {
     const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
@@ -268,7 +268,7 @@ export const generateCertificate = async (teamName: string, projectName: string,
     });
 
     if (rank && rank >= 1 && rank <= 3) {
-        await generateWinnerCertificate(doc, teamName, projectName, teamMembers, projectId, averageScore, collegeName, rank);
+        await generateWinnerCertificate(doc, teamName, projectName, teamMembers, projectId, totalScore, collegeName, rank);
          doc.save(`Certificate_Winner-${teamName.replace(/\s/g, '_')}.pdf`);
     } else {
         await generateParticipantCertificate(doc, teamName, projectName, teamMembers, projectId, collegeName);

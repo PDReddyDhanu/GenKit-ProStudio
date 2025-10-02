@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -94,15 +95,15 @@ export default function Leaderboard() {
 
     const leaderboardData = useMemo(() => {
         return projects
-            .filter(p => p.averageScore > 0)
-            .sort((a, b) => b.averageScore - a.averageScore)
+            .filter(p => p.totalScore > 0)
+            .sort((a, b) => b.totalScore - a.totalScore)
             .map((p, index) => {
                 const team = teams.find(t => t.id === p.teamId);
                 return {
                     rank: index + 1,
                     teamName: team?.name || 'Unknown Team',
                     projectName: p.projectIdeas[0]?.title || 'Untitled Project',
-                    score: parseFloat(p.averageScore.toFixed(2)),
+                    score: parseFloat(p.totalScore.toFixed(2)),
                     achievements: p.achievements,
                 };
             });

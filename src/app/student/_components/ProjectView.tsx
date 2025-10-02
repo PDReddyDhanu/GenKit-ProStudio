@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,7 +97,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
             setIsGeneratingCert(true);
             try {
                 const teamMembers = team.members.map(m => m.name);
-                await generateCertificate(team.name, submission.projectIdeas[0].title, teamMembers, submission.id, submission.averageScore, selectedCollege);
+                await generateCertificate(team.name, submission.projectIdeas[0].title, teamMembers, submission.id, submission.totalScore, selectedCollege);
             } catch (error) {
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");

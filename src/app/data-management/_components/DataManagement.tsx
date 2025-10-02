@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -61,7 +62,7 @@ export default function DataManagement() {
     }
 
     const handleExportSubmissions = () => {
-        const headers = ["Project Name", "Project Description", "GitHub URL", "Team Name", "Team Members", "Average Score"];
+        const headers = ["Project Name", "Project Description", "GitHub URL", "Team Name", "Team Members", "Total Score"];
         const data = eventProjects.map(p => {
             const team = eventTeams.find(t => t.id === p.teamId);
             const teamMembers = team?.members.map(m => m.name).join('; ') || '';
@@ -72,7 +73,7 @@ export default function DataManagement() {
                 primaryIdea?.githubUrl || 'N/A',
                 `"${team?.name.replace(/"/g, '""') || 'N/A'}"`,
                 `"${teamMembers.replace(/"/g, '""')}"`,
-                p.averageScore.toFixed(2)
+                p.totalScore.toFixed(2)
             ];
         });
 
@@ -250,4 +251,3 @@ export default function DataManagement() {
         </div>
     );
 }
-

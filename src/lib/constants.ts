@@ -1,11 +1,27 @@
 
 
-export const EVALUATION_RUBRIC = [
-    { id: 'problem_statement', name: 'Problem Statement & Originality', max: 10 },
-    { id: 'technical_execution', name: 'Technical Execution & Complexity', max: 10 },
-    { id: 'documentation', name: 'Documentation & Report', max: 10 },
-    { id: 'collaboration', name: 'Team Collaboration', max: 5 },
-    { id: 'presentation', name: 'Presentation & Viva', max: 5 },
+export const INTERNAL_STAGE_1_RUBRIC = [
+    { id: 'problem_clarity', name: 'Problem Statement Clarity', max: 10 },
+    { id: 'originality', name: 'Originality of Idea', max: 10 },
+    { id: 'feasibility', name: 'Technical Feasibility', max: 5 },
+];
+
+export const INTERNAL_STAGE_2_RUBRIC = [
+    { id: 'progress', name: 'Progress & Milestone Achievement', max: 10 },
+    { id: 'technical_implementation', name: 'Technical Implementation (Initial)', max: 10 },
+    { id: 'documentation_initial', name: 'Initial Documentation', max: 5 },
+];
+
+export const INTERNAL_FINAL_RUBRIC = [
+    { id: 'final_execution', name: 'Final Technical Execution & Complexity', max: 15 },
+    { id: 'project_report', name: 'Final Report & Documentation', max: 10 },
+    { id: 'internal_presentation', name: 'Internal Presentation & Viva', max: 10 },
+];
+
+export const EXTERNAL_FINAL_RUBRIC = [
+    { id: 'innovation', name: 'Innovation & Novelty', max: 15 },
+    { id: 'real_world_application', name: 'Real-World Application & Impact', max: 15 },
+    { id: 'external_presentation', name: 'Final Presentation & Q/A', max: 20 },
 ];
 
 export const INDIVIDUAL_EVALUATION_RUBRIC = [

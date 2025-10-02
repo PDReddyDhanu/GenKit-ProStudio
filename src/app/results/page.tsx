@@ -33,7 +33,7 @@ const WinnerCard = ({ winner, collegeName }: { winner: Winner, collegeName: stri
             setIsGenerating(true);
             try {
                 const teamMembers = winner.team.members.map((m: User) => m.name);
-                await generateCertificate(winner.team.name, winner.project.projectIdeas[0].title, teamMembers, winner.project.id, winner.project.averageScore, collegeName, winner.rank);
+                await generateCertificate(winner.team.name, winner.project.projectIdeas[0].title, teamMembers, winner.project.id, winner.project.totalScore, collegeName, winner.rank);
             } catch (error) {
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
@@ -57,7 +57,7 @@ const WinnerCard = ({ winner, collegeName }: { winner: Winner, collegeName: stri
                 <h2 className="text-3xl font-bold font-headline">{rankText} Place</h2>
                 <h3 className="text-2xl font-bold text-secondary mt-4 font-headline">{winner.team.name}</h3>
                 <p className="text-lg italic text-muted-foreground mt-1 mb-4">for "{winner.project.projectIdeas[0].title}"</p>
-                <p className="font-bold text-xl text-foreground">Score: {winner.project.averageScore.toFixed(2)}</p>
+                <p className="font-bold text-xl text-foreground">Score: {winner.project.totalScore.toFixed(2)}</p>
                 <Button onClick={handleDownloadCertificate} className="mt-6" disabled={isGenerating}>
                     {isGenerating ? 'Generating...' : 'Download Certificate of Achievement'}
                 </Button>
@@ -93,8 +93,8 @@ export default function Results() {
 
     const winners: Winner[] = useMemo(() => {
         return projects
-            .filter(p => p.averageScore > 0)
-            .sort((a, b) => b.averageScore - a.averageScore)
+            .filter(p => p.totalScore > 0)
+            .sort((a, b) => b.totalScore - a.totalScore)
             .slice(0, 3)
             .map((p, index) => ({
                 project: p,
@@ -152,4 +152,3 @@ export default function Results() {
         </div>
     );
 }
-
