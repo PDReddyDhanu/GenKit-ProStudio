@@ -92,11 +92,20 @@ export interface ProjectIdea {
 
 export type ReviewStage = 'Pending' | 'Stage1' | 'Stage2' | 'InternalFinal' | 'ExternalFinal' | 'Completed';
 
+export interface ProjectStatusUpdate {
+    timestamp: number;
+    updatedBy: string; // Faculty Name
+    from: ProjectSubmission['status'];
+    to: ProjectSubmission['status'];
+    remarks?: string;
+}
+
 export interface ProjectSubmission {
   id: string;
   teamId: string;
   projectIdeas: ProjectIdea[];
   status: 'PendingGuide' | 'PendingR&D' | 'PendingHoD' | 'Approved' | 'Rejected';
+  statusHistory?: ProjectStatusUpdate[];
   scores: Score[];
   internalScore: number;
   externalScore: number;

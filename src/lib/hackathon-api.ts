@@ -36,7 +36,7 @@ import {
     limit,
     writeBatch
 } from 'firebase/firestore';
-import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea } from './types';
+import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate } from './types';
 import { INDIVIDUAL_EVALUATION_RUBRIC, INTERNAL_STAGE_1_RUBRIC, INTERNAL_STAGE_2_RUBRIC, INTERNAL_FINAL_RUBRIC, EXTERNAL_FINAL_RUBRIC } from './constants';
 import { generateProjectImage } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
@@ -204,8 +204,18 @@ export async function registerFaculty(collegeId: string, data: Partial<Faculty> 
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const facultyData: Omit<Faculty, 'id'> = {
-            ...data,
+        const facultyData = {
+            name: data.name,
+            email: data.email,
+            role: data.role,
+            gender: data.gender,
+            contactNumber: data.contactNumber,
+            bio: data.bio,
+            designation: data.designation,
+            education: data.education,
+            branch: data.branch,
+            department: data.department,
+            collegeName: data.collegeName,
             status: 'pending',
             notifications: [],
         };
@@ -712,6 +722,7 @@ export async function submitProject(collegeId: string, hackathonId: string, team
             submittedAt: Date.now(),
             status: 'PendingGuide',
             reviewStage: 'Pending',
+            statusHistory: [],
         };
         const submissionRef = await addDoc(collection(db, `colleges/${collegeId}/projects`), newSubmission);
         await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { submissionId: submissionRef.id });
@@ -796,6 +807,54 @@ export async function evaluateProject(collegeId: string, projectId: string, eval
 
     return { successMessage: "Evaluation submitted successfully." };
 }
+
+export async function updateProjectStatus(collegeId: string, projectId: string, newStatus: ProjectSubmission['status'], faculty: Faculty, remarks?: string) {
+    const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
+    const projectDoc = await getDoc(projectRef);
+    if (!projectDoc.exists()) throw new Error("Project not found.");
+
+    const project = projectDoc.data() as ProjectSubmission;
+
+    const statusUpdate: ProjectStatusUpdate = {
+        timestamp: Date.now(),
+        updatedBy: faculty.name,
+        from: project.status,
+        to: newStatus,
+        remarks: remarks || (newStatus === 'Rejected' ? 'Project Rejected' : `Approved and moved to ${newStatus}`)
+    };
+
+    await updateDoc(projectRef, {
+        status: newStatus,
+        statusHistory: arrayUnion(statusUpdate)
+    });
+
+    // Notify team members
+    const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/teams`, project.teamId));
+    if (teamDoc.exists()) {
+        const team = teamDoc.data() as Team;
+        let message = `Your project "${project.projectIdeas[0].title}" has been ${newStatus === 'Approved' ? 'approved' : 'updated'}. New status: ${newStatus}.`;
+        if (newStatus === 'Rejected') {
+            message = `Your project "${project.projectIdeas[0].title}" has been rejected. Remarks: ${remarks || 'No remarks provided.'}`;
+        }
+
+        const notification = {
+            id: doc(collection(db, 'dummy')).id,
+            message,
+            link: '/student',
+            timestamp: Date.now(),
+            isRead: false
+        };
+        const batch = writeBatch(db);
+        team.members.forEach(member => {
+            const memberRef = doc(db, `colleges/${collegeId}/users`, member.id);
+            batch.update(memberRef, { notifications: arrayUnion(notification) });
+        });
+        await batch.commit();
+    }
+
+    return { successMessage: `Project status updated to ${newStatus}` };
+}
+
 
 export async function assignGuideToTeam(collegeId: string, teamId: string, guide: Faculty) {
     const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
