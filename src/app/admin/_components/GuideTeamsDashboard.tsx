@@ -173,14 +173,6 @@ const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubm
                                                     <Link href={idea.abstractFileUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline text-sm">View Uploaded File</Link>
                                                 </div>
                                             )}
-                                            <div className="mt-4 border-t pt-4 flex flex-wrap gap-2">
-                                                <Button onClick={() => handleGetReview(idea.githubUrl)} disabled={isReviewing} variant="outline" size="sm">
-                                                    {isReviewing ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Reviewing...</> : "AI Code Review"}
-                                                </Button>
-                                                <Button onClick={() => handleGenerateOutline(idea)} disabled={isGeneratingOutline} variant="outline" size="sm">
-                                                    {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "AI Pitch Coach"}
-                                                </Button>
-                                            </div>
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>
