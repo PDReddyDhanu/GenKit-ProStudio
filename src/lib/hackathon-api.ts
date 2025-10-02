@@ -1,3 +1,4 @@
+
 "use client";
 
 import { auth, db } from './firebase';
@@ -535,6 +536,28 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
     const teamRef = await addDoc(collection(db, `colleges/${collegeId}/teams`), newTeam);
 
     return { successMessage: "Team created successfully!", teamId: teamRef.id };
+}
+
+export async function deleteTeam(collegeId: string, teamId: string) {
+    const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
+    const teamDoc = await getDoc(teamRef);
+
+    if (!teamDoc.exists()) {
+        throw new Error("Team not found.");
+    }
+
+    const teamData = teamDoc.data() as Team;
+
+    // Delete associated project submission if it exists
+    if (teamData.submissionId) {
+        const projectRef = doc(db, `colleges/${collegeId}/projects`, teamData.submissionId);
+        await deleteDoc(projectRef).catch(err => console.warn("Could not delete associated project, it may have already been removed.", err));
+    }
+    
+    // Delete the team document
+    await deleteDoc(teamRef);
+    
+    return { successMessage: "Team has been successfully deleted." };
 }
 
 export async function requestToJoinTeamByCode(collegeId: string, hackathonId: string, joinCode: string, user: User) {

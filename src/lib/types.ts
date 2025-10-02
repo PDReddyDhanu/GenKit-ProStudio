@@ -1,3 +1,4 @@
+
 export interface UserProfileData {
   name: string;
   skills: string[];
@@ -196,4 +197,8 @@ export interface Hackathon {
     teamSizeLimit: number;
     deadline: number;
     summaryImageUrl?: string;
+}
+
+export interface Api {
+  deleteTeam: (teamId: string) => Promise<{ successMessage: string }>;
 }

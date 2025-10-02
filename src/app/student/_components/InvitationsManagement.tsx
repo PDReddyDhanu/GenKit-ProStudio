@@ -9,6 +9,17 @@ import { Loader, UserPlus, Inbox, Check, X, Send, Users, Trash2 } from 'lucide-r
 import type { Team, JoinRequest, User } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function InvitationsManagement() {
     const { state, api } = useHackathon();
@@ -52,6 +63,17 @@ export default function InvitationsManagement() {
             setIsLoading(null);
         }
     }
+    
+    const handleDeleteTeam = async (teamId: string) => {
+        setIsLoading(`delete-${teamId}`);
+        try {
+            await api.deleteTeam(teamId);
+        } catch (error) {
+            console.error("Failed to delete team:", error);
+        } finally {
+            setIsLoading(null);
+        }
+    };
 
     if (!selectedHackathonId) {
         return (
@@ -77,9 +99,32 @@ export default function InvitationsManagement() {
                         <div className="space-y-6">
                             {myCreatedTeams.length > 0 ? myCreatedTeams.map(team => (
                                 <div key={team.id} className="space-y-4">
-                                    <div>
-                                        <h3 className="font-semibold text-lg text-primary">{team.name}</h3>
-                                        <p className="text-sm text-muted-foreground">{hackathons.find(h => h.id === team.hackathonId)?.name || "Selected Project"}</p>
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-semibold text-lg text-primary">{team.name}</h3>
+                                            <p className="text-sm text-muted-foreground">{hackathons.find(h => h.id === team.hackathonId)?.name || "Selected Project"}</p>
+                                        </div>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="destructive" size="sm" disabled={!!isLoading}>
+                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Team
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete the team and any associated project submissions.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDeleteTeam(team.id)} className="bg-destructive hover:bg-destructive/80">
+                                                        {isLoading === `delete-${team.id}` ? <Loader className="animate-spin" /> : 'Yes, Delete Team'}
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
                                     
                                     {/* Member Management */}
