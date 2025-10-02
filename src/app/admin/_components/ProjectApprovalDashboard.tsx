@@ -96,40 +96,62 @@ const ProjectApprovalCard = ({ project, team }: { project: ProjectSubmission, te
 
 
     return (
-        <Card className="bg-muted/50">
-            <CardHeader>
-                <CardTitle className="text-lg">{project.projectIdeas[0]?.title || "Untitled Project"}</CardTitle>
-                <CardDescription>Team: {team?.name || "Unknown"}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{project.projectIdeas[0]?.description}</p>
-                 {canApprove && (
-                    <div className="flex gap-2">
-                        {nextStatus && (
-                            <Button size="sm" onClick={() => handleUpdateStatus(nextStatus)} disabled={!!isLoading}>
-                                {isLoading === nextStatus ? <Loader className="animate-spin h-4 w-4" /> : <Check className="h-4 w-4" />}
-                                <span className="ml-2">Approve</span>
+        <Dialog open={isRemarksOpen} onOpenChange={setIsRemarksOpen}>
+            <Card className="bg-muted/50">
+                <CardHeader>
+                    <CardTitle className="text-lg">{project.projectIdeas[0]?.title || "Untitled Project"}</CardTitle>
+                    <CardDescription>Team: {team?.name || "Unknown"}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{project.projectIdeas[0]?.description}</p>
+                    {canApprove && (
+                        <div className="flex gap-2">
+                            {nextStatus && (
+                                <Button size="sm" onClick={() => handleUpdateStatus(nextStatus)} disabled={!!isLoading}>
+                                    {isLoading === nextStatus ? <Loader className="animate-spin h-4 w-4" /> : <Check className="h-4 w-4" />}
+                                    <span className="ml-2">Approve</span>
+                                </Button>
+                            )}
+                            <DialogTrigger asChild>
+                                <Button variant="destructive" size="sm" disabled={!!isLoading}>
+                                    {isLoading === 'Rejected' ? <Loader className="animate-spin h-4 w-4" /> : <X className="h-4 w-4" />}
+                                    <span className="ml-2">Reject</span>
+                                </Button>
+                            </DialogTrigger>
+                            <Button variant="outline" size="sm">
+                                <MessageSquare className="h-4 w-4 mr-2" /> Remarks
                             </Button>
-                        )}
-                        <DialogTrigger asChild>
-                             <Button variant="destructive" size="sm" onClick={() => setIsRemarksOpen(true)} disabled={!!isLoading}>
-                                {isLoading === 'Rejected' ? <Loader className="animate-spin h-4 w-4" /> : <X className="h-4 w-4" />}
-                                <span className="ml-2">Reject</span>
-                            </Button>
-                        </DialogTrigger>
-                        <Button variant="outline" size="sm">
-                            <MessageSquare className="h-4 w-4 mr-2" /> Remarks
-                        </Button>
+                        </div>
+                    )}
+                </CardContent>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add Remarks for "{project.projectIdeas[0].title}"</DialogTitle>
+                        <DialogDescription>
+                            Provide feedback or reasons for rejection. This will be sent to the student team.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Label htmlFor="remarks-textarea">Remarks</Label>
+                        <Textarea
+                            id="remarks-textarea"
+                            value={isRemarksOpen ? (project.statusHistory?.find(h => h.to === 'Rejected')?.remarks || '') : ''}
+                            onChange={(e) => {
+                                const newRemarks = e.target.value;
+                                // This is a bit of a workaround to keep the state local to the dialog
+                                // The real state management for remarks is handled on confirm
+                            }}
+                            placeholder="e.g., 'The project scope is too broad, please refine...' or 'Idea rejected due to similarity with another project.'"
+                            rows={5}
+                        />
                     </div>
-                )}
-            </CardContent>
-            <RemarksDialog
-                project={project}
-                open={isRemarksOpen}
-                onOpenChange={setIsRemarksOpen}
-                onConfirm={(remarks) => handleUpdateStatus('Rejected', remarks)}
-            />
-        </Card>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsRemarksOpen(false)}>Cancel</Button>
+                        <Button onClick={() => handleUpdateStatus('Rejected', (document.getElementById('remarks-textarea') as HTMLTextAreaElement).value)}>Confirm & Send</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Card>
+        </Dialog>
     );
 };
 
