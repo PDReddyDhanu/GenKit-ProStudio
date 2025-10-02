@@ -48,13 +48,20 @@ const TeamGuideCard = ({ team }: { team: Team }) => {
      const handleRemoveGuide = async () => {
         setIsAssigning(true);
         try {
-            // Re-assigning with an empty guide object effectively removes the guide
             await api.assignGuideToTeam(team.id, {} as Faculty);
             setSelectedGuideId('');
         } catch (error) {
             console.error("Failed to remove guide:", error);
         } finally {
             setIsAssigning(false);
+        }
+    };
+    
+    const handleSelectChange = (value: string) => {
+        if (value === 'unassign') {
+            handleRemoveGuide();
+        } else {
+            setSelectedGuideId(value);
         }
     };
 
@@ -74,12 +81,12 @@ const TeamGuideCard = ({ team }: { team: Team }) => {
                     )}
                 </div>
                  <div className="space-y-2">
-                    <Select onValueChange={setSelectedGuideId} value={selectedGuideId}>
+                    <Select onValueChange={handleSelectChange} value={selectedGuideId}>
                         <SelectTrigger disabled={isAssigning}>
                             <SelectValue placeholder="Select a guide to assign..." />
                         </SelectTrigger>
                         <SelectContent>
-                             <SelectItem value="">-- Unassign --</SelectItem>
+                             <SelectItem value="unassign">-- Unassign --</SelectItem>
                             {availableGuides.map(guide => (
                                 <SelectItem key={guide.id} value={guide.id}>{guide.name}</SelectItem>
                             ))}
@@ -87,16 +94,10 @@ const TeamGuideCard = ({ team }: { team: Team }) => {
                     </Select>
                 </div>
                  <div className="flex gap-2">
-                    <Button onClick={handleAssignGuide} disabled={isAssigning || !selectedGuideId} size="sm">
+                    <Button onClick={handleAssignGuide} disabled={isAssigning || !selectedGuideId || selectedGuideId === 'unassign'} size="sm">
                         {isAssigning ? <Loader className="animate-spin mr-2 h-4 w-4"/> : null}
                         {team.guide?.id === selectedGuideId ? 'Re-assign' : 'Assign Guide'}
                     </Button>
-                     {team.guide?.id && (
-                        <Button onClick={handleRemoveGuide} disabled={isAssigning} size="sm" variant="destructive">
-                           {isAssigning ? <Loader className="animate-spin mr-2 h-4 w-4"/> : null}
-                           Remove Guide
-                        </Button>
-                    )}
                 </div>
             </CardContent>
         </Card>
