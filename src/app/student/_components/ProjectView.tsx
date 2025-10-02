@@ -52,33 +52,44 @@ const IdeaDisplay = ({ idea }: { idea: ProjectIdea }) => {
     )
 }
 
-const StatusTimeline = ({ history, onResubmit }: { history: ProjectStatusUpdate[], onResubmit: () => void }) => {
+const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, onResubmit: () => void }) => {
+    const history = project.statusHistory || [];
+    const stageOrder: ProjectSubmission['status'][] = ['PendingGuide', 'PendingR&D', 'PendingHoD', 'Approved'];
+    
     const getStatusForStage = (stage: ProjectSubmission['status']) => {
-        const update = [...history].reverse().find(h => h.to === stage);
-        if (update) return { status: 'complete', update };
+        const stageIndex = stageOrder.indexOf(stage);
+        const currentStatusIndex = stageOrder.indexOf(project.status);
 
-        const lastUpdate = history[history.length - 1];
-        if (lastUpdate) {
-            const stageOrder: ProjectSubmission['status'][] = ['PendingGuide', 'PendingR&D', 'PendingHoD', 'Approved'];
-            const currentIndex = stageOrder.indexOf(lastUpdate.to);
-            const targetIndex = stageOrder.indexOf(stage);
-            if (currentIndex >= 0 && targetIndex > currentIndex) {
-                 return { status: 'pending', update: null };
-            }
+        if (currentStatusIndex > stageIndex) {
+            // This stage is in the past and has been completed.
+            const update = [...history].reverse().find(h => h.to === stageOrder[stageIndex + 1] || h.to === stage);
+            return { status: 'complete' as const, update };
         }
         
-        return { status: 'upcoming', update: null };
+        if (currentStatusIndex === stageIndex) {
+             // This is the current pending stage
+             const update = [...history].reverse().find(h => h.to === stage);
+             return { status: 'pending' as const, update };
+        }
+        
+        // This stage is in the future.
+        return { status: 'upcoming' as const, update: null };
     };
     
-    const isRejected = history.some(h => h.to === 'Rejected');
+    const isRejected = project.status === 'Rejected';
     const rejectionUpdate = history.find(h => h.to === 'Rejected');
 
     const stages: { key: ProjectSubmission['status'], name: string }[] = [
         { key: 'PendingGuide', name: 'Guide Review' },
         { key: 'PendingR&D', name: 'R&D Coordinator Review' },
         { key: 'PendingHoD', name: 'HOD Review' },
-        { key: 'Approved', name: 'Project Approved' }
     ];
+    
+     const finalApprovedStage = {
+        key: 'Approved',
+        name: 'Project Approved',
+        update: history.find(h => h.to === 'Approved')
+    };
 
     const getIcon = (status: 'complete' | 'pending' | 'upcoming' | 'rejected') => {
         switch (status) {
@@ -138,6 +149,15 @@ const StatusTimeline = ({ history, onResubmit }: { history: ProjectStatusUpdate[
                     </div>
                 )
             })}
+             <div className="relative">
+                <div className={`absolute -left-[45px] top-0 h-10 w-10 bg-background flex items-center justify-center rounded-full border-2 ${finalApprovedStage.update ? 'border-green-500' : 'border-border'}`}>
+                    {getIcon(finalApprovedStage.update ? 'complete' : 'upcoming')}
+                </div>
+                <p className={`font-bold text-lg ${finalApprovedStage.update ? 'text-green-400' : 'text-muted-foreground'}`}>{finalApprovedStage.name}</p>
+                {finalApprovedStage.update && (
+                    <div className="text-xs text-muted-foreground">{format(new Date(finalApprovedStage.update.timestamp), 'PPP p')} by {finalApprovedStage.update.updatedBy}</div>
+                )}
+            </div>
         </div>
     );
 }
@@ -209,9 +229,6 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
     
     const handleResubmit = async () => {
         try {
-            // This is a placeholder. A real implementation might need to archive the old submission
-            // and create a new one, or simply allow adding more ideas.
-            // For now, we'll just take them to the "add idea" screen.
             onAddIdea();
         } catch(e) {
             console.error(e);
@@ -255,7 +272,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                                     <CardDescription>Track your project's progress through the approval stages.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <StatusTimeline history={submission.statusHistory || []} onResubmit={handleResubmit}/>
+                                    <StatusTimeline project={submission} onResubmit={handleResubmit}/>
                                 </CardContent>
                             </Card>
                         </TabsContent>
@@ -334,3 +351,4 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
         </div>
     );
 }
+

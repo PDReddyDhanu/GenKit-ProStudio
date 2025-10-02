@@ -7,16 +7,17 @@ import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, Loader } from 'lucide-react';
-import type { Team, ChatMessage } from '@/lib/types';
+import type { Team, ChatMessage, TeamMember } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface TeamChatProps {
     team: Team;
-    scope: 'team' | 'guide';
+    scope: 'team' | 'guide' | 'personal';
+    recipient?: TeamMember; // For personal chat
 }
 
-export default function TeamChat({ team, scope }: TeamChatProps) {
+export default function TeamChat({ team, scope, recipient }: TeamChatProps) {
     const { state, api } = useHackathon();
     const { currentUser } = state;
     const [message, setMessage] = useState('');
@@ -24,12 +25,23 @@ export default function TeamChat({ team, scope }: TeamChatProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const messages = useMemo(() => {
-        const messageArray = scope === 'team' ? team.teamMessages : team.guideMessages;
+        let messageArray: ChatMessage[] = [];
+        if (scope === 'team') {
+            messageArray = team.teamMessages || [];
+        } else if (scope === 'guide') {
+            messageArray = team.guideMessages || [];
+        } else if (scope === 'personal' && currentUser && recipient) {
+            messageArray = (team.personalMessages || []).filter(msg => 
+                (msg.userId === currentUser.id && msg.recipientId === recipient.id) ||
+                (msg.userId === recipient.id && msg.recipientId === currentUser.id)
+            );
+        }
+
         if (Array.isArray(messageArray)) {
             return [...messageArray].sort((a, b) => a.timestamp - b.timestamp);
         }
         return [];
-    }, [team, scope]);
+    }, [team, scope, currentUser, recipient]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -45,16 +57,28 @@ export default function TeamChat({ team, scope }: TeamChatProps) {
         
         setIsLoading(true);
         try {
-            const messageData = {
-                userId: currentUser.id,
-                userName: currentUser.name,
-                text: message,
-                timestamp: Date.now()
-            };
             if (scope === 'team') {
-                await api.postTeamMessage(team.id, messageData);
-            } else {
-                 await api.postGuideMessage(team.id, messageData);
+                await api.postTeamMessage(team.id, {
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    text: message,
+                    timestamp: Date.now()
+                });
+            } else if (scope === 'guide') {
+                 await api.postGuideMessage(team.id, {
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    text: message,
+                    timestamp: Date.now()
+                });
+            } else if (scope === 'personal' && recipient) {
+                await api.postPersonalMessage(team.id, {
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    recipientId: recipient.id,
+                    text: message,
+                    timestamp: Date.now()
+                });
             }
             setMessage('');
         } finally {
@@ -95,3 +119,4 @@ export default function TeamChat({ team, scope }: TeamChatProps) {
         </div>
     );
 }
+

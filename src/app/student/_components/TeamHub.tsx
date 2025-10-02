@@ -1,9 +1,10 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Users, Loader, Trash2, User as UserIcon, PlusCircle, Search, LogOut, ShieldCheck, MessageSquare, Briefcase } from 'lucide-react';
+import { Users, Loader, Trash2, User as UserIcon, PlusCircle, Search, LogOut, ShieldCheck, MessageSquare, Briefcase, MessagesSquare } from 'lucide-react';
 import type { Team, TeamMember, User as UserType } from '@/lib/types';
 import TeamChat from './TeamChat';
 import { useHackathon } from '@/context/HackathonProvider';
@@ -13,7 +14,6 @@ import { TEAM_ROLES } from '@/lib/constants';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Label } from '@/components/ui/label';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +40,7 @@ export default function TeamHub({ team }: TeamHubProps) {
     const [searchEmail, setSearchEmail] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
+    const [activeDm, setActiveDm] = useState<TeamMember | null>(null);
 
     const isTeamCreator = currentUser?.id === team.creatorId;
 
@@ -104,6 +105,146 @@ export default function TeamHub({ team }: TeamHubProps) {
         }
     };
 
+    const MemberList = () => (
+        <div>
+             {team.guide && (
+                <div className="mb-6">
+                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><ShieldCheck className="text-primary" /> Assigned Guide</h4>
+                    <Badge variant="default" className="text-base">{team.guide.name}</Badge>
+                </div>
+            )}
+            <div>
+                <div className="flex justify-between items-center mb-3">
+                    <h4 className="font-semibold">Team Members ({team.members.length} / 6)</h4>
+                    {isTeamCreator && team.members.length < 6 && (
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <PlusCircle className="mr-2 h-4 w-4"/> Add Member
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80">
+                                <div className="grid gap-4">
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium leading-none">Add Team Member</h4>
+                                        <p className="text-sm text-muted-foreground">Search for registered students by email.</p>
+                                    </div>
+                                    <div className="relative">
+                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            id="search-email"
+                                            placeholder="student@email.com"
+                                            value={searchEmail}
+                                            onChange={(e) => setSearchEmail(e.target.value)}
+                                            className="pl-9"
+                                            disabled={isAdding}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        {availableUsersToAdd.map(user => (
+                                            <div key={user.id} className="flex items-center justify-between p-2 hover:bg-muted rounded-md">
+                                                <div>
+                                                    <p className="text-sm font-medium">{user.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                                                </div>
+                                                <Button size="sm" onClick={() => handleAddMember(user)} disabled={isAdding}>Add</Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    )}
+                </div>
+                <ul className="space-y-3">
+                    {team.members.map(member => (
+                        <li key={member.id} className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 p-2 bg-muted/50 rounded-md">
+                            <div className="flex flex-col">
+                                <span className="flex items-center gap-2 font-semibold">
+                                    <UserIcon className="h-4 w-4" /> {member.name} 
+                                    {member.id === currentUser?.id && <Badge variant="outline">(You)</Badge>}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {isTeamCreator && (
+                                    <div className="flex items-center gap-1">
+                                        <Select 
+                                            defaultValue={member.role || 'Member'}
+                                            onValueChange={(newRole) => handleRoleChange(member.id, newRole)}
+                                            disabled={isUpdatingRole === member.id}
+                                        >
+                                            <SelectTrigger className="h-8 w-[150px] text-xs">
+                                                <SelectValue placeholder="Assign Role" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {TEAM_ROLES.map(role => (
+                                                    <SelectItem key={role} value={role} className="text-xs">{role}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {isUpdatingRole === member.id && <Loader className="h-4 w-4 animate-spin"/>}
+                                    </div>
+                                )}
+                                {isTeamCreator && member.id !== currentUser?.id && (
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isRemoving === member.id}>
+                                                {isRemoving === member.id ? <Loader className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4 text-destructive" />}
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure you want to remove {member.name}?</AlertDialogTitle>
+                                                <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleRemoveTeammate(member)} className="bg-destructive hover:bg-destructive/80">Yes, Remove Member</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                )}
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
+
+    const DirectMessageView = () => {
+         if (activeDm) {
+            return (
+                 <Card className="border-none shadow-none">
+                    <CardHeader className="p-0 mb-4 flex-row items-center gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setActiveDm(null)}><UserIcon className="h-4 w-4" /></Button>
+                        <div>
+                            <CardTitle className="font-headline flex items-center gap-2"><MessagesSquare/> Chat with {activeDm.name.split(' ')[0]}</CardTitle>
+                            <CardDescription>Private conversation.</CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <TeamChat team={team} scope="personal" recipient={activeDm} />
+                    </CardContent>
+                </Card>
+            )
+        }
+        return (
+            <div>
+                 <h4 className="font-semibold mb-3">Direct Message a Member</h4>
+                 <ul className="space-y-2">
+                    {team.members.filter(m => m.id !== currentUser?.id).map(member => (
+                        <li key={member.id}>
+                            <Button variant="outline" className="w-full justify-start" onClick={() => setActiveDm(member)}>
+                                <UserIcon className="mr-2 h-4 w-4"/> {member.name}
+                            </Button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-8">
             <Card>
@@ -145,114 +286,14 @@ export default function TeamHub({ team }: TeamHubProps) {
                 
                 <CardContent className="border-t pt-6">
                     <Tabs defaultValue="members" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
+                        <TabsList className="grid w-full grid-cols-4">
                             <TabsTrigger value="members">Members</TabsTrigger>
                             <TabsTrigger value="teamChat">Team Chat</TabsTrigger>
                             <TabsTrigger value="guideChat">Guide Chat</TabsTrigger>
+                             <TabsTrigger value="directMessages">DMs</TabsTrigger>
                         </TabsList>
                         <TabsContent value="members" className="mt-6">
-                             {team.guide && (
-                                <div className="mb-6">
-                                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2"><ShieldCheck className="text-primary" /> Assigned Guide</h4>
-                                    <Badge variant="default" className="text-base">{team.guide.name}</Badge>
-                                </div>
-                            )}
-                            <div>
-                                <div className="flex justify-between items-center mb-3">
-                                    <h4 className="font-semibold">Team Members ({team.members.length} / 6)</h4>
-                                    {isTeamCreator && team.members.length < 6 && (
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button variant="outline" size="sm">
-                                                    <PlusCircle className="mr-2 h-4 w-4"/> Add Member
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-80">
-                                                <div className="grid gap-4">
-                                                    <div className="space-y-2">
-                                                        <h4 className="font-medium leading-none">Add Team Member</h4>
-                                                        <p className="text-sm text-muted-foreground">Search for registered students by email.</p>
-                                                    </div>
-                                                    <div className="relative">
-                                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                                        <Input
-                                                            id="search-email"
-                                                            placeholder="student@email.com"
-                                                            value={searchEmail}
-                                                            onChange={(e) => setSearchEmail(e.target.value)}
-                                                            className="pl-9"
-                                                            disabled={isAdding}
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        {availableUsersToAdd.map(user => (
-                                                            <div key={user.id} className="flex items-center justify-between p-2 hover:bg-muted rounded-md">
-                                                                <div>
-                                                                    <p className="text-sm font-medium">{user.name}</p>
-                                                                    <p className="text-xs text-muted-foreground">{user.email}</p>
-                                                                </div>
-                                                                <Button size="sm" onClick={() => handleAddMember(user)} disabled={isAdding}>Add</Button>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </PopoverContent>
-                                        </Popover>
-                                    )}
-                                </div>
-                                <ul className="space-y-3">
-                                    {team.members.map(member => (
-                                        <li key={member.id} className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 p-2 bg-muted/50 rounded-md">
-                                            <div className="flex flex-col">
-                                                <span className="flex items-center gap-2 font-semibold">
-                                                    <UserIcon className="h-4 w-4" /> {member.name} 
-                                                    {member.id === currentUser?.id && <Badge variant="outline">(You)</Badge>}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                {isTeamCreator && (
-                                                    <div className="flex items-center gap-1">
-                                                        <Select 
-                                                            defaultValue={member.role || 'Member'}
-                                                            onValueChange={(newRole) => handleRoleChange(member.id, newRole)}
-                                                            disabled={isUpdatingRole === member.id}
-                                                        >
-                                                            <SelectTrigger className="h-8 w-[150px] text-xs">
-                                                                <SelectValue placeholder="Assign Role" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {TEAM_ROLES.map(role => (
-                                                                    <SelectItem key={role} value={role} className="text-xs">{role}</SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                        {isUpdatingRole === member.id && <Loader className="h-4 w-4 animate-spin"/>}
-                                                    </div>
-                                                )}
-                                                {isTeamCreator && member.id !== currentUser?.id && (
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isRemoving === member.id}>
-                                                                {isRemoving === member.id ? <Loader className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4 text-destructive" />}
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Are you sure you want to remove {member.name}?</AlertDialogTitle>
-                                                                <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleRemoveTeammate(member)} className="bg-destructive hover:bg-destructive/80">Yes, Remove Member</AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                )}
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                           <MemberList />
                         </TabsContent>
                         <TabsContent value="teamChat" className="mt-6">
                             <Card className="border-none shadow-none">
@@ -279,6 +320,9 @@ export default function TeamHub({ team }: TeamHubProps) {
                                     )}
                                 </CardContent>
                             </Card>
+                        </TabsContent>
+                         <TabsContent value="directMessages" className="mt-6">
+                           <DirectMessageView />
                         </TabsContent>
                     </Tabs>
                 </CardContent>
