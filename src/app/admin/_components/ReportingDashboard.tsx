@@ -13,9 +13,19 @@ import jsPDF from 'jspdf';
 
 export default function ReportingDashboard() {
     const { state } = useHackathon();
-    const { projects, teams, selectedCollege } = state;
+    const { projects, teams, selectedCollege, selectedHackathonId } = state;
     const [report, setReport] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+
+    const eventProjects = useMemo(() => {
+        return projects.filter(p => p.hackathonId === selectedHackathonId);
+    }, [projects, selectedHackathonId]);
+
+    const eventTeams = useMemo(() => {
+        const eventTeamIds = new Set(eventProjects.map(p => p.teamId));
+        return teams.filter(t => eventTeamIds.has(t.id));
+    }, [teams, eventProjects]);
+
 
     const handleGenerateReport = async () => {
         if (!selectedCollege) return;
@@ -24,8 +34,8 @@ export default function ReportingDashboard() {
         try {
             const result = await generateSummaryReport({
                 collegeName: selectedCollege,
-                projects: projects,
-                teams: teams,
+                projects: eventProjects,
+                teams: eventTeams,
             });
             setReport(result);
         } catch (error) {
@@ -65,17 +75,17 @@ export default function ReportingDashboard() {
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">Automated Report Generation</CardTitle>
-                    <CardDescription>Generate a comprehensive AI-powered summary report for all projects at "{selectedCollege}".</CardDescription>
+                    <CardDescription>Generate a comprehensive AI-powered summary report for all projects in the selected event.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                     {projects.length > 0 ? (
+                     {eventProjects.length > 0 ? (
                         <Button onClick={handleGenerateReport} disabled={isLoading}>
                             {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating Report...</> : <><Wand2 className="mr-2 h-4 w-4"/> Generate College Report</>}
                         </Button>
                     ) : (
                         <div className="flex items-center gap-3 text-yellow-500">
                             <AlertTriangle />
-                            <p>No projects have been submitted, so a report cannot be generated.</p>
+                            <p>No projects have been submitted for this event, so a report cannot be generated.</p>
                         </div>
                     )}
                 </CardContent>

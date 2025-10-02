@@ -6,7 +6,7 @@ import React, { useMemo, useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import PageIntro from '@/components/PageIntro';
-import { TrendingUp, Trophy, Award, Star } from 'lucide-react';
+import { TrendingUp, Trophy, Award, Star, BarChart2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { ProjectSubmission, Team } from '@/lib/types';
@@ -17,6 +17,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 interface LeaderboardEntry {
@@ -26,6 +28,13 @@ interface LeaderboardEntry {
     score: number;
     achievements?: string[];
 }
+
+const projectTypes = [
+    { id: 'real-time-project', name: 'Real-Time Project' },
+    { id: 'mini-project', name: 'Mini Project' },
+    { id: 'major-project', name: 'Major Project' },
+    { id: 'other-project', name: 'Other Project' }
+];
 
 const PodiumCard = ({ entry, rank }: { entry: LeaderboardEntry, rank: number }) => {
     
@@ -56,7 +65,7 @@ const PodiumCard = ({ entry, rank }: { entry: LeaderboardEntry, rank: number }) 
     const styles = rankStyles[rank as keyof typeof rankStyles];
     
     return (
-        <Card className={cn("text-center flex flex-col items-center border-2 transition-all duration-300 transform-gpu animate-slide-in-up", styles.card)} style={{animationDelay: styles.animationDelay}}>
+        <Card className={cn("text-center flex flex-col items-center border-2 transition-all duration-300 transform-gpu animate-card-in", styles.card)} style={{animationDelay: styles.animationDelay}}>
             <CardHeader className="items-center pb-2">
                 <div className={cn("mb-2", styles.iconColor)} style={{ filter: `drop-shadow(0 0 10px currentColor)`}}>
                     {styles.icon}
@@ -92,9 +101,14 @@ export default function Leaderboard() {
     const { state } = useHackathon();
     const { projects, teams } = state;
     const [showIntro, setShowIntro] = useState(true);
+    const [selectedProjectType, setSelectedProjectType] = useState<string>('all');
 
     const leaderboardData = useMemo(() => {
-        return projects
+        const filteredProjects = selectedProjectType === 'all'
+            ? projects
+            : projects.filter(p => p.hackathonId === selectedProjectType);
+
+        return filteredProjects
             .filter(p => p.totalScore > 0)
             .sort((a, b) => b.totalScore - a.totalScore)
             .map((p, index) => {
@@ -107,7 +121,7 @@ export default function Leaderboard() {
                     achievements: p.achievements,
                 };
             });
-    }, [projects, teams]);
+    }, [projects, teams, selectedProjectType]);
 
     if (showIntro) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<TrendingUp className="w-full h-full" />} title="Leaderboard" description="Track team progress in real-time." />;
@@ -119,10 +133,25 @@ export default function Leaderboard() {
     return (
         <div className="container max-w-6xl mx-auto py-12 animate-fade-in">
              <TooltipProvider>
-                <div className="text-center mb-12">
+                <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold text-center mb-2 font-headline">Live Leaderboard for {state.selectedCollege}</h1>
                     <p className="text-muted-foreground">A real-time look at the leading teams.</p>
                 </div>
+
+                <Card className="p-4 mb-8">
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
+                        <p className="font-semibold">Filter by Project Type:</p>
+                        <Select onValueChange={setSelectedProjectType} defaultValue="all">
+                            <SelectTrigger className="w-full sm:w-[280px]">
+                                <SelectValue placeholder="Filter by Project Type..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Project Types</SelectItem>
+                                {projectTypes.map(pt => <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </Card>
                 
                 {leaderboardData.length > 0 ? (
                     <div className="space-y-12">
@@ -198,9 +227,9 @@ export default function Leaderboard() {
                 ) : (
                     <Card>
                         <CardContent className="text-center py-16">
-                            <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground" />
-                            <p className="mt-4 text-muted-foreground text-lg">No scores have been submitted yet.</p>
-                            <p className="text-muted-foreground">The leaderboard will update in real-time as judges submit scores.</p>
+                            <BarChart2 className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <p className="mt-4 text-muted-foreground text-lg">No scored projects found for the selected filter.</p>
+                            <p className="text-muted-foreground">The leaderboard will update as judges submit scores.</p>
                         </CardContent>
                     </Card>
                 )}
@@ -208,5 +237,3 @@ export default function Leaderboard() {
         </div>
     );
 };
-
-    

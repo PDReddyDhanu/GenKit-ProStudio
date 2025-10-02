@@ -25,12 +25,12 @@ const ALL_EVALUATION_RUBRICS = [
 
 export default function AnalyticsDashboard({ event }: AnalyticsDashboardProps) {
     const { state } = useHackathon();
-    const { projects } = state;
+    const { projects, selectedHackathonId } = state;
     const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
 
     const eventProjects = useMemo(() => {
-        return projects.filter(p => p.hackathonId === event.id && p.scores.length > 0);
-    }, [projects, event.id]);
+        return projects.filter(p => p.hackathonId === selectedHackathonId && p.scores.length > 0);
+    }, [projects, selectedHackathonId]);
 
     const criteriaAverages = useMemo(() => {
         const criteriaTotals: { [key: string]: { total: number; count: number } } = {};
