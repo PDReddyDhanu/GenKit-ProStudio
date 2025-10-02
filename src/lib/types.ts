@@ -70,7 +70,8 @@ export interface Team {
   members: TeamMember[];
   submissionId?: string;
   notifications?: Notification[];
-  messages?: ChatMessage[];
+  teamMessages?: ChatMessage[];
+  guideMessages?: ChatMessage[];
   joinRequests?: JoinRequest[]; // Array of users who requested to join
   hackathonId?: string; 
   guide?: {

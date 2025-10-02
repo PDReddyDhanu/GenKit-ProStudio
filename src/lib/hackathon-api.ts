@@ -369,12 +369,12 @@ export async function addFaculty(collegeId: string, data: Partial<Faculty> & { p
             name, 
             email,
             role,
-            gender: gender || '',
+            gender: gender || 'Other',
             contactNumber: contactNumber || '',
             bio: bio || '',
             notifications: [],
-            designation: designation || '',
-            education: education || '',
+            designation: designation || 'Assistant Professor',
+            education: education || 'B.Tech',
             branch: branch || '',
             department: department || '',
             collegeName: collegeName || '',
@@ -530,7 +530,8 @@ export async function createTeam(collegeId: string, hackathonId: string, teamNam
         joinCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         members: [{ ...user, role: 'Leader' }],
         submissionId: "",
-        messages: [],
+        teamMessages: [],
+        guideMessages: [],
         joinRequests: [],
     };
     const teamRef = await addDoc(collection(db, `colleges/${collegeId}/teams`), newTeam);
@@ -772,10 +773,45 @@ export async function updateProfile(collegeId: string, userId: string, profileDa
 export async function postTeamMessage(collegeId: string, teamId: string, message: Omit<ChatMessage, 'id'>) {
     const newMessage = { ...message, id: doc(collection(db, 'dummy')).id };
     await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), {
-        messages: arrayUnion(newMessage)
+        teamMessages: arrayUnion(newMessage)
     });
     return { successMessage: "Message sent." };
 }
+
+export async function postGuideMessage(collegeId: string, teamId: string, message: Omit<ChatMessage, 'id'>) {
+    const teamRef = doc(db, `colleges/${collegeId}/teams`, teamId);
+    const newMessage = { ...message, id: doc(collection(db, 'dummy')).id };
+    await updateDoc(teamRef, {
+        guideMessages: arrayUnion(newMessage)
+    });
+    
+    const teamDoc = await getDoc(teamRef);
+    if (!teamDoc.exists()) return;
+    const team = teamDoc.data() as Team;
+    const senderIsGuide = team.guide?.id === message.userId;
+
+    const batch = writeBatch(db);
+    const notificationMessage = `New message in your guide chat for team ${team.name} from ${message.userName.split(' ')[0]}.`;
+
+    if (senderIsGuide) { // Guide sent message, notify students
+        team.members.forEach(member => {
+            const memberRef = doc(db, `colleges/${collegeId}/users`, member.id);
+            const notification = { id: doc(collection(db, 'dummy')).id, message: notificationMessage, link: '/student', timestamp: Date.now(), isRead: false };
+            batch.update(memberRef, { notifications: arrayUnion(notification) });
+        });
+    } else { // Student sent message, notify guide
+        if (team.guide?.id) {
+            const guideRef = doc(db, `colleges/${collegeId}/faculty`, team.guide.id);
+            const notification = { id: doc(collection(db, 'dummy')).id, message: notificationMessage, link: '/judge', timestamp: Date.now(), isRead: false };
+            batch.update(guideRef, { notifications: arrayUnion(notification) });
+        }
+    }
+    
+    await batch.commit();
+
+    return { successMessage: "Message sent to guide channel." };
+}
+
 
 export async function saveGuidanceHistory(collegeId: string, userOrFacultyId: string, history: ChatMessage[], role: 'user' | 'faculty') {
     const collectionName = role === 'user' ? 'users' : 'faculty';

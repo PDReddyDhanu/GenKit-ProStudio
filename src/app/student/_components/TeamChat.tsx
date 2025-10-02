@@ -1,33 +1,35 @@
 
+
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CardHeader, CardTitle } from '@/components/ui/card';
-import { Send, MessageSquare, Loader } from 'lucide-react';
-import type { Team } from '@/lib/types';
+import { Send, Loader } from 'lucide-react';
+import type { Team, ChatMessage } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface TeamChatProps {
     team: Team;
+    scope: 'team' | 'guide';
 }
 
-export default function TeamChat({ team }: TeamChatProps) {
+export default function TeamChat({ team, scope }: TeamChatProps) {
     const { state, api } = useHackathon();
     const { currentUser } = state;
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const sortedMessages = useMemo(() => {
-        if (Array.isArray(team.messages)) {
-            return [...team.messages].sort((a, b) => a.timestamp - b.timestamp);
+    const messages = useMemo(() => {
+        const messageArray = scope === 'team' ? team.teamMessages : team.guideMessages;
+        if (Array.isArray(messageArray)) {
+            return [...messageArray].sort((a, b) => a.timestamp - b.timestamp);
         }
         return [];
-    }, [team.messages]);
+    }, [team, scope]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -35,7 +37,7 @@ export default function TeamChat({ team }: TeamChatProps) {
 
     useEffect(() => {
         scrollToBottom();
-    }, [sortedMessages]);
+    }, [messages]);
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,12 +45,17 @@ export default function TeamChat({ team }: TeamChatProps) {
         
         setIsLoading(true);
         try {
-            await api.postTeamMessage(team.id, {
+            const messageData = {
                 userId: currentUser.id,
                 userName: currentUser.name,
                 text: message,
                 timestamp: Date.now()
-            });
+            };
+            if (scope === 'team') {
+                await api.postTeamMessage(team.id, messageData);
+            } else {
+                 await api.postGuideMessage(team.id, messageData);
+            }
             setMessage('');
         } finally {
             setIsLoading(false);
@@ -56,15 +63,10 @@ export default function TeamChat({ team }: TeamChatProps) {
     };
 
     return (
-        <div className="flex flex-col h-[400px]">
-             <CardHeader className="p-0 mb-4">
-                <CardTitle className="font-headline flex items-center gap-2">
-                    <MessageSquare className="text-primary"/> Team Chat
-                </CardTitle>
-            </CardHeader>
-            <ScrollArea className="flex-grow pr-4">
+        <div className="flex flex-col h-full">
+            <ScrollArea className="flex-grow pr-4 h-[300px]">
                 <div className="space-y-4">
-                    {sortedMessages.length > 0 ? sortedMessages.map(msg => (
+                    {messages.length > 0 ? messages.map(msg => (
                         <div key={msg.id} className={`flex flex-col ${msg.userId === currentUser?.id ? 'items-end' : 'items-start'}`}>
                             <div className={`p-3 rounded-lg max-w-xs ${msg.userId === currentUser?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                                 <p className="text-sm">{msg.text}</p>

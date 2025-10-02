@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
-import { ProjectSubmission, ProjectIdea, Score, TeamMember, ReviewType, ReviewStage } from '@/lib/types';
+import { ProjectSubmission, ProjectIdea, Score, TeamMember, ReviewType, ReviewStage, ChatMessage } from '@/lib/types';
 import { 
     INDIVIDUAL_EVALUATION_RUBRIC, 
     INTERNAL_STAGE_1_RUBRIC, 
@@ -18,11 +18,14 @@ import {
     EXTERNAL_FINAL_RUBRIC 
 } from '@/lib/constants';
 import Link from 'next/link';
-import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle } from 'lucide-react';
+import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare } from 'lucide-react';
 import { getAiProjectSummary } from '@/app/actions';
 import BackButton from '@/components/layout/BackButton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ScoringFormProps {
     project: ProjectSubmission;
@@ -30,6 +33,76 @@ interface ScoringFormProps {
 }
 
 type RubricItem = { id: string; name: string; max: number };
+
+const GuideChat = ({ team, guide }: { team: any, guide: any }) => {
+    const { api } = useHackathon();
+    const [message, setMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const sortedMessages = useMemo(() => {
+        if (Array.isArray(team.guideMessages)) {
+            return [...team.guideMessages].sort((a, b) => a.timestamp - b.timestamp);
+        }
+        return [];
+    }, [team.guideMessages]);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [sortedMessages]);
+
+    const handleSendMessage = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!message.trim() || !guide) return;
+        
+        setIsLoading(true);
+        try {
+            await api.postGuideMessage(team.id, {
+                userId: guide.id,
+                userName: guide.name,
+                text: message,
+                timestamp: Date.now()
+            });
+            setMessage('');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="flex flex-col h-full">
+            <ScrollArea className="flex-grow pr-4 h-[300px]">
+                <div className="space-y-4">
+                    {sortedMessages.length > 0 ? sortedMessages.map((msg: ChatMessage) => (
+                        <div key={msg.id} className={`flex flex-col ${msg.userId === guide?.id ? 'items-end' : 'items-start'}`}>
+                            <div className={`p-3 rounded-lg max-w-xs ${msg.userId === guide?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                                <p className="text-sm">{msg.text}</p>
+                            </div>
+                            <span className="text-xs text-muted-foreground mt-1 px-1">
+                                {msg.userName.split(' ')[0]} - {formatDistanceToNow(new Date(msg.timestamp), { addSuffix: true })}
+                            </span>
+                        </div>
+                    )) : (
+                        <p className="text-center text-muted-foreground pt-16">No messages yet. Start the conversation!</p>
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
+            </ScrollArea>
+            <form onSubmit={handleSendMessage} className="flex gap-2 mt-4 border-t pt-4">
+                <Input
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    placeholder="Type a message to the team..."
+                    disabled={isLoading}
+                />
+                <Button type="submit" disabled={isLoading}>
+                    {isLoading ? <Loader className="animate-spin"/> : <Send />}
+                </Button>
+            </form>
+        </div>
+    );
+};
+
 
 export default function ScoringForm({ project: submission, onBack }: ScoringFormProps) {
     const { state, api } = useHackathon();
@@ -183,13 +256,6 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
         </div>
     );
     
-    const renderReviewSection = (title: string, rubric: RubricItem[], targetId: string) => (
-         <CardContent className="border-t pt-6">
-            <h3 className="text-xl font-bold font-headline mb-4">{title}</h3>
-            {renderScoringBlock(rubric, targetId)}
-        </CardContent>
-    )
-
     if (!currentReviewType) {
         return (
              <div className="container max-w-3xl mx-auto py-12">
@@ -206,6 +272,8 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
         )
     }
 
+    const isAssignedGuide = team?.guide?.id === currentFaculty?.id;
+
     return (
         <div className="container max-w-3xl mx-auto py-12 animate-slide-in-up">
             <BackButton />
@@ -216,102 +284,125 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                 </CardHeader>
                 
                 <CardContent>
-                    <Tabs defaultValue="idea-1" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
-                            {submission.projectIdeas.map((idea, index) => (
-                                <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>Idea {index + 1}</TabsTrigger>
-                            ))}
+                    <Tabs defaultValue="details" className="w-full">
+                         <TabsList className="grid w-full grid-cols-3">
+                            <TabsTrigger value="details">Project Details</TabsTrigger>
+                            <TabsTrigger value="scoring">Scoring</TabsTrigger>
+                            <TabsTrigger value="chat" disabled={!isAssignedGuide}>Guide Chat</TabsTrigger>
                         </TabsList>
-                        {submission.projectIdeas.map((idea, index) => (
-                             <TabsContent key={idea.id} value={`idea-${index + 1}`}>
-                                <Card className="mt-4 bg-muted/50">
+                        <TabsContent value="details" className="mt-4">
+                             <Tabs defaultValue="idea-1" className="w-full">
+                                <TabsList className="grid w-full grid-cols-3">
+                                    {submission.projectIdeas.map((idea, index) => (
+                                        <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>Idea {index + 1}</TabsTrigger>
+                                    ))}
+                                </TabsList>
+                                {submission.projectIdeas.map((idea, index) => (
+                                    <TabsContent key={idea.id} value={`idea-${index + 1}`}>
+                                        <Card className="mt-4 bg-muted/50">
+                                            <CardHeader>
+                                                <CardTitle>{idea.title}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="space-y-4">
+                                                <div>
+                                                    <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><FileText className="h-4 w-4" /> Description</h4>
+                                                    <p>{idea.description}</p>
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><FileText className="h-4 w-4" /> Abstract</h4>
+                                                    <p className="whitespace-pre-wrap">{idea.abstractText}</p>
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><Tags className="h-4 w-4" /> Keywords</h4>
+                                                    <p>{idea.keywords}</p>
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-semibold text-muted-foreground">GitHub</h4>
+                                                    <Link href={idea.githubUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline break-all">{idea.githubUrl}</Link>
+                                                </div>
+                                                {idea.abstractFileUrl && (
+                                                    <div>
+                                                        <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Abstract Document</h4>
+                                                        <Link href={idea.abstractFileUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">View Uploaded File</Link>
+                                                    </div>
+                                                )}
+                                                <div className="border-t pt-4">
+                                                    <Button onClick={() => handleGenerateSummary(idea)} disabled={isGeneratingSummary} variant="outline" size="sm">
+                                                        {isGeneratingSummary ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "Generate AI Summary"}
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </TabsContent>
+                                ))}
+                            </Tabs>
+                             {aiSummary && (
+                                <div className="border-t pt-6 mt-6 space-y-4">
+                                    <h3 className="text-xl font-bold font-headline flex items-center gap-2"><Bot className="text-primary"/> AI Summary</h3>
+                                    <Card className="bg-muted/50">
+                                        <CardContent className="pt-6">
+                                            <p className="text-sm text-foreground">{aiSummary}</p>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            )}
+                        </TabsContent>
+                         <TabsContent value="scoring" className="mt-4">
+                             <form onSubmit={handleSubmitScores}>
+                                {isExternal ? (
+                                    <div className="p-4 rounded-md border bg-card">
+                                        <h3 className="text-xl font-bold font-headline mb-4">Final External Evaluation (50 Marks)</h3>
+                                        {renderScoringBlock(EXTERNAL_FINAL_RUBRIC, 'team')}
+                                    </div>
+                                ) : (
+                                    <>
+                                    {submission.reviewStage === 'Stage1' && <div className="p-4 rounded-md border bg-card"><h3 className="text-xl font-bold font-headline mb-4">Project Stage 1 Review</h3>{renderScoringBlock(INTERNAL_STAGE_1_RUBRIC, 'team')}</div>}
+                                    {submission.reviewStage === 'Stage2' && <div className="p-4 rounded-md border bg-card"><h3 className="text-xl font-bold font-headline mb-4">Project Stage 2 Review</h3>{renderScoringBlock(INTERNAL_STAGE_2_RUBRIC, 'team')}</div>}
+                                    {submission.reviewStage === 'InternalFinal' && <div className="p-4 rounded-md border bg-card"><h3 className="text-xl font-bold font-headline mb-4">Final Internal Review (50 Marks)</h3>{renderScoringBlock(INTERNAL_FINAL_RUBRIC, 'team')}</div>}
+                                    </>
+                                )}
+
+                                {(currentReviewType === 'InternalFinal' || currentReviewType === 'ExternalFinal') && (
+                                    <div className="mt-6 p-4 rounded-md border bg-card">
+                                        <h3 className="text-xl font-bold font-headline mb-4">Individual Scoring</h3>
+                                        <Accordion type="single" collapsible className="w-full">
+                                            {team?.members.map(member => (
+                                                <AccordionItem value={member.id} key={member.id}>
+                                                    <AccordionTrigger>
+                                                        <span className="flex items-center gap-2"><User className="h-4 w-4"/>{member.name}</span>
+                                                    </AccordionTrigger>
+                                                    <AccordionContent>
+                                                        {renderScoringBlock(INDIVIDUAL_EVALUATION_RUBRIC, member.id)}
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            ))}
+                                        </Accordion>
+                                    </div>
+                                )}
+                                <CardFooter className="pt-6 px-0">
+                                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                    {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Score'}
+                                    </Button>
+                                </CardFooter>
+                            </form>
+                        </TabsContent>
+                         <TabsContent value="chat" className="mt-4">
+                            {isAssignedGuide && team && currentFaculty ? (
+                                <Card>
                                     <CardHeader>
-                                        <CardTitle>{idea.title}</CardTitle>
+                                        <CardTitle className="font-headline flex items-center gap-2"><MessageSquare/>Guide Conversation</CardTitle>
+                                        <CardDescription>Chat directly with {team.name}.</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div>
-                                            <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><FileText className="h-4 w-4" /> Description</h4>
-                                            <p>{idea.description}</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><FileText className="h-4 w-4" /> Abstract</h4>
-                                            <p className="whitespace-pre-wrap">{idea.abstractText}</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><Tags className="h-4 w-4" /> Keywords</h4>
-                                            <p>{idea.keywords}</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold text-muted-foreground">GitHub</h4>
-                                            <Link href={idea.githubUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline break-all">{idea.githubUrl}</Link>
-                                        </div>
-                                         {idea.abstractFileUrl && (
-                                            <div>
-                                                <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Abstract Document</h4>
-                                                <Link href={idea.abstractFileUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">View Uploaded File</Link>
-                                            </div>
-                                        )}
-                                        <div className="border-t pt-4">
-                                            <Button onClick={() => handleGenerateSummary(idea)} disabled={isGeneratingSummary} variant="outline" size="sm">
-                                                {isGeneratingSummary ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "Generate AI Summary"}
-                                            </Button>
-                                        </div>
+                                    <CardContent>
+                                        <GuideChat team={team} guide={currentFaculty}/>
                                     </CardContent>
                                 </Card>
-                             </TabsContent>
-                        ))}
+                            ) : (
+                                <p className="text-muted-foreground text-center py-8">You are not the assigned guide for this team.</p>
+                            )}
+                        </TabsContent>
                     </Tabs>
                 </CardContent>
-                
-                <CardContent>
-                    {aiSummary && (
-                        <div className="border-t pt-6 space-y-4">
-                            <h3 className="text-xl font-bold font-headline flex items-center gap-2"><Bot className="text-primary"/> AI Summary</h3>
-                            <Card className="bg-muted/50">
-                                <CardContent className="pt-6">
-                                    <p className="text-sm text-foreground">{aiSummary}</p>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    )}
-                </CardContent>
-                
-                <form onSubmit={handleSubmitScores}>
-                    {isExternal ? (
-                        renderReviewSection("Final External Evaluation (50 Marks)", EXTERNAL_FINAL_RUBRIC, 'team')
-                    ) : (
-                        <>
-                           {submission.reviewStage === 'Stage1' && renderReviewSection("Project Stage 1 Review", INTERNAL_STAGE_1_RUBRIC, 'team')}
-                           {submission.reviewStage === 'Stage2' && renderReviewSection("Project Stage 2 Review", INTERNAL_STAGE_2_RUBRIC, 'team')}
-                           {submission.reviewStage === 'InternalFinal' && renderReviewSection("Final Internal Review (50 Marks)", INTERNAL_FINAL_RUBRIC, 'team')}
-                        </>
-                    )}
-
-                    {(currentReviewType === 'InternalFinal' || currentReviewType === 'ExternalFinal') && (
-                        <CardContent className="border-t pt-6">
-                            <h3 className="text-xl font-bold font-headline mb-4">Individual Scoring</h3>
-                             <Accordion type="single" collapsible className="w-full">
-                                {team?.members.map(member => (
-                                    <AccordionItem value={member.id} key={member.id}>
-                                        <AccordionTrigger>
-                                            <span className="flex items-center gap-2"><User className="h-4 w-4"/>{member.name}</span>
-                                        </AccordionTrigger>
-                                        <AccordionContent>
-                                            {renderScoringBlock(INDIVIDUAL_EVALUATION_RUBRIC, member.id)}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                ))}
-                            </Accordion>
-                        </CardContent>
-                    )}
-
-
-                    <CardFooter className="border-t pt-6">
-                        <Button type="submit" className="w-full" disabled={isSubmitting}>
-                           {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Score'}
-                        </Button>
-                    </CardFooter>
-                </form>
             </Card>
         </div>
     );
