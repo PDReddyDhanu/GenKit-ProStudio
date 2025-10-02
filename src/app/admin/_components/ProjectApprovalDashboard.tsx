@@ -154,7 +154,7 @@ const ProjectApprovalCard = ({ project, team }: { project: ProjectSubmission, te
 
 export default function ProjectApprovalDashboard() {
     const { state } = useHackathon();
-    const { projects, teams, currentFaculty } = state;
+    const { projects, teams, currentFaculty, selectedHackathonId } = state;
 
     const projectsByStatus = useMemo(() => {
         const columns: Record<string, ProjectSubmission[]> = {
@@ -162,13 +162,20 @@ export default function ProjectApprovalDashboard() {
             'PendingR&D': [],
             PendingHoD: [],
         };
-        projects.forEach(p => {
-            if (columns[p.status]) {
-                columns[p.status].push(p);
-            }
+        
+        if (!selectedHackathonId) {
+            return columns;
+        }
+
+        projects
+            .filter(p => p.hackathonId === selectedHackathonId)
+            .forEach(p => {
+                if (columns[p.status]) {
+                    columns[p.status].push(p);
+                }
         });
         return columns;
-    }, [projects]);
+    }, [projects, selectedHackathonId]);
     
     if (!currentFaculty || !['guide', 'rnd', 'hod', 'admin'].includes(currentFaculty.role)) {
         return (
@@ -179,6 +186,17 @@ export default function ProjectApprovalDashboard() {
                 </CardContent>
             </Card>
         )
+    }
+
+    if (!selectedHackathonId) {
+        return (
+            <Card>
+                <CardContent className="py-16 text-center">
+                    <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <p className="mt-4 text-muted-foreground">Please select a project type from the top to view approvals.</p>
+                </CardContent>
+            </Card>
+        );
     }
 
     return (
