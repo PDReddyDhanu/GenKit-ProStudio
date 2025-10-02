@@ -19,8 +19,8 @@ import { Label } from '@/components/ui/label';
 
 const ReplyDialog = ({ ticket, open, onOpenChange }: { ticket: SupportTicket; open: boolean; onOpenChange: (open: boolean) => void }) => {
     const { api, state } = useHackathon();
-    const { currentAdmin, currentJudge } = state;
-    const adminUser = currentAdmin ? {id: "admin", name: "Admin"} : currentJudge;
+    const { currentAdmin, currentFaculty } = state;
+    const adminUser = currentAdmin ? {id: "admin", name: "Admin"} : currentFaculty;
     
     const [response, setResponse] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +31,7 @@ const ReplyDialog = ({ ticket, open, onOpenChange }: { ticket: SupportTicket; op
         try {
             const result = await generateSupportResponse({
                 subject: ticket.subject,
-                question: ticket.question,
+                question: ticket.description,
                 category: ticket.category,
             });
             if(result?.resolution) {
@@ -71,7 +71,7 @@ const ReplyDialog = ({ ticket, open, onOpenChange }: { ticket: SupportTicket; op
                            <CardDescription>From: {ticket.studentName} - {format(new Date(ticket.submittedAt), 'PPP p')}</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm">{ticket.question}</p>
+                            <p className="text-sm">{ticket.description}</p>
                         </CardContent>
                     </Card>
                     <div className="space-y-2">
@@ -124,7 +124,7 @@ const TicketCard = ({ ticket, onUpdateStatus }: { ticket: SupportTicket, onUpdat
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-sm text-foreground mb-4">{ticket.question}</p>
+                    <p className="text-sm text-foreground mb-4">{ticket.description}</p>
                     
                     <div className="bg-muted/50 p-3 rounded-md space-y-3">
                         <p className="text-xs font-semibold uppercase text-muted-foreground">AI Triage</p>
@@ -163,44 +163,24 @@ const TicketCard = ({ ticket, onUpdateStatus }: { ticket: SupportTicket, onUpdat
 export default function SupportDashboard() {
     const { state, api } = useHackathon();
     const { supportTickets } = state;
-    const [clientReady, setClientReady] = useState(false);
-
-    useEffect(() => {
-        setClientReady(true);
-    }, []);
 
     const ticketsByStatus = useMemo(() => {
         const sortedTickets = [...supportTickets].sort((a, b) => b.submittedAt - a.submittedAt);
-        const now = Date.now();
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-        const seventyTwoHours = 72 * 60 * 60 * 1000;
-
         const categorized = {
             New: [] as SupportTicket[],
             'In Progress': [] as SupportTicket[],
             Resolved: [] as SupportTicket[],
         };
 
-        if (clientReady) {
-            sortedTickets.forEach(ticket => {
-                const age = now - ticket.submittedAt;
-                let effectiveStatus = ticket.status;
-
-                if (ticket.status === 'New' && age > seventyTwoHours) {
-                    effectiveStatus = 'Resolved';
-                } else if (ticket.status === 'New' && age > twentyFourHours) {
-                    effectiveStatus = 'In Progress';
-                } else if (ticket.status === 'In Progress' && age > seventyTwoHours) {
-                    effectiveStatus = 'Resolved';
-                }
-                
+        sortedTickets.forEach(ticket => {
+            if (categorized[ticket.status]) {
                 categorized[ticket.status].push(ticket);
-            });
-        }
+            }
+        });
         
         return categorized;
 
-    }, [supportTickets, clientReady]);
+    }, [supportTickets]);
     
     const handleUpdateStatus = async (ticketId: string, status: SupportTicket['status']) => {
         try {
@@ -219,14 +199,6 @@ export default function SupportDashboard() {
                 </CardContent>
             </Card>
         )
-    }
-
-    if (!clientReady) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <Loader className="animate-spin" />
-            </div>
-        );
     }
 
     return (

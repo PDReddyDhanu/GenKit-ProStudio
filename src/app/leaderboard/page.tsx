@@ -99,14 +99,16 @@ const PodiumCard = ({ entry, rank }: { entry: LeaderboardEntry, rank: number }) 
 
 export default function Leaderboard() {
     const { state } = useHackathon();
-    const { projects, teams } = state;
+    const { projects, teams, hackathons } = state;
     const [showIntro, setShowIntro] = useState(true);
     const [selectedProjectType, setSelectedProjectType] = useState<string>('all');
 
     const leaderboardData = useMemo(() => {
-        const filteredProjects = selectedProjectType === 'all'
+        const selectedHackathonId = selectedProjectType !== 'all' ? (projectTypes.find(p => p.id === selectedProjectType) || hackathons.find(h => h.id === selectedProjectType))?.id : 'all';
+
+        const filteredProjects = selectedHackathonId === 'all'
             ? projects
-            : projects.filter(p => p.hackathonId === selectedProjectType);
+            : projects.filter(p => p.hackathonId === selectedHackathonId);
 
         return filteredProjects
             .filter(p => p.totalScore > 0)
@@ -121,7 +123,7 @@ export default function Leaderboard() {
                     achievements: p.achievements,
                 };
             });
-    }, [projects, teams, selectedProjectType]);
+    }, [projects, teams, selectedProjectType, hackathons]);
 
     if (showIntro) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<TrendingUp className="w-full h-full" />} title="Leaderboard" description="Track team progress in real-time." />;
@@ -129,6 +131,7 @@ export default function Leaderboard() {
     
     const podium = leaderboardData.slice(0, 3);
     const restOfList = leaderboardData.slice(3, 10);
+    const allEvents = [...projectTypes, ...hackathons.map(h => ({id: h.id, name: h.name}))];
 
     return (
         <div className="container max-w-6xl mx-auto py-12 animate-fade-in">
@@ -147,7 +150,7 @@ export default function Leaderboard() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Project Types</SelectItem>
-                                {projectTypes.map(pt => <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>)}
+                                {allEvents.map(pt => <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>

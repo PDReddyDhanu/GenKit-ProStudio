@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -147,7 +148,7 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue={currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor' ? 'my-teams' : (currentFaculty ? "scoring" : "events")} className="w-full" onValueChange={handleTabChange}>
-                <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-12">
+                <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-none xl:flex xl:flex-wrap">
                     {(currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') && <TabsTrigger value="my-teams"><MessageSquare className="mr-2 h-4 w-4" /> My Teams</TabsTrigger>}
                     {currentFaculty && <TabsTrigger value="scoring"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="events">Events</TabsTrigger>

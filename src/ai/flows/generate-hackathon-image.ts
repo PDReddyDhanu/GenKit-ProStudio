@@ -52,7 +52,7 @@ const generateHackathonImageFlow = ai.defineFlow(
         - The spirit of "${input.collegeName}".
         - The theme of the hackathon: "${input.hackathonName}".
 
-        Style: Abstract, digital art, vibrant colors, glowing elements, cinematic lighting. Avoid literal text unless it's artistically integrated.
+        Style: Abstract, digital art, vibrant colors, glowing elements, cinematic lighting. Avoid literal text unless it is artistically integrated.
     `;
 
     const { media } = await ai.generate({
