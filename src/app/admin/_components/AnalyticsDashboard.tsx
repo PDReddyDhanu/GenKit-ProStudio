@@ -5,8 +5,8 @@ import React, { useMemo } from 'react';
 import { Bar, BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useHackathon } from '@/context/HackathonProvider';
-import { EVALUATION_RUBRIC } from '@/lib/constants';
-import type { Hackathon, Project } from '@/lib/types';
+import { INTERNAL_STAGE_1_RUBRIC, INTERNAL_STAGE_2_RUBRIC, INTERNAL_FINAL_RUBRIC, EXTERNAL_FINAL_RUBRIC, INDIVIDUAL_EVALUATION_RUBRIC } from '@/lib/constants';
+import type { Hackathon, ProjectSubmission } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { BarChart2 } from 'lucide-react';
@@ -14,6 +14,14 @@ import { BarChart2 } from 'lucide-react';
 interface AnalyticsDashboardProps {
     event: Hackathon;
 }
+
+const ALL_EVALUATION_RUBRICS = [
+    ...INTERNAL_STAGE_1_RUBRIC,
+    ...INTERNAL_STAGE_2_RUBRIC,
+    ...INTERNAL_FINAL_RUBRIC,
+    ...EXTERNAL_FINAL_RUBRIC,
+    ...INDIVIDUAL_EVALUATION_RUBRIC,
+];
 
 export default function AnalyticsDashboard({ event }: AnalyticsDashboardProps) {
     const { state } = useHackathon();
@@ -26,7 +34,7 @@ export default function AnalyticsDashboard({ event }: AnalyticsDashboardProps) {
 
     const criteriaAverages = useMemo(() => {
         const criteriaTotals: { [key: string]: { total: number; count: number } } = {};
-        EVALUATION_RUBRIC.forEach(c => criteriaTotals[c.id] = { total: 0, count: 0 });
+        ALL_EVALUATION_RUBRICS.forEach(c => criteriaTotals[c.id] = { total: 0, count: 0 });
 
         eventProjects.forEach(project => {
             const teamScores = project.scores.filter(s => !s.memberId);
@@ -38,7 +46,7 @@ export default function AnalyticsDashboard({ event }: AnalyticsDashboardProps) {
             });
 
             Object.values(scoresByFaculty).forEach(facultyScores => {
-                 EVALUATION_RUBRIC.forEach(criteria => {
+                 ALL_EVALUATION_RUBRICS.forEach(criteria => {
                     if (facultyScores[criteria.id] !== undefined) {
                         criteriaTotals[criteria.id].total += (facultyScores[criteria.id] / criteria.max) * 10;
                         criteriaTotals[criteria.id].count += 1;
@@ -47,7 +55,7 @@ export default function AnalyticsDashboard({ event }: AnalyticsDashboardProps) {
             });
         });
 
-        return EVALUATION_RUBRIC.map(c => ({
+        return ALL_EVALUATION_RUBRICS.map(c => ({
             name: c.name,
             average: criteriaTotals[c.id].count > 0 ? (criteriaTotals[c.id].total / criteriaTotals[c.id].count) : 0,
         }));
@@ -58,7 +66,7 @@ export default function AnalyticsDashboard({ event }: AnalyticsDashboardProps) {
         const project = eventProjects.find(p => p.id === selectedProjectId);
         if (!project) return null;
 
-        return EVALUATION_RUBRIC.map(criteria => {
+        return ALL_EVALUATION_RUBRICS.map(criteria => {
             const criteriaScores = project.scores.filter(s => s.criteria === criteria.id && !s.memberId);
             const total = criteriaScores.reduce((sum, s) => sum + s.value, 0);
             const average = criteriaScores.length > 0 ? total / criteriaScores.length : 0;
@@ -119,7 +127,7 @@ export default function AnalyticsDashboard({ event }: AnalyticsDashboardProps) {
                             </SelectTrigger>
                             <SelectContent>
                                 {eventProjects.map(p => (
-                                    <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                                    <SelectItem key={p.id} value={p.id}>{p.projectIdeas[0]?.title || 'Untitled Project'}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
