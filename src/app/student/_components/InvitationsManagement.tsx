@@ -12,24 +12,24 @@ import { Separator } from '@/components/ui/separator';
 
 export default function InvitationsManagement() {
     const { state, api } = useHackathon();
-    const { currentUser, teams, hackathons } = state;
+    const { currentUser, teams, hackathons, selectedHackathonId } = state;
     const [isLoading, setIsLoading] = useState<string | null>(null); // format: "action-teamId-requestId" or "remove-teamId-memberId"
 
     const myCreatedTeams = useMemo(() => {
         if (!currentUser) return [];
-        return teams.filter(team => team.creatorId === currentUser.id);
-    }, [teams, currentUser]);
+        return teams.filter(team => team.creatorId === currentUser.id && team.hackathonId === selectedHackathonId);
+    }, [teams, currentUser, selectedHackathonId]);
 
     const myPendingRequests = useMemo(() => {
         if (!currentUser) return [];
         return teams
-            .filter(team => team.joinRequests?.some(req => req.id === currentUser.id))
+            .filter(team => team.hackathonId === selectedHackathonId && team.joinRequests?.some(req => req.id === currentUser.id))
             .map(team => ({
                 teamId: team.id,
                 teamName: team.name,
                 hackathonName: hackathons.find(h => h.id === team.hackathonId)?.name || 'Unknown Hackathon'
             }));
-    }, [teams, currentUser, hackathons]);
+    }, [teams, currentUser, hackathons, selectedHackathonId]);
 
     const handleRequest = async (teamId: string, request: JoinRequest, action: 'accept' | 'reject') => {
         setIsLoading(`${action}-${teamId}-${request.id}`);
@@ -53,6 +53,15 @@ export default function InvitationsManagement() {
         }
     }
 
+    if (!selectedHackathonId) {
+        return (
+            <Card>
+                <CardContent className="py-16 text-center text-muted-foreground">
+                    Please select a project type from the dashboard to manage your teams and requests.
+                </CardContent>
+            </Card>
+        )
+    }
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -61,7 +70,7 @@ export default function InvitationsManagement() {
                     <CardTitle className="font-headline flex items-center gap-2">
                         <UserPlus className="text-primary"/> Manage Your Teams
                     </CardTitle>
-                    <CardDescription>Review join requests and manage members for the teams you lead.</CardDescription>
+                    <CardDescription>Review join requests and manage members for the teams you lead in this project event.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-96 pr-4">
@@ -70,7 +79,7 @@ export default function InvitationsManagement() {
                                 <div key={team.id} className="space-y-4">
                                     <div>
                                         <h3 className="font-semibold text-lg text-primary">{team.name}</h3>
-                                        <p className="text-sm text-muted-foreground">{hackathons.find(h => h.id === team.hackathonId)?.name}</p>
+                                        <p className="text-sm text-muted-foreground">{hackathons.find(h => h.id === team.hackathonId)?.name || "Selected Project"}</p>
                                     </div>
                                     
                                     {/* Member Management */}
@@ -113,7 +122,7 @@ export default function InvitationsManagement() {
                             )) : (
                                 <div className="text-center py-16">
                                     <Inbox className="mx-auto h-12 w-12 text-muted-foreground" />
-                                    <p className="mt-4 text-muted-foreground">You have not created any teams.</p>
+                                    <p className="mt-4 text-muted-foreground">You have not created any teams for this project event.</p>
                                 </div>
                             )}
                         </div>
@@ -126,7 +135,7 @@ export default function InvitationsManagement() {
                     <CardTitle className="font-headline flex items-center gap-2">
                         <Send className="text-primary"/> Your Sent Requests
                     </CardTitle>
-                    <CardDescription>Track the status of your requests to join other teams.</CardDescription>
+                    <CardDescription>Track your requests to join other teams for this project event.</CardDescription>
                 </CardHeader>
                 <CardContent>
                      <ScrollArea className="h-96 pr-4">
@@ -139,7 +148,7 @@ export default function InvitationsManagement() {
                             )) : (
                                 <div className="text-center py-16">
                                     <Inbox className="mx-auto h-12 w-12 text-muted-foreground" />
-                                    <p className="mt-4 text-muted-foreground">You have not sent any join requests.</p>
+                                    <p className="mt-4 text-muted-foreground">You have not sent any join requests for this project event.</p>
                                 </div>
                             )}
                         </div>
@@ -149,4 +158,3 @@ export default function InvitationsManagement() {
         </div>
     );
 }
-
