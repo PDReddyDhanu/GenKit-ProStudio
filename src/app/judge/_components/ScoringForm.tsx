@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -33,76 +33,6 @@ interface ScoringFormProps {
 }
 
 type RubricItem = { id: string; name: string; max: number };
-
-const GuideChat = ({ team, guide }: { team: any, guide: any }) => {
-    const { api } = useHackathon();
-    const [message, setMessage] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    const sortedMessages = useMemo(() => {
-        if (Array.isArray(team.guideMessages)) {
-            return [...team.guideMessages].sort((a, b) => a.timestamp - b.timestamp);
-        }
-        return [];
-    }, [team.guideMessages]);
-
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [sortedMessages]);
-
-    const handleSendMessage = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!message.trim() || !guide) return;
-        
-        setIsLoading(true);
-        try {
-            await api.postGuideMessage(team.id, {
-                userId: guide.id,
-                userName: guide.name,
-                text: message,
-                timestamp: Date.now()
-            });
-            setMessage('');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    return (
-        <div className="flex flex-col h-full">
-            <ScrollArea className="flex-grow pr-4 h-[300px]">
-                <div className="space-y-4">
-                    {sortedMessages.length > 0 ? sortedMessages.map((msg: ChatMessage) => (
-                        <div key={msg.id} className={`flex flex-col ${msg.userId === guide?.id ? 'items-end' : 'items-start'}`}>
-                            <div className={`p-3 rounded-lg max-w-xs ${msg.userId === guide?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                                <p className="text-sm">{msg.text}</p>
-                            </div>
-                            <span className="text-xs text-muted-foreground mt-1 px-1">
-                                {msg.userName.split(' ')[0]} - {formatDistanceToNow(new Date(msg.timestamp), { addSuffix: true })}
-                            </span>
-                        </div>
-                    )) : (
-                        <p className="text-center text-muted-foreground pt-16">No messages yet. Start the conversation!</p>
-                    )}
-                    <div ref={messagesEndRef} />
-                </div>
-            </ScrollArea>
-            <form onSubmit={handleSendMessage} className="flex gap-2 mt-4 border-t pt-4">
-                <Input
-                    value={message}
-                    onChange={e => setMessage(e.target.value)}
-                    placeholder="Type a message to the team..."
-                    disabled={isLoading}
-                />
-                <Button type="submit" disabled={isLoading}>
-                    {isLoading ? <Loader className="animate-spin"/> : <Send />}
-                </Button>
-            </form>
-        </div>
-    );
-};
-
 
 export default function ScoringForm({ project: submission, onBack }: ScoringFormProps) {
     const { state, api } = useHackathon();
@@ -272,8 +202,6 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
         )
     }
 
-    const isAssignedGuide = team?.guide?.id === currentFaculty?.id;
-
     return (
         <div className="container max-w-3xl mx-auto py-12 animate-slide-in-up">
             <BackButton />
@@ -285,10 +213,9 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                 
                 <CardContent>
                     <Tabs defaultValue="details" className="w-full">
-                         <TabsList className="grid w-full grid-cols-3">
+                         <TabsList className="grid w-full grid-cols-2">
                             <TabsTrigger value="details">Project Details</TabsTrigger>
                             <TabsTrigger value="scoring">Scoring</TabsTrigger>
-                            <TabsTrigger value="chat" disabled={!isAssignedGuide}>Guide Chat</TabsTrigger>
                         </TabsList>
                         <TabsContent value="details" className="mt-4">
                              <Tabs defaultValue="idea-1" className="w-full">
@@ -385,21 +312,6 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                                     </Button>
                                 </CardFooter>
                             </form>
-                        </TabsContent>
-                         <TabsContent value="chat" className="mt-4">
-                            {isAssignedGuide && team && currentFaculty ? (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="font-headline flex items-center gap-2"><MessageSquare/>Guide Conversation</CardTitle>
-                                        <CardDescription>Chat directly with {team.name}.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <GuideChat team={team} guide={currentFaculty}/>
-                                    </CardContent>
-                                </Card>
-                            ) : (
-                                <p className="text-muted-foreground text-center py-8">You are not the assigned guide for this team.</p>
-                            )}
                         </TabsContent>
                     </Tabs>
                 </CardContent>

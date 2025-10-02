@@ -11,7 +11,7 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User } from 'lucide-react';
+import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User, MessageSquare } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import ScoringDashboard from '@/app/judge/_components/ScoringDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
@@ -24,6 +24,7 @@ import UrgentApprovalsDashboard from './_components/UrgentApprovalsDashboard';
 import { Badge } from '@/components/ui/badge';
 import ProjectApprovalDashboard from './_components/ProjectApprovalDashboard';
 import GuideAssignmentDashboard from './_components/GuideAssignmentDashboard';
+import GuideTeamsDashboard from './_components/GuideTeamsDashboard';
 
 const projectEvents = [
     {
@@ -146,7 +147,8 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue={currentFaculty ? "scoring" : "events"} className="w-full" onValueChange={handleTabChange}>
-                <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-11">
+                <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-12">
+                    {currentFaculty?.role === 'guide' && <TabsTrigger value="my-teams"><MessageSquare className="mr-2 h-4 w-4" /> My Teams</TabsTrigger>}
                     {currentFaculty && <TabsTrigger value="scoring"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="events">Events</TabsTrigger>
                      <TabsTrigger value="urgent-approvals" className="relative">
@@ -164,6 +166,11 @@ export default function AdminPortal() {
                     <TabsTrigger value="reports"><FileText className="mr-2 h-4 w-4" /> Reports</TabsTrigger>
                     <TabsTrigger value="support"><LifeBuoy className="mr-2 h-4 w-4" /> Support</TabsTrigger>
                 </TabsList>
+                {currentFaculty?.role === 'guide' && (
+                    <TabsContent value="my-teams" className="mt-6">
+                        <GuideTeamsDashboard />
+                    </TabsContent>
+                )}
                 {currentFaculty && (
                     <TabsContent value="scoring" className="mt-6">
                         {currentEvent ? <ScoringDashboard event={currentEvent} /> : <p className="text-center text-muted-foreground">Please select an event to start scoring projects.</p>}
