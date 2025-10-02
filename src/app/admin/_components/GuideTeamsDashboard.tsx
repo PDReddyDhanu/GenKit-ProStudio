@@ -1,17 +1,21 @@
-
 "use client";
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Briefcase, MessageSquare, Users, Loader } from 'lucide-react';
+import { Briefcase, MessageSquare, Users, Loader, Bot, Presentation, FileText, Link as LinkIcon, Tags, Github } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { Team, ChatMessage } from '@/lib/types';
+import type { Team, ChatMessage, ProjectSubmission, ProjectIdea } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { getAiCodeReview, generatePitchOutline } from '@/app/actions';
+import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
+import Link from 'next/link';
+import { marked } from 'marked';
 
 const GuideChatDialog = ({ team, guide, open, onOpenChange }: { team: Team, guide: any, open: boolean, onOpenChange: (open: boolean) => void }) => {
     const { api } = useHackathon();
@@ -92,26 +96,125 @@ const GuideChatDialog = ({ team, guide, open, onOpenChange }: { team: Team, guid
 };
 
 
-const TeamCardForGuide = ({ team, project }: { team: Team, project?: any }) => {
+const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubmission }) => {
     const { state } = useHackathon();
     const { currentFaculty } = state;
     const [isChatOpen, setIsChatOpen] = useState(false);
+    
+    const [isReviewing, setIsReviewing] = useState(false);
+    const [review, setReview] = useState('');
+    const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
+    const [pitchOutline, setPitchOutline] = useState<GeneratePitchOutlineOutput | null>(null);
+
+    const handleGetReview = async (githubUrl: string) => {
+        setIsReviewing(true);
+        setReview('');
+        try {
+            const result = await getAiCodeReview({ githubUrl });
+            setReview(result);
+        } catch (error) {
+            console.error("Error getting AI review:", error);
+            setReview("Sorry, we couldn't generate a review at this time. Please try again later.");
+        } finally {
+            setIsReviewing(false);
+        }
+    };
+
+    const handleGenerateOutline = async (idea: ProjectIdea) => {
+        setIsGeneratingOutline(true);
+        setPitchOutline(null);
+        try {
+            const result = await generatePitchOutline({
+                projectName: idea.title,
+                projectDescription: idea.description,
+                aiCodeReview: review || undefined
+            });
+            setPitchOutline(result);
+        } finally {
+            setIsGeneratingOutline(false);
+        }
+    };
 
     return (
         <>
-            <Card className="bg-muted/50">
+            <Card className="bg-muted/50 flex flex-col">
                 <CardHeader>
-                    <CardTitle className="text-lg">{team.name}</CardTitle>
-                    <CardDescription className="flex items-center gap-2"><Users className="h-4 w-4"/> {team.members.length} members</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div>
-                        <h4 className="font-semibold text-sm mb-1">Project Title:</h4>
-                        <p className="text-primary">{project?.projectIdeas[0]?.title || 'Not Submitted Yet'}</p>
+                    <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg">{team.name}</CardTitle>
+                        <Button onClick={() => setIsChatOpen(true)} size="sm">
+                            <MessageSquare className="mr-2 h-4 w-4" /> Chat
+                        </Button>
                     </div>
-                    <Button onClick={() => setIsChatOpen(true)} className="w-full">
-                        <MessageSquare className="mr-2 h-4 w-4" /> Chat with Team
-                    </Button>
+                    <CardDescription className="flex items-center gap-2 pt-1"><Users className="h-4 w-4"/> {team.members.length} members</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 flex-grow">
+                    {!project ? (
+                        <div className="text-center text-muted-foreground pt-8">
+                            <p>No project submitted yet.</p>
+                        </div>
+                    ) : (
+                        <Accordion type="single" collapsible className="w-full">
+                            {project.projectIdeas.map((idea, index) => (
+                                <AccordionItem value={`idea-${index}`} key={idea.id}>
+                                    <AccordionTrigger>Project Idea {index + 1}: {idea.title}</AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="space-y-4 p-2">
+                                            <div>
+                                                <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><FileText className="h-4 w-4" /> Abstract</h4>
+                                                <p className="text-sm whitespace-pre-wrap mt-1">{idea.abstractText}</p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><Github className="h-4 w-4" /> GitHub</h4>
+                                                <Link href={idea.githubUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline break-all text-sm">{idea.githubUrl}</Link>
+                                            </div>
+                                            {idea.abstractFileUrl && (
+                                                <div>
+                                                    <h4 className="font-semibold text-muted-foreground flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Abstract Document</h4>
+                                                    <Link href={idea.abstractFileUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline text-sm">View Uploaded File</Link>
+                                                </div>
+                                            )}
+                                            <div className="mt-4 border-t pt-4 flex flex-wrap gap-2">
+                                                <Button onClick={() => handleGetReview(idea.githubUrl)} disabled={isReviewing} variant="outline" size="sm">
+                                                    {isReviewing ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Reviewing...</> : "AI Code Review"}
+                                                </Button>
+                                                <Button onClick={() => handleGenerateOutline(idea)} disabled={isGeneratingOutline} variant="outline" size="sm">
+                                                    {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "AI Pitch Coach"}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
+                    )}
+                     {review && (
+                        <div className="mt-4 space-y-2">
+                            <h4 className="font-bold flex items-center gap-2 text-sm"><Bot className="text-primary"/> AI Code Review</h4>
+                            <ScrollArea className="h-40 bg-background p-3 rounded-md border">
+                                <pre className="text-xs whitespace-pre-wrap font-code text-foreground">{review}</pre>
+                            </ScrollArea>
+                        </div>
+                    )}
+                    {pitchOutline && (
+                        <div className="mt-4 space-y-2">
+                            <h4 className="font-bold flex items-center gap-2 text-sm"><Presentation className="text-primary"/> Generated Pitch Outline</h4>
+                            <ScrollArea className="h-40 bg-background p-1 rounded-md border">
+                                <Accordion type="single" collapsible className="w-full">
+                                    {pitchOutline.slides.map((slide, index) => (
+                                    <AccordionItem value={`item-${index}`} key={index}>
+                                        <AccordionTrigger className="text-sm px-2 py-1">{index + 1}. {slide.title}</AccordionTrigger>
+                                        <AccordionContent className="px-2">
+                                            <div
+                                                className="prose prose-sm dark:prose-invert text-foreground max-w-none"
+                                                dangerouslySetInnerHTML={{ __html: marked(slide.content) as string }}
+                                            />
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                    ))}
+                                </Accordion>
+                            </ScrollArea>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
             <GuideChatDialog 
@@ -134,11 +237,11 @@ export default function GuideTeamsDashboard() {
         return teams.filter(team => team.guide?.id === currentFaculty.id);
     }, [teams, currentFaculty]);
 
-    if (currentFaculty?.role !== 'guide') {
+    if (!currentFaculty || !['guide', 'class-mentor'].includes(currentFaculty.role)) {
         return (
             <Card>
                 <CardContent className="py-16 text-center text-muted-foreground">
-                    This dashboard is for assigned guides only.
+                    This dashboard is for assigned guides and class mentors only.
                 </CardContent>
             </Card>
         );
