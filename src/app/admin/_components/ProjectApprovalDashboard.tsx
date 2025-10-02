@@ -19,53 +19,53 @@ const RemarksDialog = ({
     onOpenChange,
 }: {
     project: ProjectSubmission;
-    onConfirm: (remarks: string) =&gt; void;
+    onConfirm: (remarks: string) => void;
     open: boolean;
-    onOpenChange: (open: boolean) =&gt; void;
-}) =&gt; {
+    onOpenChange: (open: boolean) => void;
+}) => {
     const [remarks, setRemarks] = useState('');
 
-    const handleConfirm = () =&gt; {
+    const handleConfirm = () => {
         onConfirm(remarks);
         onOpenChange(false);
         setRemarks('');
     };
 
     return (
-        &lt;Dialog open={open} onOpenChange={onOpenChange}&gt;
-            &lt;DialogContent&gt;
-                &lt;DialogHeader&gt;
-                    &lt;DialogTitle&gt;Add Remarks for "{project.projectIdeas[0].title}"&lt;/DialogTitle&gt;
-                    &lt;DialogDescription&gt;
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Add Remarks for "{project.projectIdeas[0].title}"</DialogTitle>
+                    <DialogDescription>
                         Provide feedback or reasons for rejection. This will be sent to the student team.
-                    &lt;/DialogDescription&gt;
-                &lt;/DialogHeader&gt;
-                &lt;div className="py-4"&gt;
-                    &lt;Label htmlFor="remarks-textarea"&gt;Remarks&lt;/Label&gt;
-                    &lt;Textarea
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                    <Label htmlFor="remarks-textarea">Remarks</Label>
+                    <Textarea
                         id="remarks-textarea"
                         value={remarks}
-                        onChange={(e) =&gt; setRemarks(e.target.value)}
+                        onChange={(e) => setRemarks(e.target.value)}
                         placeholder="e.g., 'The project scope is too broad, please refine...' or 'Idea rejected due to similarity with another project.'"
                         rows={5}
-                    /&gt;
-                &lt;/div&gt;
-                &lt;DialogFooter&gt;
-                    &lt;Button variant="outline" onClick={() =&gt; onOpenChange(false)}&gt;Cancel&lt;/Button&gt;
-                    &lt;Button onClick={handleConfirm}&gt;Confirm &amp; Send&lt;/Button&gt;
-                &lt;/DialogFooter&gt;
-            &lt;/DialogContent&gt;
-        &lt;/Dialog&gt;
+                    />
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                    <Button onClick={handleConfirm}>Confirm & Send</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 
-const ProjectApprovalCard = ({ project, team }: { project: ProjectSubmission, team?: Team }) =&gt; {
+const ProjectApprovalCard = ({ project, team }: { project: ProjectSubmission, team?: Team }) => {
     const { api, state } = useHackathon();
     const { currentFaculty } = state;
-    const [isLoading, setIsLoading] = useState&lt;string | null&gt;(null);
+    const [isLoading, setIsLoading] = useState<string | null>(null);
     const [isRemarksOpen, setIsRemarksOpen] = useState(false);
 
-    const handleUpdateStatus = async (newStatus: ProjectSubmission['status'], remarks?: string) =&gt; {
+    const handleUpdateStatus = async (newStatus: ProjectSubmission['status'], remarks?: string) => {
         if (!currentFaculty) return;
         setIsLoading(newStatus);
         try {
@@ -77,18 +77,18 @@ const ProjectApprovalCard = ({ project, team }: { project: ProjectSubmission, te
         }
     };
     
-    const nextStatusMap: Record&lt;ProjectSubmission['status'], ProjectSubmission['status'] | null&gt; = {
-        PendingGuide: 'PendingR&amp;D',
-        'PendingR&amp;D': 'PendingHoD',
+    const nextStatusMap: Record<ProjectSubmission['status'], ProjectSubmission['status'] | null> = {
+        PendingGuide: 'PendingR&D',
+        'PendingR&D': 'PendingHoD',
         PendingHoD: 'Approved',
         Approved: null,
         Rejected: null,
     };
     
     const canApprove = (
-        (currentFaculty?.role === 'guide' &amp;&amp; project.status === 'PendingGuide') ||
-        (currentFaculty?.role === 'rnd' &amp;&amp; project.status === 'PendingR&amp;D') ||
-        (currentFaculty?.role === 'hod' &amp;&amp; project.status === 'PendingHoD') ||
+        (currentFaculty?.role === 'guide' && project.status === 'PendingGuide') ||
+        (currentFaculty?.role === 'rnd' && project.status === 'PendingR&D') ||
+        (currentFaculty?.role === 'hod' && project.status === 'PendingHoD') ||
         (currentFaculty?.role === 'admin') // Admins can approve anything
     );
     
@@ -96,40 +96,40 @@ const ProjectApprovalCard = ({ project, team }: { project: ProjectSubmission, te
 
 
     return (
-        &lt;Card className="bg-muted/50"&gt;
-            &lt;CardHeader&gt;
-                &lt;CardTitle className="text-lg"&gt;{project.projectIdeas[0]?.title || "Untitled Project"}&lt;/CardTitle&gt;
-                &lt;CardDescription&gt;Team: {team?.name || "Unknown"}&lt;/CardDescription&gt;
-            &lt;/CardHeader&gt;
-            &lt;CardContent&gt;
-                &lt;p className="text-sm text-muted-foreground line-clamp-3 mb-4"&gt;{project.projectIdeas[0]?.description}&lt;/p&gt;
-                 {canApprove &amp;&amp; (
-                    &lt;div className="flex gap-2"&gt;
-                        {nextStatus &amp;&amp; (
-                            &lt;Button size="sm" onClick={() =&gt; handleUpdateStatus(nextStatus)} disabled={!!isLoading}&gt;
-                                {isLoading === nextStatus ? &lt;Loader className="animate-spin h-4 w-4" /&gt; : &lt;Check className="h-4 w-4" /&gt;}
-                                &lt;span className="ml-2"&gt;Approve&lt;/span&gt;
-                            &lt;/Button&gt;
+        <Card className="bg-muted/50">
+            <CardHeader>
+                <CardTitle className="text-lg">{project.projectIdeas[0]?.title || "Untitled Project"}</CardTitle>
+                <CardDescription>Team: {team?.name || "Unknown"}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{project.projectIdeas[0]?.description}</p>
+                 {canApprove && (
+                    <div className="flex gap-2">
+                        {nextStatus && (
+                            <Button size="sm" onClick={() => handleUpdateStatus(nextStatus)} disabled={!!isLoading}>
+                                {isLoading === nextStatus ? <Loader className="animate-spin h-4 w-4" /> : <Check className="h-4 w-4" />}
+                                <span className="ml-2">Approve</span>
+                            </Button>
                         )}
-                        &lt;DialogTrigger asChild&gt;
-                             &lt;Button variant="destructive" size="sm" onClick={() =&gt; setIsRemarksOpen(true)} disabled={!!isLoading}&gt;
-                                {isLoading === 'Rejected' ? &lt;Loader className="animate-spin h-4 w-4" /&gt; : &lt;X className="h-4 w-4" /&gt;}
-                                &lt;span className="ml-2"&gt;Reject&lt;/span&gt;
-                            &lt;/Button&gt;
-                        &lt;/DialogTrigger&gt;
-                        &lt;Button variant="outline" size="sm"&gt;
-                            &lt;MessageSquare className="h-4 w-4 mr-2" /&gt; Remarks
-                        &lt;/Button&gt;
-                    &lt;/div&gt;
+                        <DialogTrigger asChild>
+                             <Button variant="destructive" size="sm" onClick={() => setIsRemarksOpen(true)} disabled={!!isLoading}>
+                                {isLoading === 'Rejected' ? <Loader className="animate-spin h-4 w-4" /> : <X className="h-4 w-4" />}
+                                <span className="ml-2">Reject</span>
+                            </Button>
+                        </DialogTrigger>
+                        <Button variant="outline" size="sm">
+                            <MessageSquare className="h-4 w-4 mr-2" /> Remarks
+                        </Button>
+                    </div>
                 )}
-            &lt;/CardContent&gt;
-            &lt;RemarksDialog
+            </CardContent>
+            <RemarksDialog
                 project={project}
                 open={isRemarksOpen}
                 onOpenChange={setIsRemarksOpen}
-                onConfirm={(remarks) =&gt; handleUpdateStatus('Rejected', remarks)}
-            /&gt;
-        &lt;/Card&gt;
+                onConfirm={(remarks) => handleUpdateStatus('Rejected', remarks)}
+            />
+        </Card>
     );
 };
 
@@ -137,13 +137,13 @@ export default function ProjectApprovalDashboard() {
     const { state } = useHackathon();
     const { projects, teams, currentFaculty } = state;
 
-    const projectsByStatus = useMemo(() =&gt; {
-        const columns: Record&lt;string, ProjectSubmission[]&gt; = {
+    const projectsByStatus = useMemo(() => {
+        const columns: Record<string, ProjectSubmission[]> = {
             PendingGuide: [],
-            'PendingR&amp;D': [],
+            'PendingR&D': [],
             PendingHoD: [],
         };
-        projects.forEach(p =&gt; {
+        projects.forEach(p => {
             if (columns[p.status]) {
                 columns[p.status].push(p);
             }
@@ -153,36 +153,36 @@ export default function ProjectApprovalDashboard() {
     
     if (!currentFaculty || !['guide', 'rnd', 'hod', 'admin'].includes(currentFaculty.role)) {
         return (
-            &lt;Card&gt;
-                &lt;CardContent className="py-16 text-center"&gt;
-                    &lt;AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" /&gt;
-                    &lt;p className="mt-4 text-muted-foreground"&gt;You do not have permission to view this dashboard.&lt;/p&gt;
-                &lt;/CardContent&gt;
-            &lt;/Card&gt;
+            <Card>
+                <CardContent className="py-16 text-center">
+                    <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <p className="mt-4 text-muted-foreground">You do not have permission to view this dashboard.</p>
+                </CardContent>
+            </Card>
         )
     }
 
     return (
-        &lt;div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start"&gt;
-            {(['PendingGuide', 'PendingR&amp;D', 'PendingHoD'] as const).map(status =&gt; (
-                &lt;div key={status} className="space-y-4"&gt;
-                    &lt;h2 className="text-xl font-bold font-headline capitalize"&gt;{status.replace('Pending', 'Pending ')} ({projectsByStatus[status].length})&lt;/h2&gt;
-                    &lt;ScrollArea className="h-[calc(100vh-22rem)] bg-card p-2 rounded-lg border"&gt;
-                        &lt;div className="space-y-4 p-2"&gt;
-                             {projectsByStatus[status].length &gt; 0 ? (
-                                projectsByStatus[status].map(project =&gt; {
-                                    const team = teams.find(t =&gt; t.id === project.teamId);
-                                    return &lt;ProjectApprovalCard key={project.id} project={project} team={team} /&gt;
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+            {(['PendingGuide', 'PendingR&D', 'PendingHoD'] as const).map(status => (
+                <div key={status} className="space-y-4">
+                    <h2 className="text-xl font-bold font-headline capitalize">{status.replace('Pending', 'Pending ')} ({projectsByStatus[status].length})</h2>
+                    <ScrollArea className="h-[calc(100vh-22rem)] bg-card p-2 rounded-lg border">
+                        <div className="space-y-4 p-2">
+                             {projectsByStatus[status].length > 0 ? (
+                                projectsByStatus[status].map(project => {
+                                    const team = teams.find(t => t.id === project.teamId);
+                                    return <ProjectApprovalCard key={project.id} project={project} team={team} />
                                 })
                             ) : (
-                                &lt;div className="flex items-center justify-center h-48 text-muted-foreground"&gt;
-                                    &lt;p&gt;No projects in this stage.&lt;/p&gt;
-                                &lt;/div&gt;
+                                <div className="flex items-center justify-center h-48 text-muted-foreground">
+                                    <p>No projects in this stage.</p>
+                                </div>
                             )}
-                        &lt;/div&gt;
-                    &lt;/ScrollArea&gt;
-                &lt;/div&gt;
+                        </div>
+                    </ScrollArea>
+                </div>
             ))}
-        &lt;/div&gt;
+        </div>
     );
 }
