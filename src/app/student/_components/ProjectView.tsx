@@ -52,40 +52,92 @@ const IdeaDisplay = ({ idea }: { idea: ProjectIdea }) => {
     )
 }
 
-const StatusTimeline = ({ history }: { history: ProjectStatusUpdate[] }) => {
-    if (!history || history.length === 0) {
-        return <p className="text-muted-foreground">No status history yet.</p>;
-    }
+const StatusTimeline = ({ history, onResubmit }: { history: ProjectStatusUpdate[], onResubmit: () => void }) => {
+    const getStatusForStage = (stage: ProjectSubmission['status']) => {
+        const update = [...history].reverse().find(h => h.to === stage);
+        if (update) return { status: 'complete', update };
+
+        const lastUpdate = history[history.length - 1];
+        if (lastUpdate) {
+            const stageOrder: ProjectSubmission['status'][] = ['PendingGuide', 'PendingR&D', 'PendingHoD', 'Approved'];
+            const currentIndex = stageOrder.indexOf(lastUpdate.to);
+            const targetIndex = stageOrder.indexOf(stage);
+            if (currentIndex >= 0 && targetIndex > currentIndex) {
+                 return { status: 'pending', update: null };
+            }
+        }
+        
+        return { status: 'upcoming', update: null };
+    };
     
-    const getStatusIcon = (status: ProjectSubmission['status']) => {
+    const isRejected = history.some(h => h.to === 'Rejected');
+    const rejectionUpdate = history.find(h => h.to === 'Rejected');
+
+    const stages: { key: ProjectSubmission['status'], name: string }[] = [
+        { key: 'PendingGuide', name: 'Guide Review' },
+        { key: 'PendingR&D', name: 'R&D Coordinator Review' },
+        { key: 'PendingHoD', name: 'HOD Review' },
+        { key: 'Approved', name: 'Project Approved' }
+    ];
+
+    const getIcon = (status: 'complete' | 'pending' | 'upcoming' | 'rejected') => {
         switch (status) {
-            case 'Approved': return <CheckCircle className="h-5 w-5 text-green-500" />;
-            case 'Rejected': return <XCircle className="h-5 w-5 text-red-500" />;
-            case 'PendingGuide':
-            case 'PendingR&D':
-            case 'PendingHoD':
-                return <Clock className="h-5 w-5 text-yellow-500" />;
-            default: return <Milestone className="h-5 w-5 text-muted-foreground" />;
+            case 'complete': return <CheckCircle className="h-6 w-6 text-green-500" />;
+            case 'pending': return <Clock className="h-6 w-6 text-yellow-500 animate-pulse" />;
+            case 'rejected': return <XCircle className="h-6 w-6 text-red-500" />;
+            default: return <Milestone className="h-6 w-6 text-muted-foreground" />;
         }
     };
     
-    return (
-        <div className="space-y-6 border-l-2 border-border pl-6 relative">
-             <div className="absolute -left-[11px] top-0 h-full w-0.5"/>
-            {history.map((update, index) => (
-                 <div key={index} className="relative">
-                    <div className="absolute -left-[35px] top-1.5 h-6 w-6 bg-background flex items-center justify-center rounded-full">
-                         {getStatusIcon(update.to)}
+    if (isRejected) {
+        return (
+            <div className="relative border-l-2 border-dashed border-border pl-8 space-y-8 py-4">
+                 <div className="relative">
+                    <div className="absolute -left-[45px] top-0 h-10 w-10 bg-background flex items-center justify-center rounded-full border-2 border-red-500">
+                        {getIcon('rejected')}
                     </div>
-                    <p className="text-xs text-muted-foreground">{format(new Date(update.timestamp), 'PPP p')}</p>
-                    <p className="font-semibold text-foreground">Status changed to <span className="font-bold text-primary">{update.to}</span> by {update.updatedBy}</p>
-                    {update.remarks && (
+                    <p className="font-bold text-lg text-red-400">Project Rejected</p>
+                    {rejectionUpdate && (
+                         <div className="text-xs text-muted-foreground">{format(new Date(rejectionUpdate.timestamp), 'PPP p')} by {rejectionUpdate.updatedBy}</div>
+                    )}
+                    {rejectionUpdate?.remarks && (
                         <blockquote className="mt-2 pl-4 border-l-2 border-muted-foreground text-sm text-muted-foreground italic">
-                            "{update.remarks}"
+                            "{rejectionUpdate.remarks}"
                         </blockquote>
                     )}
+                     <Button onClick={onResubmit} className="mt-4">Resubmit New Ideas</Button>
                 </div>
-            ))}
+            </div>
+        )
+    }
+
+    return (
+        <div className="relative border-l-2 border-dashed border-border pl-8 space-y-8 py-4">
+            {stages.map((stageInfo, index) => {
+                const stageStatus = getStatusForStage(stageInfo.key);
+                const isActive = stageStatus.status === 'pending' || stageStatus.status === 'complete';
+                
+                return (
+                    <div key={stageInfo.key} className="relative">
+                        <div className={`absolute -left-[45px] top-0 h-10 w-10 bg-background flex items-center justify-center rounded-full border-2 ${isActive ? 'border-primary' : 'border-border'}`}>
+                             {getIcon(stageStatus.status)}
+                        </div>
+                        <p className={`font-bold text-lg ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>{stageInfo.name}</p>
+                        {stageStatus.update ? (
+                             <>
+                                <div className="text-xs text-muted-foreground">{format(new Date(stageStatus.update.timestamp), 'PPP p')} by {stageStatus.update.updatedBy}</div>
+                                {stageStatus.update.remarks && (
+                                    <blockquote className="mt-2 pl-4 border-l-2 border-muted-foreground text-sm text-muted-foreground italic">
+                                        "{stageStatus.update.remarks}"
+                                    </blockquote>
+                                )}
+                            </>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">{stageStatus.status === 'pending' ? 'Awaiting Review' : 'Upcoming'}</p>
+                        )}
+                    </div>
+                )
+            })}
         </div>
     );
 }
@@ -135,7 +187,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
             } finally {
-                setIsGeneratingCert(false);
+                setIsGeneratingCert(null);
             }
         }
     };
@@ -154,6 +206,17 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
             setIsGeneratingOutline(false);
         }
     };
+    
+    const handleResubmit = async () => {
+        try {
+            // This is a placeholder. A real implementation might need to archive the old submission
+            // and create a new one, or simply allow adding more ideas.
+            // For now, we'll just take them to the "add idea" screen.
+            onAddIdea();
+        } catch(e) {
+            console.error(e);
+        }
+    }
     
     const canAddMoreIdeas = submission.projectIdeas.length < 3 && submission.status !== 'Approved' && submission.status !== 'Rejected';
 
@@ -180,35 +243,54 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Tabs defaultValue="idea-1" className="w-full">
-                        <TabsList className={`grid w-full grid-cols-${submission.projectIdeas.length}`}>
-                            {submission.projectIdeas.map((idea, index) => (
-                                <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>Idea {index + 1}</TabsTrigger>
-                            ))}
+                    <Tabs defaultValue="status" className="w-full">
+                         <TabsList className="grid w-full grid-cols-2">
+                             <TabsTrigger value="status">Project Status</TabsTrigger>
+                             <TabsTrigger value="details">Submission Details</TabsTrigger>
                         </TabsList>
-                        {submission.projectIdeas.map((idea, index) => (
-                            <TabsContent key={idea.id} value={`idea-${index + 1}`} className="mt-4">
-                                <Card className="bg-muted/50">
-                                    <CardHeader>
-                                        <CardTitle>{idea.title}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <IdeaDisplay idea={idea} />
-                                         <div className="mt-6 border-t pt-4 space-y-4">
-                                            <h4 className="font-bold flex items-center gap-2"><Bot className="text-primary"/> AI Tools for this Idea</h4>
-                                            <div className="flex flex-wrap gap-2">
-                                                <Button onClick={() => handleGetReview(idea.githubUrl)} disabled={isReviewing} variant="outline" size="sm">
-                                                    {isReviewing ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Reviewing Code...</> : "Get AI Code Review"}
-                                                </Button>
-                                                <Button onClick={() => handleGenerateOutline(idea)} disabled={isGeneratingOutline} variant="outline" size="sm">
-                                                    {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "AI Pitch Coach"}
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </TabsContent>
-                        ))}
+                         <TabsContent value="status" className="mt-6">
+                            <Card className="bg-muted/50">
+                                <CardHeader>
+                                    <CardTitle className="font-headline">Approval Workflow</CardTitle>
+                                    <CardDescription>Track your project's progress through the approval stages.</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <StatusTimeline history={submission.statusHistory || []} onResubmit={handleResubmit}/>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                         <TabsContent value="details" className="mt-6">
+                             <Tabs defaultValue="idea-1" className="w-full">
+                                <TabsList className={`grid w-full grid-cols-${submission.projectIdeas.length}`}>
+                                    {submission.projectIdeas.map((idea, index) => (
+                                        <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>Idea {index + 1}</TabsTrigger>
+                                    ))}
+                                </TabsList>
+                                {submission.projectIdeas.map((idea, index) => (
+                                    <TabsContent key={idea.id} value={`idea-${index + 1}`} className="mt-4">
+                                        <Card className="bg-muted/50">
+                                            <CardHeader>
+                                                <CardTitle>{idea.title}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <IdeaDisplay idea={idea} />
+                                                <div className="mt-6 border-t pt-4 space-y-4">
+                                                    <h4 className="font-bold flex items-center gap-2"><Bot className="text-primary"/> AI Tools for this Idea</h4>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <Button onClick={() => handleGetReview(idea.githubUrl)} disabled={isReviewing} variant="outline" size="sm">
+                                                            {isReviewing ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Reviewing Code...</> : "Get AI Code Review"}
+                                                        </Button>
+                                                        <Button onClick={() => handleGenerateOutline(idea)} disabled={isGeneratingOutline} variant="outline" size="sm">
+                                                            {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "AI Pitch Coach"}
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </TabsContent>
+                                ))}
+                            </Tabs>
+                        </TabsContent>
                     </Tabs>
                     
                     {review && (
@@ -240,11 +322,6 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                             </Accordion>
                         </div>
                     )}
-
-                    <div className="mt-6 border-t pt-6 space-y-4">
-                        <CardTitle className="font-headline">Approval Status & History</CardTitle>
-                        <StatusTimeline history={submission.statusHistory || []} />
-                    </div>
                     
                     <div className="mt-6 border-t pt-4 space-y-4">
                         <Button onClick={handleDownloadCertificate} disabled={isGeneratingCert}>
