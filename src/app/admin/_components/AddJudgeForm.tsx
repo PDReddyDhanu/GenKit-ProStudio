@@ -16,6 +16,16 @@ import { DEPARTMENTS_DATA } from '@/lib/constants';
 import type { Faculty } from '@/lib/types';
 
 const ROLES: Faculty['role'][] = ['guide', 'hod', 'rnd', 'external', 'academic-coordinator', 'class-mentor'];
+const ROLE_DISPLAY_NAMES: { [key in Faculty['role']]: string } = {
+    'guide': 'Guide',
+    'hod': 'HOD',
+    'rnd': 'R&D Coordinator',
+    'external': 'External',
+    'admin': 'Admin',
+    'sub-admin': 'Sub-Admin',
+    'academic-coordinator': 'Academic Coordinator',
+    'class-mentor': 'Class Mentor',
+};
 const DESIGNATIONS: Faculty['designation'][] = ['Professor', 'Associate Professor', 'Assistant Professor'];
 const EDUCATIONS: Faculty['education'][] = ['PhD', 'M.Tech', 'B.Tech', 'Other'];
 
@@ -102,7 +112,7 @@ export default function AddFacultyForm() {
                                     <SelectValue placeholder="Select a role" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {ROLES.map(r => <SelectItem key={r} value={r} className="capitalize">{r.replace('-', ' ')}</SelectItem>)}
+                                    {ROLES.map(r => <SelectItem key={r} value={r} className="capitalize">{ROLE_DISPLAY_NAMES[r]}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>

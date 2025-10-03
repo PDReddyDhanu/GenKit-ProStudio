@@ -21,6 +21,16 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 
 const ROLES: Faculty['role'][] = ['guide', 'hod', 'rnd', 'external', 'academic-coordinator', 'class-mentor'];
+const ROLE_DISPLAY_NAMES: { [key in Faculty['role']]: string } = {
+    'guide': 'Guide',
+    'hod': 'HOD',
+    'rnd': 'R&D Coordinator',
+    'external': 'External',
+    'admin': 'Admin',
+    'sub-admin': 'Sub-Admin',
+    'academic-coordinator': 'Academic Coordinator',
+    'class-mentor': 'Class Mentor',
+};
 const DESIGNATIONS: Faculty['designation'][] = ['Professor', 'Associate Professor', 'Assistant Professor'];
 const EDUCATIONS: Faculty['education'][] = ['PhD', 'M.Tech', 'B.Tech', 'Other'];
 
@@ -135,7 +145,7 @@ export default function FacultyPortal() {
                             <CardContent className="p-0 mt-6 space-y-4">
                                  <ul className="space-y-3 text-muted-foreground">
                                     <li className="flex items-center gap-3"><UserCheck className="h-5 w-5 text-secondary"/> Guides & Mentors</li>
-                                    <li className="flex items-center gap-3"><Building className="h-5 w-5 text-secondary"/> HoDs & R&D Coordinators</li>
+                                    <li className="flex items-center gap-3"><Building className="h-5 w-5 text-secondary"/> HoDs & R&amp;D Coordinators</li>
                                     <li className="flex items-center gap-3"><Briefcase className="h-5 w-5 text-secondary"/> External Evaluators</li>
                                     <li className="flex items-center gap-3"><Shield className="h-5 w-5 text-secondary"/> College Sub-Admins</li>
                                 </ul>
@@ -171,7 +181,7 @@ export default function FacultyPortal() {
                                                     <Label htmlFor="role">Your Role</Label>
                                                     <Select onValueChange={(v) => setRole(v as any)} value={role} required>
                                                         <SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger>
-                                                        <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r} className="capitalize">{r.replace('-', ' ')}</SelectItem>)}</SelectContent>
+                                                        <SelectContent>{ROLES.map(r => <SelectItem key={r} value={r} className="capitalize">{ROLE_DISPLAY_NAMES[r]}</SelectItem>)}</SelectContent>
                                                     </Select>
                                                 </div>
                                                 <div className="space-y-2">
