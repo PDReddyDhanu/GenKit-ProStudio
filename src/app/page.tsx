@@ -5,11 +5,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Shield, Server, Search, CodeXml, User, Sun } from "lucide-react";
+import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Shield, Server, Search, CodeXml, User, Sun, Briefcase, University, FolderGit2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useHackathon } from "@/context/HackathonProvider";
+import { COLLEGES } from "@/lib/colleges";
 import GradientText from "@/components/ui/GradientText";
 import { motion } from "framer-motion";
 import ElectricBorder from "@/components/ui/ElectricBorder";
@@ -210,9 +211,45 @@ const HowItWorksAnimation = () => {
     );
 };
 
+const AnimatedStat = ({ end, label, icon }: { end: number, label: string, icon: React.ReactNode }) => {
+    const ref = useRef<HTMLSpanElement>(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    ref.current?.classList.add('animate-number-count');
+                }
+            },
+            { threshold: 0.5 }
+        );
+        if (ref.current) {
+            observer.observe(ref.current);
+        }
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div className="text-center" data-animate-on-scroll>
+            <div className="text-primary w-12 h-12 mx-auto mb-2" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
+                {icon}
+            </div>
+            <span
+                ref={ref}
+                className="block text-4xl md:text-5xl font-bold text-secondary"
+                style={{ '--number-end': end } as React.CSSProperties}
+            >
+                <span className="after:content-[counter(num)]" />+
+            </span>
+            <p className="text-muted-foreground mt-1">{label}</p>
+        </div>
+    )
+}
+
 export default function Home() {
   const { state } = useHackathon();
-  const { selectedCollege } = state;
+  const { selectedCollege, users, projects } = state;
+  const collegesCount = useMemo(() => COLLEGES.length, []);
 
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-x-hidden">
@@ -234,6 +271,16 @@ export default function Home() {
                 <Button size="lg" variant="secondary" asChild>
                    <Link href="/judge">Enter as Faculty or Admin</Link>
                 </Button>
+            </div>
+        </section>
+
+        <section className="py-24 scroll-m-20" data-animate-on-scroll>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Our Platform by the Numbers</h2>
+            <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Powering innovation and collaboration in academic institutions worldwide.</p>
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <AnimatedStat end={collegesCount} label="Registered Colleges" icon={<University className="w-12 h-12" />} />
+                <AnimatedStat end={users.length} label="Active Users" icon={<Users className="w-12 h-12" />} />
+                <AnimatedStat end={projects.length} label="Projects Submitted" icon={<FolderGit2 className="w-12 h-12" />} />
             </div>
         </section>
 
@@ -528,5 +575,6 @@ export default function Home() {
     </div>
   );
 }
+
 
 
