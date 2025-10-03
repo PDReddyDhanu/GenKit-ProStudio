@@ -212,22 +212,15 @@ const HowItWorksAnimation = () => {
 };
 
 const AnimatedStat = ({ end, label, icon }: { end: number, label: string, icon: React.ReactNode }) => {
-    const ref = useRef<HTMLSpanElement>(null);
+    const [count, setCount] = useState(0);
 
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    ref.current?.classList.add('animate-number-count');
-                }
-            },
-            { threshold: 0.5 }
-        );
-        if (ref.current) {
-            observer.observe(ref.current);
-        }
-        return () => observer.disconnect();
-    }, []);
+        const interval = setInterval(() => {
+            setCount(Math.floor(Math.random() * end));
+        }, 100);
+
+        return () => clearInterval(interval);
+    }, [end]);
 
     return (
         <div className="text-center" data-animate-on-scroll>
@@ -235,11 +228,9 @@ const AnimatedStat = ({ end, label, icon }: { end: number, label: string, icon: 
                 {icon}
             </div>
             <span
-                ref={ref}
                 className="block text-4xl md:text-5xl font-bold text-secondary"
-                style={{ '--number-end': end } as React.CSSProperties}
             >
-                <span className="after:content-[counter(num)]" />+
+                {count}+
             </span>
             <p className="text-muted-foreground mt-1">{label}</p>
         </div>
@@ -571,6 +562,7 @@ export default function Home() {
     </div>
   );
 }
+
 
 
 
