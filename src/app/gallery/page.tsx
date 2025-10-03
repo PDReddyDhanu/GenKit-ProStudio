@@ -125,35 +125,38 @@ export default function ProjectGallery() {
     const { filteredTeams, sections } = useMemo(() => {
         if (!loggedInUser) return { filteredTeams: [], sections: [] };
 
-        const departmentFilter = selectedDepartment;
-        const branchFilter = selectedBranch;
-
         const teamsWithProjects = teams.filter(team => projects.some(p => p.teamId === team.id));
 
         const filtered = teamsWithProjects.filter(team => {
             const teamMembersDetails = team.members.map(m => users.find(u => u.id === m.id)).filter(Boolean) as User[];
             if (teamMembersDetails.length === 0) return false;
-
-            const representativeMember = teamMembersDetails[0];
-            const memberDepartment = Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes(representativeMember.branch));
-            const teamBranch = representativeMember.branch;
-            const teamSection = representativeMember.section;
-
+            
             const project = projects.find(p => p.teamId === team.id);
             const teamProjectType = project?.hackathonId;
-
-            const departmentMatch = departmentFilter === 'all' || memberDepartment === departmentFilter;
-            const branchMatch = branchFilter === 'all' || teamBranch === branchFilter;
-            const sectionMatch = selectedSection === 'all' || teamSection === selectedSection;
             const projectTypeMatch = selectedProjectType === 'all' || teamProjectType === selectedProjectType;
 
-            return departmentMatch && branchMatch && sectionMatch && projectTypeMatch;
+            if (!projectTypeMatch) return false;
+
+            const departmentMatch = selectedDepartment === 'all' || teamMembersDetails.some(member => {
+                const memberDepartment = Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes(member.branch));
+                return memberDepartment === selectedDepartment;
+            });
+            
+            if (!departmentMatch) return false;
+            
+            const branchMatch = selectedBranch === 'all' || teamMembersDetails.some(member => member.branch === selectedBranch);
+            if (!branchMatch) return false;
+            
+            const sectionMatch = selectedSection === 'all' || teamMembersDetails.some(member => member.section === selectedSection);
+            if (!sectionMatch) return false;
+
+            return true;
         });
         
         const relevantUsersForSections = users.filter(u => {
             const memberDept = Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes(u.branch));
-            const deptMatch = departmentFilter === 'all' || memberDept === departmentFilter;
-            const branchMatch = branchFilter === 'all' || u.branch === branchFilter;
+            const deptMatch = selectedDepartment === 'all' || memberDept === selectedDepartment;
+            const branchMatch = selectedBranch === 'all' || u.branch === selectedBranch;
             return deptMatch && branchMatch;
         });
 
