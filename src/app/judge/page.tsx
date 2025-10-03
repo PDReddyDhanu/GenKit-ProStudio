@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState } from 'react';
@@ -21,18 +20,16 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 
 const ROLES: Faculty['role'][] = ['guide', 'hod', 'rnd', 'external', 'academic-coordinator', 'class-mentor'];
-const ROLE_DISPLAY_NAMES: { [key in Faculty['role']]: string } = {
+const ROLE_DISPLAY_NAMES: { [key in Exclude<Faculty['role'], 'admin' | 'sub-admin'>]: string } = {
     'guide': 'Guide',
     'hod': 'HOD',
     'rnd': 'R&D Coordinator',
     'external': 'External',
-    'admin': 'Admin',
-    'sub-admin': 'Sub-Admin',
     'academic-coordinator': 'Academic Coordinator',
     'class-mentor': 'Class Mentor',
 };
-const DESIGNATIONS: Faculty['designation'][] = ['Professor', 'Associate Professor', 'Assistant Professor'];
-const EDUCATIONS: Faculty['education'][] = ['PhD', 'M.Tech', 'B.Tech', 'Other'];
+const DESIGNATIONS: Faculty['designation'][] = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer', 'Visiting Professor', 'Adjunct Professor', 'Head of Department', 'Dean'];
+const EDUCATIONS: Faculty['education'][] = ['PhD', 'M.Phil', 'M.Tech', 'M.Sc', 'M.A', 'M.Com', 'MBA', 'B.Tech', 'B.Sc', 'B.A', 'B.Com', 'Diploma', 'Other'];
 
 export default function FacultyPortal() {
     const { state, api, dispatch } = useHackathon();

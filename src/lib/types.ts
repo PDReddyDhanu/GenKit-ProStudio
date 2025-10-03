@@ -134,8 +134,8 @@ export interface Faculty {
   contactNumber?: string;
   bio?: string;
   notifications?: Notification[];
-  designation?: 'Professor' | 'Associate Professor' | 'Assistant Professor';
-  education?: 'PhD' | 'M.Tech' | 'B.Tech' | 'Other';
+  designation?: 'Professor' | 'Associate Professor' | 'Assistant Professor' | 'Lecturer' | 'Visiting Professor' | 'Adjunct Professor' | 'Head of Department' | 'Dean';
+  education?: 'PhD' | 'M.Phil' | 'M.Tech' | 'M.Sc' | 'M.A' | 'M.Com' | 'MBA' | 'B.Tech' | 'B.Sc' | 'B.A' | 'B.Com' | 'Diploma' | 'Other';
   branch?: string;
   department?: string;
   collegeName?: string; // For external faculty
