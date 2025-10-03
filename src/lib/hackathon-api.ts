@@ -38,7 +38,7 @@ import {
 } from 'firebase/firestore';
 import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate } from './types';
 import { INDIVIDUAL_EVALUATION_RUBRIC, INTERNAL_STAGE_1_RUBRIC, INTERNAL_STAGE_2_RUBRIC, INTERNAL_FINAL_RUBRIC, EXTERNAL_FINAL_RUBRIC } from './constants';
-import { generateProjectImage } from '@/ai/flows/generate-project-image';
+import { generateProjectImage as generateProjectImageFlow } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
 
 const storage = getStorage();
@@ -752,7 +752,7 @@ export async function submitProject(collegeId: string, hackathonId: string, team
         await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { submissionId: submissionRef.id });
 
         // Asynchronously generate project image and don't block the return
-        generateProjectImage({ projectName: ideaToSave.title, projectDescription: ideaToSave.description })
+        generateProjectImageFlow({ projectName: ideaToSave.title, projectDescription: ideaToSave.description })
             .then(async (result) => {
                 if (result && result.imageUrl) {
                     await updateDoc(submissionRef, { imageUrl: result.imageUrl });

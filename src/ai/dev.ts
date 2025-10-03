@@ -17,3 +17,4 @@ import '@/ai/flows/generate-hackathon-summary-report.ts';
 import '@/ai/flows/triage-support-ticket.ts';
 import '@/ai/flows/generate-support-response.ts';
 import '@/ai/flows/generate-detailed-project-idea.ts';
+import '@/ai/flows/generate-hackathon-image.ts';

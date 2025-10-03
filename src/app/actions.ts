@@ -13,6 +13,7 @@ import { generateSummaryReport as generateSummaryReportFlow, GenerateSummaryRepo
 import { triageSupportTicket as triageSupportTicketFlow, TriageSupportTicketInput, TriageSupportTicketOutput } from '@/ai/flows/triage-support-ticket';
 import { generateSupportResponse as generateSupportResponseFlow, GenerateSupportResponseInput, GenerateSupportResponseOutput } from '@/ai/flows/generate-support-response';
 import { generateDetailedProjectIdea as generateDetailedProjectIdeaFlow, GenerateDetailedProjectIdeaInput, GenerateDetailedProjectIdeaOutput } from '@/ai/flows/generate-detailed-project-idea';
+import { generateHackathonImage as generateHackathonImageFlow, GenerateHackathonImageInput } from '@/ai/flows/generate-hackathon-image';
 
 
 // AI Related Actions
@@ -111,6 +112,16 @@ export async function generateSummaryReport(input: GenerateSummaryReportInput): 
     } catch (error) {
         console.error("Error generating summary report:", error);
         return "Failed to generate report. Please try again.";
+    }
+}
+
+export async function generateHackathonImageAction(input: GenerateHackathonImageInput): Promise<string | null> {
+    try {
+        const result = await generateHackathonImageFlow(input);
+        return result.imageUrl;
+    } catch (error) {
+        console.error("Error generating hackathon image:", error);
+        return null;
     }
 }
 

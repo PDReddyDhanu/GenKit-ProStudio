@@ -34,7 +34,7 @@ export default function ReportingDashboard() {
         try {
             const result = await generateSummaryReport({
                 collegeName: selectedCollege,
-                projects: eventProjects,
+                projects: eventProjects as unknown as Project[],
                 teams: eventTeams,
             });
             setReport(result);

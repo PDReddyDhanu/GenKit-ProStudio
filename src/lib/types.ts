@@ -121,6 +121,8 @@ export interface ProjectSubmission {
   achievements?: string[];
   imageUrl?: string;
   reviewStage: ReviewStage;
+  averageScore: number;
+  name: string;
 }
 
 
@@ -209,3 +211,6 @@ export interface Hackathon {
 export interface Api {
   deleteTeam: (teamId: string) => Promise<{ successMessage: string }>;
 }
+
+
+export type Project = ProjectSubmission;
