@@ -167,4 +167,19 @@ body {
       transform: translateX(-50%);
     }
   }
+
+  .animate-road-draw {
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    animation: road-draw 10s linear forwards infinite;
+  }
+  .animate-step-fade-in {
+      opacity: 0;
+      animation: step-fade-in 0.5s ease-out forwards;
+  }
+  .animate-flame-trail {
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      animation: flame-trail 10s linear forwards infinite;
+  }
 }

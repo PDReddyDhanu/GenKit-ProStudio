@@ -148,6 +148,10 @@ export default {
           '75%': { opacity: '1' },
           '100%': { transform: 'translateY(-200px) translateX(100px) rotateX(0) rotateY(0) scale(1)', opacity: '0' },
         },
+        scroll: {
+            '0%': { transform: 'translateX(0)' },
+            '100%': { transform: 'translateX(-50%)' },
+        },
         'road-draw': {
           'from': { 'stroke-dashoffset': '2000' },
           'to': { 'stroke-dashoffset': '0' },
@@ -178,7 +182,8 @@ export default {
         'slow-float': 'slow-float ease-in-out infinite',
         'road-draw': 'road-draw 10s linear forwards infinite',
         'step-fade-in': 'step-fade-in 0.5s ease-out forwards',
-        'flame-trail': 'flame-trail 10s linear forwards infinite'
+        'flame-trail': 'flame-trail 10s linear forwards infinite',
+        scroll: 'scroll 60s linear infinite',
       },
     },
   },
