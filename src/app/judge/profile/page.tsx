@@ -8,11 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { User, Pencil, Loader, LayoutDashboard } from 'lucide-react';
+import { User, Pencil, Loader, LayoutDashboard, KeyRound } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import Link from 'next/link';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ChangePasswordForm from './_components/ChangePasswordForm';
 
 export default function FacultyProfilePage() {
     const { state, api } = useHackathon();
@@ -67,86 +69,102 @@ export default function FacultyProfilePage() {
     };
     
     return (
-        <div className="container max-w-2xl mx-auto py-12 animate-fade-in">
-             <Card>
-                <CardHeader className="flex flex-row justify-between items-start">
-                    <div>
-                        <CardTitle className="flex items-center gap-3 text-3xl font-headline">
-                            <User className="h-8 w-8 text-primary"/>
-                            {currentFaculty.name}
-                        </CardTitle>
-                        <CardDescription>{currentFaculty.email} <Badge variant="outline">{currentFaculty.role}</Badge></CardDescription>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => setIsEditing(!isEditing)}>
-                        <Pencil className="h-5 w-5" />
-                        <span className="sr-only">Edit Profile</span>
-                    </Button>
-                </CardHeader>
-                <CardContent>
-                    {isEditing ? (
-                        <form onSubmit={handleSaveProfile} className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Full Name</Label>
-                                <Input id="name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving} />
+        <div className="container max-w-3xl mx-auto py-12 animate-fade-in">
+            <h1 className="text-4xl font-bold mb-8 font-headline">Faculty Profile</h1>
+            <Tabs defaultValue="profile" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="profile"><User className="mr-2" /> Profile Details</TabsTrigger>
+                    <TabsTrigger value="security"><KeyRound className="mr-2" /> Security</TabsTrigger>
+                </TabsList>
+                <TabsContent value="profile" className="mt-6">
+                    <Card>
+                        <CardHeader className="flex flex-row justify-between items-start">
+                            <div>
+                                <CardTitle className="flex items-center gap-3 text-3xl font-headline">
+                                    <User className="h-8 w-8 text-primary"/>
+                                    {currentFaculty.name}
+                                </CardTitle>
+                                <CardDescription>{currentFaculty.email} <Badge variant="outline">{currentFaculty.role}</Badge></CardDescription>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="contactNumber">Contact Number</Label>
-                                <Input id="contactNumber" value={contactNumber} onChange={e => setContactNumber(e.target.value)} disabled={isSaving} />
-                            </div>
-                             <div className="space-y-2">
-                                <Label>Gender</Label>
-                                <RadioGroup onValueChange={setGender} value={gender} className="flex gap-4 pt-2">
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="male" id="male" />
-                                        <Label htmlFor="male">Male</Label>
+                            <Button variant="ghost" size="icon" onClick={() => setIsEditing(!isEditing)}>
+                                <Pencil className="h-5 w-5" />
+                                <span className="sr-only">Edit Profile</span>
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            {isEditing ? (
+                                <form onSubmit={handleSaveProfile} className="space-y-6">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Full Name</Label>
+                                        <Input id="name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving} />
                                     </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="female" id="female" />
-                                        <Label htmlFor="female">Female</Label>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="contactNumber">Contact Number</Label>
+                                        <Input id="contactNumber" value={contactNumber} onChange={e => setContactNumber(e.target.value)} disabled={isSaving} />
                                     </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="other" id="other" />
-                                        <Label htmlFor="other">Other</Label>
+                                     <div className="space-y-2">
+                                        <Label>Gender</Label>
+                                        <RadioGroup onValueChange={setGender} value={gender} className="flex gap-4 pt-2">
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="Male" id="male" />
+                                                <Label htmlFor="male">Male</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="Female" id="female" />
+                                                <Label htmlFor="female">Female</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="Other" id="other" />
+                                                <Label htmlFor="other">Other</Label>
+                                            </div>
+                                        </RadioGroup>
                                     </div>
-                                </RadioGroup>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="bio">Short Bio / About</Label>
-                                <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} placeholder="e.g., Senior Professor, passionate about AI." disabled={isSaving} />
-                            </div>
-                            
-                            <div className="flex gap-4">
-                                <Button type="submit" disabled={isSaving}>
-                                    {isSaving ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : 'Save Changes'}
-                                </Button>
-                                <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancel</Button>
-                            </div>
-                        </form>
-                    ) : (
-                        <div className="space-y-6">
-                             <div>
-                                <h4 className="font-semibold text-muted-foreground">Contact Number</h4>
-                                <p>{currentFaculty.contactNumber || 'Not provided'}</p>
-                            </div>
-                             <div>
-                                <h4 className="font-semibold text-muted-foreground">Gender</h4>
-                                <p className="capitalize">{currentFaculty.gender || 'Not specified'}</p>
-                            </div>
-                             <div>
-                                <h4 className="font-semibold text-muted-foreground">About</h4>
-                                <p>{currentFaculty.bio || 'No bio added yet.'}</p>
-                            </div>
-                        </div>
-                    )}
-                </CardContent>
-                <CardFooter className="border-t pt-6">
-                    <Button asChild variant="outline">
-                        <Link href="/admin">
-                            <LayoutDashboard className="mr-2 h-4 w-4"/> Go to Dashboard
-                        </Link>
-                    </Button>
-                </CardFooter>
-            </Card>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="bio">Short Bio / About</Label>
+                                        <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} placeholder="e.g., Senior Professor, passionate about AI." disabled={isSaving} />
+                                    </div>
+                                    
+                                    <div className="flex gap-4">
+                                        <Button type="submit" disabled={isSaving}>
+                                            {isSaving ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Saving...</> : 'Save Changes'}
+                                        </Button>
+                                        <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>Cancel</Button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <div className="space-y-6">
+                                     <div>
+                                        <h4 className="font-semibold text-muted-foreground">Contact Number</h4>
+                                        <p>{currentFaculty.contactNumber || 'Not provided'}</p>
+                                    </div>
+                                     <div>
+                                        <h4 className="font-semibold text-muted-foreground">Gender</h4>
+                                        <p className="capitalize">{currentFaculty.gender || 'Not specified'}</p>
+                                    </div>
+                                     <div>
+                                        <h4 className="font-semibold text-muted-foreground">About</h4>
+                                        <p>{currentFaculty.bio || 'No bio added yet.'}</p>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                        <CardFooter className="border-t pt-6">
+                            <Button asChild variant="outline">
+                                <Link href="/admin">
+                                    <LayoutDashboard className="mr-2 h-4 w-4"/> Go to Dashboard
+                                </Link>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="security" className="mt-6">
+                    <Card>
+                        <CardContent className="pt-6">
+                            <ChangePasswordForm />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }
