@@ -125,11 +125,8 @@ export default function ProjectGallery() {
     const { filteredTeams, sections } = useMemo(() => {
         if (!loggedInUser) return { filteredTeams: [], sections: [] };
 
-        const userBranch = (loggedInUser as User)?.branch;
-        const userDepartment = Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes(userBranch));
-
-        const departmentFilter = selectedDepartment === 'all' ? (userDepartment || 'all') : selectedDepartment;
-        const branchFilter = selectedBranch === 'all' ? 'all' : selectedBranch;
+        const departmentFilter = selectedDepartment;
+        const branchFilter = selectedBranch;
 
         const teamsWithProjects = teams.filter(team => projects.some(p => p.teamId === team.id));
 
@@ -152,16 +149,18 @@ export default function ProjectGallery() {
 
             return departmentMatch && branchMatch && sectionMatch && projectTypeMatch;
         });
+        
+        const relevantUsersForSections = users.filter(u => {
+            const memberDept = Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes(u.branch));
+            const deptMatch = departmentFilter === 'all' || memberDept === departmentFilter;
+            const branchMatch = branchFilter === 'all' || u.branch === branchFilter;
+            return deptMatch && branchMatch;
+        });
 
         const allSections = Array.from(new Set(
-            users
-                .filter(u => {
-                    const memberDept = Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes(u.branch));
-                    const deptMatch = departmentFilter === 'all' || memberDept === departmentFilter;
-                    const branchMatch = branchFilter === 'all' || u.branch === branchFilter;
-                    return deptMatch && branchMatch && u.section;
-                })
+            relevantUsersForSections
                 .map(u => u.section)
+                .filter(Boolean)
         )).sort();
 
         return { filteredTeams: filtered, sections: allSections };
@@ -207,7 +206,7 @@ export default function ProjectGallery() {
                             {projectTypes.map(pt => <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
-                    <Select onValueChange={setSelectedDepartment} defaultValue={(Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes((loggedInUser as User).branch))) || 'all'}>
+                    <Select onValueChange={(value) => { setSelectedDepartment(value); setSelectedBranch('all'); setSelectedSection('all'); }} defaultValue="all">
                         <SelectTrigger><SelectValue placeholder="Filter by Department..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Departments</SelectItem>
@@ -216,14 +215,14 @@ export default function ProjectGallery() {
                             ))}
                         </SelectContent>
                     </Select>
-                     <Select onValueChange={setSelectedBranch} defaultValue="all" disabled={selectedDepartment === 'all'}>
+                     <Select onValueChange={(value) => { setSelectedBranch(value); setSelectedSection('all'); }} value={selectedBranch} disabled={selectedDepartment === 'all'}>
                         <SelectTrigger><SelectValue placeholder="Filter by Branch..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Branches</SelectItem>
                             {branchesForSelectedDept.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
                         </SelectContent>
                     </Select>
-                     <Select onValueChange={setSelectedSection} defaultValue="all" disabled={sections.length === 0}>
+                     <Select onValueChange={setSelectedSection} value={selectedSection} disabled={sections.length === 0}>
                         <SelectTrigger><SelectValue placeholder="Filter by Section..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Sections</SelectItem>
