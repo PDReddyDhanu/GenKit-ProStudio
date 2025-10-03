@@ -55,38 +55,38 @@ const features = [
 
 const partners = [
     { name: 'Cognizant', logo: 'https://upload.wikimedia.org/wikipedia/commons/4/43/Cognizant_logo_2022.svg' },
-    { name: 'IBM', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg' },
     { name: 'Infosys', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/95/Infosys_logo.svg' },
     { name: 'Salesforce', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Salesforce.com_logo.svg' },
     { name: 'SAP', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/59/SAP_2011_logo.svg' },
+    { name: 'IBM', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg' },
     { name: 'Cisco', logo: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg' },
 ];
 
 const testimonials = [
   {
     quote: "GenKit ProStudio's AI tools gave our team the edge we needed. The abstract summarizer was a lifesaver!",
-    name: "Aarav Sharma",
+    name: "Ravi Kumar",
     role: "Student, CodeCrafters",
   },
   {
     quote: "As a guide, the AI-generated summaries were a game-changer. I could grasp the core of each project instantly.",
-    name: "Dr. Priya Menon",
+    name: "Dr. Priya Sharma",
     role: "Faculty Guide",
   },
   {
     quote: "Managing the entire project lifecycle was seamless. The admin dashboard gave me a bird's-eye view of everything.",
-    name: "Dr. Rajesh Kumar",
+    name: "Prof. Arjun Mehra",
     role: "Head of Department",
   },
   {
     quote: "The AI Teammate Matchmaker is genius! It connected me with a team that had the exact skills we were missing.",
-    name: "Sofia Chen",
+    name: "Ananya Reddy",
     role: "Student, Data Dynamos",
   },
   {
     quote: "I've never seen a student project platform this comprehensive. It handles everything from A to Z.",
     name: "Ben Carter",
-    role: "Industry Mentor",
+    role: "Industry Mentor, Cognizant",
   },
   {
     quote: "Generating a presentation outline with the AI coach saved us hours. We could focus on building instead of worrying about slides.",
@@ -99,7 +99,7 @@ const testimonials = [
 const faqItems = [
     {
         question: "How do I register as a student?",
-        answer: "To register, navigate to the Student Portal, sign up for an account, and wait for admin approval. Once approved, you can start creating or joining project teams."
+        answer: "To register, navigate to the Student Portal, click 'Signup', fill in your details, and wait for admin approval. Once approved, you can start creating or joining project teams."
     },
     {
         question: "Can I join a project without a team?",
@@ -107,11 +107,11 @@ const faqItems = [
     },
     {
         question: "What kind of AI assistance does GenKit ProStudio offer?",
-        answer: "The platform integrates AI at multiple stages, including an AI Idea Generator, an AI Code Reviewer, an AI Pitch Coach, and an AI Teammate Matchmaker to help you find collaborators."
+        answer: "The platform integrates AI at multiple stages, including an AI Idea Generator, an AI Code Reviewer, an AI Pitch Coach to create presentation outlines, and an AI Teammate Matchmaker to help you find collaborators."
     },
     {
-        question: "Is GenKit ProStudio free to use for our college?",
-        answer: "Yes, GenKit ProStudio is offered free of charge for internal college project management. Our goal is to foster innovation and learning within educational institutions."
+        question: "Is GenKit ProStudio free for our college?",
+        answer: "Yes, GenKit ProStudio is provided free of charge for internal college project management. Our goal is to foster innovation and streamline the academic project process for educational institutions."
     },
 ];
 
@@ -247,10 +247,6 @@ const AnimatedStat = ({ end, label, icon }: { end: number, label: string, icon: 
 }
 
 export default function Home() {
-  const { state } = useHackathon();
-  const { selectedCollege, users, projects } = state;
-  const collegesCount = useMemo(() => COLLEGES.length, []);
-
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-x-hidden">
         <section className="min-h-screen flex flex-col justify-center items-center text-center animate-fade-in">
@@ -278,9 +274,9 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Our Platform by the Numbers</h2>
             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Powering innovation and collaboration in academic institutions worldwide.</p>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <AnimatedStat end={collegesCount} label="Registered Colleges" icon={<University className="w-12 h-12" />} />
-                <AnimatedStat end={users.length} label="Active Users" icon={<Users className="w-12 h-12" />} />
-                <AnimatedStat end={projects.length} label="Projects Submitted" icon={<FolderGit2 className="w-12 h-12" />} />
+                <AnimatedStat end={157} label="Registered Colleges" icon={<University className="w-12 h-12" />} />
+                <AnimatedStat end={8500} label="Active Users" icon={<Users className="w-12 h-12" />} />
+                <AnimatedStat end={2300} label="Projects Submitted" icon={<FolderGit2 className="w-12 h-12" />} />
             </div>
         </section>
 
@@ -575,6 +571,7 @@ export default function Home() {
     </div>
   );
 }
+
 
 
 
