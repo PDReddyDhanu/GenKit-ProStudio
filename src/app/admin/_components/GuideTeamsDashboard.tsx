@@ -14,6 +14,7 @@ import { Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Link from 'next/link';
+import { getAiProjectSummary } from '@/app/actions';
 
 const GuideChatDialog = ({ team, guide, open, onOpenChange }: { team: Team, guide: any, open: boolean, onOpenChange: (open: boolean) => void }) => {
     const { api } = useHackathon();
@@ -98,6 +99,25 @@ const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubm
     const { state } = useHackathon();
     const { currentFaculty } = state;
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [aiSummary, setAiSummary] = useState<Record<string, string>>({});
+    const [isGeneratingSummary, setIsGeneratingSummary] = useState<string | null>(null);
+
+    const handleGenerateSummary = async (idea: ProjectIdea) => {
+        setIsGeneratingSummary(idea.id);
+        try {
+            const summary = await getAiProjectSummary({
+                projectName: idea.title,
+                projectDescription: idea.abstractText,
+                githubUrl: idea.githubUrl,
+            });
+            setAiSummary(prev => ({ ...prev, [idea.id]: summary }));
+        } catch (error) {
+            console.error("Error generating AI summary:", error);
+            setAiSummary(prev => ({ ...prev, [idea.id]: "Could not generate summary." }));
+        } finally {
+            setIsGeneratingSummary(null);
+        }
+    };
     
     return (
         <>
@@ -137,6 +157,16 @@ const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubm
                                                     <Link href={idea.abstractFileUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline text-sm">View Uploaded File</Link>
                                                 </div>
                                             )}
+                                             <div className="border-t pt-4 mt-4">
+                                                <Button onClick={() => handleGenerateSummary(idea)} disabled={isGeneratingSummary === idea.id} variant="outline" size="sm">
+                                                    {isGeneratingSummary === idea.id ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : <><Bot className="mr-2 h-4 w-4"/>Generate AI Summary</>}
+                                                </Button>
+                                                {aiSummary[idea.id] && (
+                                                     <div className="mt-4 p-3 bg-background/50 rounded-md border">
+                                                        <p className="text-sm">{aiSummary[idea.id]}</p>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>
