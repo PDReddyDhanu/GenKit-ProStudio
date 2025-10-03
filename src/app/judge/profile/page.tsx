@@ -84,7 +84,7 @@ export default function FacultyProfilePage() {
                                     <User className="h-8 w-8 text-primary"/>
                                     {currentFaculty.name}
                                 </CardTitle>
-                                <CardDescription>{currentFaculty.email} <Badge variant="outline">{currentFaculty.role}</Badge></CardDescription>
+                                <div className="text-sm text-muted-foreground">{currentFaculty.email} <Badge variant="outline">{currentFaculty.role}</Badge></div>
                             </div>
                             <Button variant="ghost" size="icon" onClick={() => setIsEditing(!isEditing)}>
                                 <Pencil className="h-5 w-5" />
