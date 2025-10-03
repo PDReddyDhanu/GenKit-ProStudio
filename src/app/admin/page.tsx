@@ -50,7 +50,7 @@ const projectEvents = [
 export default function AdminPortal() {
     const { state, api, dispatch } = useHackathon();
     const { currentAdmin, currentFaculty, hackathons, selectedHackathonId, users } = state;
-    const [email, setEmail] = useState('genkit@admin.com');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showIntro, setShowIntro] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
@@ -108,7 +108,7 @@ export default function AdminPortal() {
                             <AuthMessage />
                             <div className="space-y-2">
                                 <Label htmlFor="admin-email">Email</Label>
-                                <Input id="admin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={true} />
+                                <Input id="admin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="admin-password">Password</Label>
