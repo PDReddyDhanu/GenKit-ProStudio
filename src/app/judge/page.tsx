@@ -129,9 +129,9 @@ export default function FacultyPortal() {
     return (
         <Dialog open={isForgotPassOpen} onOpenChange={setIsForgotPassOpen}>
             <div className="container max-w-4xl mx-auto py-12 animate-fade-in">
-                 <Card className="relative group overflow-hidden">
+                 <div className="relative group overflow-hidden rounded-lg">
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-lg blur-lg opacity-0 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-glowing-border"></div>
-                    <div className="relative bg-card rounded-lg grid md:grid-cols-2">
+                    <Card className="relative grid md:grid-cols-2">
                          <div className="p-8 bg-muted/30 rounded-l-lg">
                             <CardHeader className="p-0">
                                 <CardTitle className="text-3xl font-bold font-headline text-primary">Faculty Portal</CardTitle>
@@ -291,8 +291,8 @@ export default function FacultyPortal() {
                                 </form>
                             </CardContent>
                         </div>
-                    </div>
-                </Card>
+                    </Card>
+                </div>
                 <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={email} />
             </div>
         </Dialog>

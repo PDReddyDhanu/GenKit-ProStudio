@@ -82,9 +82,9 @@ export default function Auth() {
         <div className="container max-w-md mx-auto py-12 animate-fade-in">
             <Dialog open={isForgotPassOpen} onOpenChange={setIsForgotPassOpen}>
             <Dialog open={isStatusCheckOpen} onOpenChange={setIsStatusCheckOpen}>
-                <Card className="relative group overflow-hidden">
+                <div className="relative group overflow-hidden rounded-lg">
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-lg blur-lg opacity-0 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-glowing-border"></div>
-                    <div className="relative bg-card rounded-lg">
+                    <Card className="relative">
                         <CardHeader className="text-center">
                              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-2">
                                 <Building className="h-4 w-4"/> {selectedCollege}
@@ -238,8 +238,8 @@ export default function Auth() {
                                 </div>
                             </form>
                         </CardContent>
-                    </div>
-                </Card>
+                    </Card>
+                </div>
                 <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={email} />
                 <AccountStatusDialog onOpenChange={setIsStatusCheckOpen} />
             </Dialog>
