@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
@@ -8,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
-import { Scale, Loader, Mail, Lock, Building, ArrowRight, Shield, UserCheck, Briefcase, User as UserIcon } from 'lucide-react';
+import { Scale, Loader, Mail, Lock, Building, ArrowRight, Shield, UserCheck, Briefcase, User as UserIcon, Eye, EyeOff } from 'lucide-react';
 import AdminPortal from '@/app/admin/page';
 import Link from 'next/link';
 import { Label } from '@/components/ui/label';
@@ -35,6 +36,7 @@ export default function FacultyPortal() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [role, setRole] = useState<Faculty['role'] | ''>('');
     const [contactNumber, setContactNumber] = useState('');
     const [gender, setGender] = useState<Faculty['gender'] | ''>('');
@@ -243,14 +245,23 @@ export default function FacultyPortal() {
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                         <Input 
-                                            type="password" 
+                                            type={showPassword ? 'text' : 'password'}
                                             placeholder="Password" 
-                                            className="pl-10" 
+                                            className="pl-10 pr-10"
                                             value={password}
                                             onChange={e => setPassword(e.target.value)}
                                             required 
                                             disabled={isLoading}
                                         />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        </Button>
                                     </div>
                                     
                                      {isLoginView && (

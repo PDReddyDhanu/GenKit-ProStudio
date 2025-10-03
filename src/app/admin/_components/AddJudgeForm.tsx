@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader } from 'lucide-react';
+import { Loader, Eye, EyeOff } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -24,6 +24,7 @@ export default function AddFacultyForm() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [role, setRole] = useState<Faculty['role']>('guide');
     const [contactNumber, setContactNumber] = useState('');
     const [gender, setGender] = useState<Faculty['gender'] | ''>('');
@@ -177,9 +178,18 @@ export default function AddFacultyForm() {
                         <Label htmlFor="bio">Short Bio / Expertise</Label>
                         <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="e.g., Senior Professor, specialized in AI." disabled={isLoading} />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 relative">
                         <Label htmlFor="faculty-password">Temporary Password</Label>
-                        <Input id="faculty-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} />
+                        <Input id="faculty-password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} />
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 top-7 h-7 w-7 text-muted-foreground"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </Button>
                     </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
                          {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Adding Account...</> : 'Add Faculty'}

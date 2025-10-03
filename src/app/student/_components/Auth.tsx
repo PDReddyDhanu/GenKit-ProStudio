@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AuthMessage } from '@/components/AuthMessage';
-import { Loader, Mail, Lock, User, CheckSquare, Library, BookUser, Building, Phone } from 'lucide-react';
+import { Loader, Mail, Lock, User, CheckSquare, Library, BookUser, Building, Phone, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import AccountStatusDialog from '@/components/AccountStatusDialog';
@@ -29,6 +29,7 @@ export default function Auth() {
     const [section, setSection] = useState('');
     const [contactNumber, setContactNumber] = useState('');
     
+    const [showPassword, setShowPassword] = useState(false);
 
 
     const [isLoading, setIsLoading] = useState(false);
@@ -194,14 +195,23 @@ export default function Auth() {
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                     <Input 
-                                        type="password" 
+                                        type={showPassword ? 'text' : 'password'}
                                         placeholder="Password" 
-                                        className="pl-10" 
+                                        className="pl-10 pr-10" 
                                         value={password}
                                         onChange={e => setPassword(e.target.value)}
                                         required 
                                         disabled={isLoading}
                                     />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </Button>
                                 </div>
                                 
                                 {isLoginView && (

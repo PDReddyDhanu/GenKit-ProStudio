@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -12,7 +13,7 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User, MessageSquare } from 'lucide-react';
+import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User, MessageSquare, Eye, EyeOff } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import ScoringDashboard from '@/app/judge/_components/ScoringDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
@@ -52,6 +53,7 @@ export default function AdminPortal() {
     const { currentAdmin, currentFaculty, hackathons, selectedHackathonId, users } = state;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [showIntro, setShowIntro] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -110,9 +112,18 @@ export default function AdminPortal() {
                                 <Label htmlFor="admin-email">Email</Label>
                                 <Input id="admin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isLoading} />
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-2 relative">
                                 <Label htmlFor="admin-password">Password</Label>
-                                <Input id="admin-password" type="password" value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} />
+                                <Input id="admin-password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required disabled={isLoading} />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute right-1 top-7 h-7 w-7 text-muted-foreground"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                </Button>
                             </div>
                             <Button type="submit" className="w-full" disabled={isLoading}>
                                 {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Logging in...</> : 'Login as Main Admin'}
@@ -148,7 +159,7 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue={currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor' ? 'my-teams' : (currentFaculty ? "scoring" : "events")} className="w-full" onValueChange={handleTabChange}>
-                <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-none xl:flex xl:flex-wrap">
+                <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:flex xl:flex-wrap">
                     {(currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') && <TabsTrigger value="my-teams"><MessageSquare className="mr-2 h-4 w-4" /> My Teams</TabsTrigger>}
                     {currentFaculty && <TabsTrigger value="scoring"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="events">Events</TabsTrigger>
