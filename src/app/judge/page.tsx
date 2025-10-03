@@ -28,8 +28,8 @@ const ROLE_DISPLAY_NAMES: { [key in Exclude<Faculty['role'], 'admin' | 'sub-admi
     'academic-coordinator': 'Academic Coordinator',
     'class-mentor': 'Class Mentor',
 };
-const DESIGNATIONS: Faculty['designation'][] = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer', 'Visiting Professor', 'Adjunct Professor', 'Head of Department', 'Dean'];
-const EDUCATIONS: Faculty['education'][] = ['PhD', 'M.Phil', 'M.Tech', 'M.Sc', 'M.A', 'M.Com', 'MBA', 'B.Tech', 'B.Sc', 'B.A', 'B.Com', 'Diploma', 'Other'];
+const DESIGNATIONS: Faculty['designation'][] = ['Professor', 'Associate Professor', 'Assistant Professor', 'Lecturer', 'Visiting Professor', 'Adjunct Professor', 'Head of Department', 'Dean', 'Principal', 'Director'];
+const EDUCATIONS: Faculty['education'][] = ['PhD', 'M.Phil', 'M.Tech', 'M.Sc', 'M.A', 'M.Com', 'MBA', 'MCA', 'B.Tech', 'B.Sc', 'B.A', 'B.Com', 'Diploma', 'Other'];
 
 export default function FacultyPortal() {
     const { state, api, dispatch } = useHackathon();
@@ -115,8 +115,8 @@ export default function FacultyPortal() {
         }
     };
     
-    const branches = Object.keys(DEPARTMENTS_DATA);
-    const departments = branch ? DEPARTMENTS_DATA[branch as keyof typeof DEPARTMENTS_DATA] : [];
+    const departments = Object.keys(DEPARTMENTS_DATA);
+    const branches = department ? DEPARTMENTS_DATA[department as keyof typeof DEPARTMENTS_DATA] : [];
 
     if (showIntro && !currentFaculty && !currentAdmin) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<Scale className="w-full h-full" />} title="Faculty Portal" description="Evaluate submissions, manage users, and run the project hub." />;
@@ -220,17 +220,17 @@ export default function FacultyPortal() {
                                                         </Select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label>Branch</Label>
-                                                        <Select onValueChange={(value) => { setBranch(value); setDepartment(''); }} value={branch} required>
-                                                            <SelectTrigger><SelectValue placeholder="Select Branch" /></SelectTrigger>
-                                                            <SelectContent>{branches.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
+                                                        <Label>Department</Label>
+                                                        <Select onValueChange={(value) => { setDepartment(value); setBranch(''); }} value={department} required>
+                                                            <SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger>
+                                                            <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                                         </Select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label>Department</Label>
-                                                        <Select onValueChange={setDepartment} value={department} required disabled={!branch}>
-                                                            <SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger>
-                                                            <SelectContent>{departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                                        <Label>Branch</Label>
+                                                         <Select onValueChange={setBranch} value={branch} required disabled={!department}>
+                                                            <SelectTrigger><SelectValue placeholder="Select Branch" /></SelectTrigger>
+                                                            <SelectContent>{branches.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent>
                                                         </Select>
                                                     </div>
                                                 </div>
@@ -298,5 +298,3 @@ export default function FacultyPortal() {
         </Dialog>
     );
 }
-
-  

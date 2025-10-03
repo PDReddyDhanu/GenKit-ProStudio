@@ -13,7 +13,7 @@ import { Github, GalleryVertical, Users, CheckCircle, Clock, Search, User as Use
 import PageIntro from '@/components/PageIntro';
 import { AuthMessage } from '@/components/AuthMessage';
 import { ProjectSubmission, Team, User } from '@/lib/types';
-import { DEPARTMENTS_DATA, BRANCHES_DATA } from '@/lib/constants';
+import { DEPARTMENTS_DATA } from '@/lib/constants';
 
 const projectTypes = [
     { id: 'real-time-project', name: 'Real-Time Project' },
@@ -118,8 +118,8 @@ export default function ProjectGallery() {
     const loggedInUser = currentUser || currentFaculty;
 
     const branchesForSelectedDept = useMemo(() => {
-        if (selectedDepartment === 'all') return [];
-        return BRANCHES_DATA[selectedDepartment as keyof typeof BRANCHES_DATA] || [];
+        if (selectedDepartment === 'all' || !DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA]) return [];
+        return DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA];
     }, [selectedDepartment]);
 
     const { filteredTeams, sections } = useMemo(() => {
@@ -138,7 +138,7 @@ export default function ProjectGallery() {
             if (!projectTypeMatch) return false;
 
             const departmentMatch = selectedDepartment === 'all' || teamMembersDetails.some(member => {
-                const departmentBranches = BRANCHES_DATA[selectedDepartment as keyof typeof BRANCHES_DATA] || [];
+                const departmentBranches = DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
                 return departmentBranches.includes(member.branch);
             });
             
@@ -154,7 +154,7 @@ export default function ProjectGallery() {
         });
         
         const relevantUsersForSections = users.filter(u => {
-            const deptMatch = selectedDepartment === 'all' || (BRANCHES_DATA[selectedDepartment as keyof typeof BRANCHES_DATA] || []).includes(u.branch);
+            const deptMatch = selectedDepartment === 'all' || (DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || []).includes(u.branch);
             const branchMatch = selectedBranch === 'all' || u.branch === selectedBranch;
             return deptMatch && branchMatch;
         });
@@ -202,14 +202,14 @@ export default function ProjectGallery() {
             <Card className="p-4 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Select onValueChange={setSelectedProjectType} defaultValue="all">
-                        <SelectTrigger><SelectValue placeholder="Filter by Project Type..." /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Select a Project Type..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Project Types</SelectItem>
                             {projectTypes.map(pt => <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                     <Select onValueChange={(value) => { setSelectedDepartment(value); setSelectedBranch('all'); setSelectedSection('all'); }} defaultValue="all">
-                        <SelectTrigger><SelectValue placeholder="Filter by Department..." /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Select a Department..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Departments</SelectItem>
                             {Object.keys(DEPARTMENTS_DATA).map(dept => (
@@ -218,14 +218,14 @@ export default function ProjectGallery() {
                         </SelectContent>
                     </Select>
                      <Select onValueChange={(value) => { setSelectedBranch(value); setSelectedSection('all'); }} value={selectedBranch} disabled={selectedDepartment === 'all'}>
-                        <SelectTrigger><SelectValue placeholder="Filter by Branch..." /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Select a Branch..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Branches</SelectItem>
-                            {branchesForSelectedDept.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
+                            {branchesForSelectedDept.map(branch => <SelectItem key={branch.id} value={branch.id}>{branch.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                      <Select onValueChange={setSelectedSection} value={selectedSection} disabled={sections.length === 0}>
-                        <SelectTrigger><SelectValue placeholder="Filter by Section..." /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Select a Section..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Sections</SelectItem>
                             {sections.map(sec => <SelectItem key={sec} value={sec}>Section {sec}</SelectItem>)}

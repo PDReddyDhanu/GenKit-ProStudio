@@ -75,8 +75,8 @@ export default function Auth() {
         }
     };
 
-    const branches = Object.keys(DEPARTMENTS_DATA);
-    const departments = branch ? DEPARTMENTS_DATA[branch as keyof typeof DEPARTMENTS_DATA] : [];
+    const departments = Object.keys(DEPARTMENTS_DATA);
+    const branches = branch ? DEPARTMENTS_DATA[branch as keyof typeof DEPARTMENTS_DATA] : [];
 
     return (
         <div className="container max-w-md mx-auto py-12 animate-fade-in">
@@ -139,25 +139,25 @@ export default function Auth() {
                                         </div>
                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="relative">
-                                                <Select onValueChange={(value) => { setBranch(value); setDepartment(''); }} value={branch} required>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select Branch" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {branches.map(b => (
-                                                            <SelectItem key={b} value={b}>{b}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="relative">
-                                                <Select onValueChange={setDepartment} value={department} required disabled={!branch}>
+                                                <Select onValueChange={(value) => { setDepartment(value); setBranch(''); }} value={department} required>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select Department" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {departments.map(d => (
                                                             <SelectItem key={d} value={d}>{d}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="relative">
+                                                <Select onValueChange={setBranch} value={branch} required disabled={!department}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select Branch" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {branches.map(b => (
+                                                            <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
@@ -247,5 +247,3 @@ export default function Auth() {
         </div>
     );
 }
-
-  
