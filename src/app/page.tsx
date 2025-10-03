@@ -357,7 +357,7 @@ export default function Home() {
 
          <section className="py-24 scroll-m-20" data-animate-on-scroll>
              <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Meet Your AI Co-pilot</h2>
-             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">HackSprint integrates powerful AI tools at every stage of your hackathon journey, acting as your personal assistant to help you succeed.</p>
+             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">GenKit ProStudio integrates powerful AI tools at every stage of your project journey, acting as your personal assistant to help you succeed.</p>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                  <div className="relative flex justify-center items-center">
                     <svg width="250" height="250" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_15px_hsl(var(--primary))]">
@@ -528,3 +528,4 @@ export default function Home() {
     </div>
   );
 }
+
