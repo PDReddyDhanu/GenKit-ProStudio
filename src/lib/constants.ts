@@ -188,3 +188,5 @@ export const DEPARTMENTS_DATA = {
         "Systems Engineering"
     ]
 };
+
+export const BRANCHES_DATA = DEPARTMENTS_DATA;

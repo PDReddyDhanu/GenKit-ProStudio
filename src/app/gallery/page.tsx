@@ -13,7 +13,7 @@ import { Github, GalleryVertical, Users, CheckCircle, Clock, Search, User as Use
 import PageIntro from '@/components/PageIntro';
 import { AuthMessage } from '@/components/AuthMessage';
 import { ProjectSubmission, Team, User } from '@/lib/types';
-import { DEPARTMENTS_DATA } from '@/lib/constants';
+import { DEPARTMENTS_DATA, BRANCHES_DATA } from '@/lib/constants';
 
 const projectTypes = [
     { id: 'real-time-project', name: 'Real-Time Project' },
@@ -112,23 +112,24 @@ export default function ProjectGallery() {
 
     const [selectedProjectType, setSelectedProjectType] = useState<string>('all');
     const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
+    const [selectedBranch, setSelectedBranch] = useState<string>('all');
     const [selectedSection, setSelectedSection] = useState<string>('all');
 
     const loggedInUser = currentUser || currentFaculty;
 
+    const branchesForSelectedDept = useMemo(() => {
+        if (selectedDepartment === 'all') return [];
+        return BRANCHES_DATA[selectedDepartment as keyof typeof BRANCHES_DATA] || [];
+    }, [selectedDepartment]);
+
     const { filteredTeams, sections } = useMemo(() => {
         if (!loggedInUser) return { filteredTeams: [], sections: [] };
 
-        const userBranch = (loggedInUser as User)?.branch || (loggedInUser as any)?.branch;
-        const userDepartment = (loggedInUser as User)?.department || (loggedInUser as any)?.department;
-        const defaultDepartmentFilter = userBranch || userDepartment || 'all';
+        const userBranch = (loggedInUser as User)?.branch;
+        const userDepartment = Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes(userBranch));
 
-        const departmentFilter = selectedDepartment === 'all' ? defaultDepartmentFilter : selectedDepartment;
-
-        const allSectionsForDept = Array.from(new Set(users
-            .filter(u => (u.branch === departmentFilter || u.department === departmentFilter) && u.section)
-            .map(u => u.section)
-        )).sort();
+        const departmentFilter = selectedDepartment === 'all' ? (userDepartment || 'all') : selectedDepartment;
+        const branchFilter = selectedBranch === 'all' ? 'all' : selectedBranch;
 
         const teamsWithProjects = teams.filter(team => projects.some(p => p.teamId === team.id));
 
@@ -137,22 +138,34 @@ export default function ProjectGallery() {
             if (teamMembersDetails.length === 0) return false;
 
             const representativeMember = teamMembersDetails[0];
+            const memberDepartment = Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes(representativeMember.branch));
             const teamBranch = representativeMember.branch;
-            const teamDepartment = representativeMember.department;
             const teamSection = representativeMember.section;
 
             const project = projects.find(p => p.teamId === team.id);
             const teamProjectType = project?.hackathonId;
 
-            const departmentMatch = departmentFilter === 'all' || teamBranch === departmentFilter || teamDepartment === departmentFilter;
+            const departmentMatch = departmentFilter === 'all' || memberDepartment === departmentFilter;
+            const branchMatch = branchFilter === 'all' || teamBranch === branchFilter;
             const sectionMatch = selectedSection === 'all' || teamSection === selectedSection;
             const projectTypeMatch = selectedProjectType === 'all' || teamProjectType === selectedProjectType;
 
-            return departmentMatch && sectionMatch && projectTypeMatch;
+            return departmentMatch && branchMatch && sectionMatch && projectTypeMatch;
         });
 
-        return { filteredTeams: filtered, sections: allSectionsForDept };
-    }, [loggedInUser, teams, projects, users, selectedDepartment, selectedSection, selectedProjectType]);
+        const allSections = Array.from(new Set(
+            users
+                .filter(u => {
+                    const memberDept = Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes(u.branch));
+                    const deptMatch = departmentFilter === 'all' || memberDept === departmentFilter;
+                    const branchMatch = branchFilter === 'all' || u.branch === branchFilter;
+                    return deptMatch && branchMatch && u.section;
+                })
+                .map(u => u.section)
+        )).sort();
+
+        return { filteredTeams: filtered, sections: allSections };
+    }, [loggedInUser, teams, projects, users, selectedDepartment, selectedBranch, selectedSection, selectedProjectType]);
     
     if (showIntro) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<GalleryVertical className="w-full h-full" />} title="Project Showcase" description="A gallery of all submitted projects to celebrate student work." />;
@@ -186,7 +199,7 @@ export default function ProjectGallery() {
             </div>
 
             <Card className="p-4 mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Select onValueChange={setSelectedProjectType} defaultValue="all">
                         <SelectTrigger><SelectValue placeholder="Filter by Project Type..." /></SelectTrigger>
                         <SelectContent>
@@ -194,16 +207,23 @@ export default function ProjectGallery() {
                             {projectTypes.map(pt => <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
-                    <Select onValueChange={setSelectedDepartment} defaultValue={(loggedInUser as User).department || (loggedInUser as any).branch || 'all'}>
+                    <Select onValueChange={setSelectedDepartment} defaultValue={(Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes((loggedInUser as User).branch))) || 'all'}>
                         <SelectTrigger><SelectValue placeholder="Filter by Department..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Departments</SelectItem>
-                            {Object.keys(DEPARTMENTS_DATA).map(branch => (
-                                <SelectItem key={branch} value={branch}>{branch}</SelectItem>
+                            {Object.keys(DEPARTMENTS_DATA).map(dept => (
+                                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-                     <Select onValueChange={setSelectedSection} defaultValue="all" disabled={selectedDepartment === 'all' && sections.length === 0}>
+                     <Select onValueChange={setSelectedBranch} defaultValue="all" disabled={selectedDepartment === 'all'}>
+                        <SelectTrigger><SelectValue placeholder="Filter by Branch..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Branches</SelectItem>
+                            {branchesForSelectedDept.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                     <Select onValueChange={setSelectedSection} defaultValue="all" disabled={sections.length === 0}>
                         <SelectTrigger><SelectValue placeholder="Filter by Section..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Sections</SelectItem>
