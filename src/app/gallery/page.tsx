@@ -138,8 +138,8 @@ export default function ProjectGallery() {
             if (!projectTypeMatch) return false;
 
             const departmentMatch = selectedDepartment === 'all' || teamMembersDetails.some(member => {
-                const memberDepartment = Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes(member.branch));
-                return memberDepartment === selectedDepartment;
+                const departmentBranches = BRANCHES_DATA[selectedDepartment as keyof typeof BRANCHES_DATA] || [];
+                return departmentBranches.includes(member.branch);
             });
             
             if (!departmentMatch) return false;
@@ -154,8 +154,7 @@ export default function ProjectGallery() {
         });
         
         const relevantUsersForSections = users.filter(u => {
-            const memberDept = Object.keys(DEPARTMENTS_DATA).find(dept => DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].includes(u.branch));
-            const deptMatch = selectedDepartment === 'all' || memberDept === selectedDepartment;
+            const deptMatch = selectedDepartment === 'all' || (BRANCHES_DATA[selectedDepartment as keyof typeof BRANCHES_DATA] || []).includes(u.branch);
             const branchMatch = selectedBranch === 'all' || u.branch === selectedBranch;
             return deptMatch && branchMatch;
         });
