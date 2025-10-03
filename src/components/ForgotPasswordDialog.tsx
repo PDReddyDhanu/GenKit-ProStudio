@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Loader } from 'lucide-react';
+import { Loader, MailCheck } from 'lucide-react';
 
 interface ForgotPasswordDialogProps {
     onOpenChange: (open: boolean) => void;
@@ -44,15 +44,21 @@ export default function ForgotPasswordDialog({ onOpenChange, userEmail }: Forgot
     return (
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Forgot Password</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="font-headline text-2xl">Forgot Your Password?</DialogTitle>
+                 <DialogDescription>
                     {isSent 
-                        ? "A password reset link has been sent to your email address. Please check your inbox."
-                        : "Enter your student email address, and we'll send you a link to reset your password."
+                        ? "A password reset link has been sent. Please check your inbox."
+                        : "No problem. Enter your email address and we'll send you a link to reset it."
                     }
                 </DialogDescription>
             </DialogHeader>
-            {!isSent ? (
+            {isSent ? (
+                <div className="py-8 text-center">
+                    <MailCheck className="h-16 w-16 mx-auto text-green-500" />
+                    <p className="mt-4 text-lg">Email Sent!</p>
+                    <p className="text-muted-foreground">Please follow the instructions in the email to reset your password.</p>
+                </div>
+            ) : (
                 <form onSubmit={handlePasswordReset}>
                     <div className="py-4">
                         <Label htmlFor="reset-email" className="sr-only">Email</Label>
@@ -67,15 +73,11 @@ export default function ForgotPasswordDialog({ onOpenChange, userEmail }: Forgot
                         />
                     </div>
                     <DialogFooter>
-                        <Button type="submit" disabled={isLoading}>
+                        <Button type="submit" disabled={isLoading} className="w-full">
                             {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Sending...</> : 'Send Reset Link'}
                         </Button>
                     </DialogFooter>
                 </form>
-            ) : (
-                <DialogFooter>
-                    <Button onClick={() => onOpenChange(false)}>Close</Button>
-                </DialogFooter>
             )}
         </DialogContent>
     );
