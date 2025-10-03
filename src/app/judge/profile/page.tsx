@@ -167,4 +167,3 @@ export default function FacultyProfilePage() {
             </Tabs>
         </div>
     );
-}
