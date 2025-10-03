@@ -12,9 +12,9 @@ import { Button } from '@/components/ui/button';
 
 export default function AdminProfilePage() {
     const { state } = useHackathon();
-    const { currentAdmin } = state;
+    const { currentAdmin, currentFaculty } = state;
 
-    if (!currentAdmin) {
+    if (!currentAdmin && !currentFaculty) {
         return (
             <div className="container max-w-md mx-auto py-12 animate-fade-in">
                  <Card>
@@ -50,3 +50,5 @@ export default function AdminProfilePage() {
         </div>
     );
 }
+
+    

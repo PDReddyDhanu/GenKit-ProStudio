@@ -95,10 +95,15 @@ function AuthButtons({ onLinkClick }: { onLinkClick?: () => void }) {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        {currentAdmin || currentFaculty ? (
+                        {currentAdmin ? (
                             <>
                                 <DropdownMenuItem asChild><Link href="/admin" onClick={onLinkClick}>Dashboard</Link></DropdownMenuItem>
                                 <DropdownMenuItem asChild><Link href="/admin/profile" onClick={onLinkClick}>Profile</Link></DropdownMenuItem>
+                            </>
+                        ) : currentFaculty ? (
+                             <>
+                                <DropdownMenuItem asChild><Link href="/admin" onClick={onLinkClick}>Dashboard</Link></DropdownMenuItem>
+                                <DropdownMenuItem asChild><Link href="/judge/profile" onClick={onLinkClick}>Profile</Link></DropdownMenuItem>
                             </>
                         ) : (
                             <>
@@ -302,3 +307,5 @@ export function Header() {
         </>
     );
 };
+
+    
