@@ -263,7 +263,7 @@ export default function Home() {
 
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Our Platform by the Numbers</h2>
-            <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Powering innovation and collaboration in academic institutions worldwide.</p>
+            <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Powering innovation and collaboration across leading academic institutions.</p>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <AnimatedStat end={157} label="Registered Colleges" icon={<University className="w-12 h-12" />} />
                 <AnimatedStat end={8500} label="Active Users" icon={<Users className="w-12 h-12" />} />
@@ -568,3 +568,6 @@ export default function Home() {
 
 
 
+
+
+    
