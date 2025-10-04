@@ -160,7 +160,7 @@ export default function AdminPortal() {
             <AuthMessage />
 
              <Tabs defaultValue={currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor' ? 'my-teams' : (currentFaculty ? "scoring" : "events")} className="w-full" onValueChange={handleTabChange}>
-                <TabsList className="grid w-full h-auto grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap">
+                <TabsList className="grid w-full h-auto grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap justify-start">
                     {(currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') && <TabsTrigger value="my-teams"><MessageSquare className="mr-2 h-4 w-4" /> My Teams</TabsTrigger>}
                     {currentFaculty && <TabsTrigger value="scoring"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="events">Events</TabsTrigger>

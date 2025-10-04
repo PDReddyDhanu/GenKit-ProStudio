@@ -23,7 +23,8 @@ import { cn } from '@/lib/utils';
 
 
 function ChangePasswordCard() {
-    const { api, dispatch } = useHackathon();
+    const { api, dispatch, state } = useHackathon();
+    const { currentUser } = state;
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -104,7 +105,7 @@ function ChangePasswordCard() {
                     </CardFooter>
                 </form>
             </Card>
-            <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={''} />
+            <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={currentUser?.email || ''} />
         </Dialog>
     );
 }
@@ -346,7 +347,7 @@ export default function ProfilePage() {
                                             <p>{currentUser.rollNo || 'Not specified'}</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <h4 className="text-sm font-semibold text-muted-foreground">Branch & Department</h4>
+                                            <h4 className="font-semibold text-muted-foreground">Branch & Department</h4>
                                             <p>{currentUser.branch ? `${currentUser.branch} / ${currentUser.department}` : 'Not specified'}</p>
                                         </div>
                                         <div className="space-y-1">

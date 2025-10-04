@@ -87,8 +87,8 @@ export default function Auth() {
     return (
         <Dialog open={isForgotPassOpen} onOpenChange={setIsForgotPassOpen}>
         <Dialog open={isStatusCheckOpen} onOpenChange={setIsStatusCheckOpen}>
-        <div className="h-screen w-[100%] bg-[var(--color-bg)] text-[var(--color-text-primary)] flex items-center justify-center p-4">
-            <div className='card w-full lg:w-[70%] md:w-[85%] flex justify-between h-auto lg:h-auto max-h-[95vh] shadow-xl rounded-lg bg-[var(--color-surface)]'>
+        <div className="h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] flex items-center justify-center p-4">
+            <div className='card w-full lg:w-[70%] md:w-[85%] flex flex-col lg:flex-row justify-between h-auto lg:h-[600px] max-h-[95vh] shadow-xl rounded-lg bg-[var(--color-surface)]'>
                 <div
                     className='w-full lg:w-1/2 px-4 md:px-8 lg:px-12 py-10 left h-full relative overflow-y-auto'
                     onMouseMove={handleMouseMove}
@@ -164,7 +164,7 @@ export default function Auth() {
                 </div>
                 <div className='hidden lg:flex w-1/2 right h-full items-center justify-center overflow-hidden rounded-r-lg bg-cover bg-center relative' data-ai-hint="students collaborating">
                     <Image src="https://picsum.photos/seed/students/1000/1000" alt="Students collaborating" fill className="object-cover" />
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div className="absolute inset-0 bg-black/60"></div>
                     <div className="relative z-10 p-12 text-white">
                         <Sparkles className="h-10 w-10 text-primary mb-4" />
                         <h1 className="font-headline text-4xl font-bold mb-2">Build Your Future</h1>
