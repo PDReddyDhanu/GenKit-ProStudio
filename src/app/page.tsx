@@ -17,6 +17,7 @@ import { SpiralAnimation } from "@/components/ui/spiral-animation";
 import { StarButton } from "@/components/ui/star-button";
 import { gsap } from 'gsap';
 import DisplayCards from "@/components/ui/display-cards";
+import { BentoGrid, BentoItem } from "@/components/ui/bento-grid";
 
 const AnimatedStat = ({ finalValue }: { finalValue: number }) => {
     const ref = useRef<HTMLParagraphElement>(null);
@@ -45,45 +46,6 @@ const AnimatedStat = ({ finalValue }: { finalValue: number }) => {
         </p>
     );
 };
-
-
-const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
-    <Card 
-        className="group rounded-lg bg-card/80 p-6 text-center transition-all duration-300 transform-gpu animate-card-in will-change-transform h-full"
-        style={{ animationDelay: `${index * 100}ms` }}
-    >
-        <div className="relative">
-            <div className="relative">
-                <div className="mb-4 text-primary w-12 h-12 mx-auto flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
-                    {icon}
-                </div>
-            </div>
-            <h3 className="text-xl font-bold font-headline text-foreground">{title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{description}</p>
-        </div>
-    </Card>
-);
-
-
-const features = [
-    { icon: <Users className="w-8 h-8" />, title: "Team Formation", description: "Easily register, create, and join teams to start collaborating on projects." },
-    { icon: <Lightbulb className="w-8 h-8" />, title: "AI Idea Generation", description: "Brainstorm project ideas with our intelligent suggestion system." },
-    { icon: <Github className="w-8 h-8" />, title: "Project Submissions", description: "Seamlessly submit your project proposals and track their approval status." },
-    { icon: <BarChart className="w-8 h-8" />, title: "Live Leaderboard", description: "Track project progress and performance with our dynamic leaderboard." },
-    { icon: <FileText className="w-8 h-8" />, title: "AI Code Review", description: "Get instant, AI-powered feedback on your code." },
-    { icon: <GalleryVertical className="w-8 h-8" />, title: "Project Showcase", description: "A gallery of all submitted projects to celebrate student work." },
-    { icon: <Scale className="w-8 h-8" />, title: "Fair Evaluation", description: "A dedicated portal for faculty to evaluate projects with AI summaries." },
-    { icon: <Handshake className="w-8 h-8" />, title: "Team Finder", description: "Discover teams or recruit members based on skills and interests." },
-];
-
-const partners = [
-    { name: 'Cognizant', logo: 'https://upload.wikimedia.org/wikipedia/commons/4/43/Cognizant_logo_2022.svg' },
-    { name: 'Infosys', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/95/Infosys_logo.svg' },
-    { name: 'Salesforce', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Salesforce.com_logo.svg' },
-    { name: 'SAP', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/59/SAP_2011_logo.svg' },
-    { name: 'IBM', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg' },
-    { name: 'Cisco', logo: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg' },
-];
 
 const testimonials = [
   {
@@ -271,6 +233,51 @@ export default function Home() {
     },
   ];
 
+  const features: BentoItem[] = [
+    {
+        title: "Team Formation",
+        description: "Easily register, create, and join teams to start collaborating on projects.",
+        icon: <Users className="w-4 h-4 text-amber-500" />,
+        status: "Active",
+        tags: ["Teams", "Collaboration"],
+        colSpan: 2,
+        hasPersistentHover: true,
+    },
+    {
+        title: "AI Idea Generation",
+        description: "Brainstorm project ideas with our intelligent suggestion system.",
+        icon: <Lightbulb className="w-4 h-4 text-amber-500" />,
+        tags: ["AI", "Creativity"],
+    },
+    {
+        title: "Project Submissions",
+        description: "Seamlessly submit your project proposals and track their approval status.",
+        icon: <Github className="w-4 h-4 text-amber-500" />,
+        tags: ["Proposals", "Workflow"],
+        colSpan: 2,
+    },
+    {
+        title: "Live Leaderboard",
+        description: "Track project progress and performance with our dynamic leaderboard.",
+        icon: <BarChart className="w-4 h-4 text-amber-500" />,
+        tags: ["Ranking", "Data"],
+    },
+    {
+        title: "Fair Evaluation",
+        description: "A dedicated portal for faculty to evaluate projects with AI summaries.",
+        icon: <Scale className="w-4 h-4 text-amber-500" />,
+        tags: ["Scoring", "Faculty"],
+    },
+    {
+        title: "Team Finder",
+        description: "Discover teams or recruit members based on skills and interests.",
+        icon: <Handshake className="w-4 h-4 text-amber-500" />,
+        status: "New",
+        tags: ["Networking", "AI"],
+        hasPersistentHover: true,
+    },
+  ];
+
   return (
     <>
       <div className="bg-black">
@@ -316,7 +323,7 @@ export default function Home() {
             <section className="py-24 scroll-m-20" data-animate-on-scroll>
                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Why GenKit ProStudio?</h2>
                 <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">An integrated platform designed to elevate your academic project experience from start to finish.</p>
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center h-[250px]">
                     <DisplayCards cards={whyCards} />
                 </div>
             </section>
@@ -445,17 +452,7 @@ export default function Home() {
             </section>
             <section className="py-24 scroll-m-20" data-animate-on-scroll>
                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">A Feature for Every Step</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                     {features.map((feature, index) => (
-                        <FeatureCard 
-                            key={feature.title}
-                            icon={feature.icon}
-                            title={feature.title}
-                            description={feature.description}
-                            index={index}
-                        />
-                     ))}
-                </div>
+                <BentoGrid items={features} />
             </section>
 
             <section className="py-24 scroll-m-20 w-full overflow-hidden" data-animate-on-scroll>
@@ -477,26 +474,6 @@ export default function Home() {
                 </div>
             </section>
 
-
-            <section className="py-24 scroll-m-20" data-animate-on-scroll>
-                <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">Our Esteemed Partners</h2>
-                <div className="bg-muted/50 rounded-lg p-8">
-                     <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
-                        {partners.map((partner) => (
-                            <div key={partner.name} className="relative h-12 w-32 filter grayscale hover:filter-none transition-all duration-300">
-                                 <Image
-                                    src={partner.logo}
-                                    alt={`${partner.name} logo`}
-                                    fill
-                                    style={{ objectFit: 'contain' }}
-                                    unoptimized
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-            
              <section className="py-24 scroll-m-20" data-animate-on-scroll>
                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">Frequently Asked Questions</h2>
                 <div className="max-w-3xl mx-auto">
@@ -534,16 +511,3 @@ export default function Home() {
     </>
   );
 }
-
-
-
-
-
-
-
-
-    
-
-    
-
-
