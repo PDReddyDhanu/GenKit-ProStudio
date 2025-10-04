@@ -245,25 +245,23 @@ export default function Home() {
             <div className="absolute inset-0 -z-10">
                 <SpiralAnimation />
             </div>
-            <div className="relative z-10 p-8">
-                <GradientText
-                    colors={['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']}
-                    animationSpeed={5}
-                    className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 font-headline animate-slide-in-down"
-                >
-                    Welcome to GenKit ProStudio
-                </GradientText>
-                <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
-                    Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
-                </p>
-                <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
-                    <Button size="lg" asChild>
-                        <Link href="/student">Get Started as Student</Link>
-                    </Button>
-                    <Button size="lg" variant="secondary" asChild>
-                       <Link href="/judge">Enter as Faculty or Admin</Link>
-                    </Button>
-                </div>
+            <GradientText
+                colors={['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']}
+                animationSpeed={5}
+                className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 font-headline animate-slide-in-down"
+            >
+                Welcome to GenKit ProStudio
+            </GradientText>
+            <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
+                Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
+            </p>
+            <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
+                <Button size="lg" asChild>
+                    <Link href="/student">Get Started as Student</Link>
+                </Button>
+                <Button size="lg" variant="secondary" asChild>
+                   <Link href="/judge">Enter as Faculty or Admin</Link>
+                </Button>
             </div>
         </section>
 
