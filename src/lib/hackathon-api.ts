@@ -155,6 +155,9 @@ export async function registerStudent(collegeId: string, { name, email, password
 }
 
 export async function loginStudent(collegeId: string, { email, password }: any) {
+    if (!email || !password) {
+        throw new Error("Email and password are required.");
+    }
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const userDoc = await getDoc(doc(db, `colleges/${collegeId}/users`, userCredential.user.uid));
