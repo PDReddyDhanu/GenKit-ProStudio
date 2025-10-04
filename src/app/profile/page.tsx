@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound, X, AlertTriangle, Building, BookUser, Phone } from 'lucide-react';
+import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound, X, AlertTriangle, Building, BookUser, Phone, Eye, EyeOff } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
 import { generateCertificate } from '@/lib/pdf';
@@ -27,6 +27,9 @@ function ChangePasswordCard() {
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showOld, setShowOld] = useState(false);
+    const [showNew, setShowNew] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isForgotPassOpen, setIsForgotPassOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -69,17 +72,26 @@ function ChangePasswordCard() {
                     <CardContent className="space-y-4">
                         {error && <p className="text-sm text-red-500">{error}</p>}
                          <AuthMessage />
-                        <div className="space-y-2">
+                        <div className="space-y-2 relative">
                             <Label htmlFor="oldPassword">Old Password</Label>
-                            <Input id="oldPassword" type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} required disabled={isLoading} />
+                            <Input id="oldPassword" type={showOld ? 'text' : 'password'} value={oldPassword} onChange={e => setOldPassword(e.target.value)} required disabled={isLoading} />
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-7 h-7 w-7 text-muted-foreground" onClick={() => setShowOld(!showOld)}>
+                                {showOld ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </Button>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 relative">
                             <Label htmlFor="newPassword">New Password</Label>
-                            <Input id="newPassword" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required disabled={isLoading} />
+                            <Input id="newPassword" type={showNew ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} required disabled={isLoading} />
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-7 h-7 w-7 text-muted-foreground" onClick={() => setShowNew(!showNew)}>
+                                {showNew ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </Button>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 relative">
                             <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                            <Input id="confirmPassword" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required disabled={isLoading} />
+                            <Input id="confirmPassword" type={showConfirm ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required disabled={isLoading} />
+                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-7 h-7 w-7 text-muted-foreground" onClick={() => setShowConfirm(!showConfirm)}>
+                                {showConfirm ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </Button>
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col sm:flex-row justify-between items-center gap-4">

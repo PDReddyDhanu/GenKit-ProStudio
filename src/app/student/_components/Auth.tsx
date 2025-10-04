@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { AuthMessage } from '@/components/AuthMessage';
-import { Loader, CheckSquare, Sparkles, BookOpen } from 'lucide-react';
+import { Loader, CheckSquare, Sparkles, BookOpen, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import AccountStatusDialog from '@/components/AccountStatusDialog';
@@ -22,6 +22,7 @@ export default function Auth() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [rollNo, setRollNo] = useState('');
     const [branch, setBranch] = useState('');
     const [department, setDepartment] = useState('');
@@ -87,9 +88,9 @@ export default function Auth() {
         <Dialog open={isForgotPassOpen} onOpenChange={setIsForgotPassOpen}>
         <Dialog open={isStatusCheckOpen} onOpenChange={setIsStatusCheckOpen}>
         <div className="h-screen w-[100%] bg-[var(--color-bg)] text-[var(--color-text-primary)] flex items-center justify-center p-4">
-            <div className='card w-full lg:w-[70%] md:w-[85%] flex justify-between h-auto lg:h-[700px] shadow-xl rounded-lg bg-[var(--color-surface)]'>
+            <div className='card w-full lg:w-[70%] md:w-[85%] flex justify-between h-auto lg:h-auto max-h-[95vh] shadow-xl rounded-lg bg-[var(--color-surface)]'>
                 <div
-                    className='w-full lg:w-1/2 px-4 md:px-8 lg:px-12 py-10 left h-full relative overflow-hidden'
+                    className='w-full lg:w-1/2 px-4 md:px-8 lg:px-12 py-10 left h-full relative overflow-y-auto'
                     onMouseMove={handleMouseMove}
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => setIsHovering(false)}>
@@ -130,7 +131,7 @@ export default function Auth() {
 
                             <div className='grid gap-4 items-center'>
                                 <AppInput placeholder="Email" type="email" value={email} onChange={(e:any) => setEmail(e.target.value)} required disabled={isLoading}/>
-                                <AppInput placeholder="Password" type="password" value={password} onChange={(e:any) => setPassword(e.target.value)} required disabled={isLoading}/>
+                                <AppInput placeholder="Password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e:any) => setPassword(e.target.value)} required disabled={isLoading} icon={<button type="button" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff/> : <Eye/>}</button>}/>
                             </div>
                             {isLoginView && (
                                 <div className="flex justify-between items-center text-sm px-2">
@@ -161,7 +162,8 @@ export default function Auth() {
                         </form>
                     </div>
                 </div>
-                <div className='hidden lg:flex w-1/2 right h-full items-center justify-center overflow-hidden rounded-r-lg bg-cover bg-center relative' style={{backgroundImage: "url('https://picsum.photos/seed/students/1000/1000')"}} data-ai-hint="students collaborating">
+                <div className='hidden lg:flex w-1/2 right h-full items-center justify-center overflow-hidden rounded-r-lg bg-cover bg-center relative' data-ai-hint="students collaborating">
+                    <Image src="https://picsum.photos/seed/students/1000/1000" alt="Students collaborating" fill className="object-cover" />
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
                     <div className="relative z-10 p-12 text-white">
                         <Sparkles className="h-10 w-10 text-primary mb-4" />
