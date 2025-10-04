@@ -18,14 +18,17 @@ import {
     EXTERNAL_FINAL_RUBRIC 
 } from '@/lib/constants';
 import Link from 'next/link';
-import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare } from 'lucide-react';
-import { getAiProjectSummary } from '@/app/actions';
+import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare, Presentation } from 'lucide-react';
+import { getAiProjectSummary, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
 import BackButton from '@/components/layout/BackButton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
+import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
+import { marked } from 'marked';
+
 
 interface ScoringFormProps {
     project: ProjectSubmission;
@@ -45,6 +48,11 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
     const [aiSummary, setAiSummary] = useState('');
     const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
+    const [pitchOutline, setPitchOutline] = useState<GeneratePitchOutlineOutput | null>(null);
+    const [pitchAudio, setPitchAudio] = useState<{ audioDataUri: string } | null>(null);
+    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
     
     const team = teams.find(t => t.id === submission.teamId);
 
@@ -111,6 +119,41 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
             setAiSummary("Could not generate summary.");
         } finally {
             setIsGeneratingSummary(false);
+        }
+    };
+
+    const handleGenerateOutline = async (idea: ProjectIdea) => {
+        setIsGeneratingOutline(true);
+        setPitchOutline(null);
+        setPitchAudio(null);
+        try {
+            const result = await generatePitchOutline({
+                projectName: idea.title,
+                projectDescription: idea.description,
+                aiCodeReview: aiSummary || undefined
+            });
+            setPitchOutline(result);
+        } finally {
+            setIsGeneratingOutline(false);
+        }
+    };
+    
+    const handleGenerateAudio = async () => {
+        if (!pitchOutline) return;
+        setIsGeneratingAudio(true);
+        setPitchAudio(null);
+        try {
+            const script = pitchOutline.slides
+                .map(slide => `${slide.title}. ${slide.content.replace(/^-/gm, '')}`)
+                .join('\n\n');
+            const result = await generatePitchAudioAction({ script });
+            if (result) {
+                setPitchAudio(result);
+            }
+        } catch (error) {
+            console.error("Failed to generate audio:", error);
+        } finally {
+            setIsGeneratingAudio(false);
         }
     };
 
@@ -207,7 +250,7 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
             <BackButton />
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-3xl font-headline">Reviewing: {team?.name}</CardTitle>
+                    <CardTitle className="text-3xl font-headline">Reviewing: {submission.projectIdeas[0]?.title || "Untitled Project"}</CardTitle>
                     <CardDescription className="text-lg text-primary">Team: {team?.name || 'Unknown Team'}</CardDescription>
                 </CardHeader>
                 
@@ -271,6 +314,41 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                                             <p className="text-sm text-foreground">{aiSummary}</p>
                                         </CardContent>
                                     </Card>
+                                     <div className="flex flex-wrap gap-2">
+                                        <Button onClick={() => handleGenerateOutline(submission.projectIdeas[0])} disabled={isGeneratingOutline} variant="outline" size="sm">
+                                            {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Generating...</> : "AI Pitch Coach"}
+                                        </Button>
+                                     </div>
+                                </div>
+                            )}
+                            {pitchOutline && (
+                                <div className="mt-6 border-t pt-4 space-y-4">
+                                    <div className="flex flex-wrap gap-2 justify-between items-center">
+                                        <h4 className="font-bold flex items-center gap-2"><Presentation className="text-primary"/> Generated Presentation Outline</h4>
+                                        <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio} size="sm">
+                                            {isGeneratingAudio ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating Audio...</> : "Generate Audio"}
+                                        </Button>
+                                    </div>
+                                    {pitchAudio?.audioDataUri && (
+                                        <div className="mt-4">
+                                            <audio controls src={pitchAudio.audioDataUri} className="w-full">
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                        </div>
+                                    )}
+                                    <Accordion type="single" collapsible className="w-full">
+                                        {pitchOutline.slides.map((slide, index) => (
+                                        <AccordionItem value={`item-${index}`} key={index}>
+                                            <AccordionTrigger>{index + 1}. {slide.title}</AccordionTrigger>
+                                            <AccordionContent>
+                                                <div
+                                                    className="prose prose-sm dark:prose-invert text-foreground max-w-none"
+                                                    dangerouslySetInnerHTML={{ __html: marked(slide.content) as string }}
+                                                />
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                        ))}
+                                    </Accordion>
                                 </div>
                             )}
                         </TabsContent>

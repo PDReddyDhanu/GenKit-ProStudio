@@ -14,7 +14,9 @@ import { Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Link from 'next/link';
-import { getAiProjectSummary } from '@/app/actions';
+import { getAiProjectSummary, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
+import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
+import { marked } from 'marked';
 
 const GuideChatDialog = ({ team, guide, open, onOpenChange }: { team: Team, guide: any, open: boolean, onOpenChange: (open: boolean) => void }) => {
     const { api } = useHackathon();
@@ -102,6 +104,12 @@ const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubm
     const [aiSummary, setAiSummary] = useState<Record<string, string>>({});
     const [isGeneratingSummary, setIsGeneratingSummary] = useState<string | null>(null);
 
+    const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
+    const [pitchOutline, setPitchOutline] = useState<GeneratePitchOutlineOutput | null>(null);
+    const [pitchAudio, setPitchAudio] = useState<{ audioDataUri: string } | null>(null);
+    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+
+
     const handleGenerateSummary = async (idea: ProjectIdea) => {
         setIsGeneratingSummary(idea.id);
         try {
@@ -119,6 +127,40 @@ const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubm
         }
     };
     
+    const handleGenerateOutline = async (idea: ProjectIdea) => {
+        setIsGeneratingOutline(true);
+        setPitchOutline(null);
+        setPitchAudio(null);
+        try {
+            const result = await generatePitchOutline({
+                projectName: idea.title,
+                projectDescription: idea.description,
+            });
+            setPitchOutline(result);
+        } finally {
+            setIsGeneratingOutline(false);
+        }
+    };
+
+    const handleGenerateAudio = async () => {
+        if (!pitchOutline) return;
+        setIsGeneratingAudio(true);
+        setPitchAudio(null);
+        try {
+            const script = pitchOutline.slides
+                .map(slide => `${slide.title}. ${slide.content.replace(/^-/gm, '')}`)
+                .join('\n\n');
+            const result = await generatePitchAudioAction({ script });
+            if (result) {
+                setPitchAudio(result);
+            }
+        } catch (error) {
+            console.error("Failed to generate audio:", error);
+        } finally {
+            setIsGeneratingAudio(false);
+        }
+    };
+
     return (
         <>
             <Card className="bg-muted/50 flex flex-col">
@@ -157,13 +199,48 @@ const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubm
                                                     <Link href={idea.abstractFileUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline text-sm">View Uploaded File</Link>
                                                 </div>
                                             )}
-                                             <div className="border-t pt-4 mt-4">
-                                                <Button onClick={() => handleGenerateSummary(idea)} disabled={isGeneratingSummary === idea.id} variant="outline" size="sm">
-                                                    {isGeneratingSummary === idea.id ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : <><Bot className="mr-2 h-4 w-4"/>Generate AI Summary</>}
-                                                </Button>
+                                             <div className="border-t pt-4 mt-4 space-y-4">
+                                                <div className="flex flex-wrap gap-2">
+                                                    <Button onClick={() => handleGenerateSummary(idea)} disabled={isGeneratingSummary === idea.id} variant="outline" size="sm">
+                                                        {isGeneratingSummary === idea.id ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Summarizing...</> : <><Bot className="mr-2 h-4 w-4"/>Generate AI Summary</>}
+                                                    </Button>
+                                                     <Button onClick={() => handleGenerateOutline(idea)} disabled={isGeneratingOutline} variant="outline" size="sm">
+                                                        {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "AI Pitch Coach"}
+                                                    </Button>
+                                                </div>
                                                 {aiSummary[idea.id] && (
-                                                     <div className="mt-4 p-3 bg-background/50 rounded-md border">
+                                                     <div className="p-3 bg-background/50 rounded-md border">
                                                         <p className="text-sm">{aiSummary[idea.id]}</p>
+                                                    </div>
+                                                )}
+                                                {pitchOutline && (
+                                                    <div className="space-y-4">
+                                                        <div className="flex flex-wrap gap-2 justify-between items-center">
+                                                            <h4 className="font-bold flex items-center gap-2"><Presentation className="text-primary"/> Generated Presentation Outline</h4>
+                                                            <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio} size="sm">
+                                                                {isGeneratingAudio ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating Audio...</> : "Generate Audio"}
+                                                            </Button>
+                                                        </div>
+                                                        {pitchAudio?.audioDataUri && (
+                                                            <div className="mt-4">
+                                                                <audio controls src={pitchAudio.audioDataUri} className="w-full">
+                                                                    Your browser does not support the audio element.
+                                                                </audio>
+                                                            </div>
+                                                        )}
+                                                         <Accordion type="single" collapsible className="w-full">
+                                                            {pitchOutline.slides.map((slide, index) => (
+                                                            <AccordionItem value={`item-${index}`} key={index}>
+                                                                <AccordionTrigger>{index + 1}. {slide.title}</AccordionTrigger>
+                                                                <AccordionContent>
+                                                                    <div
+                                                                        className="prose prose-sm dark:prose-invert text-foreground max-w-none"
+                                                                        dangerouslySetInnerHTML={{ __html: marked(slide.content) as string }}
+                                                                    />
+                                                                </AccordionContent>
+                                                            </AccordionItem>
+                                                            ))}
+                                                        </Accordion>
                                                     </div>
                                                 )}
                                             </div>
