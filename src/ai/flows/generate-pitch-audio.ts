@@ -1,37 +1,64 @@
 
 'use server';
 /**
- * @fileOverview An AI agent that generates an audio voiceover for a pitch outline.
+ * @fileOverview An AI agent that generates an audio voiceover for a pitch script.
  *
- * - generatePitchAudio - A function that handles the audio generation process.
+ * - generatePitchAudio - A function that handles the audio generation.
  * - GeneratePitchAudioInput - The input type for the function.
  * - GeneratePitchAudioOutput - The return type for the function.
  */
 
-import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-import { WaveFile } from 'wavefile';
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+import wav from 'wav';
+import {googleAI} from '@genkit-ai/googleai';
 
-const GeneratePitchAudioInputSchema = z.object({
-  pitchText: z.string().describe('The full text content of the presentation slides to be converted to speech.'),
+export const GeneratePitchAudioInputSchema = z.object({
+  script: z.string().describe('The text script to be converted to speech.'),
 });
 export type GeneratePitchAudioInput = z.infer<typeof GeneratePitchAudioInputSchema>;
 
-const GeneratePitchAudioOutputSchema = z.object({
-  audioUrl: z.string().describe('The data URI of the generated WAV audio file.'),
+export const GeneratePitchAudioOutputSchema = z.object({
+  audioDataUri: z
+    .string()
+    .describe(
+      "The generated audio as a data URI. Expected format: 'data:audio/wav;base64,<encoded_data>'."
+    ),
 });
 export type GeneratePitchAudioOutput = z.infer<typeof GeneratePitchAudioOutputSchema>;
 
-export async function generatePitchAudio(input: GeneratePitchAudioInput): Promise<GeneratePitchAudioOutput> {
+
+export async function generatePitchAudio(
+  input: GeneratePitchAudioInput
+): Promise<GeneratePitchAudioOutput> {
   return generatePitchAudioFlow(input);
 }
 
-// Helper function to convert raw PCM audio buffer to a valid WAV file buffer
-async function toWav(pcmData: Buffer): Promise<Buffer> {
-    const wav = new WaveFile();
-    // The TTS model provides 1-channel, 24000Hz, 16-bit PCM audio.
-    wav.fromScratch(1, 24000, '16', pcmData);
-    return wav.toBuffer();
+async function toWav(
+  pcmData: Buffer,
+  channels = 1,
+  rate = 24000,
+  sampleWidth = 2
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const writer = new wav.Writer({
+      channels,
+      sampleRate: rate,
+      bitDepth: sampleWidth * 8,
+    });
+
+    const bufs: any[] = [];
+    writer.on('error', reject);
+    writer.on('data', function (d) {
+      bufs.push(d);
+    });
+    writer.on('end', function () {
+      resolve(Buffer.concat(bufs).toString('base64'));
+    });
+
+    writer.write(pcmData);
+    writer.end();
+  });
 }
 
 const generatePitchAudioFlow = ai.defineFlow(
@@ -40,35 +67,37 @@ const generatePitchAudioFlow = ai.defineFlow(
     inputSchema: GeneratePitchAudioInputSchema,
     outputSchema: GeneratePitchAudioOutputSchema,
   },
-  async ({ pitchText }) => {
-    
-    const { media } = await ai.generate({
-      model: 'googleai/gemini-2.5-flash-preview-tts',
+  async input => {
+    if (!input.script.trim()) {
+        throw new Error("Input script cannot be empty.");
+    }
+      
+    const {media} = await ai.generate({
+      model: googleAI.model('gemini-2.5-flash-preview-tts'),
       config: {
         responseModalities: ['AUDIO'],
         speechConfig: {
           voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Algenib' }, // A standard, clear voice
+            prebuiltVoiceConfig: {voiceName: 'Algenib'},
           },
         },
       },
-      prompt: pitchText,
+      prompt: input.script,
     });
 
-    if (!media?.url) {
-      throw new Error('No audio media was returned from the TTS model.');
+    if (!media || !media.url) {
+      throw new Error('Audio generation failed. No media was returned.');
     }
 
-    // The media URL is a data URI with base64-encoded raw PCM data.
-    const base64Pcm = media.url.substring(media.url.indexOf(',') + 1);
-    const pcmBuffer = Buffer.from(base64Pcm, 'base64');
+    const audioBuffer = Buffer.from(
+      media.url.substring(media.url.indexOf(',') + 1),
+      'base64'
+    );
     
-    // Convert the raw PCM to a proper WAV file format.
-    const wavBuffer = await toWav(pcmBuffer);
+    const wavBase64 = await toWav(audioBuffer);
 
-    // Return the WAV file as a data URI.
-    const audioUrl = `data:audio/wav;base64,${wavBuffer.toString('base64')}`;
-
-    return { audioUrl };
+    return {
+      audioDataUri: `data:audio/wav;base64,${wavBase64}`,
+    };
   }
 );
