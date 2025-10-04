@@ -15,6 +15,7 @@ import GradientText from "@/components/ui/GradientText";
 import { motion } from "framer-motion";
 import ElectricBorder from "@/components/ui/ElectricBorder";
 import { AppLogo } from "@/components/layout/Header";
+import { SpiralAnimation } from "@/components/ui/spiral-animation";
 
 const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
     <ElectricBorder
@@ -240,24 +241,29 @@ const AnimatedStat = ({ end, label, icon }: { end: number, label: string, icon: 
 export default function Home() {
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-x-hidden">
-        <section className="min-h-screen flex flex-col justify-center items-center text-center animate-fade-in">
-            <GradientText
-                colors={['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']}
-                animationSpeed={5}
-                className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 font-headline animate-slide-in-down"
-            >
-                Welcome to GenKit ProStudio
-            </GradientText>
-            <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
-                Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
-            </p>
-            <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
-                <Button size="lg" asChild>
-                    <Link href="/student">Get Started as Student</Link>
-                </Button>
-                <Button size="lg" variant="secondary" asChild>
-                   <Link href="/judge">Enter as Faculty or Admin</Link>
-                </Button>
+        <section className="relative min-h-screen flex flex-col justify-center items-center text-center animate-fade-in">
+            <div className="absolute inset-0 -z-10">
+                <SpiralAnimation />
+            </div>
+            <div className="relative z-10 bg-background/50 backdrop-blur-sm p-8 rounded-lg">
+                <GradientText
+                    colors={['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']}
+                    animationSpeed={5}
+                    className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 font-headline animate-slide-in-down"
+                >
+                    Welcome to GenKit ProStudio
+                </GradientText>
+                <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
+                    Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
+                </p>
+                <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
+                    <Button size="lg" asChild>
+                        <Link href="/student">Get Started as Student</Link>
+                    </Button>
+                    <Button size="lg" variant="secondary" asChild>
+                       <Link href="/judge">Enter as Faculty or Admin</Link>
+                    </Button>
+                </div>
             </div>
         </section>
 
