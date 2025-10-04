@@ -9,22 +9,22 @@ body {
 
 @layer base {
   :root {
-    --background: 222 8% 10%;
-    --foreground: 210 40% 98%;
-    --card: 222 8% 12%;
-    --card-foreground: 210 40% 98%;
-    --popover: 215 28% 17%;
-    --popover-foreground: 210 40% 98%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
     --primary: 45 100% 58%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 38 100% 50%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 215 14% 26%;
-    --muted-foreground: 215 14% 65%;
-    --accent: 200 98% 45%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 45 100% 58%;
@@ -34,7 +34,7 @@ body {
     --chart-4: 200 98% 45%;
     --chart-5: 210 88% 55%;
     --radius: 0.5rem;
-    --intro-text-shadow: 0 0 10px rgba(255,255,255,0.7), 0 0 25px rgba(255, 202, 40, 0.6);
+    --intro-text-shadow: 0 0 10px rgba(0,0,0,0.2), 0 0 25px rgba(255, 202, 40, 0.4);
     --cursor-primary: hsl(var(--primary));
     --cursor-accent: hsl(var(--accent));
 
