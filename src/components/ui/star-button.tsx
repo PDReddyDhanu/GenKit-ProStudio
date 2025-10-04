@@ -5,21 +5,18 @@ import React from 'react';
 import { cn } from "@/lib/utils"
 import { type VariantProps } from 'class-variance-authority';
 import { buttonVariants } from './button';
-import { Slot } from '@radix-ui/react-slot';
 
 interface StarButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
   color?: string;
   speed?: string;
 }
 
 const StarButton = React.forwardRef<HTMLButtonElement, StarButtonProps>(
-  ({ className, variant, size, asChild = false, color, speed = "6s", children, ...props }, ref) => {
-    const Comp = asChild ? Slot : 'button';
+  ({ className, variant, size, color, speed = "6s", children, ...props }, ref) => {
     const defaultColor = color || "hsl(var(--foreground))";
 
     return (
-      <Comp
+      <button
         ref={ref}
         className={cn(
             buttonVariants({ variant, size, className }),
@@ -48,7 +45,7 @@ const StarButton = React.forwardRef<HTMLButtonElement, StarButtonProps>(
           }}
         />
         <span className="relative z-10">{children}</span>
-      </Comp>
+      </button>
     )
 });
 StarButton.displayName = 'StarButton';
