@@ -245,7 +245,7 @@ export default function Home() {
             <div className="absolute inset-0 -z-10">
                 <SpiralAnimation />
             </div>
-            <div className="relative z-10 bg-background/50 backdrop-blur-sm p-8 rounded-lg">
+            <div className="relative z-10 p-8">
                 <GradientText
                     colors={['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']}
                     animationSpeed={5}
