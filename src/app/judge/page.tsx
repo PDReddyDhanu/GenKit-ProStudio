@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
@@ -17,6 +18,7 @@ import type { Faculty } from '@/lib/types';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import AppInput from '@/components/ui/AppInput';
+import Image from 'next/image';
 
 const ROLES: Faculty['role'][] = ['guide', 'hod', 'rnd', 'external', 'academic-coordinator', 'class-mentor'];
 const ROLE_DISPLAY_NAMES: { [key in Exclude<Faculty['role'], 'admin' | 'sub-admin'>]: string } = {
@@ -234,10 +236,11 @@ export default function FacultyPortal() {
                             </form>
                         </div>
                     </div>
-                    <div className='hidden lg:flex w-1/2 right h-full items-center justify-center overflow-hidden rounded-r-lg bg-muted/30 p-12'>
-                        <div className="w-full">
+                    <div className='hidden lg:flex w-1/2 right h-full items-center justify-center overflow-hidden rounded-r-lg bg-cover bg-center relative' style={{backgroundImage: "url('https://picsum.photos/seed/faculty/1000/1000')"}} data-ai-hint="unity hands">
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                        <div className="relative z-10 p-12 text-white">
                             <h1 className="font-headline text-4xl text-primary font-bold mb-2">Faculty Portal</h1>
-                            <p className="text-muted-foreground mb-8">A unified entry point for all faculty and administrative roles.</p>
+                            <p className="text-muted-foreground mb-8 text-slate-300">A unified entry point for all faculty and administrative roles.</p>
                             <ul className="space-y-4 text-left">
                                 <li className="flex items-center gap-3"><UserCheck className="h-6 w-6 text-secondary"/> Guides & Mentors</li>
                                 <li className="flex items-center gap-3"><Building className="h-6 w-6 text-secondary"/> HoDs & R&D Coordinators</li>

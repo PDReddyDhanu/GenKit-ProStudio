@@ -1,11 +1,12 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { AuthMessage } from '@/components/AuthMessage';
-import { Loader, CheckSquare } from 'lucide-react';
+import { Loader, CheckSquare, Sparkles, BookOpen } from 'lucide-react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import AccountStatusDialog from '@/components/AccountStatusDialog';
@@ -160,16 +161,18 @@ export default function Auth() {
                         </form>
                     </div>
                 </div>
-                <div className='hidden lg:block w-1/2 right h-full overflow-hidden rounded-r-lg'>
-                    <Image
-                    src='https://images.pexels.com/photos/7102037/pexels-photo-7102037.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
-                    loader={({ src }) => src}
-                    width={1000}
-                    height={1000}
-                    priority
-                    alt="Abstract background image"
-                    className="w-full h-full object-cover transition-transform duration-300 opacity-30"
-                    />
+                <div className='hidden lg:flex w-1/2 right h-full items-center justify-center overflow-hidden rounded-r-lg bg-cover bg-center relative' style={{backgroundImage: "url('https://picsum.photos/seed/students/1000/1000')"}} data-ai-hint="students collaborating">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    <div className="relative z-10 p-12 text-white">
+                        <Sparkles className="h-10 w-10 text-primary mb-4" />
+                        <h1 className="font-headline text-4xl font-bold mb-2">Build Your Future</h1>
+                        <p className="text-slate-300 mb-8">From idea to implementation, GenKit ProStudio is your partner in academic innovation.</p>
+                        <ul className="space-y-4 text-left">
+                            <li className="flex items-center gap-3"><BookOpen className="h-6 w-6 text-secondary"/> Turn concepts into reality.</li>
+                            <li className="flex items-center gap-3"><BookOpen className="h-6 w-6 text-secondary"/> Collaborate with peers.</li>
+                            <li className="flex items-center gap-3"><BookOpen className="h-6 w-6 text-secondary"/> Showcase your talent.</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
