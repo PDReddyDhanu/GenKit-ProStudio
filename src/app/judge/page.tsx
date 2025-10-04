@@ -6,7 +6,7 @@ import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
-import { Scale, Loader, ArrowRight, Shield } from 'lucide-react';
+import { Scale, Loader, ArrowRight, Shield, User, Building, Briefcase, UserCheck } from 'lucide-react';
 import AdminPortal from '@/app/admin/page';
 import Link from 'next/link';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,6 @@ import type { Faculty } from '@/lib/types';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import AppInput from '@/components/ui/AppInput';
-import Image from 'next/image';
 
 const ROLES: Faculty['role'][] = ['guide', 'hod', 'rnd', 'external', 'academic-coordinator', 'class-mentor'];
 const ROLE_DISPLAY_NAMES: { [key in Exclude<Faculty['role'], 'admin' | 'sub-admin'>]: string } = {
@@ -232,31 +231,32 @@ export default function FacultyPortal() {
                                         {isLoginView ? "Register" : "Login"}
                                     </Button>
                                 </div>
-                                <div className="pt-6 border-t border-[var(--color-border)]">
-                                     <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center">
-                                         <div>
-                                            <p className="text-sm text-[var(--color-text-secondary)]">Are you a student?</p>
-                                             <Button variant="link" asChild className="px-0 -mt-1 h-auto text-secondary"><Link href="/student">Student Portal <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
-                                         </div>
-                                          <div>
-                                            <p className="text-sm text-[var(--color-text-secondary)]">Main Developer?</p>
-                                             <Button variant="link" asChild className="px-0 -mt-1 h-auto text-secondary"><Link href="/admin">Main Admin Login <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
-                                         </div>
-                                     </div>
-                                </div>
                             </form>
                         </div>
                     </div>
-                     <div className='hidden lg:block w-1/2 right h-full overflow-hidden rounded-r-lg'>
-                        <Image
-                        src='https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
-                        loader={({ src }) => src}
-                        width={1000}
-                        height={1000}
-                        priority
-                        alt="Team working in an office"
-                        className="w-full h-full object-cover transition-transform duration-300 opacity-30"
-                        />
+                    <div className='hidden lg:flex w-1/2 right h-full items-center justify-center overflow-hidden rounded-r-lg bg-muted/30 p-12'>
+                        <div className="w-full">
+                            <h1 className="font-headline text-4xl text-primary font-bold mb-2">Faculty Portal</h1>
+                            <p className="text-muted-foreground mb-8">A unified entry point for all faculty and administrative roles.</p>
+                            <ul className="space-y-4 text-left">
+                                <li className="flex items-center gap-3"><UserCheck className="h-6 w-6 text-secondary"/> Guides & Mentors</li>
+                                <li className="flex items-center gap-3"><Building className="h-6 w-6 text-secondary"/> HoDs & R&D Coordinators</li>
+                                <li className="flex items-center gap-3"><Briefcase className="h-6 w-6 text-secondary"/> External Evaluators</li>
+                                <li className="flex items-center gap-3"><Shield className="h-6 w-6 text-secondary"/> College Sub-Admins</li>
+                            </ul>
+                            <div className="pt-8 mt-8 border-t border-[var(--color-border)]">
+                                <div className="flex flex-wrap gap-x-8 gap-y-2 justify-between">
+                                     <div>
+                                        <p className="text-sm text-[var(--color-text-secondary)]">Are you a student?</p>
+                                         <Button variant="link" asChild className="px-0 -mt-1 h-auto text-primary"><Link href="/student">Student Portal <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
+                                     </div>
+                                      <div>
+                                        <p className="text-sm text-[var(--color-text-secondary)]">Main Developer?</p>
+                                         <Button variant="link" asChild className="px-0 -mt-1 h-auto text-primary"><Link href="/admin">Main Admin Login <ArrowRight className="ml-2 h-4 w-4"/></Link></Button>
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
