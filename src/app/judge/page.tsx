@@ -131,7 +131,7 @@ export default function FacultyPortal() {
     return (
         <Dialog open={isForgotPassOpen} onOpenChange={setIsForgotPassOpen}>
             <div className="h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] flex items-center justify-center p-4">
-                <div className='card w-full lg:w-[70%] md:w-[85%] flex flex-col lg:flex-row justify-between h-auto lg:h-[600px] max-h-[95vh] shadow-xl rounded-lg bg-[var(--color-surface)]'>
+                <div className='card w-full lg:w-[70%] md:w-[85%] flex flex-col lg:flex-row justify-between h-auto max-h-[95vh] lg:h-auto shadow-xl rounded-lg bg-[var(--color-surface)]'>
                      <div
                         className='w-full lg:w-1/2 px-4 md:px-8 lg:px-12 py-10 left h-full relative overflow-y-auto'
                         onMouseMove={handleMouseMove}

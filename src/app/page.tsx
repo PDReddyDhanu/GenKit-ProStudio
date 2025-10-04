@@ -294,7 +294,7 @@ export default function Home() {
             <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
                 Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
             </p>
-            <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
+            <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
                 <StarButton asChild size="lg">
                     <Link href="/student">Get Started as Student</Link>
                 </StarButton>
@@ -495,7 +495,7 @@ export default function Home() {
                 <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
                     Join your college's project hub. Register as a student or sign in as a faculty member to begin.
                 </p>
-                 <div className="flex justify-center gap-4">
+                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                     <StarButton asChild size="lg">
                         <Link href="/student">I'm a Student</Link>
                     </StarButton>
