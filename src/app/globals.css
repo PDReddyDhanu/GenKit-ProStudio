@@ -9,37 +9,48 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
-    --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
-    --primary: 38 100% 50%;
-    --primary-foreground: 210 20% 98%;
-    --secondary: 45 100% 58%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --background: 222 8% 10%;
+    --foreground: 210 40% 98%;
+    --card: 222 8% 12%;
+    --card-foreground: 210 40% 98%;
+    --popover: 215 28% 17%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 45 100% 58%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 38 100% 50%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 14% 26%;
+    --muted-foreground: 215 14% 65%;
     --accent: 200 98% 45%;
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 38 100% 50%;
-    --chart-1: 38 100% 50%;
-    --chart-2: 45 100% 58%;
+    --ring: 45 100% 58%;
+    --chart-1: 45 100% 58%;
+    --chart-2: 38 100% 50%;
     --chart-3: 30 100% 48%;
     --chart-4: 200 98% 45%;
     --chart-5: 210 88% 55%;
     --radius: 0.5rem;
-    --intro-text-shadow: 0 0 10px rgba(80,80,80,0.2);
+    --intro-text-shadow: 0 0 10px rgba(255,255,255,0.7), 0 0 25px rgba(255, 202, 40, 0.6);
     --cursor-primary: hsl(var(--primary));
     --cursor-accent: hsl(var(--accent));
 
     --cursor-x: 50%;
     --cursor-y: 50%;
+    
+    --color-bg: #F5F7FA;
+    --color-surface: #FFFFFF;
+    --color-muted-surface: #F5F7FA;
+    --color-border: #DCE3E8;
+    --color-text-secondary: #596773;
+    --color-text-primary: #101214;
+    --color-heading: #101214;
+    --color-bg-2: #DEE4EA;
+    --color-text-primary-rgb: 16, 18, 20;
+
   }
   .dark {
     --background: 222 8% 10%;
@@ -69,6 +80,16 @@ body {
     --intro-text-shadow: 0 0 10px rgba(255,255,255,0.7), 0 0 25px rgba(255, 202, 40, 0.6);
     --cursor-primary: hsl(var(--primary));
     --cursor-accent: hsl(var(--accent));
+
+    --color-bg: #101214;
+    --color-surface: #161A1D;
+    --color-muted-surface: #1D2125;
+    --color-border: #2C333A;
+    --color-text-secondary: #596773;
+    --color-text-primary: #C7D1DB;
+    --color-heading: #DEE4EA;
+    --color-bg-2: #C7D1DB;
+    --color-text-primary-rgb: 199, 209, 219;
   }
 }
 

@@ -1,21 +1,18 @@
 
-
 "use client";
 
 import React, { useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AuthMessage } from '@/components/AuthMessage';
-import { Loader, Mail, Lock, User, CheckSquare, Library, BookUser, Building, Phone, Eye, EyeOff } from 'lucide-react';
+import { Loader, CheckSquare } from 'lucide-react';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import AccountStatusDialog from '@/components/AccountStatusDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DEPARTMENTS_DATA } from '@/lib/constants';
-import type { User as UserType } from '@/lib/types';
-import { StarButton } from '@/components/ui/star-button';
+import AppInput from '@/components/ui/AppInput';
+import Image from 'next/image';
 
 export default function Auth() {
     const { state, api, dispatch } = useHackathon();
@@ -29,13 +26,21 @@ export default function Auth() {
     const [department, setDepartment] = useState('');
     const [section, setSection] = useState('');
     const [contactNumber, setContactNumber] = useState('');
-    
-    const [showPassword, setShowPassword] = useState(false);
-
 
     const [isLoading, setIsLoading] = useState(false);
     const [isForgotPassOpen, setIsForgotPassOpen] = useState(false);
     const [isStatusCheckOpen, setIsStatusCheckOpen] = useState(false);
+    
+    const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [isHovering, setIsHovering] = useState(false);
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        const leftSection = e.currentTarget.getBoundingClientRect();
+        setMousePosition({
+        x: e.clientX - leftSection.left,
+        y: e.clientY - leftSection.top
+        });
+    };
 
     const clearForm = () => {
         setName('');
@@ -46,8 +51,6 @@ export default function Auth() {
         setDepartment('');
         setSection('');
         setContactNumber('');
-        
-        
         dispatch({ type: 'CLEAR_MESSAGES' });
     };
 
@@ -68,7 +71,6 @@ export default function Auth() {
         } else {
             try {
                 await api.registerStudent({ name, email, password, rollNo, branch, department, section, contactNumber });
-                // On successful registration, switch to login view with a success message
                 setIsLoginView(true);
                 clearForm();
             } finally {
@@ -78,174 +80,102 @@ export default function Auth() {
     };
 
     const departments = Object.keys(DEPARTMENTS_DATA);
-    const branches = branch ? DEPARTMENTS_DATA[branch as keyof typeof DEPARTMENTS_DATA] : [];
+    const branches = department ? DEPARTMENTS_DATA[department as keyof typeof DEPARTMENTS_DATA] : [];
 
     return (
-        <div className="container max-w-md mx-auto py-12 animate-fade-in">
-            <Dialog open={isForgotPassOpen} onOpenChange={setIsForgotPassOpen}>
-            <Dialog open={isStatusCheckOpen} onOpenChange={setIsStatusCheckOpen}>
-                <div className="relative group overflow-hidden rounded-lg">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-lg blur-lg opacity-0 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-glowing-border"></div>
-                    <Card className="relative">
-                        <CardHeader className="text-center">
-                             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-2">
-                                <Building className="h-4 w-4"/> {selectedCollege}
+        <Dialog open={isForgotPassOpen} onOpenChange={setIsForgotPassOpen}>
+        <Dialog open={isStatusCheckOpen} onOpenChange={setIsStatusCheckOpen}>
+        <div className="h-screen w-[100%] bg-[var(--color-bg)] text-[var(--color-text-primary)] flex items-center justify-center p-4">
+            <div className='card w-full lg:w-[70%] md:w-[85%] flex justify-between h-auto lg:h-[700px] shadow-xl rounded-lg bg-[var(--color-surface)]'>
+                <div
+                    className='w-full lg:w-1/2 px-4 md:px-8 lg:px-12 py-10 left h-full relative overflow-hidden'
+                    onMouseMove={handleMouseMove}
+                    onMouseEnter={() => setIsHovering(true)}
+                    onMouseLeave={() => setIsHovering(false)}>
+                    <div
+                        className={`absolute pointer-events-none w-[500px] h-[500px] bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 rounded-full blur-3xl transition-opacity duration-200 ${
+                        isHovering ? 'opacity-100' : 'opacity-0'
+                        }`}
+                        style={{
+                        transform: `translate(${mousePosition.x - 250}px, ${mousePosition.y - 250}px)`,
+                        transition: 'transform 0.1s ease-out'
+                        }}
+                    />
+                    <div className="form-container h-full z-10">
+                        <form className='text-center grid gap-2 h-full' onSubmit={handleSubmit}>
+                            <div className='grid gap-4 md:gap-6 mb-2'>
+                                <h1 className='text-3xl md:text-4xl font-extrabold text-[var(--color-heading)]'>{isLoginView ? 'Student Login' : 'Student Signup'}</h1>
+                                <p className="text-sm text-[var(--color-text-secondary)]">{selectedCollege}</p>
                             </div>
-                            <CardTitle className="text-3xl font-bold font-headline text-primary">
-                                {isLoginView ? 'Student Login' : 'Student Signup'}
-                            </CardTitle>
-                            <CardDescription>
-                                {isLoginView ? 'Login to your student account!' : 'Create a new student account to get started.'}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <AuthMessage />
-                                {!isLoginView && (
-                                    <>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input
-                                                type="text"
-                                                placeholder="Full Name"
-                                                className="pl-10"
-                                                value={name}
-                                                onChange={e => setName(e.target.value)}
-                                                required
-                                                disabled={isLoading}
-                                            />
-                                        </div>
-                                         <div className="relative">
-                                            <BookUser className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input
-                                                type="text"
-                                                placeholder="Roll Number"
-                                                className="pl-10"
-                                                value={rollNo}
-                                                onChange={e => setRollNo(e.target.value)}
-                                                required
-                                                disabled={isLoading}
-                                            />
-                                        </div>
-                                        <div className="relative">
-                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input
-                                                type="tel"
-                                                placeholder="Contact Number"
-                                                className="pl-10"
-                                                value={contactNumber}
-                                                onChange={e => setContactNumber(e.target.value)}
-                                                required
-                                                disabled={isLoading}
-                                            />
-                                        </div>
-                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div className="relative">
-                                                <Select onValueChange={(value) => { setDepartment(value); setBranch(''); }} value={department} required>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select Department" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {departments.map(d => (
-                                                            <SelectItem key={d} value={d}>{d}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="relative">
-                                                <Select onValueChange={setBranch} value={branch} required disabled={!department}>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select Branch" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {branches.map(b => (
-                                                            <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div className="relative">
-                                                <Input
-                                                    type="text"
-                                                    placeholder="Enter Section (e.g., A, B, C)"
-                                                    value={section}
-                                                    onChange={(e) => setSection(e.target.value.toUpperCase())}
-                                                    required
-                                                    disabled={isLoading}
-                                                    maxLength={2}
-                                                />
-                                            </div>
-                                        </div>
-                                        
-                                    </>
-                                )}
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                    <Input 
-                                        type="email" 
-                                        placeholder="Email Id" 
-                                        className="pl-10" 
-                                        value={email}
-                                        onChange={e => setEmail(e.target.value)}
-                                        required 
-                                        disabled={isLoading} 
-                                    />
-                                </div>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                    <Input 
-                                        type={showPassword ? 'text' : 'password'}
-                                        placeholder="Password" 
-                                        className="pl-10 pr-10" 
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                        required 
-                                        disabled={isLoading}
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                    >
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                    </Button>
-                                </div>
-                                
-                                {isLoginView && (
-                                    <div className="flex justify-between items-center text-sm">
-                                         <DialogTrigger asChild>
-                                             <Button variant="link" size="sm" className="p-0 h-auto text-muted-foreground flex items-center gap-1" onClick={() => setIsStatusCheckOpen(true)}>
-                                                <CheckSquare className="h-4 w-4" /> Check Status / Verify
-                                             </Button>
-                                         </DialogTrigger>
-                                        <DialogTrigger asChild>
-                                            <Button variant="link" size="sm" className="p-0 h-auto text-muted-foreground" onClick={() => setIsForgotPassOpen(true)}>Forgot password?</Button>
-                                        </DialogTrigger>
+                            <AuthMessage />
+                             {!isLoginView && (
+                                <div className='grid gap-4 items-center'>
+                                    <AppInput placeholder="Full Name" type="text" value={name} onChange={(e:any) => setName(e.target.value)} required disabled={isLoading} />
+                                    <AppInput placeholder="Roll Number" type="text" value={rollNo} onChange={(e:any) => setRollNo(e.target.value)} required disabled={isLoading}/>
+                                    <AppInput placeholder="Contact Number" type="tel" value={contactNumber} onChange={(e:any) => setContactNumber(e.target.value)} required disabled={isLoading}/>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <Select onValueChange={(value) => { setDepartment(value); setBranch(''); }} value={department} required>
+                                            <SelectTrigger className="bg-[var(--color-surface)] border-2 border-[var(--color-border)]"><SelectValue placeholder="Select Department" /></SelectTrigger>
+                                            <SelectContent>{departments.map(d => (<SelectItem key={d} value={d}>{d}</SelectItem>))}</SelectContent>
+                                        </Select>
+                                        <Select onValueChange={setBranch} value={branch} required disabled={!department}>
+                                            <SelectTrigger className="bg-[var(--color-surface)] border-2 border-[var(--color-border)]"><SelectValue placeholder="Select Branch" /></SelectTrigger>
+                                            <SelectContent>{branches.map(b => (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}</SelectContent>
+                                        </Select>
                                     </div>
-                                )}
-                                
-                                <StarButton type="submit" className="w-full font-bold text-lg" disabled={isLoading}>
-                                    {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Please wait...</> : (isLoginView ? 'Login' : 'Signup')}
-                                </StarButton>
-
-                                <div className="text-center text-sm text-muted-foreground">
-                                    {isLoginView ? "Don't have an account?" : "Already have an account?"}
-                                    <Button variant="link" type="button" onClick={toggleView} className="p-1">
-                                        {isLoginView ? "Signup" : "Login"}
-                                    </Button>
+                                    <AppInput placeholder="Enter Section (e.g., A, B, C)" value={section} onChange={(e:any) => setSection(e.target.value.toUpperCase())} required disabled={isLoading} maxLength={2} />
                                 </div>
-                            </form>
-                        </CardContent>
-                    </Card>
+                            )}
+
+                            <div className='grid gap-4 items-center'>
+                                <AppInput placeholder="Email" type="email" value={email} onChange={(e:any) => setEmail(e.target.value)} required disabled={isLoading}/>
+                                <AppInput placeholder="Password" type="password" value={password} onChange={(e:any) => setPassword(e.target.value)} required disabled={isLoading}/>
+                            </div>
+                            {isLoginView && (
+                                <div className="flex justify-between items-center text-sm px-2">
+                                     <DialogTrigger asChild>
+                                         <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)] flex items-center gap-1" onClick={() => setIsStatusCheckOpen(true)}>
+                                            <CheckSquare className="h-4 w-4" /> Check Status
+                                         </Button>
+                                     </DialogTrigger>
+                                    <DialogTrigger asChild>
+                                        <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)]" onClick={() => setIsForgotPassOpen(true)}>Forgot password?</Button>
+                                    </DialogTrigger>
+                                </div>
+                            )}
+                            <div className='flex gap-4 justify-center items-center mt-4'>
+                                <button className="group/button relative inline-flex justify-center items-center overflow-hidden rounded-md bg-primary px-8 py-2.5 text-md font-bold text-primary-foreground transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:shadow-primary/50 cursor-pointer" disabled={isLoading}>
+                                    <span className="text-sm px-2 py-1">{isLoading ? <Loader className="animate-spin"/> : (isLoginView ? 'Sign In' : 'Sign Up')}</span>
+                                    <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover/button:duration-1000 group-hover/button:[transform:skew(-13deg)_translateX(100%)]">
+                                        <div className="relative h-full w-8 bg-white/20" />
+                                    </div>
+                                </button>
+                            </div>
+                            <div className="text-center text-sm text-[var(--color-text-secondary)] mt-4">
+                                {isLoginView ? "Don't have an account?" : "Already have an account?"}
+                                <Button variant="link" type="button" onClick={toggleView} className="p-1 text-primary">
+                                    {isLoginView ? "Signup" : "Login"}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={email} />
-                <AccountStatusDialog onOpenChange={setIsStatusCheckOpen} />
-            </Dialog>
-            </Dialog>
+                <div className='hidden lg:block w-1/2 right h-full overflow-hidden rounded-r-lg'>
+                    <Image
+                    src='https://images.pexels.com/photos/7102037/pexels-photo-7102037.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+                    loader={({ src }) => src}
+                    width={1000}
+                    height={1000}
+                    priority
+                    alt="Abstract background image"
+                    className="w-full h-full object-cover transition-transform duration-300 opacity-30"
+                    />
+                </div>
+            </div>
         </div>
+        <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={email} />
+        <AccountStatusDialog onOpenChange={setIsStatusCheckOpen} />
+        </Dialog>
+        </Dialog>
     );
 }
