@@ -7,7 +7,7 @@ import { ProjectSubmission, ProjectIdea, ProjectStatusUpdate } from '@/lib/types
 import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github, PlusCircle, Clock, XCircle, UserCheck, Milestone } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { getAiCodeReview, generatePitchOutline, generatePitchAudio } from '@/app/actions';
+import { getAiCodeReview, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { useHackathon } from '@/context/HackathonProvider';
 import { generateCertificate } from '@/lib/pdf';
@@ -239,7 +239,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
             const script = pitchOutline.slides
                 .map(slide => `${slide.title}. ${slide.content.replace(/^-/gm, '')}`)
                 .join('\n\n');
-            const result = await generatePitchAudio({ script });
+            const result = await generatePitchAudioAction({ script });
             if (result) {
                 setPitchAudio(result);
             }
