@@ -7,7 +7,7 @@ GenKit ProStudio is a comprehensive, AI-powered SaaS platform built with Next.js
 
 ## ✨ Key Features
 
-- **Role-Based Workflows:** Dedicated portals and dashboards for Students, Guides, R&D Coordinators, HoDs, and Admins.
+- **Role-Based Workflows:** Dedicated portals and dashboards for Students, Guides, R&D Coordinators, HoDs, and Admins. 
 - **Multi-Level Approval System:** A transparent and structured workflow for project proposals: Guide → R&D Coordinator → HoD.
 - **Comprehensive Team Management:** Students can easily create teams, invite members via code, and assign roles.
 - **AI-Powered Assistance:**
