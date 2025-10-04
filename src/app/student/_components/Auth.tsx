@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState } from 'react';
@@ -85,103 +84,105 @@ export default function Auth() {
     const branches = department ? DEPARTMENTS_DATA[department as keyof typeof DEPARTMENTS_DATA] : [];
 
     return (
-        <Dialog open={isForgotPassOpen} onOpenChange={setIsForgotPassOpen}>
-        <Dialog open={isStatusCheckOpen} onOpenChange={setIsStatusCheckOpen}>
-        <div className="h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] flex items-center justify-center p-4">
-            <div className='card w-full lg:w-[70%] md:w-[85%] flex flex-col lg:flex-row justify-between h-auto lg:h-[600px] max-h-[95vh] shadow-xl rounded-lg bg-[var(--color-surface)]'>
-                <div
-                    className='w-full lg:w-1/2 px-4 md:px-8 lg:px-12 py-10 left h-full relative overflow-y-auto'
-                    onMouseMove={handleMouseMove}
-                    onMouseEnter={() => setIsHovering(true)}
-                    onMouseLeave={() => setIsHovering(false)}>
+        <>
+            <div className="h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] flex items-center justify-center p-4">
+                <div className='card w-full lg:w-[70%] md:w-[85%] flex flex-col lg:flex-row justify-between h-auto lg:h-[600px] max-h-[95vh] shadow-xl rounded-lg bg-[var(--color-surface)]'>
                     <div
-                        className={`absolute pointer-events-none w-[500px] h-[500px] bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 rounded-full blur-3xl transition-opacity duration-200 ${
-                        isHovering ? 'opacity-100' : 'opacity-0'
-                        }`}
-                        style={{
-                        transform: `translate(${mousePosition.x - 250}px, ${mousePosition.y - 250}px)`,
-                        transition: 'transform 0.1s ease-out'
-                        }}
-                    />
-                    <div className="form-container h-full z-10">
-                        <form className='text-center grid gap-2 h-full' onSubmit={handleSubmit}>
-                            <div className='grid gap-4 md:gap-6 mb-2'>
-                                <h1 className='text-3xl md:text-4xl font-extrabold text-[var(--color-heading)]'>{isLoginView ? 'Student Login' : 'Student Signup'}</h1>
-                                <p className="text-sm text-[var(--color-text-secondary)]">{selectedCollege}</p>
-                            </div>
-                            <AuthMessage />
-                             {!isLoginView && (
-                                <div className='grid gap-4 items-center'>
-                                    <AppInput placeholder="Full Name" type="text" value={name} onChange={(e:any) => setName(e.target.value)} required disabled={isLoading} />
-                                    <AppInput placeholder="Roll Number" type="text" value={rollNo} onChange={(e:any) => setRollNo(e.target.value)} required disabled={isLoading}/>
-                                    <AppInput placeholder="Contact Number" type="tel" value={contactNumber} onChange={(e:any) => setContactNumber(e.target.value)} required disabled={isLoading}/>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <Select onValueChange={(value) => { setDepartment(value); setBranch(''); }} value={department} required>
-                                            <SelectTrigger className="bg-[var(--color-surface)] border-2 border-[var(--color-border)]"><SelectValue placeholder="Select Department" /></SelectTrigger>
-                                            <SelectContent>{departments.map(d => (<SelectItem key={d} value={d}>{d}</SelectItem>))}</SelectContent>
-                                        </Select>
-                                        <Select onValueChange={setBranch} value={branch} required disabled={!department}>
-                                            <SelectTrigger className="bg-[var(--color-surface)] border-2 border-[var(--color-border)]"><SelectValue placeholder="Select Branch" /></SelectTrigger>
-                                            <SelectContent>{branches.map(b => (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}</SelectContent>
-                                        </Select>
-                                    </div>
-                                    <AppInput placeholder="Enter Section (e.g., A, B, C)" value={section} onChange={(e:any) => setSection(e.target.value.toUpperCase())} required disabled={isLoading} maxLength={2} />
+                        className='w-full lg:w-1/2 px-4 md:px-8 lg:px-12 py-10 left h-full relative overflow-y-auto'
+                        onMouseMove={handleMouseMove}
+                        onMouseEnter={() => setIsHovering(true)}
+                        onMouseLeave={() => setIsHovering(false)}>
+                        <div
+                            className={`absolute pointer-events-none w-[500px] h-[500px] bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 rounded-full blur-3xl transition-opacity duration-200 ${
+                            isHovering ? 'opacity-100' : 'opacity-0'
+                            }`}
+                            style={{
+                            transform: `translate(${mousePosition.x - 250}px, ${mousePosition.y - 250}px)`,
+                            transition: 'transform 0.1s ease-out'
+                            }}
+                        />
+                        <div className="form-container h-full z-10">
+                            <form className='text-center grid gap-2 h-full' onSubmit={handleSubmit}>
+                                <div className='grid gap-4 md:gap-6 mb-2'>
+                                    <h1 className='text-3xl md:text-4xl font-extrabold text-[var(--color-heading)]'>{isLoginView ? 'Student Login' : 'Student Signup'}</h1>
+                                    <p className="text-sm text-[var(--color-text-secondary)]">{selectedCollege}</p>
                                 </div>
-                            )}
+                                <AuthMessage />
+                                {!isLoginView && (
+                                    <div className='grid gap-4 items-center'>
+                                        <AppInput placeholder="Full Name" type="text" value={name} onChange={(e:any) => setName(e.target.value)} required disabled={isLoading} />
+                                        <AppInput placeholder="Roll Number" type="text" value={rollNo} onChange={(e:any) => setRollNo(e.target.value)} required disabled={isLoading}/>
+                                        <AppInput placeholder="Contact Number" type="tel" value={contactNumber} onChange={(e:any) => setContactNumber(e.target.value)} required disabled={isLoading}/>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <Select onValueChange={(value) => { setDepartment(value); setBranch(''); }} value={department} required>
+                                                <SelectTrigger className="bg-[var(--color-surface)] border-2 border-[var(--color-border)]"><SelectValue placeholder="Select Department" /></SelectTrigger>
+                                                <SelectContent>{departments.map(d => (<SelectItem key={d} value={d}>{d}</SelectItem>))}</SelectContent>
+                                            </Select>
+                                            <Select onValueChange={setBranch} value={branch} required disabled={!department}>
+                                                <SelectTrigger className="bg-[var(--color-surface)] border-2 border-[var(--color-border)]"><SelectValue placeholder="Select Branch" /></SelectTrigger>
+                                                <SelectContent>{branches.map(b => (<SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>))}</SelectContent>
+                                            </Select>
+                                        </div>
+                                        <AppInput placeholder="Enter Section (e.g., A, B, C)" value={section} onChange={(e:any) => setSection(e.target.value.toUpperCase())} required disabled={isLoading} maxLength={2} />
+                                    </div>
+                                )}
 
-                            <div className='grid gap-4 items-center'>
-                                <AppInput placeholder="Email" type="email" value={email} onChange={(e:any) => setEmail(e.target.value)} required disabled={isLoading}/>
-                                <AppInput placeholder="Password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e:any) => setPassword(e.target.value)} required disabled={isLoading} icon={<button type="button" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff/> : <Eye/>}</button>}/>
-                            </div>
-                            {isLoginView && (
-                                <div className="flex justify-between items-center text-sm px-2">
-                                     <DialogTrigger asChild>
-                                         <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)] flex items-center gap-1" onClick={() => setIsStatusCheckOpen(true)}>
-                                            <CheckSquare className="h-4 w-4" /> Check Status
-                                         </Button>
-                                     </DialogTrigger>
-                                    <DialogTrigger asChild>
-                                        <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)]" onClick={() => setIsForgotPassOpen(true)}>Forgot password?</Button>
-                                    </DialogTrigger>
+                                <div className='grid gap-4 items-center'>
+                                    <AppInput placeholder="Email" type="email" value={email} onChange={(e:any) => setEmail(e.target.value)} required disabled={isLoading}/>
+                                    <AppInput placeholder="Password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e:any) => setPassword(e.target.value)} required disabled={isLoading} icon={<button type="button" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff/> : <Eye/>}</button>}/>
                                 </div>
-                            )}
-                            <div className='flex gap-4 justify-center items-center mt-4'>
-                                <button className="group/button relative inline-flex justify-center items-center overflow-hidden rounded-md bg-primary px-8 py-2.5 text-md font-bold text-primary-foreground transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:shadow-primary/50 cursor-pointer" disabled={isLoading}>
-                                    <span className="text-sm px-2 py-1">{isLoading ? <Loader className="animate-spin"/> : (isLoginView ? 'Sign In' : 'Sign Up')}</span>
-                                    <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover/button:duration-1000 group-hover/button:[transform:skew(-13deg)_translateX(100%)]">
-                                        <div className="relative h-full w-8 bg-white/20" />
+                                {isLoginView && (
+                                    <div className="flex justify-between items-center text-sm px-2">
+                                        <Dialog onOpenChange={setIsStatusCheckOpen} open={isStatusCheckOpen}>
+                                            <DialogTrigger asChild>
+                                                <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)] flex items-center gap-1">
+                                                    <CheckSquare className="h-4 w-4" /> Check Status
+                                                </Button>
+                                            </DialogTrigger>
+                                            <AccountStatusDialog onOpenChange={setIsStatusCheckOpen} />
+                                        </Dialog>
+
+                                        <Dialog onOpenChange={setIsForgotPassOpen} open={isForgotPassOpen}>
+                                            <DialogTrigger asChild>
+                                                <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)]">Forgot password?</Button>
+                                            </DialogTrigger>
+                                            <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={email} />
+                                        </Dialog>
                                     </div>
-                                </button>
-                            </div>
-                            <div className="text-center text-sm text-[var(--color-text-secondary)] mt-4">
-                                {isLoginView ? "Don't have an account?" : "Already have an account?"}
-                                <Button variant="link" type="button" onClick={toggleView} className="p-1 text-primary">
-                                    {isLoginView ? "Signup" : "Login"}
-                                </Button>
-                            </div>
-                        </form>
+                                )}
+                                <div className='flex gap-4 justify-center items-center mt-4'>
+                                    <button className="group/button relative inline-flex justify-center items-center overflow-hidden rounded-md bg-primary px-8 py-2.5 text-md font-bold text-primary-foreground transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:shadow-primary/50 cursor-pointer" disabled={isLoading}>
+                                        <span className="text-sm px-2 py-1">{isLoading ? <Loader className="animate-spin"/> : (isLoginView ? 'Sign In' : 'Sign Up')}</span>
+                                        <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover/button:duration-1000 group-hover/button:[transform:skew(-13deg)_translateX(100%)]">
+                                            <div className="relative h-full w-8 bg-white/20" />
+                                        </div>
+                                    </button>
+                                </div>
+                                <div className="text-center text-sm text-[var(--color-text-secondary)] mt-4">
+                                    {isLoginView ? "Don't have an account?" : "Already have an account?"}
+                                    <Button variant="link" type="button" onClick={toggleView} className="p-1 text-primary">
+                                        {isLoginView ? "Signup" : "Login"}
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-                <div className='hidden lg:flex w-1/2 right h-full items-center justify-center overflow-hidden rounded-r-lg bg-cover bg-center relative' data-ai-hint="students collaborating">
-                    <Image src="https://picsum.photos/seed/students/1000/1000" alt="Students collaborating" fill className="object-cover" />
-                    <div className="absolute inset-0 bg-black/60"></div>
-                    <div className="relative z-10 p-12 text-white">
-                        <Sparkles className="h-10 w-10 text-primary mb-4" />
-                        <h1 className="font-headline text-4xl font-bold mb-2">Build Your Future</h1>
-                        <p className="text-slate-300 mb-8">From idea to implementation, GenKit ProStudio is your partner in academic innovation.</p>
-                        <ul className="space-y-4 text-left">
-                            <li className="flex items-center gap-3"><BookOpen className="h-6 w-6 text-secondary"/> Turn concepts into reality.</li>
-                            <li className="flex items-center gap-3"><BookOpen className="h-6 w-6 text-secondary"/> Collaborate with peers.</li>
-                            <li className="flex items-center gap-3"><BookOpen className="h-6 w-6 text-secondary"/> Showcase your talent.</li>
-                        </ul>
+                    <div className='hidden lg:flex w-1/2 right h-full items-center justify-center overflow-hidden rounded-r-lg bg-cover bg-center relative' data-ai-hint="students collaborating">
+                        <Image src="https://picsum.photos/seed/students/1000/1000" alt="Students collaborating" fill className="object-cover" />
+                        <div className="absolute inset-0 bg-black/60"></div>
+                        <div className="relative z-10 p-12 text-white">
+                            <Sparkles className="h-10 w-10 text-primary mb-4" />
+                            <h1 className="font-headline text-4xl font-bold mb-2">Build Your Future</h1>
+                            <p className="text-slate-300 mb-8">From idea to implementation, GenKit ProStudio is your partner in academic innovation.</p>
+                            <ul className="space-y-4 text-left">
+                                <li className="flex items-center gap-3"><BookOpen className="h-6 w-6 text-secondary"/> Turn concepts into reality.</li>
+                                <li className="flex items-center gap-3"><BookOpen className="h-6 w-6 text-secondary"/> Collaborate with peers.</li>
+                                <li className="flex items-center gap-3"><BookOpen className="h-6 w-6 text-secondary"/> Showcase your talent.</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <ForgotPasswordDialog onOpenChange={setIsForgotPassOpen} userEmail={email} />
-        <AccountStatusDialog onOpenChange={setIsStatusCheckOpen} />
-        </Dialog>
-        </Dialog>
+        </>
     );
 }
-
