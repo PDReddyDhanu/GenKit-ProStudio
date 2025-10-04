@@ -237,7 +237,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
         try {
             const pitchText = pitchOutline.slides.map(s => `${s.title}. ${s.content.replace(/\*/g, '')}`).join('\n');
             const result = await generatePitchAudioAction({ pitchText });
-            if (result) {
+            if (result && result.audioUrl) {
                 setPitchAudioUrl(result.audioUrl);
             } else {
                  alert("Could not generate audio. Please try again.");
