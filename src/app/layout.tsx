@@ -2,7 +2,7 @@
 "use client";
 
 import './globals.css';
-import { Inter, Space_Grotesk } from 'next/font/google';
+import { PT_Sans, Playfair_Display } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { HackathonProvider, useHackathon } from '@/context/HackathonProvider';
 import { Header } from '@/components/layout/Header';
@@ -16,8 +16,8 @@ import { Loader } from 'lucide-react';
 import { useCustomCursor } from '@/hooks/use-custom-cursor';
 import FallingStars from '@/components/ui/FallingStars';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
+const ptSans = PT_Sans({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-pt-sans' });
+const playfairDisplay = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair-display' });
 
 function AppContent({ children }: { children: React.ReactNode }) {
     const { state } = useHackathon();
@@ -101,7 +101,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='hsl(38 100% 50%)'/%3E%3Cstop offset='100%25' stop-color='hsl(45 100% 58%)'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg transform='translate(50 50) scale(0.9)'%3E%3Cpath d='M50,0 L25,43.3 L-25,43.3 L-50,0 L-25,-43.3 L25,-43.3 Z' stroke='url(%23a)' stroke-width='5' fill='none'/%3E%3Cpath d='M0,0 L-25,43.3 M0,0 L25,43.3 M0,0 L-25,-43.3 M0,0 L25,-43.3 M-25,43.3 L-50,0 M25,43.3 L50,0' stroke='url(%23a)' stroke-width='2' fill='none' /%3E%3Ccircle cx='0' cy='0' r='12' fill='url(%23a)' /%3E%3C/g%3E%3C/svg%3E" />
       </head>
-      <body className={cn("font-body antialiased", inter.variable, spaceGrotesk.variable)}>
+      <body className={cn("font-body antialiased", ptSans.variable, playfairDisplay.variable)}>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"
