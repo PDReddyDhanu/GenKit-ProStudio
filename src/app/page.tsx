@@ -209,27 +209,26 @@ const StatItem = ({ icon, value, label }: { icon: React.ReactNode; value: number
 
 export default function Home() {
 
-  const whyCards = [
+  const whyCards: BentoItem[] = [
     {
-      icon: <BrainCircuit className="size-4 text-primary-foreground" />,
+      icon: <BrainCircuit className="w-4 h-4 text-amber-500" />,
       title: "AI-Powered",
-      description: "Leverage cutting-edge AI",
-      date: "Genkit",
-      iconClassName: "bg-primary text-primary-foreground",
+      description: "Leverage cutting-edge AI for idea generation, code reviews, and pitch coaching.",
+      tags: ["Genkit", "Gemini"],
+      colSpan: 2,
+      hasPersistentHover: true,
     },
     {
-      icon: <UsersRound className="size-4 text-primary-foreground" />,
+      icon: <UsersRound className="w-4 h-4 text-amber-500" />,
       title: "Collaboration",
-      description: "Find teammates easily",
-      date: "Team Finder",
-      iconClassName: "bg-primary text-primary-foreground",
+      description: "Find teammates easily with our AI-powered matchmaker and manage your team.",
+      tags: ["Team Finder", "Chat"],
     },
     {
-      icon: <BarChart className="size-4 text-primary-foreground" />,
-      title: "Tracking",
-      description: "Live leaderboards",
-      date: "Real-time",
-      iconClassName: "bg-primary text-primary-foreground",
+      icon: <BarChart className="w-4 h-4 text-amber-500" />,
+      title: "Real-time Tracking",
+      description: "Monitor project approvals and see live leaderboards as scores come in.",
+      tags: ["Live Data", "Transparency"],
     },
   ];
 
@@ -323,9 +322,7 @@ export default function Home() {
             <section className="py-24 scroll-m-20" data-animate-on-scroll>
                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Why GenKit ProStudio?</h2>
                 <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">An integrated platform designed to elevate your academic project experience from start to finish.</p>
-                <div className="flex items-center justify-center h-[250px]">
-                    <DisplayCards cards={whyCards} />
-                </div>
+                <BentoGrid items={whyCards} />
             </section>
 
             <section className="py-24 scroll-m-20" data-animate-on-scroll>
@@ -511,3 +508,5 @@ export default function Home() {
     </>
   );
 }
+
+    
