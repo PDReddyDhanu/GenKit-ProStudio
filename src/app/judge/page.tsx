@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
@@ -132,7 +133,7 @@ export default function FacultyPortal() {
                  <div className="relative group overflow-hidden rounded-lg">
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-lg blur-lg opacity-0 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-glowing-border"></div>
                     <Card className="relative grid md:grid-cols-2">
-                         <div className="p-8 bg-muted/30 rounded-l-lg">
+                         <div className="p-8 bg-muted/30 rounded-l-lg hidden md:block">
                             <CardHeader className="p-0">
                                 <CardTitle className="text-3xl font-bold font-headline text-primary">Faculty Portal</CardTitle>
                                 <CardDescription>

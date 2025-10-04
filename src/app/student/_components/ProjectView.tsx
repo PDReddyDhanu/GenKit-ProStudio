@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +7,7 @@ import { ProjectSubmission, ProjectIdea, ProjectStatusUpdate } from '@/lib/types
 import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github, PlusCircle, Clock, XCircle, UserCheck, Milestone } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { getAiCodeReview, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
+import { getAiCodeReview, generatePitchOutline, generatePitchAudio } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { useHackathon } from '@/context/HackathonProvider';
 import { generateCertificate } from '@/lib/pdf';
@@ -101,7 +102,7 @@ const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, o
     
     if (isRejected) {
         return (
-            <div className="relative border-l-2 border-dashed border-border pl-8 space-y-8 py-4">
+            <div className="relative border-l-2 border-dashed border-border pl-8 py-4">
                  <div className="relative">
                     <div className="absolute -left-[45px] top-0 h-10 w-10 bg-background flex items-center justify-center rounded-full border-2 border-red-500">
                         {getIcon('rejected')}
@@ -238,7 +239,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
             const script = pitchOutline.slides
                 .map(slide => `${slide.title}. ${slide.content.replace(/^-/gm, '')}`)
                 .join('\n\n');
-            const result = await generatePitchAudioAction({ script });
+            const result = await generatePitchAudio({ script });
             if (result) {
                 setPitchAudio(result);
             }
@@ -260,7 +261,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
     const canAddMoreIdeas = submission.projectIdeas.length < 3 && submission.status !== 'Approved' && submission.status !== 'Rejected';
 
     return (
-        <div className="container max-w-3xl mx-auto">
+        <div className="container max-w-3xl mx-auto px-0">
              <Button variant="ghost" onClick={onBack} className="mb-4">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Team Management
             </Button>

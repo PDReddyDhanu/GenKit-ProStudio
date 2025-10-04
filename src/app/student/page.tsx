@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
@@ -34,7 +35,7 @@ export default function StudentPortal() {
                 <h1 className="text-3xl md:text-4xl font-bold font-headline">Student Portal</h1>
             </div>
              <Tabs defaultValue="dashboard" className="w-full">
-                <TabsList className="grid w-full h-auto grid-cols-1 sm:grid-cols-3">
+                <TabsList className="grid w-full h-auto grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     <TabsTrigger value="dashboard"><Users className="mr-2"/> Dashboard</TabsTrigger>
                     <TabsTrigger value="management"><ClipboardList className="mr-2"/>My Teams & Requests</TabsTrigger>
                     <TabsTrigger value="status"><GanttChartSquare className="mr-2"/>Project Status</TabsTrigger>
