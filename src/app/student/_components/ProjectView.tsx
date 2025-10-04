@@ -3,10 +3,10 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProjectSubmission, ProjectIdea, ProjectStatusUpdate } from '@/lib/types';
-import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github, PlusCircle, Clock, XCircle, UserCheck, Milestone, Volume2 } from 'lucide-react';
+import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github, PlusCircle, Clock, XCircle, UserCheck, Milestone } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { getAiCodeReview, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
+import { getAiCodeReview, generatePitchOutline } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { useHackathon } from '@/context/HackathonProvider';
 import { generateCertificate } from '@/lib/pdf';
@@ -172,9 +172,6 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
     
     const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
     const [pitchOutline, setPitchOutline] = useState<GeneratePitchOutlineOutput | null>(null);
-    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
-    const [pitchAudioUrl, setPitchAudioUrl] = useState<string | null>(null);
-
 
     useEffect(() => {
         const updatedSubmission = projects.find(p => p.id === initialSubmission.id);
@@ -217,7 +214,6 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
     const handleGenerateOutline = async (idea: ProjectIdea) => {
         setIsGeneratingOutline(true);
         setPitchOutline(null);
-        setPitchAudioUrl(null);
         try {
             const result = await generatePitchOutline({
                 projectName: idea.title,
@@ -227,26 +223,6 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
             setPitchOutline(result);
         } finally {
             setIsGeneratingOutline(false);
-        }
-    };
-
-    const handleGenerateAudio = async () => {
-        if (!pitchOutline) return;
-        setIsGeneratingAudio(true);
-        setPitchAudioUrl(null);
-        try {
-            const pitchText = pitchOutline.slides.map(s => `${s.title}. ${s.content.replace(/\*/g, '')}`).join('\n');
-            const result = await generatePitchAudioAction({ pitchText });
-            if (result && result.audioUrl) {
-                setPitchAudioUrl(result.audioUrl);
-            } else {
-                 alert("Could not generate audio. Please try again.");
-            }
-        } catch (error) {
-             console.error("Audio generation failed:", error);
-             alert("An error occurred while generating the audio.");
-        } finally {
-            setIsGeneratingAudio(false);
         }
     };
     
@@ -348,18 +324,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                         <div className="mt-6 border-t pt-4 space-y-4">
                             <div className="flex flex-wrap gap-2 justify-between items-center">
                                 <h4 className="font-bold flex items-center gap-2"><Presentation className="text-primary"/> Generated Presentation Outline</h4>
-                                 <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio} variant="outline" size="sm">
-                                    {isGeneratingAudio ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Generating...</> : <><Volume2 className="mr-2 h-4 w-4" /> Generate Audio</>}
-                                </Button>
                             </div>
-                             {pitchAudioUrl && (
-                                <div className="p-2">
-                                    <audio controls className="w-full">
-                                        <source src={pitchAudioUrl} type="audio/wav" />
-                                        Your browser does not support the audio element.
-                                    </audio>
-                                </div>
-                            )}
                             <Accordion type="single" collapsible className="w-full">
                                 {pitchOutline.slides.map((slide, index) => (
                                 <AccordionItem value={`item-${index}`} key={index}>
