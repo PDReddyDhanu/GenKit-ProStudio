@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
@@ -14,6 +15,7 @@ import AccountStatusDialog from '@/components/AccountStatusDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DEPARTMENTS_DATA } from '@/lib/constants';
 import type { User as UserType } from '@/lib/types';
+import { StarButton } from '@/components/ui/star-button';
 
 export default function Auth() {
     const { state, api, dispatch } = useHackathon();
@@ -226,9 +228,9 @@ export default function Auth() {
                                     </div>
                                 )}
                                 
-                                <Button type="submit" className="w-full font-bold text-lg" disabled={isLoading}>
+                                <StarButton type="submit" className="w-full font-bold text-lg" disabled={isLoading}>
                                     {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Please wait...</> : (isLoginView ? 'Login' : 'Signup')}
-                                </Button>
+                                </StarButton>
 
                                 <div className="text-center text-sm text-muted-foreground">
                                     {isLoginView ? "Don't have an account?" : "Already have an account?"}

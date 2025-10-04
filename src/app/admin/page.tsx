@@ -4,7 +4,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +26,8 @@ import { Badge } from '@/components/ui/badge';
 import ProjectApprovalDashboard from './_components/ProjectApprovalDashboard';
 import GuideAssignmentDashboard from './_components/GuideAssignmentDashboard';
 import GuideTeamsDashboard from './_components/GuideTeamsDashboard';
+import { StarButton } from '@/components/ui/star-button';
+import { Button } from '@/components/ui/button';
 
 const projectEvents = [
     {
@@ -125,9 +126,9 @@ export default function AdminPortal() {
                                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                 </Button>
                             </div>
-                            <Button type="submit" className="w-full" disabled={isLoading}>
+                            <StarButton type="submit" className="w-full" disabled={isLoading}>
                                 {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Logging in...</> : 'Login as Main Admin'}
-                            </Button>
+                            </StarButton>
                         </form>
                     </CardContent>
                 </Card>

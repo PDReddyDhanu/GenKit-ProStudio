@@ -19,6 +19,7 @@ import { DEPARTMENTS_DATA } from '@/lib/constants';
 import type { Faculty } from '@/lib/types';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
+import { StarButton } from '@/components/ui/star-button';
 
 const ROLES: Faculty['role'][] = ['guide', 'hod', 'rnd', 'external', 'academic-coordinator', 'class-mentor'];
 const ROLE_DISPLAY_NAMES: { [key in Exclude<Faculty['role'], 'admin' | 'sub-admin'>]: string } = {
@@ -280,9 +281,9 @@ export default function FacultyPortal() {
                                         </div>
                                     )}
 
-                                    <Button type="submit" className="w-full font-bold text-lg" disabled={isLoading}>
+                                    <StarButton type="submit" className="w-full font-bold text-lg" disabled={isLoading}>
                                         {isLoading ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Please wait...</> : (isLoginView ? 'Login' : 'Register')}
-                                    </Button>
+                                    </StarButton>
                                      <div className="text-center text-sm text-muted-foreground">
                                         {isLoginView ? "Don't have an account?" : "Already have an account?"}
                                         <Button variant="link" type="button" onClick={toggleView} className="p-1">

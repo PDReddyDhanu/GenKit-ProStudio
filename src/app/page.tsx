@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import ElectricBorder from "@/components/ui/ElectricBorder";
 import { AppLogo } from "@/components/layout/Header";
 import { SpiralAnimation } from "@/components/ui/spiral-animation";
+import { StarButton } from "@/components/ui/star-button";
 
 const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
     <ElectricBorder
@@ -256,12 +257,12 @@ export default function Home() {
                 Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
             </p>
             <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
-                <Button size="lg" asChild>
+                <StarButton size="lg" asChild>
                     <Link href="/student">Get Started as Student</Link>
-                </Button>
-                <Button size="lg" variant="secondary" asChild>
+                </StarButton>
+                <StarButton size="lg" variant="secondary" asChild>
                    <Link href="/judge">Enter as Faculty or Admin</Link>
-                </Button>
+                </StarButton>
             </div>
         </section>
 
@@ -555,12 +556,12 @@ export default function Home() {
                 Join your college's project hub. Register as a student or sign in as a faculty member to begin.
             </p>
              <div className="flex justify-center gap-4">
-                <Button size="lg" asChild>
+                <StarButton size="lg" asChild>
                     <Link href="/student">I'm a Student</Link>
-                </Button>
-                <Button size="lg" variant="secondary" asChild>
+                </StarButton>
+                <StarButton size="lg" variant="secondary" asChild>
                    <Link href="/judge">I'm a Faculty / Admin</Link>
-                </Button>
+                </StarButton>
             </div>
         </section>
     </div>
