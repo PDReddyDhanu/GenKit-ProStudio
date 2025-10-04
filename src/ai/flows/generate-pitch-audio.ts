@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview An AI agent that generates an audio voiceover for a pitch script.
@@ -13,12 +12,12 @@ import {z} from 'genkit';
 import wav from 'wav';
 import {googleAI} from '@genkit-ai/googleai';
 
-export const GeneratePitchAudioInputSchema = z.object({
+const GeneratePitchAudioInputSchema = z.object({
   script: z.string().describe('The text script to be converted to speech.'),
 });
 export type GeneratePitchAudioInput = z.infer<typeof GeneratePitchAudioInputSchema>;
 
-export const GeneratePitchAudioOutputSchema = z.object({
+const GeneratePitchAudioOutputSchema = z.object({
   audioDataUri: z
     .string()
     .describe(
