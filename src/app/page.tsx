@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import ElectricBorder from "@/components/ui/ElectricBorder";
 import { AppLogo } from "@/components/layout/Header";
 import { SpiralAnimation } from "@/components/ui/spiral-animation";
 import { StarButton } from "@/components/ui/star-button";
+import AnimatedStat from "@/components/AnimatedStat";
 
 const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
     <ElectricBorder
@@ -213,12 +213,12 @@ const HowItWorksAnimation = () => {
     );
 };
 
-const StatItem = ({ icon, value, label }: { icon: React.ReactNode, value: string, label: string }) => (
+const StatItem = ({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) => (
     <div className="text-center" data-animate-on-scroll>
         <div className="text-primary w-12 h-12 mx-auto mb-2 flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
             {icon}
         </div>
-        <p className="text-3xl md:text-4xl font-bold text-secondary">{value}</p>
+        <AnimatedStat finalValue={value} />
         <p className="text-sm text-muted-foreground mt-1">{label}</p>
     </div>
 );
@@ -242,12 +242,12 @@ export default function Home() {
                 Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
             </p>
             <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
-                <Button size="lg" asChild>
+                <StarButton asChild size="lg">
                     <Link href="/student">Get Started as Student</Link>
-                </Button>
-                <Button size="lg" variant="secondary" asChild>
+                </StarButton>
+                <StarButton asChild size="lg" variant="secondary">
                    <Link href="/judge">Enter as Faculty or Admin</Link>
-                </Button>
+                </StarButton>
             </div>
         </section>
 
@@ -255,12 +255,12 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Our Platform by the Numbers</h2>
             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Powering innovation and collaboration across leading academic institutions.</p>
              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-                <StatItem icon={<Building className="w-8 h-8" />} value="643+" label="Institutions" />
-                <StatItem icon={<Users className="w-8 h-8" />} value="15,700+" label="Users Engaged" />
-                <StatItem icon={<CodeXml className="w-8 h-8" />} value="3,200+" label="Projects Submitted" />
-                <StatItem icon={<Trophy className="w-8 h-8" />} value="450+" label="Hackathons Hosted" />
-                <StatItem icon={<Award className="w-8 h-8" />} value="900+" label="Winning Projects" />
-                <StatItem icon={<Bot className="w-8 h-8" />} value="25,000+" label="AI Reviews" />
+                <StatItem icon={<Building className="w-8 h-8" />} value={643} label="Institutions" />
+                <StatItem icon={<Users className="w-8 h-8" />} value={15700} label="Users Engaged" />
+                <StatItem icon={<CodeXml className="w-8 h-8" />} value={3200} label="Projects Submitted" />
+                <StatItem icon={<UsersRound className="w-8 h-8" />} value={1200} label="Faculty & Staff" />
+                <StatItem icon={<University className="w-8 h-8" />} value={850} label="Departments Active" />
+                <StatItem icon={<Bot className="w-8 h-8" />} value={25000} label="AI Reviews" />
             </div>
         </section>
 
@@ -354,7 +354,7 @@ export default function Home() {
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Access all student submissions in one dashboard.</span></p>
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Read AI-generated abstracts for quick evaluation.</span></p>
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Use a standardized rubric for fair and consistent scoring.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Follow a multi-level approval workflow (Guide → R&D → HoD).</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Follow a multi-level approval workflow (Guide → R&amp;D → HoD).</span></p>
                              <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Score both teams and individual contributions.</span></p>
                          </CardContent>
                      </Card>
@@ -431,7 +431,7 @@ export default function Home() {
                              <Lightbulb className="w-5 h-5 text-primary" />
                          </div>
                          <div>
-                            <h4 className="font-bold text-lg font-headline">Ideate & Plan</h4>
+                            <h4 className="font-bold text-lg font-headline">Ideate &amp; Plan</h4>
                             <p className="text-muted-foreground mt-1">Stuck for an idea? Use the AI Idea Generator. Need a presentation structure? The AI Pitch Coach has you covered.</p>
                          </div>
                      </div>
@@ -449,7 +449,7 @@ export default function Home() {
                              <CodeXml className="w-5 h-5 text-primary" />
                          </div>
                          <div>
-                            <h4 className="font-bold text-lg font-headline">Review & Refine</h4>
+                            <h4 className="font-bold text-lg font-headline">Review &amp; Refine</h4>
                             <p className="text-muted-foreground mt-1">Get instant, automated feedback on your code quality with our AI Code Reviewer, helping you fix issues before submission.</p>
                          </div>
                      </div>
@@ -544,12 +544,12 @@ export default function Home() {
                 Join your college's project hub. Register as a student or sign in as a faculty member to begin.
             </p>
              <div className="flex justify-center gap-4">
-                <Button size="lg" asChild>
+                <StarButton asChild size="lg">
                     <Link href="/student">I'm a Student</Link>
-                </Button>
-                <Button size="lg" variant="secondary" asChild>
+                </StarButton>
+                <StarButton asChild size="lg" variant="secondary">
                    <Link href="/judge">I'm a Faculty / Admin</Link>
-                </Button>
+                </StarButton>
             </div>
         </section>
     </div>
