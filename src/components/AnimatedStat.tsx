@@ -11,7 +11,7 @@ interface AnimatedStatProps {
 
 const AnimatedStat = ({ finalValue }: AnimatedStatProps) => {
     const ref = useRef<HTMLParagraphElement>(null);
-    const isInView = useInView(ref, { once: true, margin: "-50px" });
+    const isInView = useInView(ref, { margin: "-50px" });
 
     useEffect(() => {
         if (isInView && ref.current) {
