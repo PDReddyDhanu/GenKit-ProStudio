@@ -216,7 +216,7 @@ export default function FacultyPortal() {
                                 {isLoginView && (
                                     <div className="text-right text-sm px-2">
                                         <DialogTrigger asChild>
-                                            <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)]" onClick={() => setIsForgotPassOpen(true)}>Forgot password?</Button>
+                                            <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)]">Forgot password?</Button>
                                         </DialogTrigger>
                                     </div>
                                 )}

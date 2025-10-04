@@ -136,12 +136,12 @@ export default function Auth() {
                             {isLoginView && (
                                 <div className="flex justify-between items-center text-sm px-2">
                                      <DialogTrigger asChild>
-                                         <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)] flex items-center gap-1" onClick={() => setIsStatusCheckOpen(true)}>
+                                         <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)] flex items-center gap-1">
                                             <CheckSquare className="h-4 w-4" /> Check Status
                                          </Button>
                                      </DialogTrigger>
                                     <DialogTrigger asChild>
-                                        <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)]" onClick={() => setIsForgotPassOpen(true)}>Forgot password?</Button>
+                                        <Button variant="link" size="sm" className="p-0 h-auto text-[var(--color-text-secondary)]">Forgot password?</Button>
                                     </DialogTrigger>
                                 </div>
                             )}
