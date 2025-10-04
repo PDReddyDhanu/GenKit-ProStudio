@@ -12,15 +12,15 @@ import { useHackathon } from "@/context/HackathonProvider";
 import { COLLEGES } from "@/lib/colleges";
 import GradientText from "@/components/ui/GradientText";
 import { motion, useInView } from "framer-motion";
-import ElectricBorder from "@/components/ui/ElectricBorder";
 import { AppLogo } from "@/components/layout/Header";
 import { SpiralAnimation } from "@/components/ui/spiral-animation";
 import { StarButton } from "@/components/ui/star-button";
 import { gsap } from 'gsap';
+import DisplayCards from "@/components/ui/display-cards";
 
 const AnimatedStat = ({ finalValue }: { finalValue: number }) => {
     const ref = useRef<HTMLParagraphElement>(null);
-    const isInView = useInView(ref, { once: false, margin: "-50px" });
+    const isInView = useInView(ref, { once: true, margin: "-50px" });
 
     useEffect(() => {
         if (isInView && ref.current) {
@@ -48,28 +48,20 @@ const AnimatedStat = ({ finalValue }: { finalValue: number }) => {
 
 
 const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
-    <ElectricBorder
-        color="orange"
-        speed={0.3}
-        chaos={0.2}
-        thickness={2}
-        style={{ borderRadius: '0.5rem' }}
+    <Card 
+        className="group rounded-lg bg-card/80 p-6 text-center transition-all duration-300 transform-gpu animate-card-in will-change-transform h-full"
+        style={{ animationDelay: `${index * 100}ms` }}
     >
-        <div 
-            className="group rounded-lg bg-card/80 p-6 text-center transition-all duration-300 transform-gpu animate-card-in will-change-transform h-full"
-            style={{ animationDelay: `${index * 100}ms` }}
-        >
+        <div className="relative">
             <div className="relative">
-                <div className="relative">
-                    <div className="mb-4 text-primary w-12 h-12 mx-auto flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
-                        {icon}
-                    </div>
+                <div className="mb-4 text-primary w-12 h-12 mx-auto flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
+                    {icon}
                 </div>
-                <h3 className="text-xl font-bold font-headline text-foreground">{title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{description}</p>
             </div>
+            <h3 className="text-xl font-bold font-headline text-foreground">{title}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">{description}</p>
         </div>
-    </ElectricBorder>
+    </Card>
 );
 
 
@@ -254,33 +246,58 @@ const StatItem = ({ icon, value, label }: { icon: React.ReactNode; value: number
 
 
 export default function Home() {
+
+  const whyCards = [
+    {
+      icon: <BrainCircuit className="size-4 text-primary-foreground" />,
+      title: "AI-Powered",
+      description: "Leverage cutting-edge AI",
+      date: "Genkit",
+      iconClassName: "bg-primary text-primary-foreground",
+    },
+    {
+      icon: <UsersRound className="size-4 text-primary-foreground" />,
+      title: "Collaboration",
+      description: "Find teammates easily",
+      date: "Team Finder",
+      iconClassName: "bg-primary text-primary-foreground",
+    },
+    {
+      icon: <BarChart className="size-4 text-primary-foreground" />,
+      title: "Tracking",
+      description: "Live leaderboards",
+      date: "Real-time",
+      iconClassName: "bg-primary text-primary-foreground",
+    },
+  ];
+
   return (
     <>
-        <div className="relative bg-black">
-            <section className="relative min-h-screen flex flex-col justify-center items-center text-center animate-fade-in container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="absolute inset-0 -z-10">
-                    <SpiralAnimation />
-                </div>
-                <GradientText
-                    colors={['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']}
-                    animationSpeed={5}
-                    className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 font-headline animate-slide-in-down"
-                >
-                    Welcome to GenKit ProStudio
-                </GradientText>
-                <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
-                    Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
-                </p>
-                <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
-                    <StarButton asChild size="lg">
-                        <Link href="/student">Get Started as Student</Link>
-                    </StarButton>
-                    <StarButton asChild size="lg" variant="secondary">
-                       <Link href="/judge">Enter as Faculty or Admin</Link>
-                    </StarButton>
-                </div>
-            </section>
-        </div>
+      <div className="bg-black">
+        <section className="relative min-h-screen flex flex-col justify-center items-center text-center animate-fade-in container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="absolute inset-0 -z-10">
+                <SpiralAnimation />
+            </div>
+            <GradientText
+                colors={['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']}
+                animationSpeed={5}
+                className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 font-headline animate-slide-in-down"
+            >
+                Welcome to GenKit ProStudio
+            </GradientText>
+            <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
+                Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
+            </p>
+            <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
+                <StarButton asChild size="lg">
+                    <Link href="/student">Get Started as Student</Link>
+                </StarButton>
+                <StarButton asChild size="lg" variant="secondary">
+                   <Link href="/judge">Enter as Faculty or Admin</Link>
+                </StarButton>
+            </div>
+        </section>
+      </div>
 
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-x-hidden">
             <section className="py-24 scroll-m-20" data-animate-on-scroll>
@@ -299,46 +316,8 @@ export default function Home() {
             <section className="py-24 scroll-m-20" data-animate-on-scroll>
                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Why GenKit ProStudio?</h2>
                 <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">An integrated platform designed to elevate your academic project experience from start to finish.</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <ElectricBorder
-                        color="orange"
-                        speed={0.3}
-                        chaos={0.2}
-                        thickness={2}
-                        style={{ borderRadius: '0.75rem' }}
-                    >
-                        <Card className="text-center p-6 h-full">
-                            <div className="w-12 h-12 mx-auto mb-4 text-primary"><BrainCircuit /></div>
-                            <h3 className="text-xl font-bold font-headline">AI-Powered Assistance</h3>
-                            <p className="text-muted-foreground mt-2">Leverage cutting-edge AI for idea generation, code reviews, abstract summaries, and more.</p>
-                        </Card>
-                    </ElectricBorder>
-                    <ElectricBorder
-                        color="orange"
-                        speed={0.3}
-                        chaos={0.2}
-                        thickness={2}
-                        style={{ borderRadius: '0.75rem' }}
-                    >
-                        <Card className="text-center p-6 h-full">
-                            <UsersRound className="w-12 h-12 mx-auto mb-4 text-primary"/>
-                            <h3 className="text-xl font-bold font-headline">Seamless Collaboration</h3>
-                            <p className="text-muted-foreground mt-2">Find teammates, manage your team, and communicate effectively all in one place.</p>
-                        </Card>
-                    </ElectricBorder>
-                     <ElectricBorder
-                        color="orange"
-                        speed={0.3}
-                        chaos={0.2}
-                        thickness={2}
-                        style={{ borderRadius: '0.75rem' }}
-                     >
-                        <Card className="text-center p-6 h-full">
-                            <BarChart className="w-12 h-12 mx-auto mb-4 text-primary"/>
-                            <h3 className="text-xl font-bold font-headline">Transparent Tracking</h3>
-                            <p className="text-muted-foreground mt-2">Stay updated with a live leaderboard, announcements, and clear project approval tracking.</p>
-                        </Card>
-                    </ElectricBorder>
+                <div className="flex items-center justify-center">
+                    <DisplayCards cards={whyCards} />
                 </div>
             </section>
 
@@ -351,66 +330,42 @@ export default function Home() {
                  <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Tailored for Everyone</h2>
                  <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">A unique set of tools designed for every role in the academic ecosystem.</p>
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                     <ElectricBorder
-                        color="orange"
-                        speed={0.3}
-                        chaos={0.2}
-                        thickness={2}
-                        style={{ borderRadius: '0.75rem' }}
-                     >
-                         <Card className="flex flex-col h-full">
-                             <CardHeader>
-                                 <CardTitle className="flex items-center gap-3 font-headline text-2xl"><User className="text-primary"/> For Students</CardTitle>
-                             </CardHeader>
-                             <CardContent className="flex-grow space-y-3">
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Join teams or use the AI Matchmaker to find collaborators.</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Brainstorm ideas with the AI Idea Generator.</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Submit project proposals easily.</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Get instant AI-powered code reviews.</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Track your project's approval and evaluation status.</span></p>
-                             </CardContent>
-                         </Card>
-                     </ElectricBorder>
-                     <ElectricBorder
-                        color="orange"
-                        speed={0.3}
-                        chaos={0.2}
-                        thickness={2}
-                        style={{ borderRadius: '0.75rem' }}
-                     >
-                         <Card className="flex flex-col h-full">
-                             <CardHeader>
-                                 <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Scale className="text-primary"/> For Faculty</CardTitle>
-                             </CardHeader>
-                             <CardContent className="flex-grow space-y-3">
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Access all student submissions in one dashboard.</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Read AI-generated abstracts for quick evaluation.</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Use a standardized rubric for fair and consistent scoring.</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Follow a multi-level approval workflow (Guide → R&amp;D → HoD).</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Score both teams and individual contributions.</span></p>
-                             </CardContent>
-                         </Card>
-                     </ElectricBorder>
-                     <ElectricBorder
-                        color="orange"
-                        speed={0.3}
-                        chaos={0.2}
-                        thickness={2}
-                        style={{ borderRadius: '0.75rem' }}
-                     >
-                         <Card className="flex flex-col h-full">
-                             <CardHeader>
-                                 <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Shield className="text-primary"/> For Admins</CardTitle>
-                             </CardHeader>
-                             <CardContent className="flex-grow space-y-3">
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage departments, users, and faculty roles.</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Approve student and faculty registrations.</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Broadcast announcements to all participants.</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Monitor real-time analytics and generate reports.</span></p>
-                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage support tickets with AI triage.</span></p>
-                             </CardContent>
-                         </Card>
-                     </ElectricBorder>
+                     <Card className="flex flex-col h-full">
+                         <CardHeader>
+                             <CardTitle className="flex items-center gap-3 font-headline text-2xl"><User className="text-primary"/> For Students</CardTitle>
+                         </CardHeader>
+                         <CardContent className="flex-grow space-y-3">
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Join teams or use the AI Matchmaker to find collaborators.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Brainstorm ideas with the AI Idea Generator.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Submit project proposals easily.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Get instant AI-powered code reviews.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Track your project's approval and evaluation status.</span></p>
+                         </CardContent>
+                     </Card>
+                     <Card className="flex flex-col h-full">
+                         <CardHeader>
+                             <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Scale className="text-primary"/> For Faculty</CardTitle>
+                         </CardHeader>
+                         <CardContent className="flex-grow space-y-3">
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Access all student submissions in one dashboard.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Read AI-generated abstracts for quick evaluation.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Use a standardized rubric for fair and consistent scoring.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Follow a multi-level approval workflow (Guide → R&amp;D → HoD).</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Score both teams and individual contributions.</span></p>
+                         </CardContent>
+                     </Card>
+                     <Card className="flex flex-col h-full">
+                         <CardHeader>
+                             <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Shield className="text-primary"/> For Admins</CardTitle>
+                         </CardHeader>
+                         <CardContent className="flex-grow space-y-3">
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage departments, users, and faculty roles.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Approve student and faculty registrations.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Broadcast announcements to all participants.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Monitor real-time analytics and generate reports.</span></p>
+                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage support tickets with AI triage.</span></p>
+                         </CardContent>
+                     </Card>
                  </div>
              </section>
 
@@ -508,24 +463,15 @@ export default function Home() {
                 <div className="relative w-full">
                     <div className="flex w-max scrolling-wrapper group-hover:pause">
                         {[...testimonials, ...testimonials].map((testimonial, index) => (
-                            <ElectricBorder
-                              key={index}
-                              style={{ borderRadius: '0.75rem', margin: '0 1rem' }}
-                              color="orange"
-                              speed={0.3}
-                              chaos={0.2}
-                              thickness={2}
-                            >
-                                <Card className="w-[350px] flex-shrink-0 h-full">
-                                    <CardContent className="p-6">
-                                        <p className="italic text-foreground">"{testimonial.quote}"</p>
-                                        <div className="mt-4 text-right">
-                                            <p className="font-bold font-headline">{testimonial.name}</p>
-                                            <p className="text-sm text-primary">{testimonial.role}</p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </ElectricBorder>
+                            <Card key={index} className="w-[350px] flex-shrink-0 mx-4">
+                                <CardContent className="p-6">
+                                    <p className="italic text-foreground">"{testimonial.quote}"</p>
+                                    <div className="mt-4 text-right">
+                                        <p className="font-bold font-headline">{testimonial.name}</p>
+                                        <p className="text-sm text-primary">{testimonial.role}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         ))}
                     </div>
                 </div>
@@ -599,4 +545,5 @@ export default function Home() {
     
 
     
+
 
