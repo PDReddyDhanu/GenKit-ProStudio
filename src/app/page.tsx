@@ -5,7 +5,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Shield, Server, Search, CodeXml, User, Sun, Briefcase, University, FolderGit2 } from "lucide-react";
+import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Shield, Server, Search, CodeXml, User, Sun, Briefcase, University, FolderGit2, Building, Bot } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -213,31 +213,16 @@ const HowItWorksAnimation = () => {
     );
 };
 
-const AnimatedStat = ({ end, label, icon }: { end: number, label: string, icon: React.ReactNode }) => {
-    const [count, setCount] = useState(0);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCount(Math.floor(Math.random() * end));
-        }, 100);
-
-        return () => clearInterval(interval);
-    }, [end]);
-
-    return (
-        <div className="text-center" data-animate-on-scroll>
-            <div className="text-primary w-12 h-12 mx-auto mb-2" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
-                {icon}
-            </div>
-            <span
-                className="block text-4xl md:text-5xl font-bold text-secondary"
-            >
-                {count}+
-            </span>
-            <p className="text-muted-foreground mt-1">{label}</p>
+const StatItem = ({ icon, value, label }: { icon: React.ReactNode, value: string, label: string }) => (
+    <div className="text-center" data-animate-on-scroll>
+        <div className="text-primary w-12 h-12 mx-auto mb-2 flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 10px hsl(var(--primary)))'}}>
+            {icon}
         </div>
-    )
-}
+        <p className="text-3xl md:text-4xl font-bold text-secondary">{value}</p>
+        <p className="text-sm text-muted-foreground mt-1">{label}</p>
+    </div>
+);
+
 
 export default function Home() {
   return (
@@ -257,22 +242,25 @@ export default function Home() {
                 Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
             </p>
             <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
-                <StarButton size="lg" asChild>
+                <Button size="lg" asChild>
                     <Link href="/student">Get Started as Student</Link>
-                </StarButton>
-                <StarButton size="lg" variant="secondary" asChild>
+                </Button>
+                <Button size="lg" variant="secondary" asChild>
                    <Link href="/judge">Enter as Faculty or Admin</Link>
-                </StarButton>
+                </Button>
             </div>
         </section>
 
         <section className="py-24 scroll-m-20" data-animate-on-scroll>
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Our Platform by the Numbers</h2>
             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Powering innovation and collaboration across leading academic institutions.</p>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <AnimatedStat end={157} label="Registered Colleges" icon={<University className="w-12 h-12" />} />
-                <AnimatedStat end={8500} label="Active Users" icon={<Users className="w-12 h-12" />} />
-                <AnimatedStat end={2300} label="Projects Submitted" icon={<FolderGit2 className="w-12 h-12" />} />
+             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+                <StatItem icon={<Building className="w-8 h-8" />} value="643+" label="Institutions" />
+                <StatItem icon={<Users className="w-8 h-8" />} value="15,700+" label="Users Engaged" />
+                <StatItem icon={<CodeXml className="w-8 h-8" />} value="3,200+" label="Projects Submitted" />
+                <StatItem icon={<Trophy className="w-8 h-8" />} value="450+" label="Hackathons Hosted" />
+                <StatItem icon={<Award className="w-8 h-8" />} value="900+" label="Winning Projects" />
+                <StatItem icon={<Bot className="w-8 h-8" />} value="25,000+" label="AI Reviews" />
             </div>
         </section>
 
@@ -556,12 +544,12 @@ export default function Home() {
                 Join your college's project hub. Register as a student or sign in as a faculty member to begin.
             </p>
              <div className="flex justify-center gap-4">
-                <StarButton size="lg" asChild>
+                <Button size="lg" asChild>
                     <Link href="/student">I'm a Student</Link>
-                </StarButton>
-                <StarButton size="lg" variant="secondary" asChild>
+                </Button>
+                <Button size="lg" variant="secondary" asChild>
                    <Link href="/judge">I'm a Faculty / Admin</Link>
-                </StarButton>
+                </Button>
             </div>
         </section>
     </div>
@@ -574,5 +562,7 @@ export default function Home() {
 
 
 
+
+    
 
     
