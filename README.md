@@ -104,4 +104,4 @@ This application is optimized for deployment on Vercel or Firebase App Hosting.
 1.  Push your code to a Git repository.
 2.  Import the repository into your Vercel dashboard.
 3.  **Important:** Add your `NEXT_PUBLIC_GEMINI_API_KEY` and `NEXT_PUBLIC_FIREBASE_CONFIG` as environment variables in the Vercel project settings.
-4.  Click "Deploy".
+4.  Click "Deploy" .
