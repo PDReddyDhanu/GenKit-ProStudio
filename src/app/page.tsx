@@ -11,12 +11,41 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useHackathon } from "@/context/HackathonProvider";
 import { COLLEGES } from "@/lib/colleges";
 import GradientText from "@/components/ui/GradientText";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import ElectricBorder from "@/components/ui/ElectricBorder";
 import { AppLogo } from "@/components/layout/Header";
 import { SpiralAnimation } from "@/components/ui/spiral-animation";
 import { StarButton } from "@/components/ui/star-button";
-import AnimatedStat from "@/components/AnimatedStat";
+import { gsap } from 'gsap';
+
+const AnimatedStat = ({ finalValue }: { finalValue: number }) => {
+    const ref = useRef<HTMLParagraphElement>(null);
+    const isInView = useInView(ref, { once: false, margin: "-50px" });
+
+    useEffect(() => {
+        if (isInView && ref.current) {
+            const target = { val: 0 };
+            gsap.to(target, {
+                val: finalValue,
+                duration: 2,
+                ease: "power3.out",
+                onUpdate: () => {
+                    if (ref.current) {
+                        const formattedValue = new Intl.NumberFormat('en-US').format(Math.round(target.val));
+                        ref.current.textContent = `${formattedValue}+`;
+                    }
+                }
+            });
+        }
+    }, [isInView, finalValue]);
+
+    return (
+        <p ref={ref} className="text-3xl md:text-4xl font-bold text-secondary">
+            0+
+        </p>
+    );
+};
+
 
 const FeatureCard = ({ icon, title, description, index }: { icon: React.ReactNode, title: string, description: string, index: number }) => (
     <ElectricBorder
@@ -226,333 +255,337 @@ const StatItem = ({ icon, value, label }: { icon: React.ReactNode; value: number
 
 export default function Home() {
   return (
-    <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-x-hidden">
-        <section className="relative min-h-screen flex flex-col justify-center items-center text-center animate-fade-in">
-            <div className="absolute inset-0 -z-10">
-                <SpiralAnimation />
-            </div>
-            <GradientText
-                colors={['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']}
-                animationSpeed={5}
-                className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 font-headline animate-slide-in-down"
-            >
-                Welcome to GenKit ProStudio
-            </GradientText>
-            <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
-                Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
-            </p>
-            <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
-                <StarButton asChild size="lg">
-                    <Link href="/student">Get Started as Student</Link>
-                </StarButton>
-                <StarButton asChild size="lg" variant="secondary">
-                   <Link href="/judge">Enter as Faculty or Admin</Link>
-                </StarButton>
-            </div>
-        </section>
-
-        <section className="py-24 scroll-m-20" data-animate-on-scroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Our Platform by the Numbers</h2>
-            <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Powering innovation and collaboration across leading academic institutions.</p>
-             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-                <StatItem icon={<Building className="w-8 h-8" />} value={643} label="Institutions" />
-                <StatItem icon={<Users className="w-8 h-8" />} value={15700} label="Users Engaged" />
-                <StatItem icon={<CodeXml className="w-8 h-8" />} value={3200} label="Projects Submitted" />
-                <StatItem icon={<UsersRound className="w-8 h-8" />} value={1200} label="Faculty & Staff" />
-                <StatItem icon={<University className="w-8 h-8" />} value={850} label="Departments Active" />
-                <StatItem icon={<Bot className="w-8 h-8" />} value={25000} label="AI Reviews" />
-            </div>
-        </section>
-
-        <section className="py-24 scroll-m-20" data-animate-on-scroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Why GenKit ProStudio?</h2>
-            <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">An integrated platform designed to elevate your academic project experience from start to finish.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <ElectricBorder
-                    color="orange"
-                    speed={0.3}
-                    chaos={0.2}
-                    thickness={2}
-                    style={{ borderRadius: '0.75rem' }}
+    <>
+        <div className="relative bg-black">
+            <section className="relative min-h-screen flex flex-col justify-center items-center text-center animate-fade-in container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="absolute inset-0 -z-10">
+                    <SpiralAnimation />
+                </div>
+                <GradientText
+                    colors={['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']}
+                    animationSpeed={5}
+                    className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4 font-headline animate-slide-in-down"
                 >
-                    <Card className="text-center p-6 h-full">
-                        <div className="w-12 h-12 mx-auto mb-4 text-primary"><BrainCircuit /></div>
-                        <h3 className="text-xl font-bold font-headline">AI-Powered Assistance</h3>
-                        <p className="text-muted-foreground mt-2">Leverage cutting-edge AI for idea generation, code reviews, abstract summaries, and more.</p>
-                    </Card>
-                </ElectricBorder>
-                <ElectricBorder
-                    color="orange"
-                    speed={0.3}
-                    chaos={0.2}
-                    thickness={2}
-                    style={{ borderRadius: '0.75rem' }}
-                >
-                    <Card className="text-center p-6 h-full">
-                        <UsersRound className="w-12 h-12 mx-auto mb-4 text-primary"/>
-                        <h3 className="text-xl font-bold font-headline">Seamless Collaboration</h3>
-                        <p className="text-muted-foreground mt-2">Find teammates, manage your team, and communicate effectively all in one place.</p>
-                    </Card>
-                </ElectricBorder>
-                 <ElectricBorder
-                    color="orange"
-                    speed={0.3}
-                    chaos={0.2}
-                    thickness={2}
-                    style={{ borderRadius: '0.75rem' }}
-                 >
-                    <Card className="text-center p-6 h-full">
-                        <BarChart className="w-12 h-12 mx-auto mb-4 text-primary"/>
-                        <h3 className="text-xl font-bold font-headline">Transparent Tracking</h3>
-                        <p className="text-muted-foreground mt-2">Stay updated with a live leaderboard, announcements, and clear project approval tracking.</p>
-                    </Card>
-                </ElectricBorder>
-            </div>
-        </section>
+                    Welcome to GenKit ProStudio
+                </GradientText>
+                <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-slide-in-up">
+                    Your all-in-one platform for managing academic projects. From proposals to final evaluations, we've got you covered.
+                </p>
+                <div className="flex justify-center gap-4 animate-fade-in" style={{animationDelay: '0.5s'}}>
+                    <StarButton asChild size="lg">
+                        <Link href="/student">Get Started as Student</Link>
+                    </StarButton>
+                    <StarButton asChild size="lg" variant="secondary">
+                       <Link href="/judge">Enter as Faculty or Admin</Link>
+                    </StarButton>
+                </div>
+            </section>
+        </div>
 
-        <section className="py-24 scroll-m-20" data-animate-on-scroll>
-             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">How It Works</h2>
-             <HowItWorksAnimation />
-        </section>
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+            <section className="py-24 scroll-m-20" data-animate-on-scroll>
+                <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Our Platform by the Numbers</h2>
+                <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Powering innovation and collaboration across leading academic institutions.</p>
+                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+                    <StatItem icon={<Building className="w-8 h-8" />} value={643} label="Institutions" />
+                    <StatItem icon={<Users className="w-8 h-8" />} value={15700} label="Users Engaged" />
+                    <StatItem icon={<CodeXml className="w-8 h-8" />} value={3200} label="Projects Submitted" />
+                    <StatItem icon={<UsersRound className="w-8 h-8" />} value={1200} label="Faculty & Staff" />
+                    <StatItem icon={<University className="w-8 h-8" />} value={850} label="Departments Active" />
+                    <StatItem icon={<Bot className="w-8 h-8" />} value={25000} label="AI Reviews" />
+                </div>
+            </section>
 
-        <section className="py-24 scroll-m-20" id="roles" data-animate-on-scroll>
-             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Tailored for Everyone</h2>
-             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">A unique set of tools designed for every role in the academic ecosystem.</p>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                 <ElectricBorder
-                    color="orange"
-                    speed={0.3}
-                    chaos={0.2}
-                    thickness={2}
-                    style={{ borderRadius: '0.75rem' }}
-                 >
-                     <Card className="flex flex-col h-full">
-                         <CardHeader>
-                             <CardTitle className="flex items-center gap-3 font-headline text-2xl"><User className="text-primary"/> For Students</CardTitle>
-                         </CardHeader>
-                         <CardContent className="flex-grow space-y-3">
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Join teams or use the AI Matchmaker to find collaborators.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Brainstorm ideas with the AI Idea Generator.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Submit project proposals easily.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Get instant AI-powered code reviews.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Track your project's approval and evaluation status.</span></p>
-                         </CardContent>
-                     </Card>
-                 </ElectricBorder>
-                 <ElectricBorder
-                    color="orange"
-                    speed={0.3}
-                    chaos={0.2}
-                    thickness={2}
-                    style={{ borderRadius: '0.75rem' }}
-                 >
-                     <Card className="flex flex-col h-full">
-                         <CardHeader>
-                             <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Scale className="text-primary"/> For Faculty</CardTitle>
-                         </CardHeader>
-                         <CardContent className="flex-grow space-y-3">
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Access all student submissions in one dashboard.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Read AI-generated abstracts for quick evaluation.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Use a standardized rubric for fair and consistent scoring.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Follow a multi-level approval workflow (Guide → R&amp;D → HoD).</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Score both teams and individual contributions.</span></p>
-                         </CardContent>
-                     </Card>
-                 </ElectricBorder>
-                 <ElectricBorder
-                    color="orange"
-                    speed={0.3}
-                    chaos={0.2}
-                    thickness={2}
-                    style={{ borderRadius: '0.75rem' }}
-                 >
-                     <Card className="flex flex-col h-full">
-                         <CardHeader>
-                             <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Shield className="text-primary"/> For Admins</CardTitle>
-                         </CardHeader>
-                         <CardContent className="flex-grow space-y-3">
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage departments, users, and faculty roles.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Approve student and faculty registrations.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Broadcast announcements to all participants.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Monitor real-time analytics and generate reports.</span></p>
-                             <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage support tickets with AI triage.</span></p>
-                         </CardContent>
-                     </Card>
-                 </ElectricBorder>
-             </div>
-         </section>
+            <section className="py-24 scroll-m-20" data-animate-on-scroll>
+                <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Why GenKit ProStudio?</h2>
+                <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">An integrated platform designed to elevate your academic project experience from start to finish.</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <ElectricBorder
+                        color="orange"
+                        speed={0.3}
+                        chaos={0.2}
+                        thickness={2}
+                        style={{ borderRadius: '0.75rem' }}
+                    >
+                        <Card className="text-center p-6 h-full">
+                            <div className="w-12 h-12 mx-auto mb-4 text-primary"><BrainCircuit /></div>
+                            <h3 className="text-xl font-bold font-headline">AI-Powered Assistance</h3>
+                            <p className="text-muted-foreground mt-2">Leverage cutting-edge AI for idea generation, code reviews, abstract summaries, and more.</p>
+                        </Card>
+                    </ElectricBorder>
+                    <ElectricBorder
+                        color="orange"
+                        speed={0.3}
+                        chaos={0.2}
+                        thickness={2}
+                        style={{ borderRadius: '0.75rem' }}
+                    >
+                        <Card className="text-center p-6 h-full">
+                            <UsersRound className="w-12 h-12 mx-auto mb-4 text-primary"/>
+                            <h3 className="text-xl font-bold font-headline">Seamless Collaboration</h3>
+                            <p className="text-muted-foreground mt-2">Find teammates, manage your team, and communicate effectively all in one place.</p>
+                        </Card>
+                    </ElectricBorder>
+                     <ElectricBorder
+                        color="orange"
+                        speed={0.3}
+                        chaos={0.2}
+                        thickness={2}
+                        style={{ borderRadius: '0.75rem' }}
+                     >
+                        <Card className="text-center p-6 h-full">
+                            <BarChart className="w-12 h-12 mx-auto mb-4 text-primary"/>
+                            <h3 className="text-xl font-bold font-headline">Transparent Tracking</h3>
+                            <p className="text-muted-foreground mt-2">Stay updated with a live leaderboard, announcements, and clear project approval tracking.</p>
+                        </Card>
+                    </ElectricBorder>
+                </div>
+            </section>
 
-         <section className="py-24 scroll-m-20" data-animate-on-scroll>
-             <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Meet Your AI Co-pilot</h2>
-             <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">GenKit ProStudio integrates powerful AI tools at every stage of your project journey, acting as your personal assistant to help you succeed.</p>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                 <div className="relative flex justify-center items-center">
-                    <svg width="250" height="250" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_15px_hsl(var(--primary))]">
-                        <defs>
-                            <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                                <stop offset="0%" style={{stopColor: 'hsl(var(--secondary))', stopOpacity: 1}} />
-                                <stop offset="70%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 0.9}} />
-                                <stop offset="100%" style={{stopColor: 'hsl(var(--background))', stopOpacity: 0}} />
-                            </radialGradient>
-                            <filter id="sunGlow" x="-50%" y="-50%" width="200%" height="200%">
-                                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                                <feMerge>
-                                    <feMergeNode in="coloredBlur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                </feMerge>
-                            </filter>
-                        </defs>
-                        <g filter="url(#sunGlow)" transform="translate(50 50)">
-                            {[...Array(12)].map((_, i) => (
-                                <g key={i} transform={`rotate(${i * 30})`}>
-                                    <path d="M 0 -40 C 10 -30, 10 -10, 0 -2" stroke="hsl(var(--primary) / 0.8)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: `${i * 100}ms`}}/>
-                                    <path d="M 0 -40 C -10 -30, -10 -10, 0 -2" stroke="hsl(var(--primary) / 0.8)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: `${i * 100}ms`}}/>
-                                </g>
-                            ))}
-                            <circle cx="0" cy="0" r="22" fill="url(#sunGradient)" />
-                            <circle cx="0" cy="0" r="18" fill="hsl(var(--background))" />
-                            <text
-                                x="0"
-                                y="4"
-                                fontFamily="monospace"
-                                fontSize="12"
-                                fill="hsl(var(--secondary))"
-                                textAnchor="middle"
-                                fontWeight="bold"
+            <section className="py-24 scroll-m-20" data-animate-on-scroll>
+                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">How It Works</h2>
+                 <HowItWorksAnimation />
+            </section>
+
+            <section className="py-24 scroll-m-20" id="roles" data-animate-on-scroll>
+                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Tailored for Everyone</h2>
+                 <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">A unique set of tools designed for every role in the academic ecosystem.</p>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                     <ElectricBorder
+                        color="orange"
+                        speed={0.3}
+                        chaos={0.2}
+                        thickness={2}
+                        style={{ borderRadius: '0.75rem' }}
+                     >
+                         <Card className="flex flex-col h-full">
+                             <CardHeader>
+                                 <CardTitle className="flex items-center gap-3 font-headline text-2xl"><User className="text-primary"/> For Students</CardTitle>
+                             </CardHeader>
+                             <CardContent className="flex-grow space-y-3">
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Join teams or use the AI Matchmaker to find collaborators.</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Brainstorm ideas with the AI Idea Generator.</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Submit project proposals easily.</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Get instant AI-powered code reviews.</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Track your project's approval and evaluation status.</span></p>
+                             </CardContent>
+                         </Card>
+                     </ElectricBorder>
+                     <ElectricBorder
+                        color="orange"
+                        speed={0.3}
+                        chaos={0.2}
+                        thickness={2}
+                        style={{ borderRadius: '0.75rem' }}
+                     >
+                         <Card className="flex flex-col h-full">
+                             <CardHeader>
+                                 <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Scale className="text-primary"/> For Faculty</CardTitle>
+                             </CardHeader>
+                             <CardContent className="flex-grow space-y-3">
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Access all student submissions in one dashboard.</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Read AI-generated abstracts for quick evaluation.</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Use a standardized rubric for fair and consistent scoring.</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Follow a multi-level approval workflow (Guide → R&amp;D → HoD).</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Score both teams and individual contributions.</span></p>
+                             </CardContent>
+                         </Card>
+                     </ElectricBorder>
+                     <ElectricBorder
+                        color="orange"
+                        speed={0.3}
+                        chaos={0.2}
+                        thickness={2}
+                        style={{ borderRadius: '0.75rem' }}
+                     >
+                         <Card className="flex flex-col h-full">
+                             <CardHeader>
+                                 <CardTitle className="flex items-center gap-3 font-headline text-2xl"><Shield className="text-primary"/> For Admins</CardTitle>
+                             </CardHeader>
+                             <CardContent className="flex-grow space-y-3">
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage departments, users, and faculty roles.</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Approve student and faculty registrations.</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Broadcast announcements to all participants.</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Monitor real-time analytics and generate reports.</span></p>
+                                 <p className="flex items-start gap-2"><CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0"/><span>Manage support tickets with AI triage.</span></p>
+                             </CardContent>
+                         </Card>
+                     </ElectricBorder>
+                 </div>
+             </section>
+
+             <section className="py-24 scroll-m-20" data-animate-on-scroll>
+                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-headline">Meet Your AI Co-pilot</h2>
+                 <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">GenKit ProStudio integrates powerful AI tools at every stage of your project journey, acting as your personal assistant to help you succeed.</p>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                     <div className="relative flex justify-center items-center">
+                        <svg width="250" height="250" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-[0_0_15px_hsl(var(--primary))]">
+                            <defs>
+                                <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                    <stop offset="0%" style={{stopColor: 'hsl(var(--secondary))', stopOpacity: 1}} />
+                                    <stop offset="70%" style={{stopColor: 'hsl(var(--primary))', stopOpacity: 0.9}} />
+                                    <stop offset="100%" style={{stopColor: 'hsl(var(--background))', stopOpacity: 0}} />
+                                </radialGradient>
+                                <filter id="sunGlow" x="-50%" y="-50%" width="200%" height="200%">
+                                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur" />
+                                        <feMergeNode in="SourceGraphic" />
+                                    </feMerge>
+                                </filter>
+                            </defs>
+                            <g filter="url(#sunGlow)" transform="translate(50 50)">
+                                {[...Array(12)].map((_, i) => (
+                                    <g key={i} transform={`rotate(${i * 30})`}>
+                                        <path d="M 0 -40 C 10 -30, 10 -10, 0 -2" stroke="hsl(var(--primary) / 0.8)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: `${i * 100}ms`}}/>
+                                        <path d="M 0 -40 C -10 -30, -10 -10, 0 -2" stroke="hsl(var(--primary) / 0.8)" strokeWidth="1" fill="none" className="animate-pulse" style={{animationDelay: `${i * 100}ms`}}/>
+                                    </g>
+                                ))}
+                                <circle cx="0" cy="0" r="22" fill="url(#sunGradient)" />
+                                <circle cx="0" cy="0" r="18" fill="hsl(var(--background))" />
+                                <text
+                                    x="0"
+                                    y="4"
+                                    fontFamily="monospace"
+                                    fontSize="12"
+                                    fill="hsl(var(--secondary))"
+                                    textAnchor="middle"
+                                    fontWeight="bold"
+                                >
+                                    PDR
+                                </text>
+                            </g>
+                        </svg>
+                     </div>
+                     <div className="space-y-8">
+                         <div className="flex gap-4 items-start">
+                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                 <Lightbulb className="w-5 h-5 text-primary" />
+                             </div>
+                             <div>
+                                <h4 className="font-bold text-lg font-headline">Ideate &amp; Plan</h4>
+                                <p className="text-muted-foreground mt-1">Stuck for an idea? Use the AI Idea Generator. Need a presentation structure? The AI Pitch Coach has you covered.</p>
+                             </div>
+                         </div>
+                          <div className="flex gap-4 items-start">
+                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                 <UsersRound className="w-5 h-5 text-primary" />
+                             </div>
+                             <div>
+                                <h4 className="font-bold text-lg font-headline">Find Your Team</h4>
+                                <p className="text-muted-foreground mt-1">Our AI Matchmaker analyzes skills and work styles to suggest the most compatible teammates for you.</p>
+                             </div>
+                         </div>
+                          <div className="flex gap-4 items-start">
+                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                 <CodeXml className="w-5 h-5 text-primary" />
+                             </div>
+                             <div>
+                                <h4 className="font-bold text-lg font-headline">Review &amp; Refine</h4>
+                                <p className="text-muted-foreground mt-1">Get instant, automated feedback on your code quality with our AI Code Reviewer, helping you fix issues before submission.</p>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+            </section>
+            <section className="py-24 scroll-m-20" data-animate-on-scroll>
+                <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">A Feature for Every Step</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                     {features.map((feature, index) => (
+                        <FeatureCard 
+                            key={feature.title}
+                            icon={feature.icon}
+                            title={feature.title}
+                            description={feature.description}
+                            index={index}
+                        />
+                     ))}
+                </div>
+            </section>
+
+            <section className="py-24 scroll-m-20 w-full overflow-hidden" data-animate-on-scroll>
+                <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">What People Are Saying</h2>
+                <div className="relative w-full">
+                    <div className="flex w-max scrolling-wrapper group-hover:pause">
+                        {[...testimonials, ...testimonials].map((testimonial, index) => (
+                            <ElectricBorder
+                              key={index}
+                              style={{ borderRadius: '0.75rem', margin: '0 1rem' }}
+                              color="orange"
+                              speed={0.3}
+                              chaos={0.2}
+                              thickness={2}
                             >
-                                PDR
-                            </text>
-                        </g>
-                    </svg>
-                 </div>
-                 <div className="space-y-8">
-                     <div className="flex gap-4 items-start">
-                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                             <Lightbulb className="w-5 h-5 text-primary" />
-                         </div>
-                         <div>
-                            <h4 className="font-bold text-lg font-headline">Ideate &amp; Plan</h4>
-                            <p className="text-muted-foreground mt-1">Stuck for an idea? Use the AI Idea Generator. Need a presentation structure? The AI Pitch Coach has you covered.</p>
-                         </div>
-                     </div>
-                      <div className="flex gap-4 items-start">
-                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                             <UsersRound className="w-5 h-5 text-primary" />
-                         </div>
-                         <div>
-                            <h4 className="font-bold text-lg font-headline">Find Your Team</h4>
-                            <p className="text-muted-foreground mt-1">Our AI Matchmaker analyzes skills and work styles to suggest the most compatible teammates for you.</p>
-                         </div>
-                     </div>
-                      <div className="flex gap-4 items-start">
-                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                             <CodeXml className="w-5 h-5 text-primary" />
-                         </div>
-                         <div>
-                            <h4 className="font-bold text-lg font-headline">Review &amp; Refine</h4>
-                            <p className="text-muted-foreground mt-1">Get instant, automated feedback on your code quality with our AI Code Reviewer, helping you fix issues before submission.</p>
-                         </div>
-                     </div>
-                 </div>
-             </div>
-        </section>
-        <section className="py-24 scroll-m-20" data-animate-on-scroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">A Feature for Every Step</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                 {features.map((feature, index) => (
-                    <FeatureCard 
-                        key={feature.title}
-                        icon={feature.icon}
-                        title={feature.title}
-                        description={feature.description}
-                        index={index}
-                    />
-                 ))}
-            </div>
-        </section>
-
-        <section className="py-24 scroll-m-20 w-full overflow-hidden" data-animate-on-scroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">What People Are Saying</h2>
-            <div className="relative w-full">
-                <div className="flex w-max scrolling-wrapper group-hover:pause">
-                    {[...testimonials, ...testimonials].map((testimonial, index) => (
-                        <ElectricBorder
-                          key={index}
-                          style={{ borderRadius: '0.75rem', margin: '0 1rem' }}
-                          color="orange"
-                          speed={0.3}
-                          chaos={0.2}
-                          thickness={2}
-                        >
-                            <Card className="w-[350px] flex-shrink-0 h-full">
-                                <CardContent className="p-6">
-                                    <p className="italic text-foreground">"{testimonial.quote}"</p>
-                                    <div className="mt-4 text-right">
-                                        <p className="font-bold font-headline">{testimonial.name}</p>
-                                        <p className="text-sm text-primary">{testimonial.role}</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </ElectricBorder>
-                    ))}
+                                <Card className="w-[350px] flex-shrink-0 h-full">
+                                    <CardContent className="p-6">
+                                        <p className="italic text-foreground">"{testimonial.quote}"</p>
+                                        <div className="mt-4 text-right">
+                                            <p className="font-bold font-headline">{testimonial.name}</p>
+                                            <p className="text-sm text-primary">{testimonial.role}</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </ElectricBorder>
+                        ))}
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
 
-        <section className="py-24 scroll-m-20" data-animate-on-scroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">Our Esteemed Partners</h2>
-            <div className="bg-muted/50 rounded-lg p-8">
-                 <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
-                    {partners.map((partner) => (
-                        <div key={partner.name} className="relative h-12 w-32 filter grayscale hover:filter-none transition-all duration-300">
-                             <Image
-                                src={partner.logo}
-                                alt={`${partner.name} logo`}
-                                fill
-                                style={{ objectFit: 'contain' }}
-                                unoptimized
-                            />
-                        </div>
-                    ))}
+            <section className="py-24 scroll-m-20" data-animate-on-scroll>
+                <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">Our Esteemed Partners</h2>
+                <div className="bg-muted/50 rounded-lg p-8">
+                     <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
+                        {partners.map((partner) => (
+                            <div key={partner.name} className="relative h-12 w-32 filter grayscale hover:filter-none transition-all duration-300">
+                                 <Image
+                                    src={partner.logo}
+                                    alt={`${partner.name} logo`}
+                                    fill
+                                    style={{ objectFit: 'contain' }}
+                                    unoptimized
+                                />
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
-        </section>
-        
-         <section className="py-24 scroll-m-20" data-animate-on-scroll>
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">Frequently Asked Questions</h2>
-            <div className="max-w-3xl mx-auto">
-                <Accordion type="single" collapsible className="w-full">
-                    {faqItems.map((item, index) => (
-                        <AccordionItem value={`item-${index}`} key={index}>
-                            <AccordionTrigger className="text-left">
-                                {item.question}
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                {item.answer}
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))}
-                </Accordion>
-            </div>
-        </section>
+            </section>
+            
+             <section className="py-24 scroll-m-20" data-animate-on-scroll>
+                <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 font-headline">Frequently Asked Questions</h2>
+                <div className="max-w-3xl mx-auto">
+                    <Accordion type="single" collapsible className="w-full">
+                        {faqItems.map((item, index) => (
+                            <AccordionItem value={`item-${index}`} key={index}>
+                                <AccordionTrigger className="text-left">
+                                    {item.question}
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    {item.answer}
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                </div>
+            </section>
 
 
-         <section className="py-24 text-center scroll-m-20" data-animate-on-scroll>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-headline">Ready to Start Building?</h2>
-            <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
-                Join your college's project hub. Register as a student or sign in as a faculty member to begin.
-            </p>
-             <div className="flex justify-center gap-4">
-                <StarButton asChild size="lg">
-                    <Link href="/student">I'm a Student</Link>
-                </StarButton>
-                <StarButton asChild size="lg" variant="secondary">
-                   <Link href="/judge">I'm a Faculty / Admin</Link>
-                </StarButton>
-            </div>
-        </section>
-    </div>
+             <section className="py-24 text-center scroll-m-20" data-animate-on-scroll>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 font-headline">Ready to Start Building?</h2>
+                <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
+                    Join your college's project hub. Register as a student or sign in as a faculty member to begin.
+                </p>
+                 <div className="flex justify-center gap-4">
+                    <StarButton asChild size="lg">
+                        <Link href="/student">I'm a Student</Link>
+                    </StarButton>
+                    <StarButton asChild size="lg" variant="secondary">
+                       <Link href="/judge">I'm a Faculty / Admin</Link>
+                    </StarButton>
+                </div>
+            </section>
+        </div>
+    </>
   );
 }
 
@@ -566,3 +599,4 @@ export default function Home() {
     
 
     
+
