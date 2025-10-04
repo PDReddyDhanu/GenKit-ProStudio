@@ -14,7 +14,7 @@ import { triageSupportTicket as triageSupportTicketFlow, TriageSupportTicketInpu
 import { generateSupportResponse as generateSupportResponseFlow, GenerateSupportResponseInput, GenerateSupportResponseOutput } from '@/ai/flows/generate-support-response';
 import { generateDetailedProjectIdea as generateDetailedProjectIdeaFlow, GenerateDetailedProjectIdeaInput, GenerateDetailedProjectIdeaOutput } from '@/ai/flows/generate-detailed-project-idea';
 import { generateHackathonImage as generateHackathonImageFlow, GenerateHackathonImageInput } from '@/ai/flows/generate-hackathon-image';
-import { generatePitchAudio as generatePitchAudioFlow, GeneratePitchAudioInput } from '@/ai/flows/generate-pitch-audio';
+import { generatePitchAudio as generatePitchAudioFlow, GeneratePitchAudioInput, GeneratePitchAudioOutput } from '@/ai/flows/generate-pitch-audio';
 
 
 // AI Related Actions
@@ -144,10 +144,10 @@ export async function generateSupportResponse(input: GenerateSupportResponseInpu
     }
 }
 
-export async function generatePitchAudioAction(input: GeneratePitchAudioInput): Promise<string | null> {
+export async function generatePitchAudioAction(input: GeneratePitchAudioInput): Promise<GeneratePitchAudioOutput | null> {
     try {
         const result = await generatePitchAudioFlow(input);
-        return result.audioUrl;
+        return result;
     } catch (error) {
         console.error("Error generating pitch audio:", error);
         return null;

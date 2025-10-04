@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -239,7 +238,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
             const pitchText = pitchOutline.slides.map(s => `${s.title}. ${s.content.replace(/\*/g, '')}`).join('\n');
             const result = await generatePitchAudioAction({ pitchText });
             if (result) {
-                setPitchAudioUrl(result);
+                setPitchAudioUrl(result.audioUrl);
             } else {
                  alert("Could not generate audio. Please try again.");
             }
@@ -388,5 +387,3 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
         </div>
     );
 }
-
-
