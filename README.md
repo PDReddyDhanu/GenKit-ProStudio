@@ -1,4 +1,5 @@
 
+
 # GenKit ProStudio: College Project Management Hub
 
 GenKit ProStudio is a comprehensive, AI-powered SaaS platform built with Next.js and Firebase to streamline the lifecycle of academic projects in colleges. It provides a seamless, transparent, and efficient experience for students, faculty guides, HoDs, and administrators, from project proposal and team formation to final evaluation and reporting.
