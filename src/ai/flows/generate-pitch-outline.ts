@@ -40,7 +40,7 @@ const prompt = ai.definePrompt({
   name: 'generatePitchOutlinePrompt',
   input: {schema: GeneratePitchOutlineInputSchema},
   output: {schema: GeneratePitchOutlineOutputSchema},
-  prompt: `You are a world-class academic presentation coach. Your task is to create a concise and effective presentation outline for a student team based on their project details. The total number of slides should be 6.
+  prompt: `You are a world-class academic presentation coach. Your task is to create a comprehensive and effective presentation outline for a student team based on their project details. The total number of slides should be 9.
 
 **First slide MUST be an introductory slide with the following format:**
 - **Title:** "Project Introduction"
@@ -54,14 +54,17 @@ const prompt = ai.definePrompt({
         - [Member 3]
         ...
 
-Then, create 5 more slides for the main presentation, structured for a typical academic review:
-1.  **Background & Objectives:** Briefly explain the problem area and list the project's key objectives.
-2.  **Methodology & Implementation:** Describe the approach, key features, and the technology stack used.
-3.  **Results & Future Work:** Explain the results achieved, potential impact, and what the next steps for the project would be.
-4.  **Conclusion:** A summary slide.
-5.  **Q&A:** An invitation for questions.
+Then, create 8 more slides for the main presentation, structured for a detailed academic review:
+1.  **Problem Statement:** Clearly define the problem the project is addressing. What is the gap or issue?
+2.  **Literature Survey:** Summarize existing work, research papers, or similar projects related to this problem.
+3.  **Objectives:** List the key, measurable objectives of the project.
+4.  **Methodology & Implementation:** Describe the approach, architecture, key algorithms, and the technology stack used in detail.
+5.  **Advantages & Disadvantages:** Provide a balanced view of your approach. What are its strengths and potential limitations?
+6.  **Results & Future Work:** Explain the results achieved, show demos if applicable, discuss potential impact, and outline the next steps.
+7.  **Conclusion:** A summary slide that recaps the problem, solution, and key outcomes.
+8.  **Q&A:** An invitation for questions.
 
-For each of these 5 slides, provide a title and 2-4 bullet points for the content.
+For each of these 8 slides, provide a clear title and 3-5 detailed bullet points for the content.
 
 **Project Details:**
 - Project Name: {{{projectName}}}
@@ -78,7 +81,7 @@ For each of these 5 slides, provide a title and 2-4 bullet points for the conten
 **AI Code Review Analysis (for context):** {{{aiCodeReview}}}
 {{/if}}
 
-Generate the complete 6-slide outline now.`,
+Generate the complete 9-slide outline now.`,
 });
 
 const generatePitchOutlineFlow = ai.defineFlow(
