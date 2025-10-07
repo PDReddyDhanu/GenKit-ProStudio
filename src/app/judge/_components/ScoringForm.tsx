@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -39,7 +38,7 @@ type RubricItem = { id: string; name: string; max: number };
 
 export default function ScoringForm({ project: submission, onBack }: ScoringFormProps) {
     const { state, api } = useHackathon();
-    const { currentFaculty, teams } = state;
+    const { currentFaculty, teams, users } = state;
     const isExternal = currentFaculty?.role === 'external';
 
     const [scores, setScores] = useState<Record<string, Record<string, number>>>({}); // { [memberId/team]: { [criteriaId]: value } }
@@ -123,14 +122,19 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
     };
 
     const handleGenerateOutline = async (idea: ProjectIdea) => {
+        if (!team) return;
         setIsGeneratingOutline(true);
         setPitchOutline(null);
         setPitchAudio(null);
         try {
+            const creator = users.find(u => u.id === team.creatorId);
             const result = await generatePitchOutline({
                 projectName: idea.title,
                 projectDescription: idea.description,
-                aiCodeReview: aiSummary || undefined
+                aiCodeReview: aiSummary || undefined,
+                course: creator?.department,
+                guideName: team.guide?.name,
+                teamMembers: team.members.map(m => m.name),
             });
             setPitchOutline(result);
         } finally {

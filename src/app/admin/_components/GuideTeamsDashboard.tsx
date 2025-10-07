@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -100,7 +99,7 @@ const GuideChatDialog = ({ team, guide, open, onOpenChange }: { team: Team, guid
 
 const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubmission }) => {
     const { state } = useHackathon();
-    const { currentFaculty } = state;
+    const { currentFaculty, users } = state;
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [aiSummary, setAiSummary] = useState<Record<string, string>>({});
     const [isGeneratingSummary, setIsGeneratingSummary] = useState<string | null>(null);
@@ -133,9 +132,13 @@ const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubm
         setPitchOutline(null);
         setPitchAudio(null);
         try {
+            const creator = users.find(u => u.id === team.creatorId);
             const result = await generatePitchOutline({
                 projectName: idea.title,
                 projectDescription: idea.description,
+                course: creator?.department,
+                guideName: team.guide?.name,
+                teamMembers: team.members.map(m => m.name),
             });
             setPitchOutline(result);
         } finally {

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -164,7 +163,7 @@ const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, o
 
 export default function ProjectView({ submission: initialSubmission, onBack, onAddIdea }: ProjectViewProps) {
     const { state, api } = useHackathon();
-    const { teams, selectedCollege, projects } = state;
+    const { teams, selectedCollege, projects, users } = state;
     const [submission, setSubmission] = useState(initialSubmission);
 
     const [isReviewing, setIsReviewing] = useState(false);
@@ -216,14 +215,19 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
     };
 
     const handleGenerateOutline = async (idea: ProjectIdea) => {
+        if (!team) return;
         setIsGeneratingOutline(true);
         setPitchOutline(null);
         setPitchAudio(null);
         try {
+            const creator = users.find(u => u.id === team.creatorId);
             const result = await generatePitchOutline({
                 projectName: idea.title,
                 projectDescription: idea.description,
-                aiCodeReview: review || undefined
+                aiCodeReview: review || undefined,
+                course: creator?.department,
+                guideName: team.guide?.name,
+                teamMembers: team.members.map(m => m.name),
             });
             setPitchOutline(result);
         } finally {
