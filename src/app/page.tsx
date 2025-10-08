@@ -4,7 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Shield, Server, Search, CodeXml, User, Sun, Briefcase, University, FolderGit2, Building, Bot } from "lucide-react";
+import { BarChart, GalleryVertical, FileText, Github, Lightbulb, Trophy, Users, Handshake, Scale, BrainCircuit, Check, UsersRound, Award, Code, CheckCircle, Shield, Server, Search, CodeXml, User, Sun, Briefcase, University, FolderGit2, Building, Bot, Download } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -277,6 +277,12 @@ export default function Home() {
     },
   ];
 
+  const handleDownload = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!window.confirm("This will download the GenKit ProStudio APK file. Do you want to proceed?")) {
+        e.preventDefault();
+    }
+  };
+
   return (
     <>
       <div className="bg-black">
@@ -301,6 +307,18 @@ export default function Home() {
                 <StarButton asChild size="lg" variant="secondary">
                    <Link href="/judge">Enter as Faculty or Admin</Link>
                 </StarButton>
+            </div>
+             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-4 animate-fade-in" style={{animationDelay: '0.7s'}}>
+                <Button asChild size="lg" variant="outline">
+                    <a href="/GenKit-ProStudio.apk" download onClick={handleDownload}>
+                       <Download className="mr-2 h-5 w-5" /> Download the App
+                    </a>
+                </Button>
+                 <Button asChild size="lg" variant="outline">
+                    <a href="https://prostudio-pdr.kesug.com" target="_blank" rel="noopener noreferrer">
+                        Use via Web Browser
+                    </a>
+                </Button>
             </div>
         </section>
       </div>
@@ -508,5 +526,7 @@ export default function Home() {
     </>
   );
 }
+
+    
 
     
