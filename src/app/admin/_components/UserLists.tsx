@@ -26,14 +26,15 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
         await api.removeFaculty(facultyId);
     };
 
-    const getBranchName = (branchId: string): string => {
-        for (const dept of Object.values(DEPARTMENTS_DATA)) {
-            const branch = dept.find(b => b.id === branchId);
+    const getBranchName = (user: User): string => {
+        const deptKey = user.department as keyof typeof DEPARTMENTS_DATA;
+        if (DEPARTMENTS_DATA[deptKey]) {
+            const branch = DEPARTMENTS_DATA[deptKey].find(b => b.id === user.branch);
             if (branch) {
-                return branch.name;
+                return `${user.department} / ${branch.name}`;
             }
         }
-        return branchId; // Fallback to ID if not found
+        return user.branch;
     };
     
     const batchText = selectedBatch ? `for batch ${selectedBatch}` : "for all batches";
@@ -52,7 +53,7 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
                             {approvedStudents.length > 0 ? approvedStudents.map(user => (
                                 <div key={user.id} className="p-2 bg-muted/50 rounded-md flex justify-between items-center">
                                     <div>
-                                        <div className="font-semibold text-sm">{user.name} <Badge variant="outline">{getBranchName(user.branch)}</Badge></div>
+                                        <div className="font-semibold text-sm">{user.name} <Badge variant="outline">{getBranchName(user)}</Badge></div>
                                         <p className="text-xs text-muted-foreground">{user.email}</p>
                                     </div>
                                     <Button variant="destructive" size="sm" onClick={() => handleRemoveStudent(user.id)}>
