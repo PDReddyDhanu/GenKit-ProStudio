@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { createContext, useContext, ReactNode, useEffect, useReducer } from 'react';
@@ -22,7 +21,8 @@ interface AppState {
   currentFaculty: Faculty | null;
   currentAdmin: boolean;
   selectedCollege: string | null;
-  selectedHackathonId: string | null; // Renamed for clarity
+  selectedHackathonId: string | null;
+  selectedBatch: string | null; // e.g., "2022-2026"
   authError: string | null;
   successMessage: string | null;
   isInitialized: boolean;
@@ -42,6 +42,7 @@ const defaultState: AppState = {
   currentAdmin: false,
   selectedCollege: null,
   selectedHackathonId: null,
+  selectedBatch: null,
   authError: null,
   successMessage: null,
   isInitialized: false,
@@ -57,6 +58,7 @@ type Action =
   | { type: 'SET_INITIALIZED'; payload: boolean }
   | { type: 'SET_SELECTED_COLLEGE'; payload: string | null }
   | { type: 'SET_SELECTED_HACKATHON'; payload: string | null }
+  | { type: 'SET_SELECTED_BATCH'; payload: string | null }
   | { type: 'SET_AUTH_ERROR'; payload: string | null }
   | { type: 'SET_SUCCESS_MESSAGE'; payload: string | null }
   | { type: 'CLEAR_MESSAGES' }
@@ -107,6 +109,13 @@ function appReducer(state: AppState, action: Action): AppState {
                 localStorage.removeItem(`selectedEvent_${state.selectedCollege}`);
             }
             return { ...state, selectedHackathonId: action.payload };
+        case 'SET_SELECTED_BATCH':
+            if (action.payload && state.selectedCollege) {
+                localStorage.setItem(`selectedBatch_${state.selectedCollege}`, action.payload);
+            } else if (state.selectedCollege) {
+                localStorage.removeItem(`selectedBatch_${state.selectedCollege}`);
+            }
+            return { ...state, selectedBatch: action.payload };
         case 'SET_AUTH_ERROR':
             return { ...state, authError: action.payload };
         case 'SET_SUCCESS_MESSAGE':
@@ -114,7 +123,7 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'CLEAR_MESSAGES':
             return { ...state, authError: null, successMessage: null };
         case 'SIGN_OUT_USER':
-            return { ...state, currentUser: null, currentFaculty: null, currentAdmin: false, selectedHackathonId: null };
+            return { ...state, currentUser: null, currentFaculty: null, currentAdmin: false, selectedHackathonId: null, selectedBatch: null };
         default:
             return state;
     }
@@ -149,6 +158,10 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
             const storedEvent = localStorage.getItem(`selectedEvent_${storedCollege}`);
             if (storedEvent) {
                 dispatch({ type: 'SET_SELECTED_HACKATHON', payload: storedEvent });
+            }
+            const storedBatch = localStorage.getItem(`selectedBatch_${storedCollege}`);
+            if (storedBatch) {
+                dispatch({ type: 'SET_SELECTED_BATCH', payload: storedBatch });
             }
         } else {
             dispatch({ type: 'SET_INITIALIZED', payload: true });

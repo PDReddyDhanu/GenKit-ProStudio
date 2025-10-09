@@ -11,13 +11,23 @@ import UserLists from './UserLists';
 
 export default function AdminDashboard() {
     const { state } = useHackathon();
-    const { users, faculty } = state;
+    const { users, faculty, selectedBatch } = state;
+
+    const filteredUsers = useMemo(() => {
+        if (!selectedBatch) return users;
+        const [startYear, endYear] = selectedBatch.split('-').map(Number);
+        return users.filter(u => 
+            u.admissionYear && u.passoutYear &&
+            parseInt(u.admissionYear) === startYear &&
+            parseInt(u.passoutYear) === endYear
+        );
+    }, [users, selectedBatch]);
 
     const { pendingUsers, approvedUsers } = useMemo(() => {
-        const pending = users.filter(u => u.status === 'pending');
-        const approved = users.filter(u => u.status === 'approved');
+        const pending = filteredUsers.filter(u => u.status === 'pending');
+        const approved = filteredUsers.filter(u => u.status === 'approved');
         return { pendingUsers: pending, approvedUsers: approved };
-    }, [users]);
+    }, [filteredUsers]);
 
     const pendingFaculty = useMemo(() => {
         return faculty.filter(f => f.status === 'pending');

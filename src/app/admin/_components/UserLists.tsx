@@ -16,7 +16,7 @@ interface UserListsProps {
 
 export default function UserLists({ approvedStudents, faculty }: UserListsProps) {
     const { api, state } = useHackathon();
-    const { currentFaculty } = state;
+    const { currentFaculty, selectedBatch } = state;
 
     const handleRemoveStudent = async (userId: string) => {
         await api.removeStudent(userId);
@@ -31,7 +31,7 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">Approved Students ({approvedStudents.length})</CardTitle>
-                    <CardDescription>List of all registered students.</CardDescription>
+                    <CardDescription>List of registered students for batch {selectedBatch || 'All Batches'}.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-96 pr-4">
@@ -46,7 +46,7 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
                                         Remove
                                     </Button>
                                 </div>
-                            )) : <p className="text-muted-foreground text-center pt-8">No students have been approved.</p>}
+                            )) : <p className="text-muted-foreground text-center pt-8">No students found for the selected batch.</p>}
                         </div>
                     </ScrollArea>
                 </CardContent>

@@ -12,7 +12,7 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User, MessageSquare, Eye, EyeOff } from 'lucide-react';
+import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User, MessageSquare, Eye, EyeOff, Users } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import ScoringDashboard from '@/app/judge/_components/ScoringDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
@@ -51,7 +51,7 @@ const projectEvents = [
 
 export default function AdminPortal() {
     const { state, api, dispatch } = useHackathon();
-    const { currentAdmin, currentFaculty, hackathons, selectedHackathonId, users } = state;
+    const { currentAdmin, currentFaculty, hackathons, selectedHackathonId, users, selectedBatch } = state;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -75,6 +75,11 @@ export default function AdminPortal() {
     const handleEventChange = (hackathonId: string) => {
         dispatch({ type: 'SET_SELECTED_HACKATHON', payload: hackathonId === 'default' ? null : hackathonId });
     }
+    
+    const handleBatchChange = (batch: string) => {
+        dispatch({ type: 'SET_SELECTED_BATCH', payload: batch === 'all' ? null : batch });
+    }
+
      const currentEvent = useMemo(() => {
         const dynamicEvent = hackathons.find(h => h.id === selectedHackathonId);
         if (dynamicEvent) return dynamicEvent;
@@ -87,6 +92,19 @@ export default function AdminPortal() {
 
     const urgentApprovalsCount = useMemo(() => {
         return users.filter(u => u.status === 'pending' && u.approvalReminderSentAt).length;
+    }, [users]);
+    
+    const availableBatches = useMemo(() => {
+        const batches = new Set<string>();
+        for (let year = 2012; year <= 2100 - 4; year++) {
+            batches.add(`${year}-${year + 4}`);
+        }
+        users.forEach(u => {
+            if (u.admissionYear && u.passoutYear) {
+                batches.add(`${u.admissionYear}-${u.passoutYear}`);
+            }
+        });
+        return Array.from(batches).sort();
     }, [users]);
 
 
@@ -140,7 +158,18 @@ export default function AdminPortal() {
         <div className="container max-w-7xl mx-auto py-12 animate-slide-in-up">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold font-headline">{currentAdmin ? 'Admin' : currentFaculty?.role.toUpperCase()} Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
-                <div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Select onValueChange={handleBatchChange} value={selectedBatch || "all"}>
+                        <SelectTrigger className="w-full sm:w-[220px]">
+                            <SelectValue placeholder="Select a Batch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                             <SelectItem value="all">All Batches</SelectItem>
+                             {availableBatches.map(batch => (
+                                <SelectItem key={batch} value={batch}>{batch}</SelectItem>
+                             ))}
+                        </SelectContent>
+                    </Select>
                      <Select onValueChange={handleEventChange} value={selectedHackathonId || "default"}>
                         <SelectTrigger className="w-full sm:w-[280px]">
                             <SelectValue placeholder="Select an Event to manage" />
@@ -172,7 +201,7 @@ export default function AdminPortal() {
                     </TabsTrigger>
                     <TabsTrigger value="approvals"><GanttChartSquare className="mr-2 h-4 w-4" /> Project Approvals</TabsTrigger>
                     {currentFaculty?.role === 'hod' && <TabsTrigger value="assign-guides"><User className="mr-2 h-4 w-4" /> Assign Guides</TabsTrigger>}
-                    <TabsTrigger value="management">User Management</TabsTrigger>
+                    <TabsTrigger value="management"><Users className="mr-2 h-4 w-4" />User Management</TabsTrigger>
                     <TabsTrigger value="announcements"><Rss className="mr-2 h-4 w-4" /> Announcements</TabsTrigger>
                     <TabsTrigger value="analytics"><LineChart className="mr-2 h-4 w-4" /> Analytics</TabsTrigger>
                     <TabsTrigger value="data"><Database className="mr-2 h-4 w-4" /> Data & Export</TabsTrigger>

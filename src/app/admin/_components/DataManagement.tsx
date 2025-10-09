@@ -24,16 +24,23 @@ import { DEPARTMENTS_DATA } from '@/lib/constants';
 
 export default function DataManagement() {
     const { state, api } = useHackathon();
-    const { users, teams, projects, selectedHackathonId, hackathons } = state;
+    const { users, teams, projects, selectedHackathonId, hackathons, selectedBatch } = state;
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const [selectedDepartment, setSelectedDepartment] = useState('all');
 
     const currentEvent = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
 
+    const batchFilteredUsers = useMemo(() => {
+        if (!selectedBatch) return users;
+        const [startYear, endYear] = selectedBatch.split('-').map(Number);
+        return users.filter(u => u.admissionYear && u.passoutYear && +u.admissionYear === startYear && +u.passoutYear === endYear);
+    }, [users, selectedBatch]);
+
+
     const { eventParticipants, eventTeams, eventProjects } = useMemo(() => {
         const departmentUsers = selectedDepartment === 'all'
-            ? users
-            : users.filter(u => u.branch === selectedDepartment || u.department === selectedDepartment);
+            ? batchFilteredUsers
+            : batchFilteredUsers.filter(u => u.branch === selectedDepartment || u.department === selectedDepartment);
 
         if (!selectedHackathonId) {
             return { eventParticipants: departmentUsers, eventTeams: [], eventProjects: [] };
@@ -49,7 +56,7 @@ export default function DataManagement() {
         const projectsInDepartment = projects.filter(p => p.hackathonId === selectedHackathonId && teamIdsInDepartment.has(p.teamId));
 
         return { eventParticipants: departmentUsers, eventTeams: teamsInDepartment, eventProjects: projectsInDepartment };
-    }, [users, teams, projects, selectedHackathonId, selectedDepartment]);
+    }, [batchFilteredUsers, teams, projects, selectedHackathonId, selectedDepartment]);
 
 
     const createCsv = (headers: string[], data: string[][]) => {
@@ -70,14 +77,16 @@ export default function DataManagement() {
     }
     
     const handleExportStudents = () => {
-        const headers = ["Name", "Email", "Roll No", "Branch", "Department", "Section"];
+        const headers = ["Name", "Email", "Roll No", "Branch", "Department", "Section", "Admission Year", "Passout Year"];
         const data = eventParticipants.map(u => [
             u.name, 
             u.email, 
             u.rollNo || 'N/A', 
             u.branch || 'N/A', 
             u.department || 'N/A', 
-            u.section || 'N/A'
+            u.section || 'N/A',
+            u.admissionYear || 'N/A',
+            u.passoutYear || 'N/A'
         ]);
 
         const csvString = createCsv(headers, data);
@@ -149,7 +158,7 @@ export default function DataManagement() {
                 <CardHeader className="flex-col md:flex-row justify-between md:items-center gap-4">
                     <div>
                         <CardTitle className="font-headline">Data Export & Management</CardTitle>
-                        <CardDescription>Export detailed lists based on the selected project type and department.</CardDescription>
+                        <CardDescription>Export detailed lists based on the selected project type, batch, and department.</CardDescription>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">
                             <Select onValueChange={setSelectedDepartment} defaultValue="all">
@@ -172,7 +181,7 @@ export default function DataManagement() {
                                 <CardTitle className="text-lg font-semibold">Student Data</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-muted-foreground mb-4">Export a CSV of all registered students for the selected department.</p>
+                                <p className="text-sm text-muted-foreground mb-4">Export a CSV of all registered students for the selected filters.</p>
                                 <Button variant="outline" size="sm" onClick={handleExportStudents} disabled={eventParticipants.length === 0}>
                                     <Download className="mr-2 h-4 w-4"/> Export Registered Students ({eventParticipants.length})
                                 </Button>
@@ -183,7 +192,7 @@ export default function DataManagement() {
                                 <CardTitle className="text-lg font-semibold">Project Data</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-muted-foreground mb-4">Export a detailed CSV of all teams, their members, project ideas, status, and scores for the selected event and department.</p>
+                                <p className="text-sm text-muted-foreground mb-4">Export a detailed CSV of all teams, projects, status, and scores for the selected filters.</p>
                                 <Button variant="outline" size="sm" onClick={handleExportProjects} disabled={eventProjects.length === 0 || !currentEvent}>
                                     <Download className="mr-2 h-4 w-4"/> Export Teams & Projects ({eventProjects.length})
                                 </Button>
@@ -194,7 +203,9 @@ export default function DataManagement() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="font-headline">Participant Overview</CardTitle>
-                            <CardDescription>Students from "{selectedDepartment === 'all' ? 'All Departments' : selectedDepartment}"</CardDescription>
+                            <CardDescription>
+                                Students from "{selectedBatch || 'All Batches'}" in "{selectedDepartment === 'all' ? 'All Departments' : selectedDepartment}"
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <ScrollArea className="h-72">
