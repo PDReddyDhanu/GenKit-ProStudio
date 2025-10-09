@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useHackathon } from '@/context/HackathonProvider';
@@ -75,7 +76,8 @@ export default function Dashboard() {
         const hasSkills = currentUser.skills && currentUser.skills.length > 0;
         const hasWorkStyle = currentUser.workStyle && currentUser.workStyle.length > 0;
         const hasRollNo = !!currentUser.rollNo;
-        return hasSkills && hasWorkStyle && hasRollNo;
+        const hasAdmissionYear = !!currentUser.admissionYear;
+        return hasSkills && hasWorkStyle && hasRollNo && hasAdmissionYear;
     }, [currentUser]);
     
     // Callback to be passed to the submission form

@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound, X, AlertTriangle, Building, BookUser, Phone, Eye, EyeOff } from 'lucide-react';
+import { User, Github, Linkedin, Pencil, Loader, Download, Award, KeyRound, X, AlertTriangle, Building, BookUser, Phone, Eye, EyeOff, Calendar } from 'lucide-react';
 import { AuthMessage } from '@/components/AuthMessage';
 import PageIntro from '@/components/PageIntro';
 import { generateCertificate } from '@/lib/pdf';
@@ -124,6 +124,7 @@ export default function ProfilePage() {
     const [linkedin, setLinkedin] = useState(currentUser?.linkedin || '');
     const [workStyle, setWorkStyle] = useState<string[]>(currentUser?.workStyle || []);
     const [contactNumber, setContactNumber] = useState(currentUser?.contactNumber || '');
+    const [admissionYear, setAdmissionYear] = useState(currentUser?.admissionYear || '');
     const [isSaving, setIsSaving] = useState(false);
     const [isGeneratingCert, setIsGeneratingCert] = useState<string | null>(null);
 
@@ -139,7 +140,8 @@ export default function ProfilePage() {
         if (!currentUser) return false;
         const hasSkills = currentUser.skills && currentUser.skills.length > 0;
         const hasWorkStyle = currentUser.workStyle && currentUser.workStyle.length > 0;
-        return hasSkills && hasWorkStyle;
+        const hasAdmissionYear = !!currentUser.admissionYear;
+        return hasSkills && hasWorkStyle && hasAdmissionYear;
     }, [currentUser]);
 
 
@@ -152,6 +154,7 @@ export default function ProfilePage() {
         setLinkedin(currentUser.linkedin || '');
         setWorkStyle(currentUser.workStyle || []);
         setContactNumber(currentUser.contactNumber || '');
+        setAdmissionYear(currentUser.admissionYear || '');
       }
     }, [currentUser]);
 
@@ -209,6 +212,7 @@ export default function ProfilePage() {
                 linkedin,
                 workStyle,
                 contactNumber,
+                admissionYear,
             });
             setIsEditing(false);
         } finally {
@@ -239,7 +243,7 @@ export default function ProfilePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p>To use team features like the AI Matchmaker, you must add your skills and preferred work style to your profile. This helps us find the best teammates for you!</p>
+                        <p>To use team features like the AI Matchmaker, you must add your skills, work style, and admission year to your profile. This helps us find the best teammates for you!</p>
                          <Button variant="secondary" onClick={() => setIsEditing(true)} className="mt-4">Edit Profile Now</Button>
                     </CardContent>
                 </Card>
@@ -270,13 +274,19 @@ export default function ProfilePage() {
                         <CardContent>
                             {isEditing ? (
                                 <form onSubmit={handleSaveProfile} className="space-y-6">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Full Name</Label>
-                                        <Input id="name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="contactNumber">Contact Number</Label>
-                                        <Input id="contactNumber" type="tel" value={contactNumber} onChange={e => setContactNumber(e.target.value)} required disabled={isSaving} />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="name">Full Name</Label>
+                                            <Input id="name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="contactNumber">Contact Number</Label>
+                                            <Input id="contactNumber" type="tel" value={contactNumber} onChange={e => setContactNumber(e.target.value)} required disabled={isSaving} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="admissionYear">Admission Year</Label>
+                                            <Input id="admissionYear" type="text" placeholder="e.g., 2022-2026" value={admissionYear} onChange={e => setAdmissionYear(e.target.value)} required disabled={isSaving} />
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Skills</Label>
@@ -353,6 +363,10 @@ export default function ProfilePage() {
                                         <div className="space-y-1">
                                             <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2"><Phone className="h-4 w-4"/> Contact Number</h4>
                                             <p>{currentUser.contactNumber || 'Not specified'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2"><Calendar className="h-4 w-4"/> Admission Year</h4>
+                                            <p>{currentUser.admissionYear || 'Not specified'}</p>
                                         </div>
                                     </div>
                                      {currentUser.bio && (

@@ -28,6 +28,7 @@ export default function Auth() {
     const [department, setDepartment] = useState('');
     const [section, setSection] = useState('');
     const [contactNumber, setContactNumber] = useState('');
+    const [admissionYear, setAdmissionYear] = useState('');
 
     const [isLoading, setIsLoading] = useState(false);
     const [isForgotPassOpen, setIsForgotPassOpen] = useState(false);
@@ -53,6 +54,7 @@ export default function Auth() {
         setDepartment('');
         setSection('');
         setContactNumber('');
+        setAdmissionYear('');
         dispatch({ type: 'CLEAR_MESSAGES' });
     };
 
@@ -72,7 +74,7 @@ export default function Auth() {
             }
         } else {
             try {
-                await api.registerStudent({ name, email, password, rollNo, branch, department, section, contactNumber });
+                await api.registerStudent({ name, email, password, rollNo, branch, department, section, contactNumber, admissionYear });
                 setIsLoginView(true);
                 clearForm();
             } finally {
@@ -87,7 +89,7 @@ export default function Auth() {
     return (
         <>
             <div className="h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] flex items-center justify-center p-4">
-                <div className='card w-full lg:w-[70%] md:w-[85%] flex flex-col lg:flex-row justify-between h-auto lg:h-[600px] max-h-[95vh] shadow-xl rounded-lg bg-[var(--color-surface)]'>
+                <div className='card w-full lg:w-[70%] md:w-[85%] flex flex-col lg:flex-row justify-between h-auto lg:h-auto max-h-[95vh] shadow-xl rounded-lg bg-[var(--color-surface)]'>
                     <div
                         className='w-full lg:w-1/2 px-4 md:px-8 lg:px-12 py-10 left h-full relative overflow-y-auto'
                         onMouseMove={handleMouseMove}
@@ -114,6 +116,7 @@ export default function Auth() {
                                         <AppInput placeholder="Full Name" type="text" value={name} onChange={(e:any) => setName(e.target.value)} required disabled={isLoading} />
                                         <AppInput placeholder="Roll Number" type="text" value={rollNo} onChange={(e:any) => setRollNo(e.target.value)} required disabled={isLoading}/>
                                         <AppInput placeholder="Contact Number" type="tel" value={contactNumber} onChange={(e:any) => setContactNumber(e.target.value)} required disabled={isLoading}/>
+                                        <AppInput placeholder="Admission Year (e.g., 2022-2026)" type="text" value={admissionYear} onChange={(e:any) => setAdmissionYear(e.target.value)} required disabled={isLoading}/>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <Select onValueChange={(value) => { setDepartment(value); setBranch(''); }} value={department} required>
                                                 <SelectTrigger className="bg-[var(--color-surface)] border-2 border-[var(--color-border)]"><SelectValue placeholder="Select Department" /></SelectTrigger>

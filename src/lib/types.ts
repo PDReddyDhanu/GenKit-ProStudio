@@ -7,6 +7,7 @@ export interface UserProfileData {
   linkedin: string;
   workStyle?: string[];
   contactNumber?: string;
+  admissionYear?: string; // e.g., "2022-2026"
 }
 
 export interface Notification {
