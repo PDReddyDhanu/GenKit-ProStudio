@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useMemo } from 'react';
@@ -10,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import type { User, Faculty } from '@/lib/types';
 import { X, Bell, UserCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { DEPARTMENTS_DATA } from '@/lib/constants';
 
 interface PendingApprovalsProps {
     users: User[];
@@ -33,6 +33,14 @@ export default function PendingApprovals({ users, faculty }: PendingApprovalsPro
         await api.removeFaculty(facultyId);
     }
     
+    const getBranchName = (branchId: string) => {
+        for (const dept in DEPARTMENTS_DATA) {
+            const branch = DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].find(b => b.id === branchId);
+            if (branch) return branch.name;
+        }
+        return branchId; // Fallback to ID if not found
+    };
+
     const regularUsers = useMemo(() => {
         return users.filter(u => !u.approvalReminderSentAt);
     }, [users]);
@@ -40,7 +48,7 @@ export default function PendingApprovals({ users, faculty }: PendingApprovalsPro
     const StudentRow = ({ user }: { user: User }) => (
         <div className="p-3 bg-muted/50 rounded-md flex justify-between items-center">
             <div>
-                <p className="font-semibold">{user.name}</p>
+                <div className="font-semibold">{user.name} <Badge variant="outline">{getBranchName(user.branch)}</Badge></div>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
             </div>
             <div className="flex items-center gap-2">
@@ -55,8 +63,9 @@ export default function PendingApprovals({ users, faculty }: PendingApprovalsPro
      const FacultyRow = ({ member }: { member: Faculty }) => (
         <div className="p-3 bg-muted/50 rounded-md flex justify-between items-center">
             <div>
-                <p className="font-semibold">{member.name} <Badge variant="secondary">{member.role}</Badge></p>
+                <div className="font-semibold">{member.name} <Badge variant="secondary">{member.role}</Badge></div>
                 <p className="text-sm text-muted-foreground">{member.email}</p>
+                {member.department && <p className="text-xs text-muted-foreground">from {member.department}</p>}
             </div>
             <div className="flex items-center gap-2">
                 <Button size="sm" onClick={() => handleApproveFaculty(member.id)}>Approve</Button>

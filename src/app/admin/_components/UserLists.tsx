@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,6 +7,7 @@ import type { User, Faculty } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Badge } from '@/components/ui/badge';
+import { DEPARTMENTS_DATA } from '@/lib/constants';
 
 interface UserListsProps {
     approvedStudents: User[];
@@ -24,6 +24,14 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
 
     const handleRemoveFaculty = async (facultyId: string) => {
         await api.removeFaculty(facultyId);
+    };
+
+    const getBranchName = (branchId: string) => {
+        for (const dept in DEPARTMENTS_DATA) {
+            const branch = DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].find(b => b.id === branchId);
+            if (branch) return branch.name;
+        }
+        return branchId; // Fallback to ID if not found
     };
     
     const batchText = selectedBatch ? `for batch ${selectedBatch}` : "for all batches";
@@ -42,7 +50,7 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
                             {approvedStudents.length > 0 ? approvedStudents.map(user => (
                                 <div key={user.id} className="p-2 bg-muted/50 rounded-md flex justify-between items-center">
                                     <div>
-                                        <p className="font-semibold text-sm">{user.name}</p>
+                                        <div className="font-semibold text-sm">{user.name} <Badge variant="outline">{getBranchName(user.branch)}</Badge></div>
                                         <p className="text-xs text-muted-foreground">{user.email}</p>
                                     </div>
                                     <Button variant="destructive" size="sm" onClick={() => handleRemoveStudent(user.id)}>
@@ -67,6 +75,7 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
                                     <div>
                                         <div className="font-semibold text-sm">{fac.name} <Badge variant="secondary">{fac.role}</Badge></div>
                                         <p className="text-xs text-muted-foreground">{fac.email}</p>
+                                        {fac.department && <p className="text-xs text-muted-foreground">from {fac.department}</p>}
                                     </div>
                                     <Button 
                                         variant="destructive" 
