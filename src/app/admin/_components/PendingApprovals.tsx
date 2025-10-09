@@ -65,9 +65,11 @@ export default function PendingApprovals({ users, faculty }: PendingApprovalsPro
      const FacultyRow = ({ member }: { member: Faculty }) => (
         <div className="p-3 bg-muted/50 rounded-md flex justify-between items-center">
             <div>
-                <div className="font-semibold">{member.name} <Badge variant="secondary">{member.role}</Badge></div>
+                <div className="font-semibold text-sm">
+                    {member.name} <Badge variant="secondary">{member.role}</Badge>
+                    {member.department && <span className="text-xs text-muted-foreground"> from {member.department}</span>}
+                </div>
                 <p className="text-sm text-muted-foreground">{member.email}</p>
-                {member.department && <p className="text-xs text-muted-foreground">from {member.department}</p>}
             </div>
             <div className="flex items-center gap-2">
                 <Button size="sm" onClick={() => handleApproveFaculty(member.id)}>Approve</Button>
@@ -113,4 +115,3 @@ export default function PendingApprovals({ users, faculty }: PendingApprovalsPro
         </div>
     );
 }
-

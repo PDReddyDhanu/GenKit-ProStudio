@@ -75,9 +75,11 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
                             {faculty.length > 0 ? faculty.map(fac => (
                                 <div key={fac.id} className="p-2 bg-muted/50 rounded-md flex justify-between items-center">
                                     <div>
-                                        <div className="font-semibold text-sm">{fac.name} <Badge variant="secondary">{fac.role}</Badge></div>
+                                        <div className="font-semibold text-sm">
+                                            {fac.name} <Badge variant="secondary">{fac.role}</Badge>
+                                            {fac.department && <span className="text-xs text-muted-foreground"> from {fac.department}</span>}
+                                        </div>
                                         <p className="text-xs text-muted-foreground">{fac.email}</p>
-                                        {fac.department && <p className="text-xs text-muted-foreground">from {fac.department}</p>}
                                     </div>
                                     <Button 
                                         variant="destructive" 
