@@ -19,7 +19,7 @@ export default function AdminDashboard() {
 
     const availableDepartments = useMemo(() => Object.keys(DEPARTMENTS_DATA), []);
     const availableBranches = useMemo(() => {
-        if (!selectedDepartment) return [];
+        if (!selectedDepartment || selectedDepartment === 'all') return [];
         return DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA] || [];
     }, [selectedDepartment]);
 
@@ -33,7 +33,7 @@ export default function AdminDashboard() {
     };
 
     const filteredUsers: User[] = useMemo(() => {
-        let filtered = users;
+        let filtered = [...users];
 
         if (selectedBatch) {
             const [startYear, endYear] = selectedBatch.split('-').map(Number);
@@ -46,7 +46,9 @@ export default function AdminDashboard() {
 
         if (selectedDepartment && selectedDepartment !== 'all') {
             const departmentBranches = DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
-            filtered = filtered.filter(user => departmentBranches.includes(user.branch));
+            if (departmentBranches.length > 0) {
+                 filtered = filtered.filter(user => user.branch && departmentBranches.includes(user.branch));
+            }
         }
 
         if (selectedBranch && selectedBranch !== 'all') {
@@ -57,8 +59,8 @@ export default function AdminDashboard() {
     }, [users, selectedBatch, selectedDepartment, selectedBranch]);
     
     const filteredFaculty: Faculty[] = useMemo(() => {
-        let filtered = faculty;
-
+        let filtered = [...faculty];
+        
         if (selectedDepartment && selectedDepartment !== 'all') {
             filtered = filtered.filter(fac => fac.department === selectedDepartment);
         }
