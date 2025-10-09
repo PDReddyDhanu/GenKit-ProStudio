@@ -10,67 +10,26 @@ import UserLists from './UserLists';
 import { DEPARTMENTS_DATA } from '@/lib/constants';
 import type { User, Faculty } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users } from 'lucide-react';
+import { Users, Building2 } from 'lucide-react';
 
 export default function AdminDashboard() {
-    const { state, dispatch } = useHackathon();
-    const { users, faculty, selectedBatch, selectedDepartment, selectedBranch } = state;
-
-    const availableDepartments = useMemo(() => Object.keys(DEPARTMENTS_DATA), []);
-    const availableBranches = useMemo(() => {
-        if (!selectedDepartment || selectedDepartment === 'all') return [];
-        return DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA] || [];
-    }, [selectedDepartment]);
-
-    const handleDepartmentChange = (department: string) => {
-        dispatch({ type: 'SET_SELECTED_DEPARTMENT', payload: department === 'all' ? null : department });
-        dispatch({ type: 'SET_SELECTED_BRANCH', payload: null });
-    };
-
-    const handleBranchChange = (branch: string) => {
-        dispatch({ type: 'SET_SELECTED_BRANCH', payload: branch === 'all' ? null : branch });
-    };
+    const { state } = useHackathon();
+    const { users, faculty, selectedBatch, selectedCollege } = state;
 
     const filteredUsers: User[] = useMemo(() => {
-        let filtered = [...users];
-
-        if (selectedBatch) {
-            const [startYear, endYear] = selectedBatch.split('-').map(Number);
-            filtered = filtered.filter(user => 
-                user.admissionYear && user.passoutYear &&
-                parseInt(user.admissionYear) === startYear &&
-                parseInt(user.passoutYear) === endYear
-            );
-        }
-
-        if (selectedDepartment && selectedDepartment !== 'all') {
-            const departmentBranches = DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
-            if (departmentBranches.length > 0) {
-                 filtered = filtered.filter(user => user.branch && departmentBranches.includes(user.branch));
-            }
-        }
-
-        if (selectedBranch && selectedBranch !== 'all') {
-            filtered = filtered.filter(user => user.branch === selectedBranch);
-        }
-
-        return filtered;
-    }, [users, selectedBatch, selectedDepartment, selectedBranch]);
+        if (!selectedBatch) return [...users];
+        
+        const [startYear, endYear] = selectedBatch.split('-').map(Number);
+        return users.filter(user => 
+            user.admissionYear && user.passoutYear &&
+            parseInt(user.admissionYear) === startYear &&
+            parseInt(user.passoutYear) === endYear
+        );
+    }, [users, selectedBatch]);
     
     const filteredFaculty: Faculty[] = useMemo(() => {
-        let filtered = [...faculty];
-        
-        if (selectedDepartment && selectedDepartment !== 'all') {
-            filtered = filtered.filter(fac => fac.department === selectedDepartment);
-        }
-        
-        if (selectedBranch && selectedBranch !== 'all') {
-             filtered = filtered.filter(fac => fac.branch === selectedBranch);
-        }
-        
-        return filtered;
-    }, [faculty, selectedDepartment, selectedBranch]);
+        return [...faculty];
+    }, [faculty]);
 
 
     const { pendingUsers, approvedUsers } = useMemo(() => {
@@ -90,37 +49,12 @@ export default function AdminDashboard() {
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline flex items-center gap-2">
-                        <Users /> User Management Filters
+                        <Building2 /> Current College
                     </CardTitle>
-                    <CardDescription>
-                        Filter students and faculty by department and branch to manage registrations and approvals.
-                    </CardDescription>
                 </CardHeader>
                 <CardContent>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Select onValueChange={handleDepartmentChange} value={selectedDepartment || "all"}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a Department" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                 <SelectItem value="all">All Departments</SelectItem>
-                                 {availableDepartments.map(dept => (
-                                    <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                                 ))}
-                            </SelectContent>
-                        </Select>
-                         <Select onValueChange={handleBranchChange} value={selectedBranch || "all"} disabled={!selectedDepartment || selectedDepartment === 'all'}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a Branch" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                 <SelectItem value="all">All Branches</SelectItem>
-                                 {availableBranches.map(branch => (
-                                    <SelectItem key={branch.id} value={branch.id}>{branch.name}</SelectItem>
-                                 ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <p className="text-xl font-semibold text-primary">{selectedCollege}</p>
+                    <p className="text-sm text-muted-foreground">All user data below is for the college selected above.</p>
                 </CardContent>
             </Card>
 
