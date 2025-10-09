@@ -4,7 +4,7 @@
 
 GenKit ProStudio is a comprehensive, AI-powered SaaS platform built with Next.js and Firebase to streamline the lifecycle of academic projects in colleges. It provides a seamless, transparent, and efficient experience for students, faculty guides, HoDs, and administrators, from project proposal and team formation to final evaluation and reporting.
 
-![GenKit ProStudio Homepage](https://i.imgur.com/your-screenshot.png) <!-- Replace with a real screenshot URL -->
+![GenKit ProStudio Homepage](https://i.imgur.com/your-screenshot.png) <!-- Replace with a real screenshot URL ---> 
 
 ## ✨ Key Features
 
