@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -28,6 +27,7 @@ import GuideAssignmentDashboard from './_components/GuideAssignmentDashboard';
 import GuideTeamsDashboard from './_components/GuideTeamsDashboard';
 import { StarButton } from '@/components/ui/star-button';
 import { Button } from '@/components/ui/button';
+import { DEPARTMENTS_DATA } from '@/lib/constants';
 
 const projectEvents = [
     {
@@ -51,7 +51,7 @@ const projectEvents = [
 
 export default function AdminPortal() {
     const { state, api, dispatch } = useHackathon();
-    const { currentAdmin, currentFaculty, hackathons, selectedHackathonId, users, selectedBatch } = state;
+    const { currentAdmin, currentFaculty, hackathons, selectedHackathonId, users, selectedBatch, selectedDepartment } = state;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -79,6 +79,15 @@ export default function AdminPortal() {
     const handleBatchChange = (batch: string) => {
         dispatch({ type: 'SET_SELECTED_BATCH', payload: batch === 'all' ? null : batch });
     }
+    
+    const handleDepartmentChange = (department: string) => {
+        dispatch({ type: 'SET_SELECTED_DEPARTMENT', payload: department === 'all' ? null : department });
+        dispatch({ type: 'SET_SELECTED_BRANCH', payload: null });
+    };
+
+    const handleBranchChange = (branch: string) => {
+        dispatch({ type: 'SET_SELECTED_BRANCH', payload: branch === 'all' ? null : branch });
+    };
 
      const currentEvent = useMemo(() => {
         const dynamicEvent = hackathons.find(h => h.id === selectedHackathonId);
@@ -106,6 +115,12 @@ export default function AdminPortal() {
         });
         return Array.from(batches).sort();
     }, [users]);
+
+    const availableDepartments = useMemo(() => Object.keys(DEPARTMENTS_DATA), []);
+    const availableBranches = useMemo(() => {
+        if (!selectedDepartment) return [];
+        return DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA] || [];
+    }, [selectedDepartment]);
 
 
     const handleTabChange = (value: string) => {
@@ -158,9 +173,9 @@ export default function AdminPortal() {
         <div className="container max-w-7xl mx-auto py-12 animate-slide-in-up">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold font-headline">{currentAdmin ? 'Admin' : currentFaculty?.role.toUpperCase()} Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
-                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <Select onValueChange={handleBatchChange} value={selectedBatch || "all"}>
-                        <SelectTrigger className="w-full sm:w-[220px]">
+                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full sm:w-auto">
+                    <Select onValueChange={handleBatchChange} value={selectedBatch || ""}>
+                        <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a Batch" />
                         </SelectTrigger>
                         <SelectContent>
@@ -170,9 +185,31 @@ export default function AdminPortal() {
                              ))}
                         </SelectContent>
                     </Select>
-                     <Select onValueChange={handleEventChange} value={selectedHackathonId || "default"}>
-                        <SelectTrigger className="w-full sm:w-[280px]">
-                            <SelectValue placeholder="Select an Event to manage" />
+                     <Select onValueChange={handleDepartmentChange} value={selectedDepartment || ""}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a Department" />
+                        </SelectTrigger>
+                        <SelectContent>
+                             <SelectItem value="all">All Departments</SelectItem>
+                             {availableDepartments.map(dept => (
+                                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                             ))}
+                        </SelectContent>
+                    </Select>
+                     <Select onValueChange={handleBranchChange} value={state.selectedBranch || ""} disabled={!selectedDepartment}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a Branch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                             <SelectItem value="all">All Branches</SelectItem>
+                             {availableBranches.map(branch => (
+                                <SelectItem key={branch.id} value={branch.id}>{branch.name}</SelectItem>
+                             ))}
+                        </SelectContent>
+                    </Select>
+                     <Select onValueChange={handleEventChange} value={selectedHackathonId || ""}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select an Event" />
                         </SelectTrigger>
                         <SelectContent>
                              <SelectItem value="default">Default View (No Event Selected)</SelectItem>

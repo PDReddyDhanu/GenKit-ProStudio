@@ -22,7 +22,9 @@ interface AppState {
   currentAdmin: boolean;
   selectedCollege: string | null;
   selectedHackathonId: string | null;
-  selectedBatch: string | null; // e.g., "2022-2026"
+  selectedBatch: string | null;
+  selectedDepartment: string | null;
+  selectedBranch: string | null;
   authError: string | null;
   successMessage: string | null;
   isInitialized: boolean;
@@ -43,6 +45,8 @@ const defaultState: AppState = {
   selectedCollege: null,
   selectedHackathonId: null,
   selectedBatch: null,
+  selectedDepartment: null,
+  selectedBranch: null,
   authError: null,
   successMessage: null,
   isInitialized: false,
@@ -59,6 +63,8 @@ type Action =
   | { type: 'SET_SELECTED_COLLEGE'; payload: string | null }
   | { type: 'SET_SELECTED_HACKATHON'; payload: string | null }
   | { type: 'SET_SELECTED_BATCH'; payload: string | null }
+  | { type: 'SET_SELECTED_DEPARTMENT'; payload: string | null }
+  | { type: 'SET_SELECTED_BRANCH'; payload: string | null }
   | { type: 'SET_AUTH_ERROR'; payload: string | null }
   | { type: 'SET_SUCCESS_MESSAGE'; payload: string | null }
   | { type: 'CLEAR_MESSAGES' }
@@ -116,6 +122,20 @@ function appReducer(state: AppState, action: Action): AppState {
                 localStorage.removeItem(`selectedBatch_${state.selectedCollege}`);
             }
             return { ...state, selectedBatch: action.payload };
+         case 'SET_SELECTED_DEPARTMENT':
+            if (action.payload && state.selectedCollege) {
+                localStorage.setItem(`selectedDepartment_${state.selectedCollege}`, action.payload);
+            } else if (state.selectedCollege) {
+                localStorage.removeItem(`selectedDepartment_${state.selectedCollege}`);
+            }
+            return { ...state, selectedDepartment: action.payload };
+        case 'SET_SELECTED_BRANCH':
+            if (action.payload && state.selectedCollege) {
+                localStorage.setItem(`selectedBranch_${state.selectedCollege}`, action.payload);
+            } else if (state.selectedCollege) {
+                localStorage.removeItem(`selectedBranch_${state.selectedCollege}`);
+            }
+            return { ...state, selectedBranch: action.payload };
         case 'SET_AUTH_ERROR':
             return { ...state, authError: action.payload };
         case 'SET_SUCCESS_MESSAGE':
@@ -162,6 +182,14 @@ export const HackathonProvider: React.FC<{ children: ReactNode }> = ({ children 
             const storedBatch = localStorage.getItem(`selectedBatch_${storedCollege}`);
             if (storedBatch) {
                 dispatch({ type: 'SET_SELECTED_BATCH', payload: storedBatch });
+            }
+             const storedDept = localStorage.getItem(`selectedDepartment_${storedCollege}`);
+            if (storedDept) {
+                dispatch({ type: 'SET_SELECTED_DEPARTMENT', payload: storedDept });
+            }
+             const storedBranch = localStorage.getItem(`selectedBranch_${storedCollege}`);
+            if (storedBranch) {
+                dispatch({ type: 'SET_SELECTED_BRANCH', payload: storedBranch });
             }
         } else {
             dispatch({ type: 'SET_INITIALIZED', payload: true });
@@ -288,4 +316,3 @@ export const useHackathon = () => {
   }
   return context;
 };
-
