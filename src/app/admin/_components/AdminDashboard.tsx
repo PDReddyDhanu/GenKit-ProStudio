@@ -21,40 +21,53 @@ export default function AdminDashboard() {
     }, [selectedDepartment]);
 
     const filteredUsers: User[] = useMemo(() => {
-        let tempUsers = users;
-
-        if (selectedBatch) {
-            const [startYear, endYear] = selectedBatch.split('-').map(Number);
-            tempUsers = tempUsers.filter(u =>
-                u.admissionYear && u.passoutYear &&
-                parseInt(u.admissionYear) === startYear &&
-                parseInt(u.passoutYear) === endYear
-            );
-        }
-
-        if (selectedDepartment && selectedDepartment !== 'all') {
-            tempUsers = tempUsers.filter(u => u.department === selectedDepartment || departmentBranches.includes(u.branch));
-        }
-
-        if (selectedBranch && selectedBranch !== 'all') {
-            tempUsers = tempUsers.filter(u => u.branch === selectedBranch);
-        }
-
-        return tempUsers;
+        return users.filter(user => {
+            if (selectedBatch) {
+                const [startYear, endYear] = selectedBatch.split('-').map(Number);
+                if (
+                    !user.admissionYear || !user.passoutYear ||
+                    parseInt(user.admissionYear) !== startYear ||
+                    parseInt(user.passoutYear) !== endYear
+                ) {
+                    return false;
+                }
+            }
+            if (selectedDepartment && selectedDepartment !== 'all') {
+                if (!departmentBranches.includes(user.branch)) {
+                    return false;
+                }
+            }
+            if (selectedBranch && selectedBranch !== 'all') {
+                if (user.branch !== selectedBranch) {
+                    return false;
+                }
+            }
+            return true;
+        });
     }, [users, selectedBatch, selectedDepartment, selectedBranch, departmentBranches]);
     
     const filteredFaculty: Faculty[] = useMemo(() => {
-        let tempFaculty = faculty;
+        return faculty.filter(fac => {
+             if (selectedDepartment && selectedDepartment !== 'all') {
+                // If a faculty member has a department set, it must match.
+                // If they have a branch set, it must fall within the selected department.
+                if (fac.department && fac.department !== selectedDepartment) {
+                     return false;
+                }
+                 if (fac.branch && !departmentBranches.includes(fac.branch)) {
+                     return false;
+                 }
+                 // If neither is set, they might be a cross-department role, so we don't filter them out here
+                 // unless a branch is also selected.
+            }
 
-        if (selectedDepartment && selectedDepartment !== 'all') {
-            tempFaculty = tempFaculty.filter(f => f.department === selectedDepartment || departmentBranches.includes(f.branch));
-        }
-
-        if (selectedBranch && selectedBranch !== 'all') {
-            tempFaculty = tempFaculty.filter(f => f.branch === selectedBranch);
-        }
-        
-        return tempFaculty;
+            if (selectedBranch && selectedBranch !== 'all') {
+                if (fac.branch !== selectedBranch) {
+                    return false;
+                }
+            }
+            return true;
+        });
     }, [faculty, selectedDepartment, selectedBranch, departmentBranches]);
 
 
@@ -83,3 +96,4 @@ export default function AdminDashboard() {
         </div>
     );
 }
+
