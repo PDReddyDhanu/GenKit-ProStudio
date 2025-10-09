@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useMemo } from 'react';
@@ -15,60 +14,48 @@ export default function AdminDashboard() {
     const { state } = useHackathon();
     const { users, faculty, selectedBatch, selectedDepartment, selectedBranch } = state;
 
-    const departmentBranches = useMemo(() => {
-        if (!selectedDepartment || selectedDepartment === 'all') return [];
-        return DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
-    }, [selectedDepartment]);
-
     const filteredUsers: User[] = useMemo(() => {
-        return users.filter(user => {
-            if (selectedBatch) {
-                const [startYear, endYear] = selectedBatch.split('-').map(Number);
-                if (
-                    !user.admissionYear || !user.passoutYear ||
-                    parseInt(user.admissionYear) !== startYear ||
-                    parseInt(user.passoutYear) !== endYear
-                ) {
-                    return false;
-                }
-            }
-            if (selectedDepartment && selectedDepartment !== 'all') {
-                if (!departmentBranches.includes(user.branch)) {
-                    return false;
-                }
-            }
-            if (selectedBranch && selectedBranch !== 'all') {
-                if (user.branch !== selectedBranch) {
-                    return false;
-                }
-            }
-            return true;
-        });
-    }, [users, selectedBatch, selectedDepartment, selectedBranch, departmentBranches]);
+        let filtered = users;
+
+        if (selectedBatch) {
+            const [startYear, endYear] = selectedBatch.split('-').map(Number);
+            filtered = filtered.filter(user => 
+                user.admissionYear && user.passoutYear &&
+                parseInt(user.admissionYear) === startYear &&
+                parseInt(user.passoutYear) === endYear
+            );
+        }
+
+        if (selectedDepartment && selectedDepartment !== 'all') {
+            const departmentBranches = DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
+            filtered = filtered.filter(user => departmentBranches.includes(user.branch));
+        }
+
+        if (selectedBranch && selectedBranch !== 'all') {
+            filtered = filtered.filter(user => user.branch === selectedBranch);
+        }
+
+        return filtered;
+    }, [users, selectedBatch, selectedDepartment, selectedBranch]);
     
     const filteredFaculty: Faculty[] = useMemo(() => {
-        return faculty.filter(fac => {
-             if (selectedDepartment && selectedDepartment !== 'all') {
-                // If a faculty member has a department set, it must match.
-                // If they have a branch set, it must fall within the selected department.
-                if (fac.department && fac.department !== selectedDepartment) {
-                     return false;
-                }
-                 if (fac.branch && !departmentBranches.includes(fac.branch)) {
-                     return false;
-                 }
-                 // If neither is set, they might be a cross-department role, so we don't filter them out here
-                 // unless a branch is also selected.
-            }
+        let filtered = faculty;
 
-            if (selectedBranch && selectedBranch !== 'all') {
-                if (fac.branch !== selectedBranch) {
-                    return false;
-                }
-            }
-            return true;
-        });
-    }, [faculty, selectedDepartment, selectedBranch, departmentBranches]);
+        if (selectedDepartment && selectedDepartment !== 'all') {
+            const departmentBranches = DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
+            filtered = filtered.filter(fac => 
+                (fac.department && fac.department === selectedDepartment) || 
+                (fac.branch && departmentBranches.includes(fac.branch)) ||
+                (!fac.department && !fac.branch) // Include faculty without department/branch info if no specific branch is selected
+            );
+        }
+
+        if (selectedBranch && selectedBranch !== 'all') {
+            filtered = filtered.filter(fac => fac.branch === selectedBranch);
+        }
+        
+        return filtered;
+    }, [faculty, selectedDepartment, selectedBranch]);
 
 
     const { pendingUsers, approvedUsers } = useMemo(() => {
@@ -96,4 +83,3 @@ export default function AdminDashboard() {
         </div>
     );
 }
-
