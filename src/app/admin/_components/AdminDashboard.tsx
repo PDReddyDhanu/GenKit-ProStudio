@@ -9,10 +9,28 @@ import PendingApprovals from './PendingApprovals';
 import UserLists from './UserLists';
 import { DEPARTMENTS_DATA } from '@/lib/constants';
 import type { User, Faculty } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Users } from 'lucide-react';
 
 export default function AdminDashboard() {
-    const { state } = useHackathon();
+    const { state, dispatch } = useHackathon();
     const { users, faculty, selectedBatch, selectedDepartment, selectedBranch } = state;
+
+    const availableDepartments = useMemo(() => Object.keys(DEPARTMENTS_DATA), []);
+    const availableBranches = useMemo(() => {
+        if (!selectedDepartment) return [];
+        return DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA] || [];
+    }, [selectedDepartment]);
+
+    const handleDepartmentChange = (department: string) => {
+        dispatch({ type: 'SET_SELECTED_DEPARTMENT', payload: department === 'all' ? null : department });
+        dispatch({ type: 'SET_SELECTED_BRANCH', payload: null });
+    };
+
+    const handleBranchChange = (branch: string) => {
+        dispatch({ type: 'SET_SELECTED_BRANCH', payload: branch === 'all' ? null : branch });
+    };
 
     const filteredUsers: User[] = useMemo(() => {
         let filtered = users;
@@ -42,16 +60,11 @@ export default function AdminDashboard() {
         let filtered = faculty;
 
         if (selectedDepartment && selectedDepartment !== 'all') {
-            const departmentBranches = DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
-            filtered = filtered.filter(fac => 
-                (fac.department && fac.department === selectedDepartment) || 
-                (fac.branch && departmentBranches.includes(fac.branch)) ||
-                (!fac.department && !fac.branch) // Include faculty without department/branch info if no specific branch is selected
-            );
+            filtered = filtered.filter(fac => fac.department === selectedDepartment);
         }
-
+        
         if (selectedBranch && selectedBranch !== 'all') {
-            filtered = filtered.filter(fac => fac.branch === selectedBranch);
+             filtered = filtered.filter(fac => fac.branch === selectedBranch);
         }
         
         return filtered;
@@ -71,14 +84,53 @@ export default function AdminDashboard() {
     }, [filteredFaculty]);
     
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 space-y-8">
-                <AddFacultyForm />
-                <AddStudentForm />
-            </div>
-            <div className="lg:col-span-2 space-y-8">
-                <PendingApprovals users={pendingUsers} faculty={pendingFaculty} />
-                <UserLists approvedStudents={approvedUsers} faculty={approvedFaculty} />
+        <div className="space-y-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline flex items-center gap-2">
+                        <Users /> User Management Filters
+                    </CardTitle>
+                    <CardDescription>
+                        Filter students and faculty by department and branch to manage registrations and approvals.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Select onValueChange={handleDepartmentChange} value={selectedDepartment || "all"}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a Department" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                 <SelectItem value="all">All Departments</SelectItem>
+                                 {availableDepartments.map(dept => (
+                                    <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                                 ))}
+                            </SelectContent>
+                        </Select>
+                         <Select onValueChange={handleBranchChange} value={selectedBranch || "all"} disabled={!selectedDepartment || selectedDepartment === 'all'}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a Branch" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                 <SelectItem value="all">All Branches</SelectItem>
+                                 {availableBranches.map(branch => (
+                                    <SelectItem key={branch.id} value={branch.id}>{branch.name}</SelectItem>
+                                 ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-1 space-y-8">
+                    <AddFacultyForm />
+                    <AddStudentForm />
+                </div>
+                <div className="lg:col-span-2 space-y-8">
+                    <PendingApprovals users={pendingUsers} faculty={pendingFaculty} />
+                    <UserLists approvedStudents={approvedUsers} faculty={approvedFaculty} />
+                </div>
             </div>
         </div>
     );
