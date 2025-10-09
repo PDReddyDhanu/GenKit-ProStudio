@@ -26,10 +26,12 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
         await api.removeFaculty(facultyId);
     };
 
-    const getBranchName = (branchId: string) => {
-        for (const dept in DEPARTMENTS_DATA) {
-            const branch = DEPARTMENTS_DATA[dept as keyof typeof DEPARTMENTS_DATA].find(b => b.id === branchId);
-            if (branch) return branch.name;
+    const getBranchName = (branchId: string): string => {
+        for (const dept of Object.values(DEPARTMENTS_DATA)) {
+            const branch = dept.find(b => b.id === branchId);
+            if (branch) {
+                return branch.name;
+            }
         }
         return branchId; // Fallback to ID if not found
     };
