@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -24,39 +25,47 @@ import { DEPARTMENTS_DATA } from '@/lib/constants';
 
 export default function DataManagement() {
     const { state, api } = useHackathon();
-    const { users, teams, projects, selectedHackathonId, hackathons, selectedBatch } = state;
+    const { users, teams, projects, selectedHackathonId, hackathons, selectedBatch, selectedDepartment, selectedBranch } = state;
     const [isLoading, setIsLoading] = useState<string | null>(null);
-    const [selectedDepartment, setSelectedDepartment] = useState('all');
 
     const currentEvent = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
 
-    const batchFilteredUsers = useMemo(() => {
-        if (!selectedBatch) return users;
-        const [startYear, endYear] = selectedBatch.split('-').map(Number);
-        return users.filter(u => u.admissionYear && u.passoutYear && +u.admissionYear === startYear && +u.passoutYear === endYear);
-    }, [users, selectedBatch]);
-
-
     const { eventParticipants, eventTeams, eventProjects } = useMemo(() => {
-        const departmentUsers = selectedDepartment === 'all'
-            ? batchFilteredUsers
-            : batchFilteredUsers.filter(u => u.branch === selectedDepartment || u.department === selectedDepartment);
+        let filteredUsers = users;
+
+        if (selectedBatch) {
+            const [startYear, endYear] = selectedBatch.split('-').map(Number);
+            filteredUsers = filteredUsers.filter(u => 
+                u.admissionYear && u.passoutYear &&
+                parseInt(u.admissionYear) === startYear &&
+                parseInt(u.passoutYear) === endYear
+            );
+        }
+
+        if (selectedDepartment && selectedDepartment !== 'all') {
+            const departmentBranches = DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
+            filteredUsers = filteredUsers.filter(u => u.department === selectedDepartment || departmentBranches.includes(u.branch));
+        }
+
+        if (selectedBranch && selectedBranch !== 'all') {
+            filteredUsers = filteredUsers.filter(u => u.branch === selectedBranch);
+        }
+        
+        const departmentUserIds = new Set(filteredUsers.map(u => u.id));
 
         if (!selectedHackathonId) {
-            return { eventParticipants: departmentUsers, eventTeams: [], eventProjects: [] };
+            return { eventParticipants: filteredUsers, eventTeams: [], eventProjects: [] };
         }
         
         const teamsForEvent = teams.filter(t => t.hackathonId === selectedHackathonId);
-        
-        const departmentUserIds = new Set(departmentUsers.map(u => u.id));
         
         const teamsInDepartment = teamsForEvent.filter(t => t.members.some(m => departmentUserIds.has(m.id)));
         const teamIdsInDepartment = new Set(teamsInDepartment.map(t => t.id));
         
         const projectsInDepartment = projects.filter(p => p.hackathonId === selectedHackathonId && teamIdsInDepartment.has(p.teamId));
 
-        return { eventParticipants: departmentUsers, eventTeams: teamsInDepartment, eventProjects: projectsInDepartment };
-    }, [batchFilteredUsers, teams, projects, selectedHackathonId, selectedDepartment]);
+        return { eventParticipants: filteredUsers, eventTeams: teamsInDepartment, eventProjects: projectsInDepartment };
+    }, [users, teams, projects, selectedHackathonId, selectedBatch, selectedDepartment, selectedBranch]);
 
 
     const createCsv = (headers: string[], data: string[][]) => {
@@ -82,17 +91,18 @@ export default function DataManagement() {
             u.name, 
             u.email, 
             u.rollNo || 'N/A', 
-            u.branch || 'N/A', 
+            DEPARTMENTS_DATA[u.department as keyof typeof DEPARTMENTS_DATA]?.find(b => b.id === u.branch)?.name || u.branch || 'N/A',
             u.department || 'N/A', 
             u.section || 'N/A',
             u.admissionYear || 'N/A',
             u.passoutYear || 'N/A'
-        ]);
+        ].map(item => `"${item.replace(/"/g, '""')}"`));
 
         const csvString = createCsv(headers, data);
-        const eventName = currentEvent?.name || 'event';
-        const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment;
-        downloadCsv(csvString, `${eventName}_${deptName}_RegisteredStudents.csv`);
+        const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
+        const batchName = selectedBatch || 'AllBatches';
+        const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment.replace(/\s/g, '_');
+        downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_Students.csv`);
     };
 
     const handleExportProjects = () => {
@@ -112,9 +122,10 @@ export default function DataManagement() {
         });
 
         const csvString = createCsv(headers, data);
-        const eventName = currentEvent?.name || 'event';
-        const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment;
-        downloadCsv(csvString, `${eventName}_${deptName}_TeamsAndProjects.csv`);
+        const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
+        const batchName = selectedBatch || 'AllBatches';
+        const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment.replace(/\s/g, '_');
+        downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_Projects.csv`);
     };
 
     const handleResetCurrentEvent = async () => {
@@ -151,6 +162,8 @@ export default function DataManagement() {
         }
     }
 
+    const departmentDisplay = selectedDepartment === 'all' ? 'All Departments' : selectedDepartment;
+    const batchDisplay = selectedBatch || 'All Batches';
 
     return (
         <div className="space-y-8">
@@ -159,19 +172,6 @@ export default function DataManagement() {
                     <div>
                         <CardTitle className="font-headline">Data Export & Management</CardTitle>
                         <CardDescription>Export detailed lists based on the selected project type, batch, and department.</CardDescription>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                            <Select onValueChange={setSelectedDepartment} defaultValue="all">
-                            <SelectTrigger className="w-full sm:w-[240px]">
-                                <SelectValue placeholder="Filter by Department..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Departments</SelectItem>
-                                {Object.keys(DEPARTMENTS_DATA).map(branch => (
-                                    <SelectItem key={branch} value={branch}>{branch}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -204,7 +204,7 @@ export default function DataManagement() {
                         <CardHeader>
                             <CardTitle className="font-headline">Participant Overview</CardTitle>
                             <CardDescription>
-                                Students from "{selectedBatch || 'All Batches'}" in "{selectedDepartment === 'all' ? 'All Departments' : selectedDepartment}"
+                                Students from "{batchDisplay}" in "{departmentDisplay}"
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

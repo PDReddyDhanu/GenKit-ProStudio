@@ -25,13 +25,16 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
     const handleRemoveFaculty = async (facultyId: string) => {
         await api.removeFaculty(facultyId);
     };
+    
+    const batchText = selectedBatch ? `for batch ${selectedBatch}` : "for all batches";
+    const studentDesc = `List of registered students ${batchText}.`;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">Approved Students ({approvedStudents.length})</CardTitle>
-                    <CardDescription>List of registered students for batch {selectedBatch || 'All Batches'}.</CardDescription>
+                    <CardDescription>{studentDesc}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-96 pr-4">
@@ -46,7 +49,7 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
                                         Remove
                                     </Button>
                                 </div>
-                            )) : <p className="text-muted-foreground text-center pt-8">No students found for the selected batch.</p>}
+                            )) : <p className="text-muted-foreground text-center pt-8">No approved students match the current filters.</p>}
                         </div>
                     </ScrollArea>
                 </CardContent>
@@ -54,7 +57,7 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
              <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">Approved Faculty & Admins ({faculty.length})</CardTitle>
-                    <CardDescription>List of all approved faculty and admin accounts.</CardDescription>
+                    <CardDescription>List of all approved faculty and admin accounts matching the current filters.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-96 pr-4">
@@ -74,7 +77,7 @@ export default function UserLists({ approvedStudents, faculty }: UserListsProps)
                                         Remove
                                     </Button>
                                 </div>
-                            )) : <p className="text-muted-foreground text-center pt-8">No faculty or admins have been approved yet.</p>}
+                            )) : <p className="text-muted-foreground text-center pt-8">No faculty or admins match the current filters.</p>}
                         </div>
                     </ScrollArea>
                 </CardContent>

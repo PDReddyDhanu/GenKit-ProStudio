@@ -1,6 +1,5 @@
 
 
-
 "use client";
 
 import React, { useMemo } from 'react';
@@ -73,14 +72,14 @@ export default function PendingApprovals({ users, faculty }: PendingApprovalsPro
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">Pending Student Approvals ({regularUsers.length})</CardTitle>
-                    <CardDescription>Review and approve new student registrations.</CardDescription>
+                    <CardDescription>Review and approve new student registrations matching the filters.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-96 pr-4">
                         <div className="space-y-4">
                             {regularUsers.length > 0 ? regularUsers.map(user => (
                                 <StudentRow key={user.id} user={user} />
-                            )) : <p className="text-muted-foreground text-center pt-8">No pending student approvals.</p>}
+                            )) : <p className="text-muted-foreground text-center pt-8">No pending student approvals match the current filters.</p>}
                         </div>
                     </ScrollArea>
                 </CardContent>
@@ -88,14 +87,14 @@ export default function PendingApprovals({ users, faculty }: PendingApprovalsPro
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">Pending Faculty Approvals ({faculty.length})</CardTitle>
-                    <CardDescription>Review and approve new faculty registrations.</CardDescription>
+                    <CardDescription>Review and approve new faculty registrations matching the filters.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-96 pr-4">
                         <div className="space-y-4">
                             {faculty.length > 0 ? faculty.map(fac => (
                                 <FacultyRow key={fac.id} member={fac} />
-                            )) : <p className="text-muted-foreground text-center pt-8">No pending faculty approvals.</p>}
+                            )) : <p className="text-muted-foreground text-center pt-8">No pending faculty approvals match the current filters.</p>}
                         </div>
                     </ScrollArea>
                 </CardContent>
