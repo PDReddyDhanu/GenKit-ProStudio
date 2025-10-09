@@ -125,6 +125,7 @@ export default function ProfilePage() {
     const [workStyle, setWorkStyle] = useState<string[]>(currentUser?.workStyle || []);
     const [contactNumber, setContactNumber] = useState(currentUser?.contactNumber || '');
     const [admissionYear, setAdmissionYear] = useState(currentUser?.admissionYear || '');
+    const [passoutYear, setPassoutYear] = useState(currentUser?.passoutYear || '');
     const [isSaving, setIsSaving] = useState(false);
     const [isGeneratingCert, setIsGeneratingCert] = useState<string | null>(null);
 
@@ -141,7 +142,8 @@ export default function ProfilePage() {
         const hasSkills = currentUser.skills && currentUser.skills.length > 0;
         const hasWorkStyle = currentUser.workStyle && currentUser.workStyle.length > 0;
         const hasAdmissionYear = !!currentUser.admissionYear;
-        return hasSkills && hasWorkStyle && hasAdmissionYear;
+        const hasPassoutYear = !!currentUser.passoutYear;
+        return hasSkills && hasWorkStyle && hasAdmissionYear && hasPassoutYear;
     }, [currentUser]);
 
 
@@ -155,6 +157,7 @@ export default function ProfilePage() {
         setWorkStyle(currentUser.workStyle || []);
         setContactNumber(currentUser.contactNumber || '');
         setAdmissionYear(currentUser.admissionYear || '');
+        setPassoutYear(currentUser.passoutYear || '');
       }
     }, [currentUser]);
 
@@ -213,6 +216,7 @@ export default function ProfilePage() {
                 workStyle,
                 contactNumber,
                 admissionYear,
+                passoutYear,
             });
             setIsEditing(false);
         } finally {
@@ -243,7 +247,7 @@ export default function ProfilePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p>To use team features like the AI Matchmaker, you must add your skills, work style, and admission year to your profile. This helps us find the best teammates for you!</p>
+                        <p>To use team features like the AI Matchmaker, you must add your skills, work style, admission year, and passout year to your profile. This helps us find the best teammates for you!</p>
                          <Button variant="secondary" onClick={() => setIsEditing(true)} className="mt-4">Edit Profile Now</Button>
                     </CardContent>
                 </Card>
@@ -285,7 +289,11 @@ export default function ProfilePage() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="admissionYear">Admission Year</Label>
-                                            <Input id="admissionYear" type="text" placeholder="e.g., 2022-2026" value={admissionYear} onChange={e => setAdmissionYear(e.target.value)} required disabled={isSaving} />
+                                            <Input id="admissionYear" type="text" placeholder="e.g., 2022" value={admissionYear} onChange={e => setAdmissionYear(e.target.value)} required disabled={isSaving} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="passoutYear">Passout Year</Label>
+                                            <Input id="passoutYear" type="text" placeholder="e.g., 2026" value={passoutYear} onChange={e => setPassoutYear(e.target.value)} required disabled={isSaving} />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
@@ -367,6 +375,10 @@ export default function ProfilePage() {
                                         <div className="space-y-1">
                                             <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2"><Calendar className="h-4 w-4"/> Admission Year</h4>
                                             <p>{currentUser.admissionYear || 'Not specified'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2"><Calendar className="h-4 w-4"/> Passout Year</h4>
+                                            <p>{currentUser.passoutYear || 'Not specified'}</p>
                                         </div>
                                     </div>
                                      {currentUser.bio && (

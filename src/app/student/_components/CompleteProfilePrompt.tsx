@@ -20,7 +20,7 @@ export default function CompleteProfilePrompt() {
             </CardHeader>
             <CardContent>
                 <p className="mb-4">
-                    Providing your **Roll Number**, **Admission Year**, **Skills**, and preferred **Work Style** is essential for our AI Teammate Matchmaker to find you the best possible collaborators. It only takes a minute!
+                    Providing your **Roll Number**, **Admission Year**, **Passout Year**, **Skills**, and preferred **Work Style** is essential for our AI Teammate Matchmaker to find you the best possible collaborators. It only takes a minute!
                 </p>
                 <Button asChild>
                     <Link href="/profile">

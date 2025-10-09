@@ -77,7 +77,8 @@ export default function Dashboard() {
         const hasWorkStyle = currentUser.workStyle && currentUser.workStyle.length > 0;
         const hasRollNo = !!currentUser.rollNo;
         const hasAdmissionYear = !!currentUser.admissionYear;
-        return hasSkills && hasWorkStyle && hasRollNo && hasAdmissionYear;
+        const hasPassoutYear = !!currentUser.passoutYear;
+        return hasSkills && hasWorkStyle && hasRollNo && hasAdmissionYear && hasPassoutYear;
     }, [currentUser]);
     
     // Callback to be passed to the submission form

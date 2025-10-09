@@ -29,6 +29,7 @@ export default function Auth() {
     const [section, setSection] = useState('');
     const [contactNumber, setContactNumber] = useState('');
     const [admissionYear, setAdmissionYear] = useState('');
+    const [passoutYear, setPassoutYear] = useState('');
 
     const [isLoading, setIsLoading] = useState(false);
     const [isForgotPassOpen, setIsForgotPassOpen] = useState(false);
@@ -55,6 +56,7 @@ export default function Auth() {
         setSection('');
         setContactNumber('');
         setAdmissionYear('');
+        setPassoutYear('');
         dispatch({ type: 'CLEAR_MESSAGES' });
     };
 
@@ -74,7 +76,7 @@ export default function Auth() {
             }
         } else {
             try {
-                await api.registerStudent({ name, email, password, rollNo, branch, department, section, contactNumber, admissionYear });
+                await api.registerStudent({ name, email, password, rollNo, branch, department, section, contactNumber, admissionYear, passoutYear });
                 setIsLoginView(true);
                 clearForm();
             } finally {
@@ -116,7 +118,10 @@ export default function Auth() {
                                         <AppInput placeholder="Full Name" type="text" value={name} onChange={(e:any) => setName(e.target.value)} required disabled={isLoading} />
                                         <AppInput placeholder="Roll Number" type="text" value={rollNo} onChange={(e:any) => setRollNo(e.target.value)} required disabled={isLoading}/>
                                         <AppInput placeholder="Contact Number" type="tel" value={contactNumber} onChange={(e:any) => setContactNumber(e.target.value)} required disabled={isLoading}/>
-                                        <AppInput placeholder="Admission Year (e.g., 2022-2026)" type="text" value={admissionYear} onChange={(e:any) => setAdmissionYear(e.target.value)} required disabled={isLoading}/>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <AppInput placeholder="Admission Year (e.g., 2022)" type="text" value={admissionYear} onChange={(e:any) => setAdmissionYear(e.target.value)} required disabled={isLoading}/>
+                                            <AppInput placeholder="Passout Year (e.g., 2026)" type="text" value={passoutYear} onChange={(e:any) => setPassoutYear(e.target.value)} required disabled={isLoading}/>
+                                        </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <Select onValueChange={(value) => { setDepartment(value); setBranch(''); }} value={department} required>
                                                 <SelectTrigger className="bg-[var(--color-surface)] border-2 border-[var(--color-border)]"><SelectValue placeholder="Select Department" /></SelectTrigger>

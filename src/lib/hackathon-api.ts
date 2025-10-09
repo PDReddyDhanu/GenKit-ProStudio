@@ -119,7 +119,7 @@ export async function changeAdminPassword(collegeId: string, { oldPassword, newP
     return { successMessage: "Admin password has been changed successfully for this session." };
 }
 
-export async function registerStudent(collegeId: string, { name, email, password, rollNo, branch, department, section, contactNumber, admissionYear }: any) {
+export async function registerStudent(collegeId: string, { name, email, password, rollNo, branch, department, section, contactNumber, admissionYear, passoutYear }: any) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user: User = {
@@ -132,6 +132,7 @@ export async function registerStudent(collegeId: string, { name, email, password
             section,
             contactNumber,
             admissionYear,
+            passoutYear,
             status: 'pending',
             registeredAt: Date.now(),
             skills: [],
@@ -449,7 +450,7 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
             status: 'approved',
             registeredAt: Date.now(),
             skills: [], bio: '', github: '', linkedin: '', workStyle: [], notifications: [],
-            rollNo: '', branch: '', department: '', section: '', contactNumber: '', admissionYear: '',
+            rollNo: '', branch: '', department: '', section: '', contactNumber: '', admissionYear: '', passoutYear: '',
             projectType: 'Other',
         };
         await setDoc(doc(db, `colleges/${collegeId}/users`, newUser.id), newUser);
@@ -901,7 +902,7 @@ export async function updateProjectStatus(collegeId: string, projectId: string, 
         updatedBy: faculty.name,
         from: project.status,
         to: newStatus,
-        remarks: remarks || (newStatus === 'Rejected' ? 'Project Rejected' : `Approved and moved to ${newStatus}`)
+        remarks: remarks || (newStatus === 'Approved' ? 'Project Approved' : `Approved and moved to ${newStatus}`)
     };
 
     await updateDoc(projectRef, {
