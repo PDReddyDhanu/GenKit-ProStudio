@@ -29,12 +29,12 @@ export default function DataManagement() {
 
     const currentEvent = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
 
+    // Correctly filter teams and projects based ONLY on the selected event
     const { eventTeams, eventProjects } = useMemo(() => {
         if (!selectedHackathonId) return { eventTeams: [], eventProjects: [] };
-
+        
         const teamsForEvent = teams.filter(t => t.hackathonId === selectedHackathonId);
-        const projectIdsForEvent = new Set(teamsForEvent.map(t => t.submissionId));
-        const projectsForEvent = projects.filter(p => projectIdsForEvent.has(p.id));
+        const projectsForEvent = projects.filter(p => p.hackathonId === selectedHackathonId);
 
         return { eventTeams: teamsForEvent, eventProjects: projectsForEvent };
     }, [teams, projects, selectedHackathonId]);
@@ -62,10 +62,9 @@ export default function DataManagement() {
             filteredUsers = filteredUsers.filter(u => u.branch === selectedBranch);
         }
 
-        const filteredUserIds = new Set(filteredUsers.map(u => u.id));
-        const allParticipantsInEvent = eventTeams.flatMap(t => t.members);
+        const allParticipantIdsInEvent = new Set(eventTeams.flatMap(t => t.members.map(m => m.id)));
         
-        return allParticipantsInEvent.filter(p => filteredUserIds.has(p.id));
+        return filteredUsers.filter(u => allParticipantIdsInEvent.has(u.id));
     }, [users, eventTeams, selectedHackathonId, selectedBatch, selectedDepartment, selectedBranch]);
 
 
@@ -77,8 +76,8 @@ export default function DataManagement() {
             const branchName = departmentInfo ? departmentInfo.find(b => b.id === fullUser?.branch)?.name : fullUser?.branch;
             
             return [
-                fullUser?.name || u.name, 
-                fullUser?.email || u.email, 
+                fullUser?.name || 'N/A', 
+                fullUser?.email || 'N/A', 
                 fullUser?.rollNo || 'N/A', 
                 branchName || 'N/A',
                 fullUser?.department || 'N/A', 
@@ -290,4 +289,5 @@ export default function DataManagement() {
     );
 
     
+
 
