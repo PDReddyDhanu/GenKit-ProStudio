@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -31,7 +30,15 @@ export default function DataManagement() {
     const currentEvent = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
 
     const { eventParticipants, eventTeams, eventProjects } = useMemo(() => {
-        let filteredUsers = [...users];
+        if (!selectedHackathonId) {
+            return { eventParticipants: [], eventTeams: [], eventProjects: [] };
+        }
+
+        const teamsForEvent = teams.filter(t => t.hackathonId === selectedHackathonId);
+        const teamIdsForEvent = new Set(teamsForEvent.map(t => t.id));
+        const projectsForEvent = projects.filter(p => teamIdsForEvent.has(p.teamId));
+        
+        let filteredUsers = users;
 
         if (selectedBatch && selectedBatch !== 'all') {
             const [startYear, endYear] = selectedBatch.split('-').map(Number);
@@ -50,21 +57,16 @@ export default function DataManagement() {
         if (selectedBranch && selectedBranch !== 'all') {
             filteredUsers = filteredUsers.filter(u => u.branch === selectedBranch);
         }
-        
-        const participantUserIds = new Set(filteredUsers.map(u => u.id));
 
-        if (!selectedHackathonId) {
-            return { eventParticipants: filteredUsers, eventTeams: [], eventProjects: [] };
-        }
+        const filteredUserIds = new Set(filteredUsers.map(u => u.id));
         
-        const teamsForEvent = teams.filter(t => t.hackathonId === selectedHackathonId);
-        
-        const teamsInFilter = teamsForEvent.filter(t => t.members.some(m => participantUserIds.has(m.id)));
-        const teamIdsInFilter = new Set(teamsInFilter.map(t => t.id));
-        
-        const projectsInFilter = projects.filter(p => p.hackathonId === selectedHackathonId && teamIdsInFilter.has(p.teamId));
+        const participantsForEvent = users.filter(u => 
+            teamsForEvent.some(t => t.members.some(m => m.id === u.id))
+        );
 
-        return { eventParticipants: filteredUsers, eventTeams: teamsInFilter, eventProjects: projectsInFilter };
+        const filteredParticipants = participantsForEvent.filter(p => filteredUserIds.has(p.id));
+
+        return { eventParticipants: filteredParticipants, eventTeams: teamsForEvent, eventProjects: projectsForEvent };
     }, [users, teams, projects, selectedHackathonId, selectedBatch, selectedDepartment, selectedBranch]);
 
 
@@ -91,17 +93,13 @@ export default function DataManagement() {
     const handleExportScores = () => {
         const csvString = generateScoresCsv(eventProjects, eventTeams);
         const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
-        const batchName = selectedBatch || 'AllBatches';
-        const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment.replace(/\s/g, '_');
-        downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_All_Scores.csv`);
+        downloadCsv(csvString, `${eventName}_All_Scores.csv`);
     }
 
     const handleExportAllData = () => {
         const csvString = generateFullDataCsv(eventProjects, eventTeams, users);
         const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
-        const batchName = selectedBatch || 'AllBatches';
-        const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment.replace(/\s/g, '_');
-        downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_Full_Export.csv`);
+        downloadCsv(csvString, `${eventName}_Full_Export.csv`);
     };
 
     const handleResetCurrentEvent = async () => {
@@ -285,4 +283,5 @@ export default function DataManagement() {
             </Card>
         </div>
     );
-}
+
+    
