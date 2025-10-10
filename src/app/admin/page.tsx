@@ -11,7 +11,7 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User, MessageSquare, Eye, EyeOff, Users } from 'lucide-react';
+import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User, MessageSquare, Eye, EyeOff, Users, CheckCheck } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
 import AnalyticsDashboard from './_components/AnalyticsDashboard';
@@ -211,7 +211,7 @@ export default function AdminPortal() {
                             <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{urgentApprovalsCount}</Badge>
                         )}
                     </TabsTrigger>
-                    <TabsTrigger value="approvals"><GanttChartSquare className="mr-2 h-4 w-4" /> Approvals & Scoring</TabsTrigger>
+                    <TabsTrigger value="approvals"><CheckCheck className="mr-2 h-4 w-4" /> Approvals & Scoring</TabsTrigger>
                     {currentFaculty?.role === 'hod' && <TabsTrigger value="assign-guides"><User className="mr-2 h-4 w-4" /> Assign Guides</TabsTrigger>}
                     <TabsTrigger value="management"><Users className="mr-2 h-4 w-4" />User Management</TabsTrigger>
                     <TabsTrigger value="announcements"><Rss className="mr-2 h-4 w-4" /> Announcements</TabsTrigger>
@@ -261,3 +261,5 @@ export default function AdminPortal() {
         </div>
     );
 }
+
+    

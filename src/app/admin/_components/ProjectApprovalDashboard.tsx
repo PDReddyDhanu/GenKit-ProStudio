@@ -218,6 +218,8 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
                 return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('InternalFinal')}>Complete Stage 2 & Move to Final Internal Review <ChevronRight className="h-4 w-4 ml-2"/></Button>;
             case 'InternalFinal':
                  return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('ExternalFinal')}>Send to External Review <ChevronRight className="h-4 w-4 ml-2"/></Button>;
+            case 'ExternalFinal':
+                 return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('Completed')}>Mark as Completed <Check className="h-4 w-4 ml-2"/></Button>;
             default:
                 return null;
         }
@@ -339,7 +341,7 @@ export default function ProjectApprovalDashboard() {
     const projectsByStage = useMemo(() => {
         const stages: Record<string, ProjectSubmission[]> = {
             'PendingGuide': [], 'PendingR&D': [], 'PendingHoD': [],
-            'Stage1': [], 'Stage2': [], 'InternalFinal': [], 'ExternalFinal': []
+            'Stage1': [], 'Stage2': [], 'InternalFinal': [], 'ExternalFinal': [], 'Completed': []
         };
         
         if (!selectedHackathonId) return stages;
@@ -377,7 +379,8 @@ export default function ProjectApprovalDashboard() {
         { key: 'Stage1', title: 'Stage 1 Scoring', roles: ['guide', 'class-mentor', 'admin', 'hod'] },
         { key: 'Stage2', title: 'Stage 2 Scoring', roles: ['guide', 'class-mentor', 'admin', 'hod'] },
         { key: 'InternalFinal', title: 'Final Internal Scoring', roles: ['guide', 'class-mentor', 'admin', 'hod'] },
-        { key: 'ExternalFinal', title: 'Final External Scoring', roles: ['external', 'admin'] },
+        { key: 'ExternalFinal', title: 'Final External Scoring', roles: ['external', 'admin', 'hod', 'guide'] },
+        { key: 'Completed', title: 'Completed', roles: ['guide', 'class-mentor', 'admin', 'hod', 'external', 'rnd'] },
     ];
 
     return (
@@ -416,3 +419,5 @@ export default function ProjectApprovalDashboard() {
         </div>
     );
 }
+
+    
