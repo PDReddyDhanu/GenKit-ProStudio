@@ -141,7 +141,7 @@ export function generateFullDataCsv(projects: ProjectSubmission[], teams: Team[]
                 escapeCsvField(team.joinCode),
                 escapeCsvField(p.status),
                 escapeCsvField(p.reviewStage),
-                escapeCsvField(p.totalScore.toFixed(2)),
+                escapeCsvField((p.totalScore || 0).toFixed(2)),
                 escapeCsvField(user.name),
                 escapeCsvField(user.email),
                 escapeCsvField(user.rollNo),
