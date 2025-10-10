@@ -18,8 +18,10 @@ import { format } from 'date-fns';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import ForgotPasswordDialog from '@/components/ForgotPasswordDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { WORK_STYLE_TAGS, SKILL_TAGS } from '@/lib/constants';
+import { WORK_STYLE_TAGS, SKILL_TAGS, DEPARTMENTS_DATA } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Link from 'next/link';
 
 
 function ChangePasswordCard() {
@@ -126,6 +128,10 @@ export default function ProfilePage() {
     const [contactNumber, setContactNumber] = useState(currentUser?.contactNumber || '');
     const [admissionYear, setAdmissionYear] = useState(currentUser?.admissionYear || '');
     const [passoutYear, setPassoutYear] = useState(currentUser?.passoutYear || '');
+    const [rollNo, setRollNo] = useState(currentUser?.rollNo || '');
+    const [department, setDepartment] = useState(currentUser?.department || '');
+    const [branch, setBranch] = useState(currentUser?.branch || '');
+
     const [isSaving, setIsSaving] = useState(false);
     const [isGeneratingCert, setIsGeneratingCert] = useState<string | null>(null);
 
@@ -143,7 +149,10 @@ export default function ProfilePage() {
         const hasWorkStyle = currentUser.workStyle && currentUser.workStyle.length > 0;
         const hasAdmissionYear = !!currentUser.admissionYear;
         const hasPassoutYear = !!currentUser.passoutYear;
-        return hasSkills && hasWorkStyle && hasAdmissionYear && hasPassoutYear;
+        const hasRollNo = !!currentUser.rollNo;
+        const hasBranch = !!currentUser.branch;
+        const hasDepartment = !!currentUser.department;
+        return hasSkills && hasWorkStyle && hasAdmissionYear && hasPassoutYear && hasRollNo && hasBranch && hasDepartment;
     }, [currentUser]);
 
 
@@ -158,6 +167,9 @@ export default function ProfilePage() {
         setContactNumber(currentUser.contactNumber || '');
         setAdmissionYear(currentUser.admissionYear || '');
         setPassoutYear(currentUser.passoutYear || '');
+        setRollNo(currentUser.rollNo || '');
+        setDepartment(currentUser.department || '');
+        setBranch(currentUser.branch || '');
       }
     }, [currentUser]);
 
@@ -217,6 +229,9 @@ export default function ProfilePage() {
                 contactNumber,
                 admissionYear,
                 passoutYear,
+                rollNo,
+                department,
+                branch,
             });
             setIsEditing(false);
         } finally {
@@ -236,6 +251,9 @@ export default function ProfilePage() {
         );
     }
 
+    const departmentOptions = Object.keys(DEPARTMENTS_DATA);
+    const branchOptions = department ? DEPARTMENTS_DATA[department as keyof typeof DEPARTMENTS_DATA] : [];
+
 
     return (
         <div className="container max-w-4xl mx-auto py-12 animate-fade-in">
@@ -247,7 +265,7 @@ export default function ProfilePage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p>To use team features like the AI Matchmaker, you must add your skills, work style, admission year, and passout year to your profile. This helps us find the best teammates for you!</p>
+                        <p>To use team features like the AI Matchmaker, you must add your roll number, department, branch, skills, work style, admission year, and passout year to your profile. This helps us find the best teammates for you!</p>
                          <Button variant="secondary" onClick={() => setIsEditing(true)} className="mt-4">Edit Profile Now</Button>
                     </CardContent>
                 </Card>
@@ -283,9 +301,27 @@ export default function ProfilePage() {
                                             <Label htmlFor="name">Full Name</Label>
                                             <Input id="name" value={name} onChange={e => setName(e.target.value)} required disabled={isSaving} />
                                         </div>
+                                         <div className="space-y-2">
+                                            <Label htmlFor="rollNo">Roll Number</Label>
+                                            <Input id="rollNo" value={rollNo} onChange={e => setRollNo(e.target.value)} required disabled={isSaving} />
+                                        </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="contactNumber">Contact Number</Label>
                                             <Input id="contactNumber" type="tel" value={contactNumber} onChange={e => setContactNumber(e.target.value)} required disabled={isSaving} />
+                                        </div>
+                                         <div className="space-y-2">
+                                            <Label>Department</Label>
+                                            <Select onValueChange={(value) => { setDepartment(value); setBranch(''); }} value={department} required>
+                                                <SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger>
+                                                <SelectContent>{departmentOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        </div>
+                                         <div className="space-y-2">
+                                            <Label>Branch</Label>
+                                             <Select onValueChange={setBranch} value={branch} required disabled={!department}>
+                                                <SelectTrigger><SelectValue placeholder="Select Branch" /></SelectTrigger>
+                                                <SelectContent>{branchOptions.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent>
+                                            </Select>
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="admissionYear">Admission Year</Label>
@@ -366,7 +402,7 @@ export default function ProfilePage() {
                                         </div>
                                         <div className="space-y-1">
                                             <h4 className="font-semibold text-muted-foreground">Branch & Department</h4>
-                                            <p>{currentUser.branch ? `${currentUser.branch} / ${currentUser.department}` : 'Not specified'}</p>
+                                            <p>{currentUser.branch ? `${DEPARTMENTS_DATA[currentUser.department as keyof typeof DEPARTMENTS_DATA]?.find(b => b.id === currentUser.branch)?.name || currentUser.branch} / ${currentUser.department}` : 'Not specified'}</p>
                                         </div>
                                         <div className="space-y-1">
                                             <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2"><Phone className="h-4 w-4"/> Contact Number</h4>
@@ -467,3 +503,4 @@ export default function ProfilePage() {
         </div>
     );
 }
+
