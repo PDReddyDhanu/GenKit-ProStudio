@@ -76,6 +76,7 @@ const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, o
         const stageIndex = reviewStageOrder.indexOf(stage);
         const currentReviewIndex = reviewStageOrder.indexOf(project.reviewStage);
 
+        if (stage === 'Completed' && project.reviewStage === 'Completed') return { status: 'complete' as const };
         if (currentReviewIndex > stageIndex) return { status: 'complete' as const };
         if (currentReviewIndex === stageIndex) return { status: 'pending' as const };
         return { status: 'upcoming' as const };
@@ -445,3 +446,4 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
         </div>
     );
 }
+
