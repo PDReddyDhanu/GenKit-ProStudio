@@ -1,4 +1,5 @@
 
+
 export const INTERNAL_STAGE_1_RUBRIC = [
     { id: 'innovation_originality', name: 'Innovation & Originality', description: 'Uniqueness of idea and creativity in approach', max: 10 },
     { id: 'problem_relevance', name: 'Problem Relevance & Clarity', description: 'Understanding and definition of the problem statement', max: 10 },
@@ -48,6 +49,8 @@ export const INDIVIDUAL_EXTERNAL_FINAL_RUBRIC = [
     { id: 'technical_mastery_knowledge', name: 'Technical Mastery & Knowledge', description: 'Understanding of technical stack and implementation', max: 10 },
     { id: 'professionalism_communication', name: 'Professionalism & Communication', description: 'Behavior, clarity during Q&A, and attitude', max: 10 },
 ];
+
+export type ReviewType = 'InternalStage1' | 'InternalStage2' | 'InternalFinal' | 'ExternalFinal';
 
 export const TEAM_ROLES = [
     'Leader',

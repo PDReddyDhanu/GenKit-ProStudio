@@ -3,10 +3,10 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ProjectSubmission, ProjectIdea, ProjectStatusUpdate } from '@/lib/types';
+import { ProjectSubmission, ProjectIdea, ProjectStatusUpdate, Team, TeamMember } from '@/lib/types';
 import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github, PlusCircle, Clock, XCircle, UserCheck, Milestone, Star } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getAiCodeReview, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { useHackathon } from '@/context/HackathonProvider';
@@ -16,12 +16,116 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { marked } from 'marked';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, formatDistanceToNow } from 'date-fns';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { 
+    INTERNAL_STAGE_1_RUBRIC, INDIVIDUAL_STAGE_1_RUBRIC,
+    INTERNAL_STAGE_2_RUBRIC, INDIVIDUAL_STAGE_2_RUBRIC,
+    INTERNAL_FINAL_RUBRIC, INDIVIDUAL_INTERNAL_FINAL_RUBRIC,
+    EXTERNAL_FINAL_RUBRIC, INDIVIDUAL_EXTERNAL_FINAL_RUBRIC, ReviewType
+} from '@/lib/constants';
 
 interface ProjectViewProps {
     submission: ProjectSubmission;
     onBack: () => void;
     onAddIdea: () => void;
 }
+
+const PerformanceSummary = ({ submission, team }: { submission: ProjectSubmission, team: Team }) => {
+
+    const calculateStageScore = (reviewType: ReviewType, teamRubric: any[], individualRubric: any[]) => {
+        const stageScores = submission.scores.filter(s => s.reviewType === reviewType);
+        if (stageScores.length === 0) return 0;
+        
+        // Average scores by evaluator
+        const evaluatorScores: Record<string, { teamScore: number, individualScores: Record<string, number>, individualCount: number }> = {};
+
+        stageScores.forEach(score => {
+            if (!evaluatorScores[score.evaluatorId]) {
+                evaluatorScores[score.evaluatorId] = { teamScore: 0, individualScores: {}, individualCount: 0 };
+            }
+
+            if (score.memberId) {
+                 if (!evaluatorScores[score.evaluatorId].individualScores[score.memberId]) {
+                    evaluatorScores[score.evaluatorId].individualScores[score.memberId] = 0;
+                }
+                evaluatorScores[score.evaluatorId].individualScores[score.memberId] += score.value;
+            } else {
+                 evaluatorScores[score.evaluatorId].teamScore += score.value;
+            }
+        });
+        
+        let totalObtained = 0;
+        const evaluatorCount = Object.keys(evaluatorScores).length;
+
+        for (const evalId in evaluatorScores) {
+            const { teamScore, individualScores } = evaluatorScores[evalId];
+            let totalIndividual = 0;
+            const membersScored = Object.keys(individualScores).length;
+            
+            for (const memberId in individualScores) {
+                totalIndividual += individualScores[memberId];
+            }
+            
+            // Average individual scores for that evaluator, then scale to team size
+            const avgIndividualScore = membersScored > 0 ? (totalIndividual / membersScored) : 0;
+            
+            totalObtained += teamScore + (avgIndividualScore * team.members.length);
+        }
+
+        return evaluatorCount > 0 ? totalObtained / evaluatorCount : 0;
+    };
+
+    const stageData = [
+        { name: 'Stage 1 – Idea Presentation', teamMax: 40, indMax: 20, obtained: calculateStageScore('InternalStage1', INTERNAL_STAGE_1_RUBRIC, INDIVIDUAL_STAGE_1_RUBRIC) },
+        { name: 'Stage 2 – Prototype / Internal Review', teamMax: 40, indMax: 20, obtained: calculateStageScore('InternalStage2', INTERNAL_STAGE_2_RUBRIC, INDIVIDUAL_STAGE_2_RUBRIC) },
+        { name: 'Stage 3 – Internal Final Review', teamMax: 40, indMax: 20, obtained: calculateStageScore('InternalFinal', INTERNAL_FINAL_RUBRIC, INDIVIDUAL_INTERNAL_FINAL_RUBRIC) },
+        { name: 'Stage 4 – External Final Review', teamMax: 50, indMax: 30, obtained: calculateStageScore('ExternalFinal', EXTERNAL_FINAL_RUBRIC, INDIVIDUAL_EXTERNAL_FINAL_RUBRIC) },
+    ];
+
+    const grandTotalMax = stageData.reduce((acc, stage) => acc + stage.teamMax + (stage.indMax * team.members.length), 0);
+    const grandTotalObtained = stageData.reduce((acc, stage) => acc + stage.obtained, 0);
+
+
+    return (
+        <Card className="mt-6 border-primary bg-primary/5">
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl">Overall Performance Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Stage</TableHead>
+                            <TableHead className="text-right">Team Score (Max)</TableHead>
+                            <TableHead className="text-right">Individual Score (Max)</TableHead>
+                            <TableHead className="text-right">Total (Max)</TableHead>
+                            <TableHead className="text-right font-bold text-primary">Obtained Marks</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {stageData.map(stage => (
+                            <TableRow key={stage.name}>
+                                <TableCell className="font-medium">{stage.name}</TableCell>
+                                <TableCell className="text-right">{stage.teamMax}</TableCell>
+                                <TableCell className="text-right">{stage.indMax} (x{team.members.length})</TableCell>
+                                <TableCell className="text-right">{stage.teamMax + (stage.indMax * team.members.length)}</TableCell>
+                                <TableCell className="text-right font-bold text-primary">{stage.obtained.toFixed(2)}</TableCell>
+                            </TableRow>
+                        ))}
+                         <TableRow className="font-bold bg-muted/50">
+                            <TableCell>Grand Total</TableCell>
+                            <TableCell className="text-right">170</TableCell>
+                            <TableCell className="text-right">90 (x{team.members.length})</TableCell>
+                            <TableCell className="text-right">{grandTotalMax}</TableCell>
+                            <TableCell className="text-right text-lg text-primary">{grandTotalObtained.toFixed(2)} / {grandTotalMax}</TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    )
+}
+
 
 const IdeaDisplay = ({ idea }: { idea: ProjectIdea }) => {
     return (
@@ -191,16 +295,16 @@ const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, o
                  )
             })}
             
-            {project.status === 'Approved' && (
+             {project.status === 'Approved' && (
                 <div className="relative">
                     <div className={`absolute -left-[45px] top-0 h-10 w-10 bg-background flex items-center justify-center rounded-full border-2 ${finalCompletedStage.status.status === 'complete' ? 'border-green-500' : 'border-border'}`}>
                         {getIcon(finalCompletedStage.status.status)}
                     </div>
                     <p className={`font-bold text-lg ${finalCompletedStage.status.status === 'complete' ? 'text-green-400' : 'text-muted-foreground'}`}>{finalCompletedStage.name}</p>
-                    {finalCompletedStage.status.status === 'complete' ? (
-                        <p className="text-lg font-bold text-secondary">Final Score: {project.totalScore.toFixed(2)}</p>
+                     {finalCompletedStage.status.status === 'complete' ? (
+                        <p className="text-sm text-muted-foreground">The evaluation process is complete.</p>
                     ) : (
-                        <p className="text-sm text-muted-foreground">Awaiting final scores</p>
+                        <p className="text-sm text-muted-foreground">Awaiting final review and completion.</p>
                     )}
                 </div>
             )}
@@ -351,7 +455,10 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                                     <StatusTimeline project={submission} onResubmit={handleResubmit}/>
                                 </CardContent>
                             </Card>
-                        </TabsContent>
+                            {submission.reviewStage === 'Completed' && team && (
+                                <PerformanceSummary submission={submission} team={team} />
+                            )}
+                         </TabsContent>
                          <TabsContent value="details" className="mt-6">
                              <Tabs defaultValue="idea-1" className="w-full">
                                 <TabsList className={`grid w-full grid-cols-${submission.projectIdeas.length}`}>
@@ -431,9 +538,6 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                     {canDownloadCertificate && (
                         <div className="mt-6 border-t pt-4 space-y-4">
                              <div className="text-center space-y-2">
-                                <p className="font-bold text-2xl text-primary flex items-center justify-center gap-2">
-                                    <Star className="h-6 w-6"/>Final Score: {submission.totalScore.toFixed(2)}
-                                </p>
                                 <Button onClick={handleDownloadCertificate} disabled={isGeneratingCert}>
                                     {isGeneratingCert ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : <><Download className="mr-2 h-4 w-4"/>Download Participation Certificate</>}
                                 </Button>
