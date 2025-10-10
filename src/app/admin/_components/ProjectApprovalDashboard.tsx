@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ProjectSubmission, Team, Faculty, ProjectIdea, ReviewStage, ReviewType } from '@/lib/types';
-import { Loader, Check, X, AlertTriangle, Scale, Bot, Presentation, ChevronRight } from 'lucide-react';
+import { Loader, Check, X, AlertTriangle, Scale, Bot, Presentation, ChevronRight, Download, Star } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -17,6 +18,7 @@ import Link from 'next/link';
 import { getAiProjectSummary, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
 import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
 import { marked } from 'marked';
+import { generateScoresCsv, downloadCsv } from '@/lib/csv';
 
 const RejectDialog = ({ idea, projectId, onConfirm, open, onOpenChange }: { idea: ProjectIdea, projectId: string, onConfirm: (remarks: string) => void, open: boolean, onOpenChange: (open: boolean) => void }) => {
     const [remarks, setRemarks] = useState('');
@@ -99,6 +101,13 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
         } finally {
             setIsLoading(null);
         }
+    }
+
+    const handleDownloadScores = () => {
+        if (!team) return;
+        const internalOnly = currentFaculty?.role !== 'external';
+        const csv = generateScoresCsv([project], [team], internalOnly);
+        downloadCsv(csv, `${project.projectIdeas[0].title}_Scores.csv`);
     }
 
     const handleGenerateSummary = async (idea: ProjectIdea) => {
@@ -315,13 +324,25 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
                     </Accordion>
                     
                     <div className="mt-4 pt-4 border-t space-y-2">
-                        {project.status === 'Approved' && canScore && (
-                            <Button size="sm" onClick={() => setIsScoring(true)} disabled={!!isLoading} className="w-full">
-                                <Scale className="mr-2 h-4 w-4" />
-                                {hasScoredCurrentStage ? 'Edit Score' : 'Score Project'}: {project.projectIdeas[0].title}
-                            </Button>
+                        {project.reviewStage === 'Completed' ? (
+                            <div className="text-center space-y-2">
+                                <p className="font-bold text-lg text-primary flex items-center justify-center gap-2"><Star className="h-5 w-5"/>Final Average Score: {project.averageScore.toFixed(2)}</p>
+                                <Button size="sm" onClick={handleDownloadScores} disabled={!!isLoading} className="w-full">
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Download All Scores
+                                </Button>
+                            </div>
+                        ) : (
+                            <>
+                                {project.status === 'Approved' && canScore && (
+                                    <Button size="sm" onClick={() => setIsScoring(true)} disabled={!!isLoading} className="w-full">
+                                        <Scale className="mr-2 h-4 w-4" />
+                                        {hasScoredCurrentStage ? 'Edit Score' : 'Score Project'}: {project.projectIdeas[0].title}
+                                    </Button>
+                                )}
+                                {renderStageAdvancementButton()}
+                            </>
                         )}
-                         {renderStageAdvancementButton()}
                     </div>
                 </CardContent>
             </Card>
@@ -424,3 +445,4 @@ export default function ProjectApprovalDashboard() {
         </div>
     );
 }
+

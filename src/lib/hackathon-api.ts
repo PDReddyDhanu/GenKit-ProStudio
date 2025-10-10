@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { auth, db } from './firebase';
@@ -37,14 +38,10 @@ import {
 } from 'firebase/firestore';
 import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate, ReviewStage } from './types';
 import { 
-    INTERNAL_STAGE_1_RUBRIC, 
-    INDIVIDUAL_STAGE_1_RUBRIC,
-    INTERNAL_STAGE_2_RUBRIC,
-    INDIVIDUAL_STAGE_2_RUBRIC,
-    INTERNAL_FINAL_RUBRIC,
-    INDIVIDUAL_INTERNAL_FINAL_RUBRIC,
-    EXTERNAL_FINAL_RUBRIC,
-    INDIVIDUAL_EXTERNAL_FINAL_RUBRIC
+    INTERNAL_STAGE_1_RUBRIC, INDIVIDUAL_STAGE_1_RUBRIC,
+    INTERNAL_STAGE_2_RUBRIC, INDIVIDUAL_STAGE_2_RUBRIC,
+    INTERNAL_FINAL_RUBRIC, INDIVIDUAL_INTERNAL_FINAL_RUBRIC,
+    EXTERNAL_FINAL_RUBRIC, INDIVIDUAL_EXTERNAL_FINAL_RUBRIC
 } from './constants';
 import { generateProjectImage as generateProjectImageFlow } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
@@ -878,8 +875,34 @@ export async function evaluateProject(collegeId: string, projectId: string, eval
 
     const allScores = [...otherScores, ...newScores];
 
+    const calculateAverageScore = (scores: Score[]): number => {
+        if (scores.length === 0) return 0;
+        
+        const totalPossibleScore = scores.reduce((sum, score) => {
+            const rubric = 
+                INTERNAL_STAGE_1_RUBRIC.find(r => r.id === score.criteria) ||
+                INDIVIDUAL_STAGE_1_RUBRIC.find(r => r.id === score.criteria) ||
+                INTERNAL_STAGE_2_RUBRIC.find(r => r.id === score.criteria) ||
+                INDIVIDUAL_STAGE_2_RUBRIC.find(r => r.id === score.criteria) ||
+                INTERNAL_FINAL_RUBRIC.find(r => r.id === score.criteria) ||
+                INDIVIDUAL_INTERNAL_FINAL_RUBRIC.find(r => r.id === score.criteria) ||
+                EXTERNAL_FINAL_RUBRIC.find(r => r.id === score.criteria) ||
+                INDIVIDUAL_EXTERNAL_FINAL_RUBRIC.find(r => r.id === score.criteria);
+            
+            return sum + (rubric?.max || 0);
+        }, 0);
+
+        const totalScored = scores.reduce((sum, score) => sum + score.value, 0);
+
+        return totalPossibleScore > 0 ? (totalScored / totalPossibleScore) * 100 : 0;
+    };
+    
+    const averageScore = calculateAverageScore(allScores);
+
     await updateDoc(projectRef, { 
         scores: allScores,
+        averageScore: averageScore,
+        totalScore: averageScore // Keep totalScore for backward compatibility for now
     });
 
     return { successMessage: "Evaluation submitted successfully." };
