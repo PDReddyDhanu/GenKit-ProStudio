@@ -72,14 +72,15 @@ const generateSummaryReportFlow = ai.defineFlow(
   async input => {
     // Sort projects by score to find winners and create a simplified object for the prompt
     const rankedProjects = [...input.projects]
-        .sort((a, b) => b.averageScore - a.averageScore)
+        .sort((a, b) => b.totalScore - a.totalScore)
         .map(p => {
             const team = input.teams.find(t => t.id === p.teamId);
+            const primaryIdea = p.projectIdeas[0];
             return {
-                projectName: p.title,
+                projectName: primaryIdea?.title || 'Untitled Project',
                 teamName: team?.name || "Unknown Team",
-                description: p.description,
-                score: p.averageScore.toFixed(2),
+                description: primaryIdea?.description || 'No description available.',
+                score: p.totalScore.toFixed(2),
             };
         });
     
