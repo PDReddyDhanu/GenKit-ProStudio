@@ -60,11 +60,11 @@ export default function DataManagement() {
 
         const filteredUserIds = new Set(filteredUsers.map(u => u.id));
         
-        const participantsForEvent = users.filter(u => 
-            teamsForEvent.some(t => t.members.some(m => m.id === u.id))
-        );
+        const participantsInEvent = teamsForEvent.flatMap(t => t.members.map(m => users.find(u => u.id === m.id)).filter(Boolean));
 
-        const filteredParticipants = participantsForEvent.filter(p => filteredUserIds.has(p.id));
+        const uniqueParticipants = Array.from(new Map(participantsInEvent.map(p => [p!.id, p!])).values());
+        
+        const filteredParticipants = uniqueParticipants.filter(p => filteredUserIds.has(p.id));
 
         return { eventParticipants: filteredParticipants, eventTeams: teamsForEvent, eventProjects: projectsForEvent };
     }, [users, teams, projects, selectedHackathonId, selectedBatch, selectedDepartment, selectedBranch]);
@@ -86,7 +86,7 @@ export default function DataManagement() {
         const csvString = [headers.join(','), ...data.map(row => row.join(','))].join('\n');
         const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
         const batchName = selectedBatch || 'AllBatches';
-        const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment.replace(/\s/g, '_');
+        const deptName = !selectedDepartment || selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment.replace(/\s/g, '_');
         downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_Students.csv`);
     };
 
