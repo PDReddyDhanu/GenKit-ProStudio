@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProjectSubmission, ProjectIdea, ProjectStatusUpdate } from '@/lib/types';
-import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github, PlusCircle, Clock, XCircle, UserCheck, Milestone } from 'lucide-react';
+import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github, PlusCircle, Clock, XCircle, UserCheck, Milestone, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { getAiCodeReview, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
@@ -53,41 +53,59 @@ const IdeaDisplay = ({ idea }: { idea: ProjectIdea }) => {
 
 const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, onResubmit: () => void }) => {
     const history = project.statusHistory || [];
-    const stageOrder: ProjectSubmission['status'][] = ['PendingGuide', 'PendingR&D', 'PendingHoD', 'Approved'];
-    
-    const getStatusForStage = (stage: ProjectSubmission['status']) => {
-        const stageIndex = stageOrder.indexOf(stage);
-        const currentStatusIndex = stageOrder.indexOf(project.status);
+    const approvalStageOrder: ProjectSubmission['status'][] = ['PendingGuide', 'PendingR&D', 'PendingHoD', 'Approved'];
+    const reviewStageOrder: ProjectSubmission['reviewStage'][] = ['Stage1', 'Stage2', 'InternalFinal', 'ExternalFinal', 'Completed'];
 
-        if (currentStatusIndex > stageIndex) {
-            // This stage is in the past and has been completed.
-            const update = [...history].reverse().find(h => h.to === stageOrder[stageIndex + 1] || h.to === stage);
+    const getApprovalStatus = (stage: ProjectSubmission['status']) => {
+        const stageIndex = approvalStageOrder.indexOf(stage);
+        const currentStatusIndex = approvalStageOrder.indexOf(project.status);
+
+        if (currentStatusIndex >= stageIndex) {
+            const update = [...history].reverse().find(h => h.to === stage || (h.to === 'Approved' && stage === 'PendingHoD'));
+            if (stage === project.status) return { status: 'pending' as const, update };
             return { status: 'complete' as const, update };
         }
         
-        if (currentStatusIndex === stageIndex) {
-             // This is the current pending stage
-             const update = [...history].reverse().find(h => h.to === stage);
-             return { status: 'pending' as const, update };
-        }
-        
-        // This stage is in the future.
         return { status: 'upcoming' as const, update: null };
     };
-    
+
+    const getReviewStatus = (stage: ProjectSubmission['reviewStage']) => {
+        if (project.status !== 'Approved') return { status: 'upcoming' as const };
+        
+        const stageIndex = reviewStageOrder.indexOf(stage);
+        const currentReviewIndex = reviewStageOrder.indexOf(project.reviewStage);
+
+        if (currentReviewIndex > stageIndex) return { status: 'complete' as const };
+        if (currentReviewIndex === stageIndex) return { status: 'pending' as const };
+        return { status: 'upcoming' as const };
+    };
+
     const isRejected = project.status === 'Rejected';
     const rejectionUpdate = history.find(h => h.to === 'Rejected');
 
-    const stages: { key: ProjectSubmission['status'], name: string }[] = [
+    const approvalStages: { key: ProjectSubmission['status'], name: string }[] = [
         { key: 'PendingGuide', name: 'Guide Review' },
         { key: 'PendingR&D', name: 'R&D Coordinator Review' },
         { key: 'PendingHoD', name: 'HOD Review' },
     ];
     
-     const finalApprovedStage = {
+    const finalApprovalStage = {
         key: 'Approved',
         name: 'Project Approved',
         update: history.find(h => h.to === 'Approved')
+    };
+    
+     const reviewStages: { key: ProjectSubmission['reviewStage'], name: string }[] = [
+        { key: 'Stage1', name: 'Stage 1 Scoring' },
+        { key: 'Stage2', name: 'Stage 2 Scoring' },
+        { key: 'InternalFinal', name: 'Final Internal Review' },
+        { key: 'ExternalFinal', name: 'Final External Review' },
+    ];
+    
+    const finalCompletedStage = {
+        key: 'Completed',
+        name: 'Project Completed',
+        status: getReviewStatus('Completed')
     };
 
     const getIcon = (status: 'complete' | 'pending' | 'upcoming' | 'rejected') => {
@@ -123,8 +141,8 @@ const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, o
 
     return (
         <div className="relative border-l-2 border-dashed border-border pl-8 space-y-8 py-4">
-            {stages.map((stageInfo, index) => {
-                const stageStatus = getStatusForStage(stageInfo.key);
+            {approvalStages.map((stageInfo) => {
+                const stageStatus = getApprovalStatus(stageInfo.key);
                 const isActive = stageStatus.status === 'pending' || stageStatus.status === 'complete';
                 
                 return (
@@ -149,14 +167,41 @@ const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, o
                 )
             })}
              <div className="relative">
-                <div className={`absolute -left-[45px] top-0 h-10 w-10 bg-background flex items-center justify-center rounded-full border-2 ${finalApprovedStage.update ? 'border-green-500' : 'border-border'}`}>
-                    {getIcon(finalApprovedStage.update ? 'complete' : 'upcoming')}
+                <div className={`absolute -left-[45px] top-0 h-10 w-10 bg-background flex items-center justify-center rounded-full border-2 ${finalApprovalStage.update ? 'border-green-500' : 'border-border'}`}>
+                    {getIcon(finalApprovalStage.update ? 'complete' : 'upcoming')}
                 </div>
-                <p className={`font-bold text-lg ${finalApprovedStage.update ? 'text-green-400' : 'text-muted-foreground'}`}>{finalApprovedStage.name}</p>
-                {finalApprovedStage.update && (
-                    <div className="text-xs text-muted-foreground">{format(new Date(finalApprovedStage.update.timestamp), 'PPP p')} by {finalApprovedStage.update.updatedBy}</div>
+                <p className={`font-bold text-lg ${finalApprovalStage.update ? 'text-green-400' : 'text-muted-foreground'}`}>{finalApprovalStage.name}</p>
+                {finalApprovalStage.update && (
+                    <div className="text-xs text-muted-foreground">{format(new Date(finalApprovalStage.update.timestamp), 'PPP p')} by {finalApprovalStage.update.updatedBy}</div>
                 )}
             </div>
+             {project.status === 'Approved' && reviewStages.map((stageInfo) => {
+                const stageStatus = getReviewStatus(stageInfo.key);
+                 const isActive = stageStatus.status === 'pending' || stageStatus.status === 'complete';
+                 return (
+                     <div key={stageInfo.key} className="relative">
+                        <div className={`absolute -left-[45px] top-0 h-10 w-10 bg-background flex items-center justify-center rounded-full border-2 ${isActive ? 'border-primary' : 'border-border'}`}>
+                             {getIcon(stageStatus.status)}
+                        </div>
+                        <p className={`font-bold text-lg ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>{stageInfo.name}</p>
+                        <p className="text-sm text-muted-foreground">{stageStatus.status === 'pending' ? 'Awaiting Scores' : (stageStatus.status === 'complete' ? 'Scoring Complete' : 'Upcoming')}</p>
+                    </div>
+                 )
+            })}
+            
+            {project.status === 'Approved' && (
+                <div className="relative">
+                    <div className={`absolute -left-[45px] top-0 h-10 w-10 bg-background flex items-center justify-center rounded-full border-2 ${finalCompletedStage.status.status === 'complete' ? 'border-green-500' : 'border-border'}`}>
+                        {getIcon(finalCompletedStage.status.status)}
+                    </div>
+                    <p className={`font-bold text-lg ${finalCompletedStage.status.status === 'complete' ? 'text-green-400' : 'text-muted-foreground'}`}>{finalCompletedStage.name}</p>
+                    {finalCompletedStage.status.status === 'complete' ? (
+                        <p className="text-lg font-bold text-secondary">Final Score: {project.totalScore.toFixed(2)} / 100</p>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">Awaiting final scores</p>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
