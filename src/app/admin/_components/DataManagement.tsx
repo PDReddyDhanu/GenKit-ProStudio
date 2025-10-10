@@ -21,7 +21,7 @@ import {
 import { AlertTriangle, Trash2, Loader, Download } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DEPARTMENTS_DATA } from '@/lib/constants';
-import { generateScoresCsv, generateFullDataCsv, downloadCsv, generateTeamsCsv } from '@/lib/csv';
+import { generateScoresCsv, generateFullDataCsv, downloadCsv } from '@/lib/csv';
 
 export default function DataManagement() {
     const { state, api } = useHackathon();
@@ -104,23 +104,6 @@ export default function DataManagement() {
         downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_Full_Export.csv`);
     };
 
-    const handleExportCompletedProjects = () => {
-        const completedProjects = eventProjects.filter(p => p.reviewStage === 'Completed');
-        const completedTeamIds = new Set(completedProjects.map(p => p.teamId));
-        const completedTeams = eventTeams.filter(t => completedTeamIds.has(t.id));
-
-        const teamsCsv = generateTeamsCsv(completedTeams, users);
-        const projectsCsv = generateFullDataCsv(completedProjects, completedTeams, users);
-
-        const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
-        const batchName = selectedBatch || 'AllBatches';
-        const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment.replace(/\s/g, '_');
-
-        downloadCsv(teamsCsv, `${eventName}_${batchName}_${deptName}_Completed_Teams_Info.csv`);
-        downloadCsv(projectsCsv, `${eventName}_${batchName}_${deptName}_Completed_Projects_Scores.csv`);
-    };
-
-
     const handleResetCurrentEvent = async () => {
         if (!selectedHackathonId) return;
         setIsLoading('reset-current');
@@ -168,38 +151,23 @@ export default function DataManagement() {
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                        <Card className="bg-muted/50">
-                            <CardHeader>
-                                <CardTitle className="text-lg font-semibold">Filtered Data Export</CardTitle>
-                                <CardDescription>Export data based on the currently selected filters.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex flex-wrap gap-2">
-                                <Button variant="outline" size="sm" onClick={handleExportStudents} disabled={eventParticipants.length === 0}>
-                                    <Download className="mr-2 h-4 w-4"/> Export Students ({eventParticipants.length})
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={handleExportScores} disabled={eventProjects.length === 0 || !currentEvent}>
-                                    <Download className="mr-2 h-4 w-4"/> Export Project Scores
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={handleExportAllData} disabled={eventProjects.length === 0 || !currentEvent}>
-                                    <Download className="mr-2 h-4 w-4"/> Export Full Project Data
-                                </Button>
-                            </CardContent>
-                        </Card>
-                         <Card className="bg-muted/50 border-primary">
-                            <CardHeader>
-                                <CardTitle className="text-lg font-semibold">Master Completed Project Export</CardTitle>
-                                <CardDescription>Downloads all data for completed projects within the selected filters.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Button onClick={handleExportCompletedProjects} disabled={eventProjects.filter(p=>p.reviewStage === 'Completed').length === 0 || !currentEvent}>
-                                    <Download className="mr-2 h-4 w-4"/> Export All Completed Data
-                                </Button>
-                                 <p className="text-xs text-muted-foreground mt-2">This will generate two CSV files: one for team information and one for project/scoring details.</p>
-                            </CardContent>
-                        </Card>
-                    </div>
-
+                    <Card className="bg-muted/50">
+                        <CardHeader>
+                            <CardTitle className="text-lg font-semibold">Filtered Data Export</CardTitle>
+                            <CardDescription>Export data based on the currently selected filters.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-wrap gap-2">
+                            <Button variant="outline" size="sm" onClick={handleExportStudents} disabled={eventParticipants.length === 0}>
+                                <Download className="mr-2 h-4 w-4"/> Export Students ({eventParticipants.length})
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={handleExportScores} disabled={eventProjects.length === 0 || !currentEvent}>
+                                <Download className="mr-2 h-4 w-4"/> Export Project Scores
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={handleExportAllData} disabled={eventProjects.length === 0 || !currentEvent}>
+                                <Download className="mr-2 h-4 w-4"/> Export Full Project Data
+                            </Button>
+                        </CardContent>
+                    </Card>
                     <Card>
                         <CardHeader>
                             <CardTitle className="font-headline">Participant Overview</CardTitle>

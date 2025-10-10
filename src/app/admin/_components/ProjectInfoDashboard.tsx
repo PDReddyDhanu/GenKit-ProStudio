@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -8,7 +9,7 @@ import { ProjectSubmission, Team, User } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { CheckCircle, Clock, XCircle, Milestone, Download, FileText, Database, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { downloadCsv, generateFullDataCsv, generateScoresCsv } from '@/lib/csv';
+import { downloadCsv, generateFullDataCsv, generateScoresCsv, generateTeamsCsv } from '@/lib/csv';
 import { Input } from '@/components/ui/input';
 
 const ProjectStatusCard = ({ project, team, users }: { project: ProjectSubmission, team?: Team, users: User[] }) => {
@@ -71,7 +72,7 @@ const ProjectStatusCard = ({ project, team, users }: { project: ProjectSubmissio
 
 export default function ProjectInfoDashboard() {
     const { state } = useHackathon();
-    const { projects, teams, users, selectedHackathonId } = state;
+    const { projects, teams, users, selectedHackathonId, hackathons } = state;
     const [searchQuery, setSearchQuery] = useState('');
 
     const eventProjects = useMemo(() => {
@@ -89,6 +90,26 @@ export default function ProjectInfoDashboard() {
         
         return filteredProjects;
     }, [projects, teams, selectedHackathonId, searchQuery]);
+    
+    const eventTeams = useMemo(() => {
+        const teamIds = new Set(eventProjects.map(p => p.teamId));
+        return teams.filter(t => teamIds.has(t.id));
+    }, [eventProjects, teams]);
+
+    const handleExportCompletedProjects = () => {
+        const currentEvent = hackathons.find(h => h.id === selectedHackathonId);
+        const completedProjects = eventProjects.filter(p => p.reviewStage === 'Completed');
+        const completedTeamIds = new Set(completedProjects.map(p => p.teamId));
+        const completedTeams = eventTeams.filter(t => completedTeamIds.has(t.id));
+
+        const teamsCsv = generateTeamsCsv(completedTeams, users);
+        const projectsCsv = generateFullDataCsv(completedProjects, completedTeams, users);
+
+        const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
+        
+        downloadCsv(teamsCsv, `${eventName}_Completed_Teams_Info.csv`);
+        downloadCsv(projectsCsv, `${eventName}_Completed_Projects_Scores.csv`);
+    };
 
     const totalSubmissions = eventProjects.length;
 
@@ -102,7 +123,7 @@ export default function ProjectInfoDashboard() {
                         Found {totalSubmissions} submission(s).
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                      <div className="relative max-w-sm">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -112,6 +133,18 @@ export default function ProjectInfoDashboard() {
                             className="pl-9"
                         />
                     </div>
+                     <Card className="bg-muted/50 border-primary">
+                        <CardHeader>
+                            <CardTitle className="text-lg font-semibold">Master Completed Project Export</CardTitle>
+                            <CardDescription>Downloads all data for completed projects within the selected event and filters.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Button onClick={handleExportCompletedProjects} disabled={eventProjects.filter(p=>p.reviewStage === 'Completed').length === 0}>
+                                <Download className="mr-2 h-4 w-4"/> Export All Completed Data
+                            </Button>
+                             <p className="text-xs text-muted-foreground mt-2">This will generate two CSV files: one for team information and one for project/scoring details.</p>
+                        </CardContent>
+                    </Card>
                 </CardContent>
             </Card>
 
