@@ -1,14 +1,15 @@
 
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProjectSubmission, Team, User } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CheckCircle, Clock, XCircle, Milestone, Download, FileText, Database } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, Milestone, Download, FileText, Database, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { downloadCsv, generateFullDataCsv, generateScoresCsv } from '@/lib/csv';
+import { Input } from '@/components/ui/input';
 
 const ProjectStatusCard = ({ project, team, users }: { project: ProjectSubmission, team?: Team, users: User[] }) => {
     
@@ -71,12 +72,23 @@ const ProjectStatusCard = ({ project, team, users }: { project: ProjectSubmissio
 export default function ProjectInfoDashboard() {
     const { state } = useHackathon();
     const { projects, teams, users, selectedHackathonId } = state;
+    const [searchQuery, setSearchQuery] = useState('');
 
     const eventProjects = useMemo(() => {
         if (!selectedHackathonId) return [];
-        return projects.filter(p => p.hackathonId === selectedHackathonId)
+        let filteredProjects = projects.filter(p => p.hackathonId === selectedHackathonId)
             .sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
-    }, [projects, selectedHackathonId]);
+
+        if (searchQuery) {
+            const lowercasedQuery = searchQuery.toLowerCase();
+            filteredProjects = filteredProjects.filter(p => {
+                const team = teams.find(t => t.id === p.teamId);
+                return team?.name.toLowerCase().includes(lowercasedQuery);
+            });
+        }
+        
+        return filteredProjects;
+    }, [projects, teams, selectedHackathonId, searchQuery]);
 
     const totalSubmissions = eventProjects.length;
 
@@ -90,6 +102,17 @@ export default function ProjectInfoDashboard() {
                         Found {totalSubmissions} submission(s).
                     </CardDescription>
                 </CardHeader>
+                <CardContent>
+                     <div className="relative max-w-sm">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search by team name..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-9"
+                        />
+                    </div>
+                </CardContent>
             </Card>
 
             <ScrollArea className="h-[calc(100vh-25rem)] pr-4">
@@ -102,7 +125,7 @@ export default function ProjectInfoDashboard() {
                     ) : (
                         <Card>
                             <CardContent className="py-16 text-center text-muted-foreground">
-                                No projects have been submitted for this event yet.
+                                No projects have been submitted for this event yet, or none match your search.
                             </CardContent>
                         </Card>
                     )}

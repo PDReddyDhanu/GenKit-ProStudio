@@ -20,9 +20,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AlertTriangle, Trash2, Loader, Download } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DEPARTMENTS_DATA, ALL_EVALUATION_RUBRICS } from '@/lib/constants';
-import { generateScoresCsv, generateFullDataCsv } from '@/lib/csv';
+import { DEPARTMENTS_DATA } from '@/lib/constants';
+import { generateScoresCsv, generateFullDataCsv, downloadCsv } from '@/lib/csv';
 
 export default function DataManagement() {
     const { state, api } = useHackathon();
@@ -32,9 +31,9 @@ export default function DataManagement() {
     const currentEvent = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
 
     const { eventParticipants, eventTeams, eventProjects } = useMemo(() => {
-        let filteredUsers = users;
+        let filteredUsers = [...users];
 
-        if (selectedBatch) {
+        if (selectedBatch && selectedBatch !== 'all') {
             const [startYear, endYear] = selectedBatch.split('-').map(Number);
             filteredUsers = filteredUsers.filter(u => 
                 u.admissionYear && u.passoutYear &&
@@ -45,14 +44,14 @@ export default function DataManagement() {
 
         if (selectedDepartment && selectedDepartment !== 'all') {
             const departmentBranches = DEPARTMENTS_DATA[selectedDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
-            filteredUsers = filteredUsers.filter(u => u.department === selectedDepartment || departmentBranches.includes(u.branch));
+            filteredUsers = filteredUsers.filter(u => departmentBranches.includes(u.branch));
         }
 
         if (selectedBranch && selectedBranch !== 'all') {
             filteredUsers = filteredUsers.filter(u => u.branch === selectedBranch);
         }
         
-        const departmentUserIds = new Set(filteredUsers.map(u => u.id));
+        const participantUserIds = new Set(filteredUsers.map(u => u.id));
 
         if (!selectedHackathonId) {
             return { eventParticipants: filteredUsers, eventTeams: [], eventProjects: [] };
@@ -60,27 +59,15 @@ export default function DataManagement() {
         
         const teamsForEvent = teams.filter(t => t.hackathonId === selectedHackathonId);
         
-        const teamsInDepartment = teamsForEvent.filter(t => t.members.some(m => departmentUserIds.has(m.id)));
-        const teamIdsInDepartment = new Set(teamsInDepartment.map(t => t.id));
+        const teamsInFilter = teamsForEvent.filter(t => t.members.some(m => participantUserIds.has(m.id)));
+        const teamIdsInFilter = new Set(teamsInFilter.map(t => t.id));
         
-        const projectsInDepartment = projects.filter(p => p.hackathonId === selectedHackathonId && teamIdsInDepartment.has(p.teamId));
+        const projectsInFilter = projects.filter(p => p.hackathonId === selectedHackathonId && teamIdsInFilter.has(p.teamId));
 
-        return { eventParticipants: filteredUsers, eventTeams: teamsInDepartment, eventProjects: projectsInDepartment };
+        return { eventParticipants: filteredUsers, eventTeams: teamsInFilter, eventProjects: projectsInFilter };
     }, [users, teams, projects, selectedHackathonId, selectedBatch, selectedDepartment, selectedBranch]);
 
 
-    const downloadCsv = (csvString: string, filename: string) => {
-        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-    
     const handleExportStudents = () => {
         const headers = ["Name", "Email", "Roll No", "Branch", "Department", "Section", "Admission Year", "Passout Year"];
         const data = eventParticipants.map(u => [
@@ -151,7 +138,7 @@ export default function DataManagement() {
         }
     }
 
-    const departmentDisplay = selectedDepartment === 'all' ? 'All Departments' : selectedDepartment;
+    const departmentDisplay = selectedDepartment === 'all' || !selectedDepartment ? 'All Departments' : selectedDepartment;
     const batchDisplay = selectedBatch || 'All Batches';
 
     return (
