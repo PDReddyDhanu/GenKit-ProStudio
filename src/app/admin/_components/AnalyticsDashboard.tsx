@@ -5,7 +5,16 @@ import React, { useMemo } from 'react';
 import { Bar, BarChart, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useHackathon } from '@/context/HackathonProvider';
-import { INTERNAL_STAGE_1_RUBRIC, INTERNAL_STAGE_2_RUBRIC, INTERNAL_FINAL_RUBRIC, EXTERNAL_FINAL_RUBRIC, INDIVIDUAL_EVALUATION_RUBRIC } from '@/lib/constants';
+import { 
+    INTERNAL_STAGE_1_RUBRIC, 
+    INTERNAL_STAGE_2_RUBRIC, 
+    INTERNAL_FINAL_RUBRIC, 
+    EXTERNAL_FINAL_RUBRIC,
+    INDIVIDUAL_STAGE_1_RUBRIC,
+    INDIVIDUAL_STAGE_2_RUBRIC,
+    INDIVIDUAL_INTERNAL_FINAL_RUBRIC,
+    INDIVIDUAL_EXTERNAL_FINAL_RUBRIC
+} from '@/lib/constants';
 import type { Hackathon, ProjectSubmission } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -20,7 +29,10 @@ const ALL_EVALUATION_RUBRICS = [
     ...INTERNAL_STAGE_2_RUBRIC,
     ...INTERNAL_FINAL_RUBRIC,
     ...EXTERNAL_FINAL_RUBRIC,
-    ...INDIVIDUAL_EVALUATION_RUBRIC,
+    ...INDIVIDUAL_STAGE_1_RUBRIC,
+    ...INDIVIDUAL_STAGE_2_RUBRIC,
+    ...INDIVIDUAL_INTERNAL_FINAL_RUBRIC,
+    ...INDIVIDUAL_EXTERNAL_FINAL_RUBRIC
 ];
 
 export default function AnalyticsDashboard({ event }: AnalyticsDashboardProps) {
