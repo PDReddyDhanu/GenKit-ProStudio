@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState } from 'react';
@@ -40,6 +41,7 @@ const TeamGuideCard = ({ team, availableGuides }: { team: Team, availableGuides:
      const handleRemoveGuide = async () => {
         setIsAssigning(true);
         try {
+            // Pass an empty object or a specific signal to unassign
             await api.assignGuideToTeam(team.id, {} as Faculty);
             setSelectedGuideId('');
         } catch (error) {
@@ -79,9 +81,9 @@ const TeamGuideCard = ({ team, availableGuides }: { team: Team, availableGuides:
                         </SelectTrigger>
                         <SelectContent>
                              <SelectItem value="unassign">-- Unassign --</SelectItem>
-                            {availableGuides.map(guide => (
+                             {availableGuides.length > 0 ? availableGuides.map(guide => (
                                 <SelectItem key={guide.id} value={guide.id}>{guide.name}</SelectItem>
-                            ))}
+                            )) : <p className="p-2 text-xs text-muted-foreground">No guides available.</p>}
                         </SelectContent>
                     </Select>
                 </div>
@@ -106,12 +108,13 @@ export default function GuideAssignmentDashboard() {
     const { departmentTeams, departmentGuides } = useMemo(() => {
         if (!currentFaculty?.department) return { departmentTeams: [], departmentGuides: [] };
 
-        const departmentBranches = DEPARTMENTS_DATA[currentFaculty.department as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
-        
+        const hodDepartment = currentFaculty.department;
+        const departmentBranches = DEPARTMENTS_DATA[hodDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
+
         const guides = faculty.filter(f => 
             f.role === 'guide' &&
             f.status === 'approved' &&
-            departmentBranches.includes(f.branch)
+            departmentBranches.includes(f.branch || '')
         );
         
         const allTeamsInEvent = teams.filter(t => {
