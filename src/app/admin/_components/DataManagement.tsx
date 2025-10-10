@@ -20,7 +20,7 @@ import {
 import { AlertTriangle, Trash2, Loader, Download } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DEPARTMENTS_DATA } from '@/lib/constants';
-import { generateScoresCsv, generateFullDataCsv, downloadCsv } from '@/lib/csv';
+import { downloadCsv } from '@/lib/csv';
 
 export default function DataManagement() {
     const { state, api } = useHackathon();
@@ -29,7 +29,6 @@ export default function DataManagement() {
 
     const currentEvent = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
 
-    // Correctly filter teams and projects based ONLY on the selected event
     const { eventTeams, eventProjects } = useMemo(() => {
         if (!selectedHackathonId) return { eventTeams: [], eventProjects: [] };
         
@@ -94,18 +93,6 @@ export default function DataManagement() {
         downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_Students.csv`);
     };
 
-    const handleExportScores = () => {
-        const csvString = generateScoresCsv(eventProjects, eventTeams);
-        const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
-        downloadCsv(csvString, `${eventName}_All_Scores.csv`);
-    }
-
-    const handleExportAllData = () => {
-        const csvString = generateFullDataCsv(eventProjects, eventTeams, users);
-        const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
-        downloadCsv(csvString, `${eventName}_Full_Export.csv`);
-    };
-
     const handleResetCurrentEvent = async () => {
         if (!selectedHackathonId) return;
         setIsLoading('reset-current');
@@ -161,12 +148,6 @@ export default function DataManagement() {
                         <CardContent className="flex flex-wrap gap-2">
                             <Button variant="outline" size="sm" onClick={handleExportStudents} disabled={eventParticipants.length === 0}>
                                 <Download className="mr-2 h-4 w-4"/> Export Students ({eventParticipants.length})
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={handleExportScores} disabled={eventProjects.length === 0 || !currentEvent}>
-                                <Download className="mr-2 h-4 w-4"/> Export Project Scores
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={handleExportAllData} disabled={eventProjects.length === 0 || !currentEvent}>
-                                <Download className="mr-2 h-4 w-4"/> Export Full Project Data
                             </Button>
                         </CardContent>
                     </Card>
@@ -289,5 +270,3 @@ export default function DataManagement() {
     );
 
     
-
-
