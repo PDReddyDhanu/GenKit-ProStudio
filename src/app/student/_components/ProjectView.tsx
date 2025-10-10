@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -264,7 +263,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
         }
     }
     
-    const canAddMoreIdeas = submission.projectIdeas.length < 3 && submission.status !== 'Approved' && submission.status !== 'Rejected';
+    const canAddMoreIdeas = submission.projectIdeas.length < 3 && submission.status !== 'Approved';
 
     return (
         <div className="container max-w-3xl mx-auto px-0">
