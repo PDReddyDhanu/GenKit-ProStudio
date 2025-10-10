@@ -1,10 +1,9 @@
-
 "use client";
 
 import React, { useMemo, useState } from 'react';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { User, Users, Wand2, Loader, Library } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -82,7 +81,7 @@ const TeamGuideCard = ({ team, availableGuides }: { team: Team, availableGuides:
                         <SelectContent>
                              <SelectItem value="unassign">-- Unassign --</SelectItem>
                              {availableGuides.length > 0 ? availableGuides.map(guide => (
-                                <SelectItem key={guide.id} value={guide.id}>{guide.name}</SelectItem>
+                                <SelectItem key={guide.id} value={guide.id}>{guide.name} ({guide.department})</SelectItem>
                             )) : <p className="p-2 text-xs text-muted-foreground">No guides available.</p>}
                         </SelectContent>
                     </Select>
@@ -101,45 +100,31 @@ const TeamGuideCard = ({ team, availableGuides }: { team: Team, availableGuides:
 
 export default function GuideAssignmentDashboard() {
     const { state, api } = useHackathon();
-    const { teams, faculty, currentFaculty, users } = state;
+    const { teams, faculty, currentFaculty } = state;
     const [selectedProjectType, setSelectedProjectType] = useState<string>('all');
     const [isAutoAssigning, setIsAutoAssigning] = useState(false);
 
-    const { departmentTeams, departmentGuides } = useMemo(() => {
-        if (!currentFaculty?.department) return { departmentTeams: [], departmentGuides: [] };
-
-        const hodDepartment = currentFaculty.department;
-        const departmentBranches = DEPARTMENTS_DATA[hodDepartment as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
-
-        const guides = faculty.filter(f => 
-            f.role === 'guide' &&
-            f.status === 'approved' &&
-            departmentBranches.includes(f.branch || '')
-        );
+    const { allTeams, allGuides } = useMemo(() => {
+        // Get all approved guides, regardless of department
+        const guides = faculty.filter(f => f.role === 'guide' && f.status === 'approved');
         
+        // Get all teams for the selected project type/event
         const allTeamsInEvent = teams.filter(t => {
             return selectedProjectType === 'all' || t.hackathonId === selectedProjectType;
         });
 
-        const teamsInDepartment = allTeamsInEvent.filter(team => {
-            return team.members.some(member => {
-                const user = users.find(u => u.id === member.id);
-                return user && departmentBranches.includes(user.branch);
-            });
-        });
-        
-        return { departmentTeams: teamsInDepartment, departmentGuides: guides };
-    }, [teams, faculty, currentFaculty, selectedProjectType, users]);
+        return { allTeams: allTeamsInEvent, allGuides: guides };
+    }, [teams, faculty, selectedProjectType]);
     
     const handleAutoAssign = async () => {
-        if (departmentGuides.length === 0) {
-            alert("No available guides in this department to assign.");
+        if (allGuides.length === 0) {
+            alert("No available guides to assign.");
             return;
         }
 
         setIsAutoAssigning(true);
         try {
-            const unassignedTeams = departmentTeams.filter(t => !t.guide?.id);
+            const unassignedTeams = allTeams.filter(t => !t.guide?.id);
             if (unassignedTeams.length === 0) {
                 alert("All teams in this category already have guides assigned.");
                 setIsAutoAssigning(false);
@@ -148,7 +133,7 @@ export default function GuideAssignmentDashboard() {
 
             for (let i = 0; i < unassignedTeams.length; i++) {
                 const team = unassignedTeams[i];
-                const guide = departmentGuides[i % departmentGuides.length];
+                const guide = allGuides[i % allGuides.length];
                 await api.assignGuideToTeam(team.id, guide);
             }
         } catch (error) {
@@ -159,11 +144,11 @@ export default function GuideAssignmentDashboard() {
     };
 
 
-    if (currentFaculty?.role !== 'hod') {
+    if (currentFaculty?.role !== 'hod' && currentFaculty?.role !== 'admin') {
         return (
             <Card>
                 <CardContent className="py-16 text-center text-muted-foreground">
-                    You do not have permission to view this page. This is for HODs only.
+                    You do not have permission to view this page. This is for HODs and Admins only.
                 </CardContent>
             </Card>
         )
@@ -174,7 +159,7 @@ export default function GuideAssignmentDashboard() {
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl flex items-center gap-3"><User className="text-primary"/> Guide Assignment Dashboard</CardTitle>
-                    <CardDescription>Assign internal guides to student project teams in the <strong>{currentFaculty.department}</strong> department.</CardDescription>
+                    <CardDescription>Assign internal guides to student project teams across all departments.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row gap-4">
                     <Select onValueChange={setSelectedProjectType} defaultValue="all">
@@ -186,7 +171,7 @@ export default function GuideAssignmentDashboard() {
                             {projectEvents.map(pt => <SelectItem key={pt.id} value={pt.id}>{pt.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
-                     <Button onClick={handleAutoAssign} disabled={isAutoAssigning || departmentTeams.filter(t => !t.guide?.id).length === 0}>
+                     <Button onClick={handleAutoAssign} disabled={isAutoAssigning || allTeams.filter(t => !t.guide?.id).length === 0}>
                         {isAutoAssigning ? <Loader className="mr-2 h-4 w-4 animate-spin"/> : <Wand2 className="mr-2 h-4 w-4" />}
                         Auto-Assign Remaining Guides
                     </Button>
@@ -194,15 +179,15 @@ export default function GuideAssignmentDashboard() {
             </Card>
 
             <ScrollArea className="h-[calc(100vh-25rem)] pr-4">
-                {departmentTeams.length > 0 ? (
+                {allTeams.length > 0 ? (
                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {departmentTeams.map(team => <TeamGuideCard key={team.id} team={team} availableGuides={departmentGuides} />)}
+                        {allTeams.map(team => <TeamGuideCard key={team.id} team={team} availableGuides={allGuides} />)}
                     </div>
                 ) : (
                     <Card>
                         <CardContent className="py-16 text-center">
                             <Library className="mx-auto h-12 w-12 text-muted-foreground" />
-                            <p className="mt-4 text-muted-foreground">No teams found for the selected project type in your department.</p>
+                            <p className="mt-4 text-muted-foreground">No teams found for the selected project type.</p>
                         </CardContent>
                     </Card>
                 )}
