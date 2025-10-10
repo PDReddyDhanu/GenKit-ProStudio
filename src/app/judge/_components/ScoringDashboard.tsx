@@ -19,28 +19,26 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
 
     const facultyProjects = useMemo(() => {
         if (!currentFaculty || !event?.id) return [];
-        
-        // Start with all approved projects for the current event.
-        const eventProjects = projects.filter(p => p.hackathonId === event.id && p.status === 'Approved');
 
-        // Now, filter these based on the faculty's role.
+        const eventProjects = projects.filter(p => 
+            p.hackathonId === event.id && p.status === 'Approved'
+        );
+
         if (currentFaculty.role === 'guide') {
-            // A guide should only see projects for teams they are assigned to.
-            const myTeamIds = new Set(teams.filter(t => t.guide?.id === currentFaculty.id).map(t => t.id));
+            const myTeamIds = new Set(
+                teams.filter(t => t.guide?.id === currentFaculty.id && t.hackathonId === event.id).map(t => t.id)
+            );
             return eventProjects.filter(p => myTeamIds.has(p.teamId));
         }
         
         if (currentFaculty.role === 'class-mentor' || currentFaculty.role === 'admin' || currentFaculty.role === 'hod' || currentFaculty.role === 'rnd') {
-            // These roles can see all approved projects for the event.
             return eventProjects;
         }
 
         if (currentFaculty.role === 'external') {
-            // External reviewers see all projects for the event, filtering by stage will happen below.
             return eventProjects;
         }
         
-        // Default to an empty array if no specific role matches.
         return [];
     }, [projects, event.id, currentFaculty, teams]);
 
