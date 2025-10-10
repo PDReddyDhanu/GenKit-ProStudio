@@ -48,7 +48,7 @@ const WinnerCard = ({ winner, collegeName }: { winner: Winner, collegeName: stri
     const { rank } = winner;
     const podiumClass = rank === 1 ? 'border-amber-400' : rank === 2 ? 'border-slate-400' : 'border-orange-400';
     const trophyColor = rank === 1 ? 'text-amber-400' : rank === 2 ? 'text-slate-400' : 'text-orange-400';
-    const rankText = rank === 1 ? '1st' : rank === 2 ? '2nd' : '3rd';
+    const rankText = rank === 1 ? '1st' : rank === 2 ? '2nd' : rank === 3 ? '3rd' : `${rank}th`;
 
     return (
         <Card className={cn("border-2 relative transition-all duration-300 transform-gpu hover:[transform:rotateX(var(--rotate-x,5deg))_rotateY(var(--rotate-y,5deg))_scale3d(1.05,1.05,1.05)]", podiumClass)}>
@@ -93,9 +93,9 @@ export default function Results() {
 
     const winners: Winner[] = useMemo(() => {
         return projects
-            .filter(p => p.totalScore > 0)
+            .filter(p => p.totalScore > 0 && p.reviewStage === 'Completed')
             .sort((a, b) => b.totalScore - a.totalScore)
-            .slice(0, 3)
+            .slice(0, 5)
             .map((p, index) => ({
                 project: p,
                 team: teams.find(t => t.id === p.teamId),
@@ -106,6 +106,9 @@ export default function Results() {
     if (showIntro) {
         return <PageIntro onFinished={() => setShowIntro(false)} icon={<Trophy className="w-full h-full" />} title="Final Results" description="Announcing the winners of the project evaluations." />;
     }
+
+    const podium = winners.slice(0,3);
+    const runnersUp = winners.slice(3,5);
 
     return (
         <div className="container max-w-6xl mx-auto py-12 animate-fade-in relative overflow-hidden">
@@ -125,20 +128,32 @@ export default function Results() {
             </div>
             
             {winners.length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end [perspective:1000px] relative z-10">
-                    {winners[1] && (
-                        <div className="mt-8 lg:mt-16 animate-slide-in-up" style={{ animationDelay: '200ms'}}>
-                            <WinnerCard winner={winners[1]} collegeName={selectedCollege} />
-                        </div>
-                    )}
-                    {winners[0] && (
-                        <div className="animate-slide-in-up">
-                             <WinnerCard winner={winners[0]} collegeName={selectedCollege} />
-                        </div>
-                    )}
-                    {winners[2] && (
-                         <div className="mt-8 lg:mt-24 animate-slide-in-up" style={{ animationDelay: '400ms'}}>
-                           <WinnerCard winner={winners[2]} collegeName={selectedCollege} />
+                <div className="space-y-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end [perspective:1000px] relative z-10">
+                        {podium[1] && (
+                            <div className="mt-8 lg:mt-16 animate-slide-in-up" style={{ animationDelay: '200ms'}}>
+                                <WinnerCard winner={podium[1]} collegeName={selectedCollege} />
+                            </div>
+                        )}
+                        {podium[0] && (
+                            <div className="animate-slide-in-up">
+                                 <WinnerCard winner={podium[0]} collegeName={selectedCollege} />
+                            </div>
+                        )}
+                        {podium[2] && (
+                             <div className="mt-8 lg:mt-24 animate-slide-in-up" style={{ animationDelay: '400ms'}}>
+                               <WinnerCard winner={podium[2]} collegeName={selectedCollege} />
+                            </div>
+                        )}
+                    </div>
+                     {runnersUp.length > 0 && (
+                        <div className="relative z-10 pt-12">
+                            <h2 className="text-2xl font-bold text-center mb-6 font-headline">Honorable Mentions</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+                               {runnersUp.map(winner => (
+                                 <WinnerCard key={winner.project.id} winner={winner} collegeName={selectedCollege} />
+                               ))}
+                           </div>
                         </div>
                     )}
                 </div>

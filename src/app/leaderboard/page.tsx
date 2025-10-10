@@ -75,7 +75,7 @@ const PodiumCard = ({ entry, rank }: { entry: LeaderboardEntry, rank: number }) 
             </CardHeader>
             <CardContent>
                 <p className="text-sm italic text-muted-foreground">for "{entry.projectName}"</p>
-                <p className="text-3xl font-bold mt-2">{entry.score}</p>
+                <p className="text-3xl font-bold mt-2">{entry.score.toFixed(2)}</p>
                 {entry.achievements && entry.achievements.length > 0 && (
                      <div className="flex justify-center flex-wrap gap-2 mt-3">
                         {entry.achievements.map(achievement => (
@@ -111,7 +111,7 @@ export default function Leaderboard() {
             : projects.filter(p => p.hackathonId === selectedHackathonId);
 
         return filteredProjects
-            .filter(p => p.totalScore > 0)
+            .filter(p => p.totalScore > 0 && p.reviewStage === 'Completed')
             .sort((a, b) => b.totalScore - a.totalScore)
             .map((p, index) => {
                 const team = teams.find(t => t.id === p.teamId);
@@ -119,7 +119,7 @@ export default function Leaderboard() {
                     rank: index + 1,
                     teamName: team?.name || 'Unknown Team',
                     projectName: p.projectIdeas[0]?.title || 'Untitled Project',
-                    score: parseFloat(p.totalScore.toFixed(2)),
+                    score: p.totalScore,
                     achievements: p.achievements,
                 };
             });
@@ -196,7 +196,7 @@ export default function Leaderboard() {
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {leaderboardData.map((entry) => (
+                                                {leaderboardData.slice(0,10).map((entry) => (
                                                     <TableRow key={entry.rank}>
                                                         <TableCell className="font-bold text-lg">{entry.rank}</TableCell>
                                                         <TableCell className="font-medium text-primary">{entry.teamName}</TableCell>
@@ -217,7 +217,7 @@ export default function Leaderboard() {
                                                                 ))}
                                                             </div>
                                                         </TableCell>
-                                                        <TableCell className="text-right font-bold text-lg">{entry.score}</TableCell>
+                                                        <TableCell className="text-right font-bold text-lg">{entry.score.toFixed(2)}</TableCell>
                                                     </TableRow>
                                                 ))}
                                             </TableBody>

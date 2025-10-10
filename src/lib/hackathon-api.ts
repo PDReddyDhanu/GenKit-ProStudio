@@ -36,7 +36,7 @@ import {
     limit,
     writeBatch
 } from 'firebase/firestore';
-import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate, ReviewStage } from './types';
+import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate, ReviewStage, ReviewType } from './types';
 import { 
     INTERNAL_STAGE_1_RUBRIC, INDIVIDUAL_STAGE_1_RUBRIC,
     INTERNAL_STAGE_2_RUBRIC, INDIVIDUAL_STAGE_2_RUBRIC,
@@ -868,45 +868,72 @@ export async function evaluateProject(collegeId: string, projectId: string, eval
 
     const project = projectDoc.data() as ProjectSubmission;
 
-    // Filter out previous scores from the same evaluator for the same review type
     const otherScores = project.scores.filter(s => 
         !(s.evaluatorId === evaluatorId && s.reviewType === newScores[0]?.reviewType)
     );
 
     const allScores = [...otherScores, ...newScores];
 
-    const calculateAverageScore = (scores: Score[]): number => {
+    const calculateTotalScore = (scores: Score[], teamMembersCount: number): number => {
         if (scores.length === 0) return 0;
         
-        const totalPossibleScore = scores.reduce((sum, score) => {
-            const rubric = 
-                INTERNAL_STAGE_1_RUBRIC.find(r => r.id === score.criteria) ||
-                INDIVIDUAL_STAGE_1_RUBRIC.find(r => r.id === score.criteria) ||
-                INTERNAL_STAGE_2_RUBRIC.find(r => r.id === score.criteria) ||
-                INDIVIDUAL_STAGE_2_RUBRIC.find(r => r.id === score.criteria) ||
-                INTERNAL_FINAL_RUBRIC.find(r => r.id === score.criteria) ||
-                INDIVIDUAL_INTERNAL_FINAL_RUBRIC.find(r => r.id === score.criteria) ||
-                EXTERNAL_FINAL_RUBRIC.find(r => r.id === score.criteria) ||
-                INDIVIDUAL_EXTERNAL_FINAL_RUBRIC.find(r => r.id === score.criteria);
+        const evaluatorScores: { [evaluatorId: string]: { [criteriaId: string]: number } } = {};
+        
+        scores.forEach(score => {
+            if (!evaluatorScores[score.evaluatorId]) {
+                evaluatorScores[score.evaluatorId] = {};
+            }
+            evaluatorScores[score.evaluatorId][`${score.criteria}_${score.memberId || 'team'}`] = score.value;
+        });
+
+        let totalScore = 0;
+        const evaluatorCount = Object.keys(evaluatorScores).length;
+
+        for (const evaluatorId in evaluatorScores) {
+            const currentScores = evaluatorScores[evaluatorId];
+            let evaluatorTotal = 0;
+
+            // Stage 1
+            INTERNAL_STAGE_1_RUBRIC.forEach(r => evaluatorTotal += currentScores[`${r.id}_team`] || 0);
+            INDIVIDUAL_STAGE_1_RUBRIC.forEach(r => {
+                for (let i = 0; i < teamMembersCount; i++) {
+                    // This is a simplification; we'd need member IDs to do this perfectly.
+                    // Assuming scores are present for all members if any are.
+                    // This part of logic might need refinement if individual scores can be partial.
+                }
+            });
+             // For simplicity, we just sum up what's there.
+             scores.filter(s => s.reviewType === 'InternalStage1' && s.evaluatorId === evaluatorId).forEach(s => evaluatorTotal += s.value);
+
+
+            // Stage 2
+            scores.filter(s => s.reviewType === 'InternalStage2' && s.evaluatorId === evaluatorId).forEach(s => evaluatorTotal += s.value);
             
-            return sum + (rubric?.max || 0);
-        }, 0);
+            // Stage 3
+            scores.filter(s => s.reviewType === 'InternalFinal' && s.evaluatorId === evaluatorId).forEach(s => evaluatorTotal += s.value);
 
-        const totalScored = scores.reduce((sum, score) => sum + score.value, 0);
+            // Stage 4
+            scores.filter(s => s.reviewType === 'ExternalFinal' && s.evaluatorId === evaluatorId).forEach(s => evaluatorTotal += s.value);
+            
+            totalScore += evaluatorTotal;
+        }
 
-        return totalPossibleScore > 0 ? (totalScored / totalPossibleScore) * 100 : 0;
+        return evaluatorCount > 0 ? totalScore / evaluatorCount : 0;
     };
     
-    const averageScore = calculateAverageScore(allScores);
+    const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/teams`, project.teamId));
+    const teamMembersCount = teamDoc.exists() ? (teamDoc.data() as Team).members.length : 0;
+
+    const finalScore = calculateTotalScore(allScores, teamMembersCount);
 
     await updateDoc(projectRef, { 
         scores: allScores,
-        averageScore: averageScore,
-        totalScore: averageScore // Keep totalScore for backward compatibility for now
+        totalScore: finalScore,
     });
 
     return { successMessage: "Evaluation submitted successfully." };
 }
+
 
 
 export async function approveProjectIdea(collegeId: string, projectId: string, approvedIdea: ProjectIdea, faculty: Faculty) {

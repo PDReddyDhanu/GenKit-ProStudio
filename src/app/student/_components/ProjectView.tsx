@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -196,7 +197,7 @@ const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, o
                     </div>
                     <p className={`font-bold text-lg ${finalCompletedStage.status.status === 'complete' ? 'text-green-400' : 'text-muted-foreground'}`}>{finalCompletedStage.name}</p>
                     {finalCompletedStage.status.status === 'complete' ? (
-                        <p className="text-lg font-bold text-secondary">Final Score: {project.totalScore.toFixed(2)} / 100</p>
+                        <p className="text-lg font-bold text-secondary">Final Score: {project.totalScore.toFixed(2)}</p>
                     ) : (
                         <p className="text-sm text-muted-foreground">Awaiting final scores</p>
                     )}
@@ -354,7 +355,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                              <Tabs defaultValue="idea-1" className="w-full">
                                 <TabsList className={`grid w-full grid-cols-${submission.projectIdeas.length}`}>
                                     {submission.projectIdeas.map((idea, index) => (
-                                        <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>Idea {index + 1}</TabsTrigger>
+                                        <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>{idea.title}</TabsTrigger>
                                     ))}
                                 </TabsList>
                                 {submission.projectIdeas.map((idea, index) => (
@@ -428,9 +429,14 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                     
                     {canDownloadCertificate && (
                         <div className="mt-6 border-t pt-4 space-y-4">
-                            <Button onClick={handleDownloadCertificate} disabled={isGeneratingCert}>
-                                {isGeneratingCert ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : <><Download className="mr-2 h-4 w-4"/>Download Participation Certificate</>}
-                            </Button>
+                             <div className="text-center space-y-2">
+                                <p className="font-bold text-2xl text-primary flex items-center justify-center gap-2">
+                                    <Star className="h-6 w-6"/>Final Score: {submission.totalScore.toFixed(2)}
+                                </p>
+                                <Button onClick={handleDownloadCertificate} disabled={isGeneratingCert}>
+                                    {isGeneratingCert ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : <><Download className="mr-2 h-4 w-4"/>Download Participation Certificate</>}
+                                </Button>
+                            </div>
                         </div>
                     )}
 
