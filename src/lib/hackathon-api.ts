@@ -874,7 +874,7 @@ export async function evaluateProject(collegeId: string, projectId: string, eval
 
     const allScores = [...otherScores, ...newScores];
 
-    const calculateTotalScore = (scores: Score[], teamMembersCount: number): number => {
+    const calculateTotalScore = (scores: Score[]): number => {
         if (scores.length === 0) return 0;
         
         const evaluatorScores: { [evaluatorId: string]: { [criteriaId: string]: number } } = {};
@@ -886,45 +886,17 @@ export async function evaluateProject(collegeId: string, projectId: string, eval
             evaluatorScores[score.evaluatorId][`${score.criteria}_${score.memberId || 'team'}`] = score.value;
         });
 
-        let totalScore = 0;
+        let totalScoreSum = 0;
         const evaluatorCount = Object.keys(evaluatorScores).length;
 
         for (const evaluatorId in evaluatorScores) {
-            const currentScores = evaluatorScores[evaluatorId];
-            let evaluatorTotal = 0;
-
-            // Stage 1
-            INTERNAL_STAGE_1_RUBRIC.forEach(r => evaluatorTotal += currentScores[`${r.id}_team`] || 0);
-            INDIVIDUAL_STAGE_1_RUBRIC.forEach(r => {
-                for (let i = 0; i < teamMembersCount; i++) {
-                    // This is a simplification; we'd need member IDs to do this perfectly.
-                    // Assuming scores are present for all members if any are.
-                    // This part of logic might need refinement if individual scores can be partial.
-                }
-            });
-             // For simplicity, we just sum up what's there.
-             scores.filter(s => s.reviewType === 'InternalStage1' && s.evaluatorId === evaluatorId).forEach(s => evaluatorTotal += s.value);
-
-
-            // Stage 2
-            scores.filter(s => s.reviewType === 'InternalStage2' && s.evaluatorId === evaluatorId).forEach(s => evaluatorTotal += s.value);
-            
-            // Stage 3
-            scores.filter(s => s.reviewType === 'InternalFinal' && s.evaluatorId === evaluatorId).forEach(s => evaluatorTotal += s.value);
-
-            // Stage 4
-            scores.filter(s => s.reviewType === 'ExternalFinal' && s.evaluatorId === evaluatorId).forEach(s => evaluatorTotal += s.value);
-            
-            totalScore += evaluatorTotal;
+            totalScoreSum += Object.values(evaluatorScores[evaluatorId]).reduce((sum, val) => sum + val, 0);
         }
 
-        return evaluatorCount > 0 ? totalScore / evaluatorCount : 0;
+        return evaluatorCount > 0 ? totalScoreSum / evaluatorCount : 0;
     };
     
-    const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/teams`, project.teamId));
-    const teamMembersCount = teamDoc.exists() ? (teamDoc.data() as Team).members.length : 0;
-
-    const finalScore = calculateTotalScore(allScores, teamMembersCount);
+    const finalScore = calculateTotalScore(allScores);
 
     await updateDoc(projectRef, { 
         scores: allScores,
