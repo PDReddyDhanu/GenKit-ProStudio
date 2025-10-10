@@ -6,9 +6,10 @@ import { useHackathon } from '@/context/HackathonProvider';
 import Auth from './_components/Auth';
 import Dashboard from './_components/Dashboard';
 import PageIntro from '@/components/PageIntro';
-import { Code, Users, ClipboardList, GanttChartSquare } from 'lucide-react';
+import { Code, Users, ClipboardList, GanttChartSquare, Archive } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import InvitationsManagement from './_components/InvitationsManagement';
+import DiscardedIdeas from './_components/DiscardedIdeas';
 
 export default function StudentPortal() {
     const { state, dispatch } = useHackathon();
@@ -35,14 +36,18 @@ export default function StudentPortal() {
             </div>
              <Tabs defaultValue="dashboard" className="w-full">
                 <TabsList className="grid w-full h-auto grid-cols-1 sm:grid-cols-3">
-                    <TabsTrigger value="dashboard"><Users className="mr-2"/> Dashboard & Status</TabsTrigger>
+                    <TabsTrigger value="dashboard"><GanttChartSquare className="mr-2"/> Dashboard & Status</TabsTrigger>
                     <TabsTrigger value="management"><ClipboardList className="mr-2"/>My Teams & Requests</TabsTrigger>
+                    <TabsTrigger value="discarded"><Archive className="mr-2"/>Discarded Ideas</TabsTrigger>
                 </TabsList>
                 <TabsContent value="dashboard" className="mt-6">
                     <Dashboard />
                 </TabsContent>
                 <TabsContent value="management" className="mt-6">
                     <InvitationsManagement />
+                </TabsContent>
+                 <TabsContent value="discarded" className="mt-6">
+                    <DiscardedIdeas />
                 </TabsContent>
             </Tabs>
         </div>

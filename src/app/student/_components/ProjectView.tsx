@@ -336,6 +336,10 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
 
     const team = teams.find(t => t.id === submission.teamId);
     
+    const approvedIdea = useMemo(() => {
+        return submission.projectIdeas.find(idea => idea.status === 'approved');
+    }, [submission.projectIdeas]);
+
     const canDownloadCertificate = submission.reviewStage === 'Completed';
 
     const handleGetReview = async (githubUrl: string) => {
@@ -357,7 +361,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
             setIsGeneratingCert(true);
             try {
                 const teamMembers = team.members.map(m => m.name);
-                await generateCertificate(team.name, submission.projectIdeas[0].title, teamMembers, submission.id, submission.totalScore, selectedCollege);
+                await generateCertificate(team.name, approvedIdea?.title || submission.projectIdeas[0].title, teamMembers, submission.id, submission.totalScore, selectedCollege);
             } catch (error) {
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
@@ -463,7 +467,10 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                              <Tabs defaultValue="idea-1" className="w-full">
                                 <TabsList className={`grid w-full grid-cols-${submission.projectIdeas.length}`}>
                                     {submission.projectIdeas.map((idea, index) => (
-                                        <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>{idea.title}</TabsTrigger>
+                                        <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>
+                                            {approvedIdea?.id === idea.id ? <Star className="h-4 w-4 mr-2 text-yellow-400 fill-yellow-400" /> : null}
+                                            {idea.title}
+                                        </TabsTrigger>
                                     ))}
                                 </TabsList>
                                 {submission.projectIdeas.map((idea, index) => (
@@ -471,20 +478,23 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                                         <Card className="bg-muted/50">
                                             <CardHeader>
                                                 <CardTitle>{idea.title}</CardTitle>
+                                                <CardDescription>Status: <span className="font-bold capitalize">{idea.status || 'Pending'}</span></CardDescription>
                                             </CardHeader>
                                             <CardContent>
                                                 <IdeaDisplay idea={idea} />
-                                                <div className="mt-6 border-t pt-4 space-y-4">
-                                                    <h4 className="font-bold flex items-center gap-2"><Bot className="text-primary"/> AI Tools for this Idea</h4>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        <Button onClick={() => handleGetReview(idea.githubUrl)} disabled={isReviewing} variant="outline" size="sm">
-                                                            {isReviewing ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Reviewing Code...</> : "Get AI Code Review"}
-                                                        </Button>
-                                                        <Button onClick={() => handleGenerateOutline(idea)} disabled={isGeneratingOutline} variant="outline" size="sm">
-                                                            {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "AI Pitch Coach"}
-                                                        </Button>
+                                                {idea.status === 'approved' && (
+                                                    <div className="mt-6 border-t pt-4 space-y-4">
+                                                        <h4 className="font-bold flex items-center gap-2"><Bot className="text-primary"/> AI Tools for this Idea</h4>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            <Button onClick={() => handleGetReview(idea.githubUrl)} disabled={isReviewing} variant="outline" size="sm">
+                                                                {isReviewing ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Reviewing Code...</> : "Get AI Code Review"}
+                                                            </Button>
+                                                            <Button onClick={() => handleGenerateOutline(idea)} disabled={isGeneratingOutline} variant="outline" size="sm">
+                                                                {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "AI Pitch Coach"}
+                                                            </Button>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                )}
                                             </CardContent>
                                         </Card>
                                     </TabsContent>
@@ -550,4 +560,3 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
         </div>
     );
 }
-

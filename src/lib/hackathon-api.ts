@@ -421,9 +421,9 @@ export async function updateFacultyProfile(collegeId: string, facultyId: string,
 
 
 export async function removeFaculty(collegeId: string, facultyId: string) {
-    await deleteDoc(doc(db, `colleges/${collegeId}/faculty`, facultyId));
-    // Note: This does not delete the user from Firebase Auth.
-    return { successMessage: "Faculty member removed successfully." };
+    // Instead of deleting, mark as 'rejected' to disable the account
+    await updateDoc(doc(db, `colleges/${collegeId}/faculty`, facultyId), { status: 'rejected' });
+    return { successMessage: "Faculty member account has been disabled." };
 }
 
 export async function approveStudent(collegeId: string, userId: string) {
@@ -471,28 +471,13 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
 
 
 export async function removeStudent(collegeId: string, userId: string) {
-    const userDoc = await getDoc(doc(db, `colleges/${collegeId}/users`, userId));
-    if (!userDoc.exists()) return { successMessage: "Student already removed." };
+    // Instead of deleting, mark as 'rejected' to disable the account
+    const userRef = doc(db, `colleges/${collegeId}/users`, userId);
+    await updateDoc(userRef, { status: 'rejected' });
     
-    const user = userDoc.data() as User;
-    
-    const teamsQuery = query(collection(db, `colleges/${collegeId}/teams`), where('members.id', '==', userId));
-    const teamsSnapshot = await getDocs(teamsQuery);
-
-    for (const teamDoc of teamsSnapshot.docs) {
-        const team = teamDoc.data() as Team;
-        const updatedMembers = team.members.filter(m => m.id !== userId);
-        if (updatedMembers.length > 0) {
-            await updateDoc(teamDoc.ref, { members: updatedMembers });
-        } else {
-            await deleteDoc(teamDoc.ref);
-        }
-    }
-    
-    await deleteDoc(doc(db, `colleges/${collegeId}/users`, userId));
-
-    return { successMessage: `Student ${user.name} has been removed.` };
+    return { successMessage: `Student account has been disabled.` };
 }
+
 
 export async function updateProjectImage(collegeId: string, projectId: string, imageUrl: string) {
     await updateDoc(doc(db, `colleges/${collegeId}/projects`, projectId), { imageUrl });
@@ -730,7 +715,7 @@ export async function leaveTeam(collegeId: string, teamId: string, userId: strin
 }
 
 export async function submitProject(collegeId: string, hackathonId: string, teamId: string, idea: ProjectIdea, submissionId?: string) {
-    const ideaToSave = { ...idea };
+    const ideaToSave = { ...idea, status: 'pending' as const };
     
     if (submissionId) {
         // This is an additional idea for an existing submission
@@ -941,8 +926,15 @@ export async function approveProjectIdea(collegeId: string, projectId: string, a
         remarks: `Idea "${approvedIdea.title}" approved.`,
     };
 
+    const updatedIdeas = project.projectIdeas.map(idea => {
+        if (idea.id === approvedIdea.id) {
+            return { ...idea, status: 'approved' as const };
+        }
+        return { ...idea, status: 'discarded' as const };
+    });
+
     await updateDoc(projectRef, {
-        projectIdeas: [approvedIdea], // Replace with only the approved idea
+        projectIdeas: updatedIdeas,
         status: nextStatus,
         statusHistory: arrayUnion(statusUpdate),
         ...reviewStageUpdate,

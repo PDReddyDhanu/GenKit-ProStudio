@@ -96,6 +96,7 @@ export interface ProjectIdea {
   keywords: string;
   githubUrl: string;
   abstractFileUrl?: string;
+  status?: 'pending' | 'approved' | 'discarded';
 }
 
 export type ReviewStage = 'Pending' | 'Stage1' | 'Stage2' | 'InternalFinal' | 'ExternalFinal' | 'Completed';
@@ -143,7 +144,7 @@ export interface Faculty {
   branch?: string;
   department?: string;
   collegeName?: string; // For external faculty
-  status?: 'pending' | 'approved'; // Added for approval workflow
+  status?: 'pending' | 'approved' | 'rejected'; // Added for approval workflow
 }
 
 export type ReviewType = 'InternalStage1' | 'InternalStage2' | 'InternalFinal' | 'ExternalFinal';
