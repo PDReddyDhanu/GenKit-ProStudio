@@ -87,7 +87,7 @@ export function generateScoresCsv(projects: ProjectSubmission[], teams: Team[], 
 export function generateTeamsCsv(teams: Team[], users: User[]): string {
     const headers = [
         "Team ID", "Team Name", "Join Code", "Guide Name",
-        "Member Name", "Member Email", "Member Roll No", "Member Role"
+        "Member Name", "Member Email", "Member Roll No", "Member Contact", "Member GitHub", "Member LinkedIn", "Member Role"
     ];
 
     const rows: string[] = [];
@@ -102,6 +102,9 @@ export function generateTeamsCsv(teams: Team[], users: User[]): string {
                 escapeCsvField(member.name),
                 escapeCsvField(member.email),
                 escapeCsvField(user?.rollNo),
+                escapeCsvField(user?.contactNumber),
+                escapeCsvField(user?.github),
+                escapeCsvField(user?.linkedin),
                 escapeCsvField(member.role),
             ].join(','));
         });
