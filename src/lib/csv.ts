@@ -84,6 +84,33 @@ export function generateScoresCsv(projects: ProjectSubmission[], teams: Team[], 
     return [headers.join(','), ...rows].join('\n');
 }
 
+export function generateTeamsCsv(teams: Team[], users: User[]): string {
+    const headers = [
+        "Team ID", "Team Name", "Join Code", "Guide Name",
+        "Member Name", "Member Email", "Member Roll No", "Member Role"
+    ];
+
+    const rows: string[] = [];
+    teams.forEach(team => {
+        team.members.forEach(member => {
+            const user = users.find(u => u.id === member.id);
+            rows.push([
+                escapeCsvField(team.id),
+                escapeCsvField(team.name),
+                escapeCsvField(team.joinCode),
+                escapeCsvField(team.guide?.name),
+                escapeCsvField(member.name),
+                escapeCsvField(member.email),
+                escapeCsvField(user?.rollNo),
+                escapeCsvField(member.role),
+            ].join(','));
+        });
+    });
+
+    return [headers.join(','), ...rows].join('\n');
+}
+
+
 export function generateFullDataCsv(projects: ProjectSubmission[], teams: Team[], users: User[]): string {
     const headers = [
         "Project ID", "Project Title", "Team Name", "Team Join Code", "Project Status", "Review Stage", "Total Score",
