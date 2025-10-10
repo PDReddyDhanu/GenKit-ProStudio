@@ -201,7 +201,7 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
         
         if (isGuideForTeam && ['Stage1', 'Stage2', 'InternalFinal'].includes(reviewStage)) return true;
         
-        if (['admin', 'hod', 'rnd', 'class-mentor'].includes(role) && ['Stage1', 'Stage2', 'InternalFinal'].includes(reviewStage)) return true;
+        if (['admin', 'hod', 'rnd', 'class-mentor'].includes(role) && ['Stage1', 'Stage2', 'InternalFinal', 'ExternalFinal'].includes(reviewStage)) return true;
 
         return false;
     }, [project, team, currentFaculty, currentReviewType]);
@@ -336,7 +336,7 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
                                 {project.status === 'Approved' && canScore && (
                                     <Button size="sm" onClick={() => setIsScoring(true)} disabled={!!isLoading} className="w-full">
                                         <Scale className="mr-2 h-4 w-4" />
-                                        {hasScoredCurrentStage ? 'Edit Score' : 'Score Project'}: {project.projectIdeas[0].title}
+                                        {hasScoredCurrentStage ? 'Edit Score' : 'Score Project'}: {project.projectIdeas.find(i=>i.status === 'approved')?.title || 'Approved Project'}
                                     </Button>
                                 )}
                                 {renderStageAdvancementButton()}
@@ -418,7 +418,9 @@ export default function ProjectApprovalDashboard() {
                 // Special filter for guides to only see their assigned teams' projects
                 if (currentFaculty.role === 'guide') {
                     const myTeamIds = new Set(teams.filter(t => t.guide?.id === currentFaculty.id).map(t => t.id));
-                    stageProjects = stageProjects.filter(p => myTeamIds.has(p.teamId));
+                    if (stage.key === 'PendingGuide' || stage.key.includes('Stage') || stage.key.includes('Final')) {
+                        stageProjects = stageProjects.filter(p => myTeamIds.has(p.teamId));
+                    }
                 }
 
                 return (
@@ -444,7 +446,3 @@ export default function ProjectApprovalDashboard() {
         </div>
     );
 }
-
-
-
-

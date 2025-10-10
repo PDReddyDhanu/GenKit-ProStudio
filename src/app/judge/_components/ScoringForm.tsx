@@ -21,8 +21,8 @@ import {
     INDIVIDUAL_EXTERNAL_FINAL_RUBRIC
 } from '@/lib/constants';
 import Link from 'next/link';
-import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare, Presentation, Download } from 'lucide-react';
-import { getAiProjectSummary, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
+import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare, Presentation, Download, ChevronRight, Check } from 'lucide-react';
+import { getAiProjectSummary } from '@/app/actions';
 import BackButton from '@/components/layout/BackButton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -52,12 +52,8 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
     const [aiSummary, setAiSummary] = useState('');
     const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoading, setIsLoading] = useState<string | null>(null);
 
-    const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
-    const [pitchOutline, setPitchOutline] = useState<GeneratePitchOutlineOutput | null>(null);
-    const [pitchAudio, setPitchAudio] = useState<{ audioDataUri: string } | null>(null);
-    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
-    
     const team = teams.find(t => t.id === submission.teamId);
 
     const { currentReviewType, currentTeamRubric, currentIndividualRubric } = useMemo(() => {
@@ -145,46 +141,6 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
         }
     };
 
-    const handleGenerateOutline = async (idea: ProjectIdea) => {
-        if (!team) return;
-        setIsGeneratingOutline(true);
-        setPitchOutline(null);
-        setPitchAudio(null);
-        try {
-            const creator = users.find(u => u.id === team.creatorId);
-            const result = await generatePitchOutline({
-                projectName: idea.title,
-                projectDescription: idea.description,
-                aiCodeReview: aiSummary || undefined,
-                course: creator?.department,
-                guideName: team.guide?.name,
-                teamMembers: team.members.map(m => m.name),
-            });
-            setPitchOutline(result);
-        } finally {
-            setIsGeneratingOutline(false);
-        }
-    };
-    
-    const handleGenerateAudio = async () => {
-        if (!pitchOutline) return;
-        setIsGeneratingAudio(true);
-        setPitchAudio(null);
-        try {
-            const script = pitchOutline.slides
-                .map(slide => `${slide.title}. ${slide.content.replace(/^-/gm, '')}`)
-                .join('\n\n');
-            const result = await generatePitchAudioAction({ script });
-            if (result) {
-                setPitchAudio(result);
-            }
-        } catch (error) {
-            console.error("Failed to generate audio:", error);
-        } finally {
-            setIsGeneratingAudio(false);
-        }
-    };
-
     const handleSubmitScores = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!submission || !currentFaculty || !currentReviewType) return;
@@ -220,9 +176,49 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
         
         try {
             await api.evaluateProject(submission.id, currentFaculty.id, newScores);
-            onBack();
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleUpdateReviewStage = async (nextStage: ReviewStage) => {
+        if (!currentFaculty) return;
+        setIsLoading(`stage-${nextStage}`);
+        try {
+            await api.updateProjectReviewStage(submission.id, nextStage, currentFaculty);
+            onBack(); // Go back after updating stage
+        } catch(error) {
+            console.error('Failed to update review stage', error);
+        } finally {
+            setIsLoading(null);
+        }
+    }
+
+    const renderStageAdvancementButton = () => {
+        const commonButtonProps = {
+            size: "sm",
+            disabled: !!isLoading,
+            className: "w-full",
+        } as const;
+
+        if (currentFaculty?.role === 'external') {
+            if (submission.reviewStage === 'ExternalFinal') {
+                 return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('Completed')}>Mark as Completed <Check className="h-4 w-4 ml-2"/></Button>;
+            }
+            return null;
+        }
+
+        if (!['admin', 'hod', 'guide', 'class-mentor'].includes(currentFaculty?.role || '')) return null;
+
+        switch (submission.reviewStage) {
+            case 'Stage1':
+                return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('Stage2')}>Complete Stage 1 & Move to Stage 2 <ChevronRight className="h-4 w-4 ml-2"/></Button>;
+            case 'Stage2':
+                return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('InternalFinal')}>Complete Stage 2 & Move to Final Internal Review <ChevronRight className="h-4 w-4 ml-2"/></Button>;
+            case 'InternalFinal':
+                 return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('ExternalFinal')}>Send to External Review <ChevronRight className="h-4 w-4 ml-2"/></Button>;
+            default:
+                return null;
         }
     };
 
@@ -363,41 +359,6 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                                             <p className="text-sm text-foreground">{aiSummary}</p>
                                         </CardContent>
                                     </Card>
-                                     <div className="flex flex-wrap gap-2">
-                                        <Button onClick={() => handleGenerateOutline(submission.projectIdeas[0])} disabled={isGeneratingOutline} variant="outline" size="sm">
-                                            {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin" /> Generating...</> : "AI Pitch Coach"}
-                                        </Button>
-                                     </div>
-                                </div>
-                            )}
-                            {pitchOutline && (
-                                <div className="mt-6 border-t pt-4 space-y-4">
-                                    <div className="flex flex-wrap gap-2 justify-between items-center">
-                                        <h4 className="font-bold flex items-center gap-2"><Presentation className="text-primary"/> Generated Presentation Outline</h4>
-                                        <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio} size="sm">
-                                            {isGeneratingAudio ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating Audio...</> : "Generate Audio"}
-                                        </Button>
-                                    </div>
-                                    {pitchAudio?.audioDataUri && (
-                                        <div className="mt-4">
-                                            <audio controls src={pitchAudio.audioDataUri} className="w-full">
-                                                Your browser does not support the audio element.
-                                            </audio>
-                                        </div>
-                                    )}
-                                    <Accordion type="single" collapsible className="w-full">
-                                        {pitchOutline.slides.map((slide, index) => (
-                                        <AccordionItem value={`item-${index}`} key={index}>
-                                            <AccordionTrigger>{index + 1}. {slide.title}</AccordionTrigger>
-                                            <AccordionContent>
-                                                <div
-                                                    className="prose prose-sm dark:prose-invert text-foreground max-w-none"
-                                                    dangerouslySetInnerHTML={{ __html: marked(slide.content) as string }}
-                                                />
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                        ))}
-                                    </Accordion>
                                 </div>
                             )}
                         </TabsContent>
@@ -425,10 +386,11 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                                         </Accordion>
                                     </div>
                                 )}
-                                <CardFooter className="pt-6 px-0">
+                                <CardFooter className="flex-col gap-4 items-stretch pt-6 px-0">
                                     <Button type="submit" className="w-full" disabled={isSubmitting}>
-                                    {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Score'}
+                                        {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Score'}
                                     </Button>
+                                    {renderStageAdvancementButton()}
                                 </CardFooter>
                             </form>
                         </TabsContent>

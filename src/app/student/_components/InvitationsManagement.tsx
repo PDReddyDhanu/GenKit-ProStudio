@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function InvitationsManagement() {
-    const { state, api, dispatch } = useHackathon();
+    const { state, api } = useHackathon();
     const { currentUser, teams, hackathons, selectedHackathonId } = state;
     const [isLoading, setIsLoading] = useState<string | null>(null); // format: "action-teamId-requestId" or "remove-teamId-memberId"
 
@@ -68,9 +69,6 @@ export default function InvitationsManagement() {
         setIsLoading(`delete-${teamId}`);
         try {
             await api.deleteTeam(teamId);
-            // Manually filter out the deleted team from the local state for immediate UI update
-            const updatedTeams = teams.filter(t => t.id !== teamId);
-            dispatch({ type: 'SET_DATA', payload: { teams: updatedTeams } });
         } catch (error) {
             console.error("Failed to delete team:", error);
         } finally {

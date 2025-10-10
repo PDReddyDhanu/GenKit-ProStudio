@@ -421,9 +421,8 @@ export async function updateFacultyProfile(collegeId: string, facultyId: string,
 
 
 export async function removeFaculty(collegeId: string, facultyId: string) {
-    // Instead of deleting, mark as 'rejected' to disable the account
-    await updateDoc(doc(db, `colleges/${collegeId}/faculty`, facultyId), { status: 'rejected' });
-    return { successMessage: "Faculty member account has been disabled." };
+    await deleteDoc(doc(db, `colleges/${collegeId}/faculty`, facultyId));
+    return { successMessage: "Faculty member account has been deleted." };
 }
 
 export async function approveStudent(collegeId: string, userId: string) {
@@ -471,11 +470,8 @@ export async function registerAndApproveStudent(collegeId: string, { name, email
 
 
 export async function removeStudent(collegeId: string, userId: string) {
-    // Instead of deleting, mark as 'rejected' to disable the account
-    const userRef = doc(db, `colleges/${collegeId}/users`, userId);
-    await updateDoc(userRef, { status: 'rejected' });
-    
-    return { successMessage: `Student account has been disabled.` };
+    await deleteDoc(doc(db, `colleges/${collegeId}/users`, userId));
+    return { successMessage: `Student account has been deleted.` };
 }
 
 
@@ -970,12 +966,10 @@ export async function approveProjectIdea(collegeId: string, projectId: string, a
         remarks: `Idea "${approvedIdea.title}" approved.`,
     };
 
-    const updatedIdeas = project.projectIdeas.map(idea => {
-        if (idea.id === approvedIdea.id) {
-            return { ...idea, status: 'approved' as const };
-        }
-        return { ...idea, status: 'discarded' as const };
-    });
+    const updatedIdeas = project.projectIdeas.map(idea => ({
+        ...idea,
+        status: idea.id === approvedIdea.id ? 'approved' : 'discarded',
+    }));
 
     await updateDoc(projectRef, {
         projectIdeas: updatedIdeas,

@@ -165,8 +165,12 @@ const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, o
         const stageIndex = approvalStageOrder.indexOf(stage);
         const currentStatusIndex = approvalStageOrder.indexOf(project.status);
 
+        if (project.status === 'Approved') {
+            return { status: 'complete' as const, update: history.find(h => h.to === 'Approved') };
+        }
+        
         if (currentStatusIndex >= stageIndex) {
-            const update = [...history].reverse().find(h => h.to === stage || (h.to === 'Approved' && stage === 'PendingHoD'));
+            const update = [...history].reverse().find(h => h.to === stage);
             if (stage === project.status) return { status: 'pending' as const, update };
             return { status: 'complete' as const, update };
         }
