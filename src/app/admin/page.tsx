@@ -27,6 +27,7 @@ import GuideTeamsDashboard from './_components/GuideTeamsDashboard';
 import { StarButton } from '@/components/ui/star-button';
 import { Button } from '@/components/ui/button';
 import { DEPARTMENTS_DATA } from '@/lib/constants';
+import ProjectInfoDashboard from './_components/ProjectInfoDashboard';
 
 const projectEvents = [
     {
@@ -173,7 +174,7 @@ export default function AdminPortal() {
     
     let defaultTab = "approvals";
     if (isExternal) {
-        defaultTab = "approvals";
+        defaultTab = "information";
     } else if (currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') {
         defaultTab = 'my-teams';
     } else if (!currentAdmin) {
@@ -219,8 +220,8 @@ export default function AdminPortal() {
                     {!isExternal && (currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') && <TabsTrigger value="my-teams"><MessageSquare className="mr-2 h-4 w-4" /> My Teams</TabsTrigger>}
                     
                     <TabsTrigger value="approvals"><CheckCheck className="mr-2 h-4 w-4" /> Approvals & Scoring</TabsTrigger>
-
-                    {isExternal && <TabsTrigger value="information"><Info className="mr-2 h-4 w-4" /> Information</TabsTrigger>}
+                    
+                    <TabsTrigger value="information"><Info className="mr-2 h-4 w-4" /> Information & Reports</TabsTrigger>
 
                     {!isExternal && (
                         <>
@@ -252,19 +253,9 @@ export default function AdminPortal() {
                     <ProjectApprovalDashboard />
                 </TabsContent>
 
-                {isExternal && (
-                    <TabsContent value="information" className="mt-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Information</CardTitle>
-                                <CardDescription>Important information for external reviewers.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <p>This section will contain details and guidelines for the evaluation process.</p>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                )}
+                <TabsContent value="information" className="mt-6">
+                    <ProjectInfoDashboard />
+                </TabsContent>
 
                 {!isExternal && (
                     <>

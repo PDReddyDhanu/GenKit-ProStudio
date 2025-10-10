@@ -22,7 +22,7 @@ import { AlertTriangle, Trash2, Loader, Download } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DEPARTMENTS_DATA, ALL_EVALUATION_RUBRICS } from '@/lib/constants';
-import { generateScoresCsv } from '@/lib/csv';
+import { generateScoresCsv, generateFullDataCsv } from '@/lib/csv';
 
 export default function DataManagement() {
     const { state, api } = useHackathon();
@@ -92,7 +92,7 @@ export default function DataManagement() {
             u.section || 'N/A',
             u.admissionYear || 'N/A',
             u.passoutYear || 'N/A'
-        ].map(item => `"${item.replace(/"/g, '""')}"`));
+        ].map(item => `"${String(item).replace(/"/g, '""')}"`));
 
         const csvString = [headers.join(','), ...data.map(row => row.join(','))].join('\n');
         const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
@@ -109,27 +109,12 @@ export default function DataManagement() {
         downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_All_Scores.csv`);
     }
 
-    const handleExportProjects = () => {
-        const headers = ["Project Title", "Project Description", "GitHub URL", "Team Name", "Team Members", "Project Status", "Average Score"];
-        const data = eventProjects.flatMap(p => {
-            const team = eventTeams.find(t => t.id === p.teamId);
-            const teamMembers = team?.members.map(m => m.name).join('; ') || '';
-            return p.projectIdeas.map(idea => ([
-                `"${(idea.title || 'N/A').replace(/"/g, '""')}"`,
-                `"${(idea.description || 'N/A').replace(/"/g, '""')}"`,
-                idea.githubUrl || 'N/A',
-                `"${team?.name.replace(/"/g, '""') || 'N/A'}"`,
-                `"${teamMembers.replace(/"/g, '""')}"`,
-                p.status,
-                p.averageScore.toFixed(2)
-            ]));
-        });
-
-        const csvString = [headers.join(','), ...data.map(row => row.join(','))].join('\n');
+    const handleExportAllData = () => {
+        const csvString = generateFullDataCsv(eventProjects, eventTeams, users);
         const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
         const batchName = selectedBatch || 'AllBatches';
         const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment.replace(/\s/g, '_');
-        downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_Projects.csv`);
+        downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_Full_Export.csv`);
     };
 
     const handleResetCurrentEvent = async () => {
@@ -179,7 +164,7 @@ export default function DataManagement() {
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <Card className="bg-muted/50">
                             <CardHeader>
                                 <CardTitle className="text-lg font-semibold">Student Data</CardTitle>
@@ -191,17 +176,6 @@ export default function DataManagement() {
                                 </Button>
                             </CardContent>
                         </Card>
-                        <Card className="bg-muted/50">
-                            <CardHeader>
-                                <CardTitle className="text-lg font-semibold">Project Details</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground mb-4">Export a detailed CSV of all projects, teams, and statuses for the selected filters.</p>
-                                <Button variant="outline" size="sm" onClick={handleExportProjects} disabled={eventProjects.length === 0 || !currentEvent}>
-                                    <Download className="mr-2 h-4 w-4"/> Export Projects ({eventProjects.length})
-                                </Button>
-                            </CardContent>
-                        </Card>
                          <Card className="bg-muted/50">
                             <CardHeader>
                                 <CardTitle className="text-lg font-semibold">Project Scores</CardTitle>
@@ -209,7 +183,18 @@ export default function DataManagement() {
                             <CardContent>
                                 <p className="text-sm text-muted-foreground mb-4">Export a master CSV of all scores for all projects in the selected filters.</p>
                                 <Button variant="outline" size="sm" onClick={handleExportScores} disabled={eventProjects.length === 0 || !currentEvent}>
-                                    <Download className="mr-2 h-4 w-4"/> Export All Scores ({eventProjects.length})
+                                    <Download className="mr-2 h-4 w-4"/> Export All Scores
+                                </Button>
+                            </CardContent>
+                        </Card>
+                        <Card className="bg-muted/50 border-primary">
+                            <CardHeader>
+                                <CardTitle className="text-lg font-semibold">Master Project Export</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground mb-4">Export a comprehensive CSV with all project, team, student, and score data.</p>
+                                <Button variant="outline" size="sm" onClick={handleExportAllData} disabled={eventProjects.length === 0 || !currentEvent}>
+                                    <Download className="mr-2 h-4 w-4"/> Export All Project Data
                                 </Button>
                             </CardContent>
                         </Card>
