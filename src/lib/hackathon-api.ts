@@ -36,12 +36,12 @@ import {
     limit,
     writeBatch
 } from 'firebase/firestore';
-import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate, ReviewStage, ReviewType } from './types';
+import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate, ReviewStage } from './types';
 import { 
     INTERNAL_STAGE_1_RUBRIC, INDIVIDUAL_STAGE_1_RUBRIC,
     INTERNAL_STAGE_2_RUBRIC, INDIVIDUAL_STAGE_2_RUBRIC,
     INTERNAL_FINAL_RUBRIC, INDIVIDUAL_INTERNAL_FINAL_RUBRIC,
-    EXTERNAL_FINAL_RUBRIC, INDIVIDUAL_EXTERNAL_FINAL_RUBRIC
+    EXTERNAL_FINAL_RUBRIC, INDIVIDUAL_EXTERNAL_FINAL_RUBRIC, ReviewType
 } from './constants';
 import { generateProjectImage as generateProjectImageFlow } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
@@ -846,6 +846,61 @@ export async function clearGuidanceHistory(collegeId: string, userOrFacultyId: s
 
 
 // --- Faculty ---
+
+const calculateStageScore = (scores: Score[], teamMembers: TeamMember[], reviewType: ReviewType, teamRubric: any[], individualRubric: any[]) => {
+    const stageScores = scores.filter(s => s.reviewType === reviewType);
+    if (stageScores.length === 0) return 0;
+
+    const evaluatorScores: Record<string, { teamScore: number, individualScores: Record<string, number> }> = {};
+
+    stageScores.forEach(score => {
+        if (!evaluatorScores[score.evaluatorId]) {
+            evaluatorScores[score.evaluatorId] = { teamScore: 0, individualScores: {} };
+        }
+
+        if (score.memberId) {
+            if (!evaluatorScores[score.evaluatorId].individualScores[score.memberId]) {
+                evaluatorScores[score.evaluatorId].individualScores[score.memberId] = 0;
+            }
+            evaluatorScores[score.evaluatorId].individualScores[score.memberId] += score.value;
+        } else {
+            evaluatorScores[score.evaluatorId].teamScore += score.value;
+        }
+    });
+
+    let totalObtained = 0;
+    const evaluatorCount = Object.keys(evaluatorScores).length;
+
+    for (const evalId in evaluatorScores) {
+        const { teamScore, individualScores } = evaluatorScores[evalId];
+        let totalIndividual = 0;
+        const membersScored = Object.keys(individualScores).length;
+        
+        for (const memberId in individualScores) {
+            totalIndividual += individualScores[memberId];
+        }
+        
+        const avgIndividualScore = membersScored > 0 ? (totalIndividual / membersScored) : 0;
+        
+        totalObtained += teamScore + (avgIndividualScore * teamMembers.length);
+    }
+
+    return evaluatorCount > 0 ? totalObtained / evaluatorCount : 0;
+};
+
+const calculateFinalScore = (project: ProjectSubmission, team: Team): number => {
+    const stageData = [
+        { reviewType: 'InternalStage1' as ReviewType, teamRubric: INTERNAL_STAGE_1_RUBRIC, indRubric: INDIVIDUAL_STAGE_1_RUBRIC },
+        { reviewType: 'InternalStage2' as ReviewType, teamRubric: INTERNAL_STAGE_2_RUBRIC, indRubric: INDIVIDUAL_STAGE_2_RUBRIC },
+        { reviewType: 'InternalFinal' as ReviewType, teamRubric: INTERNAL_FINAL_RUBRIC, indRubric: INDIVIDUAL_INTERNAL_FINAL_RUBRIC },
+        { reviewType: 'ExternalFinal' as ReviewType, teamRubric: EXTERNAL_FINAL_RUBRIC, indRubric: INDIVIDUAL_EXTERNAL_FINAL_RUBRIC },
+    ];
+
+    return stageData.reduce((acc, stage) => {
+        return acc + calculateStageScore(project.scores, team.members, stage.reviewType, stage.teamRubric, stage.indRubric);
+    }, 0);
+};
+
 export async function evaluateProject(collegeId: string, projectId: string, evaluatorId: string, newScores: Score[]) {
     const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
     const projectDoc = await getDoc(projectRef);
@@ -853,35 +908,24 @@ export async function evaluateProject(collegeId: string, projectId: string, eval
 
     const project = projectDoc.data() as ProjectSubmission;
 
+    const teamRef = doc(db, `colleges/${collegeId}/teams`, project.teamId);
+    const teamDoc = await getDoc(teamRef);
+    if (!teamDoc.exists()) throw new Error("Team not found for project.");
+    const team = teamDoc.data() as Team;
+
     const otherScores = project.scores.filter(s => 
         !(s.evaluatorId === evaluatorId && s.reviewType === newScores[0]?.reviewType)
     );
 
     const allScores = [...otherScores, ...newScores];
-
-    const calculateTotalScore = (scores: Score[]): number => {
-        if (scores.length === 0) return 0;
-        
-        const evaluatorScores: { [evaluatorId: string]: { [criteriaId: string]: number } } = {};
-        
-        scores.forEach(score => {
-            if (!evaluatorScores[score.evaluatorId]) {
-                evaluatorScores[score.evaluatorId] = {};
-            }
-            evaluatorScores[score.evaluatorId][`${score.criteria}_${score.memberId || 'team'}`] = score.value;
-        });
-
-        let totalScoreSum = 0;
-        const evaluatorCount = Object.keys(evaluatorScores).length;
-
-        for (const evaluatorId in evaluatorScores) {
-            totalScoreSum += Object.values(evaluatorScores[evaluatorId]).reduce((sum, val) => sum + val, 0);
-        }
-
-        return evaluatorCount > 0 ? totalScoreSum / evaluatorCount : 0;
-    };
     
-    const finalScore = calculateTotalScore(allScores);
+    // Create a temporary project object with the updated scores to pass to the calculation function
+    const tempProjectWithAllScores: ProjectSubmission = {
+        ...project,
+        scores: allScores
+    };
+
+    const finalScore = calculateFinalScore(tempProjectWithAllScores, team);
 
     await updateDoc(projectRef, { 
         scores: allScores,
