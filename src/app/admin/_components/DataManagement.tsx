@@ -29,14 +29,18 @@ export default function DataManagement() {
 
     const currentEvent = useMemo(() => hackathons.find(h => h.id === selectedHackathonId), [hackathons, selectedHackathonId]);
 
-    const { eventParticipants, eventTeams, eventProjects } = useMemo(() => {
-        if (!selectedHackathonId) {
-            return { eventParticipants: [], eventTeams: [], eventProjects: [] };
-        }
+    const { eventTeams, eventProjects } = useMemo(() => {
+        if (!selectedHackathonId) return { eventTeams: [], eventProjects: [] };
 
         const teamsForEvent = teams.filter(t => t.hackathonId === selectedHackathonId);
-        const teamIdsForEvent = new Set(teamsForEvent.map(t => t.id));
-        const projectsForEvent = projects.filter(p => teamIdsForEvent.has(p.teamId));
+        const projectIdsForEvent = new Set(teamsForEvent.map(t => t.submissionId));
+        const projectsForEvent = projects.filter(p => projectIdsForEvent.has(p.id));
+
+        return { eventTeams: teamsForEvent, eventProjects: projectsForEvent };
+    }, [teams, projects, selectedHackathonId]);
+
+    const eventParticipants = useMemo(() => {
+        if (!selectedHackathonId) return [];
         
         let filteredUsers = users;
 
@@ -59,29 +63,30 @@ export default function DataManagement() {
         }
 
         const filteredUserIds = new Set(filteredUsers.map(u => u.id));
+        const allParticipantsInEvent = eventTeams.flatMap(t => t.members);
         
-        const participantsInEvent = teamsForEvent.flatMap(t => t.members.map(m => users.find(u => u.id === m.id)).filter(Boolean));
-
-        const uniqueParticipants = Array.from(new Map(participantsInEvent.map(p => [p!.id, p!])).values());
-        
-        const filteredParticipants = uniqueParticipants.filter(p => filteredUserIds.has(p.id));
-
-        return { eventParticipants: filteredParticipants, eventTeams: teamsForEvent, eventProjects: projectsForEvent };
-    }, [users, teams, projects, selectedHackathonId, selectedBatch, selectedDepartment, selectedBranch]);
+        return allParticipantsInEvent.filter(p => filteredUserIds.has(p.id));
+    }, [users, eventTeams, selectedHackathonId, selectedBatch, selectedDepartment, selectedBranch]);
 
 
     const handleExportStudents = () => {
         const headers = ["Name", "Email", "Roll No", "Branch", "Department", "Section", "Admission Year", "Passout Year"];
-        const data = eventParticipants.map(u => [
-            u.name, 
-            u.email, 
-            u.rollNo || 'N/A', 
-            DEPARTMENTS_DATA[u.department as keyof typeof DEPARTMENTS_DATA]?.find(b => b.id === u.branch)?.name || u.branch || 'N/A',
-            u.department || 'N/A', 
-            u.section || 'N/A',
-            u.admissionYear || 'N/A',
-            u.passoutYear || 'N/A'
-        ].map(item => `"${String(item).replace(/"/g, '""')}"`));
+        const data = eventParticipants.map(u => {
+            const fullUser = users.find(fullU => fullU.id === u.id);
+            const departmentInfo = fullUser ? DEPARTMENTS_DATA[fullUser.department as keyof typeof DEPARTMENTS_DATA] : null;
+            const branchName = departmentInfo ? departmentInfo.find(b => b.id === fullUser?.branch)?.name : fullUser?.branch;
+            
+            return [
+                fullUser?.name || u.name, 
+                fullUser?.email || u.email, 
+                fullUser?.rollNo || 'N/A', 
+                branchName || 'N/A',
+                fullUser?.department || 'N/A', 
+                fullUser?.section || 'N/A',
+                fullUser?.admissionYear || 'N/A',
+                fullUser?.passoutYear || 'N/A'
+            ].map(item => `"${String(item).replace(/"/g, '""')}"`);
+        });
 
         const csvString = [headers.join(','), ...data.map(row => row.join(','))].join('\n');
         const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
@@ -285,3 +290,4 @@ export default function DataManagement() {
     );
 
     
+
