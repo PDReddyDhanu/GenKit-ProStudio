@@ -107,7 +107,7 @@ const TeamGuideCard = ({ team }: { team: Team }) => {
 
 export default function GuideAssignmentDashboard() {
     const { state, api } = useHackathon();
-    const { teams, faculty, currentFaculty } = state;
+    const { teams, faculty, currentFaculty, users } = state;
     const [selectedProjectType, setSelectedProjectType] = useState<string>('all');
     const [isAutoAssigning, setIsAutoAssigning] = useState(false);
 
@@ -116,15 +116,21 @@ export default function GuideAssignmentDashboard() {
 
         const guides = faculty.filter(f => f.role === 'guide' && f.department === currentFaculty.department && f.status === 'approved');
         
-        const allTeams = teams.filter(t => {
-             const projectTypeMatch = selectedProjectType === 'all' || t.hackathonId === selectedProjectType;
-             // Assuming team department is based on creator's department
-             const creator = state.users.find(u => u.id === t.creatorId);
-             return projectTypeMatch && creator?.department === currentFaculty.department;
+        const allTeamsInEvent = teams.filter(t => {
+            return selectedProjectType === 'all' || t.hackathonId === selectedProjectType;
+        });
+
+        const teamsInDepartment = allTeamsInEvent.filter(team => {
+            // A team is in the department if at least one of its members is in that department's branch
+            return team.members.some(member => {
+                const user = users.find(u => u.id === member.id);
+                // Simple check if user's department matches HOD's department
+                return user?.department === currentFaculty.department;
+            });
         });
         
-        return { departmentTeams: allTeams, departmentGuides: guides };
-    }, [teams, faculty, currentFaculty, selectedProjectType, state.users]);
+        return { departmentTeams: teamsInDepartment, departmentGuides: guides };
+    }, [teams, faculty, currentFaculty, selectedProjectType, users]);
     
     const handleAutoAssign = async () => {
         if (departmentGuides.length === 0) {
