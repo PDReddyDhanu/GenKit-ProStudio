@@ -13,7 +13,6 @@ import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
 import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User, MessageSquare, Eye, EyeOff, Users } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
-import ScoringDashboard from '@/app/judge/_components/ScoringDashboard';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
 import AnalyticsDashboard from './_components/AnalyticsDashboard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -202,10 +201,9 @@ export default function AdminPortal() {
             </div>
             <AuthMessage />
 
-             <Tabs defaultValue={currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor' ? 'my-teams' : (currentFaculty ? "scoring" : "events")} className="w-full" onValueChange={handleTabChange}>
+             <Tabs defaultValue={currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor' ? 'my-teams' : (currentFaculty ? "approvals" : "events")} className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="grid w-full h-auto grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap justify-start">
                     {(currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') && <TabsTrigger value="my-teams"><MessageSquare className="mr-2 h-4 w-4" /> My Teams</TabsTrigger>}
-                    {currentFaculty && <TabsTrigger value="scoring"><Scale className="mr-2 h-4 w-4" /> Project Scoring</TabsTrigger>}
                     <TabsTrigger value="events">Events</TabsTrigger>
                      <TabsTrigger value="urgent-approvals" className="relative">
                         <AlertTriangle className="mr-2 h-4 w-4" /> Urgent Approvals
@@ -213,7 +211,7 @@ export default function AdminPortal() {
                             <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{urgentApprovalsCount}</Badge>
                         )}
                     </TabsTrigger>
-                    <TabsTrigger value="approvals"><GanttChartSquare className="mr-2 h-4 w-4" /> Project Approvals</TabsTrigger>
+                    <TabsTrigger value="approvals"><GanttChartSquare className="mr-2 h-4 w-4" /> Approvals & Scoring</TabsTrigger>
                     {currentFaculty?.role === 'hod' && <TabsTrigger value="assign-guides"><User className="mr-2 h-4 w-4" /> Assign Guides</TabsTrigger>}
                     <TabsTrigger value="management"><Users className="mr-2 h-4 w-4" />User Management</TabsTrigger>
                     <TabsTrigger value="announcements"><Rss className="mr-2 h-4 w-4" /> Announcements</TabsTrigger>
@@ -225,11 +223,6 @@ export default function AdminPortal() {
                 {(currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') && (
                     <TabsContent value="my-teams" className="mt-6">
                         <GuideTeamsDashboard />
-                    </TabsContent>
-                )}
-                {currentFaculty && (
-                    <TabsContent value="scoring" className="mt-6">
-                        {currentEvent ? <ScoringDashboard event={currentEvent} /> : <p className="text-center text-muted-foreground">Please select an event to start scoring projects.</p>}
                     </TabsContent>
                 )}
                  <TabsContent value="events" className="mt-6">
