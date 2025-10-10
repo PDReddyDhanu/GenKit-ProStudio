@@ -326,7 +326,6 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
                     <div className="mt-4 pt-4 border-t space-y-2">
                         {project.reviewStage === 'Completed' ? (
                             <div className="text-center space-y-2">
-                                <p className="font-bold text-lg text-primary flex items-center justify-center gap-2"><Star className="h-5 w-5"/>Total Score: {(project.totalScore || 0).toFixed(2)} / 260</p>
                                 <Button size="sm" onClick={handleDownloadScores} disabled={!!isLoading} className="w-full">
                                     <Download className="mr-2 h-4 w-4" />
                                     Download All Scores
@@ -445,5 +444,6 @@ export default function ProjectApprovalDashboard() {
         </div>
     );
 }
+
 
 
