@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -19,7 +18,7 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
     const [selectedProject, setSelectedProject] = useState<ProjectSubmission | null>(null);
 
     const facultyProjects = useMemo(() => {
-        if (!currentFaculty) return [];
+        if (!currentFaculty || !event?.id) return [];
         
         // Start with all approved projects for the current event.
         const eventProjects = projects.filter(p => p.hackathonId === event.id && p.status === 'Approved');
@@ -95,5 +94,3 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
         </div>
     );
 }
-
-

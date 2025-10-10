@@ -80,15 +80,32 @@ export default function AdminPortal() {
         dispatch({ type: 'SET_SELECTED_BATCH', payload: batch === 'all' ? null : batch });
     }
 
-     const currentEvent = useMemo(() => {
-        const dynamicEvent = hackathons.find(h => h.id === selectedHackathonId);
-        if (dynamicEvent) return dynamicEvent;
-        
-        const staticEvent = projectEvents.find(p => p.id === selectedHackathonId);
-        if(staticEvent) return { ...staticEvent, rules: '', prizeMoney: '', teamSizeLimit: 6, deadline: 0, id: staticEvent.id };
+    const allEvents = useMemo(() => {
+        const staticEvents = projectEvents;
+        const dynamicEvents = hackathons.map(h => ({id: h.id, name: h.name}));
+        const combined = [...staticEvents, ...dynamicEvents];
+        // Remove duplicates by id
+        const unique = Array.from(new Map(combined.map(item => [item.id, item])).values());
+        return unique;
+    }, [hackathons]);
 
-        return null;
-    }, [hackathons, selectedHackathonId]);
+     const currentEvent = useMemo(() => {
+        if (!selectedHackathonId) return null;
+        
+        const event = allEvents.find(e => e.id === selectedHackathonId);
+        if (!event) return null;
+
+        const dynamicEvent = hackathons.find(h => h.id === selectedHackathonId);
+
+        return {
+             id: event.id,
+             name: event.name,
+             rules: dynamicEvent?.rules || '',
+             prizeMoney: dynamicEvent?.prizeMoney || '',
+             teamSizeLimit: dynamicEvent?.teamSizeLimit || 6,
+             deadline: dynamicEvent?.deadline || 0,
+        };
+    }, [hackathons, selectedHackathonId, allEvents]);
 
     const urgentApprovalsCount = useMemo(() => {
         return users.filter(u => u.status === 'pending' && u.approvalReminderSentAt).length;
@@ -176,12 +193,9 @@ export default function AdminPortal() {
                         </SelectTrigger>
                         <SelectContent>
                              <SelectItem value="default">Default View (No Event Selected)</SelectItem>
-                             {projectEvents.map(p => (
+                             {allEvents.map(p => (
                                 <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                              ))}
-                            {hackathons.map(h => (
-                                <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
-                            ))}
                         </SelectContent>
                     </Select>
                 </div>
