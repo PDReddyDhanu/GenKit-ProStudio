@@ -7,13 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ProjectSubmission, Team, Faculty, ProjectIdea } from '@/lib/types';
-import { Loader, Check, X, AlertTriangle, Scale } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Loader, Check, X, AlertTriangle, Scale, Bot, Presentation } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import ScoringForm from '@/app/judge/_components/ScoringForm';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Link from 'next/link';
+import { getAiProjectSummary, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
+import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
+import { marked } from 'marked';
 
 const RejectDialog = ({ idea, projectId, onConfirm, open, onOpenChange }: { idea: ProjectIdea, projectId: string, onConfirm: (remarks: string) => void, open: boolean, onOpenChange: (open: boolean) => void }) => {
     const [remarks, setRemarks] = useState('');
@@ -49,16 +52,23 @@ const RejectDialog = ({ idea, projectId, onConfirm, open, onOpenChange }: { idea
 
 const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Team }) => {
     const { api, state } = useHackathon();
-    const { currentFaculty } = state;
-    const [isLoading, setIsLoading] = useState<string | null>(null); // e.g., "approve-ideaId" or "reject-ideaId"
+    const { currentFaculty, users } = state;
+    const [isLoading, setIsLoading] = useState<string | null>(null);
     const [isScoring, setIsScoring] = useState(false);
     const [rejectingIdea, setRejectingIdea] = useState<ProjectIdea | null>(null);
+    
+    const [aiSummary, setAiSummary] = useState<Record<string, string>>({});
+    const [isGeneratingSummary, setIsGeneratingSummary] = useState<string | null>(null);
+    const [pitchOutline, setPitchOutline] = useState<GeneratePitchOutlineOutput | null>(null);
+    const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
+    const [pitchAudio, setPitchAudio] = useState<{ audioDataUri: string } | null>(null);
+    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+
 
     const handleApproveIdea = async (idea: ProjectIdea) => {
         if (!currentFaculty) return;
         setIsLoading(`approve-${idea.id}`);
         try {
-            // This new API function handles approving one idea and discarding others.
             await api.approveProjectIdea(project.id, idea, currentFaculty);
         } catch (error) {
             console.error('Failed to approve project idea', error);
@@ -71,7 +81,6 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
         if (!currentFaculty) return;
         setIsLoading(`reject-${idea.id}`);
         try {
-            // This needs a new API function or modification to handle idea rejection
             await api.updateProjectStatus(project.id, 'Rejected', currentFaculty, `Idea "${idea.title}" rejected: ${remarks}`);
         } catch (error) {
              console.error('Failed to reject project idea', error);
@@ -79,6 +88,64 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
              setIsLoading(null);
         }
     }
+
+    const handleGenerateSummary = async (idea: ProjectIdea) => {
+        setIsGeneratingSummary(idea.id);
+        try {
+            const summary = await getAiProjectSummary({
+                projectName: idea.title,
+                projectDescription: idea.abstractText,
+                githubUrl: idea.githubUrl,
+            });
+            setAiSummary(prev => ({ ...prev, [idea.id]: summary }));
+        } catch (error) {
+            console.error("Error generating AI summary:", error);
+            setAiSummary(prev => ({ ...prev, [idea.id]: "Could not generate summary." }));
+        } finally {
+            setIsGeneratingSummary(null);
+        }
+    };
+    
+    const handleGenerateOutline = async (idea: ProjectIdea) => {
+        if (!team) return;
+        setIsGeneratingOutline(true);
+        setPitchOutline(null);
+        setPitchAudio(null);
+        try {
+            const creator = users.find(u => u.id === team.creatorId);
+            const result = await generatePitchOutline({
+                projectName: idea.title,
+                projectDescription: idea.description,
+                aiCodeReview: aiSummary[idea.id] || undefined,
+                course: creator?.department,
+                guideName: team.guide?.name,
+                teamMembers: team.members.map(m => m.name),
+            });
+            setPitchOutline(result);
+        } finally {
+            setIsGeneratingOutline(false);
+        }
+    };
+
+    const handleGenerateAudio = async () => {
+        if (!pitchOutline) return;
+        setIsGeneratingAudio(true);
+        setPitchAudio(null);
+        try {
+            const script = pitchOutline.slides
+                .map(slide => `${slide.title}. ${slide.content.replace(/^-/gm, '')}`)
+                .join('\n\n');
+            const result = await generatePitchAudioAction({ script });
+            if (result) {
+                setPitchAudio(result);
+            }
+        } catch (error) {
+            console.error("Failed to generate audio:", error);
+        } finally {
+            setIsGeneratingAudio(false);
+        }
+    };
+
 
     const canApprove = (
         (currentFaculty?.role === 'guide' && project.status === 'PendingGuide' && project.teamId && team?.guide?.id === currentFaculty.id) ||
@@ -129,6 +196,52 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
                                         <p className="text-sm text-muted-foreground">{idea.description}</p>
                                         <Link href={idea.githubUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline break-all">{idea.githubUrl}</Link>
                                         
+                                        <div className="border-t pt-4 mt-4 space-y-4">
+                                            <div className="flex flex-wrap gap-2">
+                                                <Button onClick={() => handleGenerateSummary(idea)} disabled={isGeneratingSummary === idea.id} variant="outline" size="sm">
+                                                    {isGeneratingSummary === idea.id ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Summarizing...</> : <><Bot className="mr-2 h-4 w-4"/>Generate AI Summary</>}
+                                                </Button>
+                                                <Button onClick={() => handleGenerateOutline(idea)} disabled={isGeneratingOutline} variant="outline" size="sm">
+                                                    {isGeneratingOutline ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : "AI Pitch Coach"}
+                                                </Button>
+                                            </div>
+                                            {aiSummary[idea.id] && (
+                                                    <div className="p-3 bg-background/50 rounded-md border">
+                                                    <p className="text-sm">{aiSummary[idea.id]}</p>
+                                                </div>
+                                            )}
+                                            {pitchOutline && (
+                                                <div className="space-y-4">
+                                                    <div className="flex flex-wrap gap-2 justify-between items-center">
+                                                        <h4 className="font-bold flex items-center gap-2"><Presentation className="text-primary"/> Generated Presentation Outline</h4>
+                                                        <Button onClick={handleGenerateAudio} disabled={isGeneratingAudio} size="sm">
+                                                            {isGeneratingAudio ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating Audio...</> : "Generate Audio"}
+                                                        </Button>
+                                                    </div>
+                                                    {pitchAudio?.audioDataUri && (
+                                                        <div className="mt-4">
+                                                            <audio controls src={pitchAudio.audioDataUri} className="w-full">
+                                                                Your browser does not support the audio element.
+                                                            </audio>
+                                                        </div>
+                                                    )}
+                                                    <Accordion type="single" collapsible className="w-full">
+                                                        {pitchOutline.slides.map((slide, index) => (
+                                                        <AccordionItem value={`item-${index}`} key={index}>
+                                                            <AccordionTrigger>{index + 1}. {slide.title}</AccordionTrigger>
+                                                            <AccordionContent>
+                                                                <div
+                                                                    className="prose prose-sm dark:prose-invert text-foreground max-w-none"
+                                                                    dangerouslySetInnerHTML={{ __html: marked(slide.content) as string }}
+                                                                />
+                                                            </AccordionContent>
+                                                        </AccordionItem>
+                                                        ))}
+                                                    </Accordion>
+                                                </div>
+                                            )}
+                                        </div>
+
                                         {canApprove && (
                                             <div className="flex gap-2 pt-4 border-t">
                                                 <Button size="sm" onClick={() => handleApproveIdea(idea)} disabled={!!isLoading}>
