@@ -181,6 +181,9 @@ export default function AdminPortal() {
     } else if (currentAdmin) {
         defaultTab = 'events';
     }
+    
+    const hasElevatedPermissions = currentAdmin || ['hod', 'admin', 'guide', 'rnd', 'class-mentor'].includes(currentFaculty?.role || '');
+
 
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-slide-in-up">
@@ -226,23 +229,24 @@ export default function AdminPortal() {
                         <>
                             {(currentAdmin || currentFaculty?.role === 'hod') && <TabsTrigger value="events">Events</TabsTrigger>}
                             
-                            {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) &&
+                            {hasElevatedPermissions && (
                                 <TabsTrigger value="urgent-approvals" className="relative">
                                     <AlertTriangle className="mr-2 h-4 w-4" /> Urgent Approvals
                                     {urgentApprovalsCount > 0 && (
                                         <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{urgentApprovalsCount}</Badge>
                                     )}
                                 </TabsTrigger>
-                            }
-
-                            {(currentAdmin || currentFaculty?.role === 'hod') && <TabsTrigger value="assign-guides"><User className="mr-2 h-4 w-4" /> Assign Guides</TabsTrigger>}
-                            {(currentAdmin || currentFaculty?.role === 'admin') && <TabsTrigger value="management"><Users className="mr-2 h-4 w-4" />User Management</TabsTrigger>}
+                            )}
                             
-                            {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) && <TabsTrigger value="announcements"><Rss className="mr-2 h-4 w-4" /> Announcements</TabsTrigger>}
-                            {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) && <TabsTrigger value="analytics"><LineChart className="mr-2 h-4 w-4" /> Analytics</TabsTrigger>}
-                            {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) && <TabsTrigger value="data"><Database className="mr-2 h-4 w-4" /> Data & Export</TabsTrigger>}
-                            {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) && <TabsTrigger value="reports"><FileText className="mr-2 h-4 w-4" /> Reports</TabsTrigger>}
-                            {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) && <TabsTrigger value="support"><LifeBuoy className="mr-2 h-4 w-4" /> Support</TabsTrigger>}
+                            {(currentAdmin || currentFaculty?.role === 'hod') && <TabsTrigger value="assign-guides"><User className="mr-2 h-4 w-4" /> Assign Guides</TabsTrigger>}
+
+                            {hasElevatedPermissions && <TabsTrigger value="management"><Users className="mr-2 h-4 w-4" />User Management</TabsTrigger>}
+                            
+                            {hasElevatedPermissions && <TabsTrigger value="announcements"><Rss className="mr-2 h-4 w-4" /> Announcements</TabsTrigger>}
+                            {hasElevatedPermissions && <TabsTrigger value="analytics"><LineChart className="mr-2 h-4 w-4" /> Analytics</TabsTrigger>}
+                            {hasElevatedPermissions && <TabsTrigger value="data"><Database className="mr-2 h-4 w-4" /> Data & Export</TabsTrigger>}
+                            {hasElevatedPermissions && <TabsTrigger value="reports"><FileText className="mr-2 h-4 w-4" /> Reports</TabsTrigger>}
+                            {hasElevatedPermissions && <TabsTrigger value="support"><LifeBuoy className="mr-2 h-4 w-4" /> Support</TabsTrigger>}
                         </>
                     )}
                 </TabsList>
@@ -268,7 +272,7 @@ export default function AdminPortal() {
                                <HackathonManagement />
                            </TabsContent>
                         }
-                        {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) &&
+                        {hasElevatedPermissions &&
                            <TabsContent value="urgent-approvals" className="mt-6">
                                <UrgentApprovalsDashboard />
                            </TabsContent>
@@ -278,32 +282,32 @@ export default function AdminPortal() {
                                <GuideAssignmentDashboard />
                            </TabsContent>
                        }
-                       {(currentAdmin || currentFaculty?.role === 'admin') && 
+                       {hasElevatedPermissions && 
                            <TabsContent value="management" className="mt-6">
                                <AdminDashboard />
                            </TabsContent>
                        }
-                       {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) &&
+                       {hasElevatedPermissions &&
                            <TabsContent value="announcements" className="mt-6">
                                <Announcements />
                            </TabsContent>
                         }
-                        {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) &&
+                        {hasElevatedPermissions &&
                            <TabsContent value="analytics" className="mt-6">
                                {currentEvent ? <AnalyticsDashboard event={currentEvent} /> : <p className="text-center text-muted-foreground">Please select an event to view analytics.</p>}
                            </TabsContent>
                        }
-                        {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) &&
+                        {hasElevatedPermissions &&
                            <TabsContent value="data" className="mt-6">
                                <DataManagement />
                            </TabsContent>
                         }
-                       {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) &&
+                       {hasElevatedPermissions &&
                            <TabsContent value="reports" className="mt-6">
                                {currentEvent ? <ReportingDashboard /> : <p className="text-center text-muted-foreground">Please select an event to generate a report.</p>}
                            </TabsContent>
                         }
-                        {(currentAdmin || ['hod', 'admin'].includes(currentFaculty?.role || '')) &&
+                        {hasElevatedPermissions &&
                            <TabsContent value="support" className="mt-6">
                                <SupportDashboard />
                            </TabsContent>
