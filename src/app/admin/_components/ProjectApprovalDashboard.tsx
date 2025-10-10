@@ -6,44 +6,80 @@ import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ProjectSubmission, Team, Faculty } from '@/lib/types';
+import { ProjectSubmission, Team, Faculty, ProjectIdea } from '@/lib/types';
 import { Loader, Check, X, AlertTriangle, Scale } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import ScoringForm from '@/app/judge/_components/ScoringForm';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import Link from 'next/link';
+
+const RejectDialog = ({ idea, projectId, onConfirm, open, onOpenChange }: { idea: ProjectIdea, projectId: string, onConfirm: (remarks: string) => void, open: boolean, onOpenChange: (open: boolean) => void }) => {
+    const [remarks, setRemarks] = useState('');
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Reject Project Idea: "{idea.title}"</DialogTitle>
+                    <DialogDescription>
+                        Please provide clear feedback for the students on why this idea is being rejected. This will help them improve.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                    <Label htmlFor="remarks-textarea">Rejection Remarks</Label>
+                    <Textarea
+                        id="remarks-textarea"
+                        value={remarks}
+                        onChange={(e) => setRemarks(e.target.value)}
+                        placeholder="e.g., 'The project scope is too broad for the timeline...'"
+                        rows={5}
+                    />
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                    <Button variant="destructive" onClick={() => { onConfirm(remarks); onOpenChange(false); }}>Confirm Rejection</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 
 const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Team }) => {
     const { api, state } = useHackathon();
     const { currentFaculty } = state;
-    const [isLoading, setIsLoading] = useState<string | null>(null);
-    const [isRemarksOpen, setIsRemarksOpen] = useState(false);
-    const [remarks, setRemarks] = useState('');
+    const [isLoading, setIsLoading] = useState<string | null>(null); // e.g., "approve-ideaId" or "reject-ideaId"
     const [isScoring, setIsScoring] = useState(false);
+    const [rejectingIdea, setRejectingIdea] = useState<ProjectIdea | null>(null);
 
-    const handleUpdateStatus = async (newStatus: ProjectSubmission['status'], remarksText?: string) => {
+    const handleApproveIdea = async (idea: ProjectIdea) => {
         if (!currentFaculty) return;
-        setIsLoading(newStatus);
+        setIsLoading(`approve-${idea.id}`);
         try {
-            await api.updateProjectStatus(project.id, newStatus, currentFaculty, remarksText);
-            if(newStatus === 'Rejected') {
-                setIsRemarksOpen(false);
-            }
+            // This new API function handles approving one idea and discarding others.
+            await api.approveProjectIdea(project.id, idea, currentFaculty);
         } catch (error) {
-            console.error('Failed to update project status', error);
+            console.error('Failed to approve project idea', error);
         } finally {
             setIsLoading(null);
         }
     };
     
-    const nextStatusMap: Record<ProjectSubmission['status'], ProjectSubmission['status'] | null> = {
-        PendingGuide: 'PendingR&D',
-        'PendingR&D': 'PendingHoD',
-        PendingHoD: 'Approved',
-        Approved: null, // This now transitions to a review stage, handled differently
-        Rejected: null,
-    };
-    
+    const handleRejectIdea = async (idea: ProjectIdea, remarks: string) => {
+        if (!currentFaculty) return;
+        setIsLoading(`reject-${idea.id}`);
+        try {
+            // This needs a new API function or modification to handle idea rejection
+            await api.updateProjectStatus(project.id, 'Rejected', currentFaculty, `Idea "${idea.title}" rejected: ${remarks}`);
+        } catch (error) {
+             console.error('Failed to reject project idea', error);
+        } finally {
+             setIsLoading(null);
+        }
+    }
+
     const canApprove = (
         (currentFaculty?.role === 'guide' && project.status === 'PendingGuide' && project.teamId && team?.guide?.id === currentFaculty.id) ||
         (currentFaculty?.role === 'rnd' && project.status === 'PendingR&D') ||
@@ -64,78 +100,73 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
         
         if (isGuideForTeam && ['Stage1', 'Stage2', 'InternalFinal'].includes(reviewStage)) return true;
         
-        if (role === 'class-mentor' && ['Stage1', 'Stage2', 'InternalFinal'].includes(reviewStage)) return true;
-        
-        // Admins/HODs can score at any internal stage
-        if (['admin', 'hod', 'rnd'].includes(role) && ['Stage1', 'Stage2', 'InternalFinal'].includes(reviewStage)) return true;
+        if (['admin', 'hod', 'rnd', 'class-mentor'].includes(role) && ['Stage1', 'Stage2', 'InternalFinal'].includes(reviewStage)) return true;
 
         return false;
     }, [project, team, currentFaculty]);
 
-
-    const nextStatus = nextStatusMap[project.status];
-    const isApprovalStage = project.status !== 'Approved' && project.status !== 'Rejected';
 
     if (isScoring) {
         return <ScoringForm project={project} onBack={() => setIsScoring(false)} />;
     }
 
     return (
-        <Dialog open={isRemarksOpen} onOpenChange={setIsRemarksOpen}>
+        <>
             <Card className="bg-muted/50">
                 <CardHeader>
-                    <CardTitle className="text-lg">{project.projectIdeas[0]?.title || "Untitled Project"}</CardTitle>
-                    <CardDescription>Team: {team?.name || "Unknown"}</CardDescription>
+                    <CardTitle className="text-lg">{team?.name || "Unknown Team"}</CardTitle>
+                    <CardDescription>
+                        {project.projectIdeas.length} idea(s) submitted for review.
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{project.projectIdeas[0]?.description}</p>
-                    {isApprovalStage && canApprove && (
-                        <div className="flex gap-2">
-                            {nextStatus && (
-                                <Button size="sm" onClick={() => handleUpdateStatus(nextStatus)} disabled={!!isLoading}>
-                                    {isLoading === nextStatus ? <Loader className="animate-spin h-4 w-4" /> : <Check className="h-4 w-4" />}
-                                    <span className="ml-2">Approve</span>
-                                </Button>
-                            )}
-                            <DialogTrigger asChild>
-                                <Button variant="destructive" size="sm" disabled={!!isLoading}>
-                                    <X className="h-4 w-4 mr-2" />
-                                    Reject
-                                </Button>
-                            </DialogTrigger>
-                        </div>
-                    )}
-                    {!isApprovalStage && canScore && (
-                         <Button size="sm" onClick={() => setIsScoring(true)} disabled={!!isLoading}>
-                            <Scale className="mr-2 h-4 w-4" />
-                            Score Project
-                        </Button>
+                    <Accordion type="single" collapsible className="w-full" defaultValue="idea-0">
+                         {project.projectIdeas.map((idea, index) => (
+                            <AccordionItem value={`idea-${index}`} key={idea.id}>
+                                <AccordionTrigger>Idea {index + 1}: {idea.title}</AccordionTrigger>
+                                <AccordionContent>
+                                    <div className="space-y-3 p-2">
+                                        <p className="text-sm text-muted-foreground">{idea.description}</p>
+                                        <Link href={idea.githubUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline break-all">{idea.githubUrl}</Link>
+                                        
+                                        {canApprove && (
+                                            <div className="flex gap-2 pt-4 border-t">
+                                                <Button size="sm" onClick={() => handleApproveIdea(idea)} disabled={!!isLoading}>
+                                                    {isLoading === `approve-${idea.id}` ? <Loader className="animate-spin h-4 w-4" /> : <Check className="h-4 w-4" />}
+                                                    <span className="ml-2">Approve this Idea</span>
+                                                </Button>
+                                                <Button variant="destructive" size="sm" onClick={() => setRejectingIdea(idea)} disabled={!!isLoading}>
+                                                    <X className="h-4 w-4 mr-2" />
+                                                    Reject
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                         ))}
+                    </Accordion>
+
+                    {project.status === 'Approved' && canScore && (
+                         <div className="mt-4 pt-4 border-t">
+                            <Button size="sm" onClick={() => setIsScoring(true)} disabled={!!isLoading}>
+                                <Scale className="mr-2 h-4 w-4" />
+                                Score Project: {project.projectIdeas[0].title}
+                            </Button>
+                         </div>
                     )}
                 </CardContent>
             </Card>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Reject Project: "{project.projectIdeas[0]?.title}"</DialogTitle>
-                    <DialogDescription>
-                        Please provide clear feedback for the students on why their project is being rejected. This will help them improve for their next submission.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                    <Label htmlFor="remarks-textarea">Rejection Remarks</Label>
-                    <Textarea
-                        id="remarks-textarea"
-                        value={remarks}
-                        onChange={(e) => setRemarks(e.target.value)}
-                        placeholder="e.g., 'The project scope is too broad for the timeline, please refine...' or 'Idea rejected due to similarity with another project.'"
-                        rows={5}
-                    />
-                </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsRemarksOpen(false)}>Cancel</Button>
-                    <Button variant="destructive" onClick={() => handleUpdateStatus('Rejected', remarks)}>Confirm Rejection</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+            {rejectingIdea && (
+                 <RejectDialog 
+                    idea={rejectingIdea}
+                    projectId={project.id}
+                    open={!!rejectingIdea}
+                    onOpenChange={(open) => !open && setRejectingIdea(null)}
+                    onConfirm={(remarks) => handleRejectIdea(rejectingIdea, remarks)}
+                />
+            )}
+        </>
     );
 };
 
@@ -180,7 +211,7 @@ export default function ProjectApprovalDashboard() {
     
     const STAGES_CONFIG: {key: string, title: string, roles: Faculty['role'][]}[] = [
         { key: 'PendingGuide', title: 'Pending Guide', roles: ['guide', 'admin'] },
-        { key: 'PendingR&D', title: 'Pending R&D', roles: ['rnd', 'admin'] },
+        { key: 'PendingR&D', title: 'Pending R&D', roles: ['rnd', 'admin', 'hod'] },
         { key: 'PendingHoD', title: 'Pending HOD', roles: ['hod', 'admin'] },
         { key: 'Stage1', title: 'Stage 1 Scoring', roles: ['guide', 'class-mentor', 'admin', 'hod'] },
         { key: 'Stage2', title: 'Stage 2 Scoring', roles: ['guide', 'class-mentor', 'admin', 'hod'] },
@@ -193,10 +224,16 @@ export default function ProjectApprovalDashboard() {
             {STAGES_CONFIG.map(stage => {
                 if (!currentFaculty || !stage.roles.includes(currentFaculty.role)) return null;
                 
-                const stageProjects = projectsByStage[stage.key] || [];
+                let stageProjects = projectsByStage[stage.key] || [];
+
+                // Special filter for guides to only see their assigned teams' projects
+                if (currentFaculty.role === 'guide') {
+                    const myTeamIds = new Set(teams.filter(t => t.guide?.id === currentFaculty.id).map(t => t.id));
+                    stageProjects = stageProjects.filter(p => myTeamIds.has(p.teamId));
+                }
 
                 return (
-                    <div key={stage.key} className="flex-shrink-0 w-[320px] space-y-4">
+                    <div key={stage.key} className="flex-shrink-0 w-[350px] space-y-4">
                         <h2 className="text-xl font-bold font-headline capitalize">{stage.title} ({stageProjects.length})</h2>
                         <ScrollArea className="h-[calc(100vh-22rem)] bg-card p-2 rounded-lg border">
                             <div className="space-y-4 p-2">

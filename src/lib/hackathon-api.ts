@@ -751,6 +751,8 @@ export async function submitProject(collegeId: string, hackathonId: string, team
             status: 'PendingGuide',
             reviewStage: 'Pending',
             statusHistory: [],
+            name: ideaToSave.title,
+            averageScore: 0,
         };
         const submissionRef = await addDoc(collection(db, `colleges/${collegeId}/projects`), newSubmission);
         await updateDoc(doc(db, `colleges/${collegeId}/teams`, teamId), { submissionId: submissionRef.id });
@@ -887,6 +889,70 @@ export async function evaluateProject(collegeId: string, projectId: string, eval
     });
 
     return { successMessage: "Evaluation submitted successfully." };
+}
+
+export async function approveProjectIdea(collegeId: string, projectId: string, approvedIdea: ProjectIdea, faculty: Faculty) {
+    const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
+    const projectDoc = await getDoc(projectRef);
+    if (!projectDoc.exists()) throw new Error("Project not found.");
+    
+    const project = projectDoc.data() as ProjectSubmission;
+
+    const nextStatusMap: Record<ProjectSubmission['status'], ProjectSubmission['status'] | null> = {
+        PendingGuide: 'PendingR&D',
+        'PendingR&D': 'PendingHoD',
+        PendingHoD: 'Approved',
+        Approved: null,
+        Rejected: null,
+    };
+    
+    const nextStatus = nextStatusMap[project.status];
+    if (!nextStatus) {
+        throw new Error("Project is not in a valid state for approval.");
+    }
+    
+    let reviewStageUpdate: Partial<ProjectSubmission> = {};
+    if (nextStatus === 'Approved') {
+        reviewStageUpdate.reviewStage = 'Stage1';
+    }
+
+    const statusUpdate: ProjectStatusUpdate = {
+        timestamp: Date.now(),
+        updatedBy: faculty.name,
+        from: project.status,
+        to: nextStatus,
+        remarks: `Idea "${approvedIdea.title}" approved.`,
+    };
+
+    await updateDoc(projectRef, {
+        projectIdeas: [approvedIdea], // Replace with only the approved idea
+        status: nextStatus,
+        statusHistory: arrayUnion(statusUpdate),
+        ...reviewStageUpdate,
+    });
+
+    // Notify team members
+    const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/teams`, project.teamId));
+    if (teamDoc.exists()) {
+        const team = teamDoc.data() as Team;
+        const message = `Your project idea "${approvedIdea.title}" has been approved and moved to the next stage: ${nextStatus}.`;
+        
+        const notification = {
+            id: doc(collection(db, 'dummy')).id,
+            message,
+            link: '/student',
+            timestamp: Date.now(),
+            isRead: false
+        };
+        const batch = writeBatch(db);
+        team.members.forEach(member => {
+            const memberRef = doc(db, `colleges/${collegeId}/users`, member.id);
+            batch.update(memberRef, { notifications: arrayUnion(notification) });
+        });
+        await batch.commit();
+    }
+
+    return { successMessage: `Project idea "${approvedIdea.title}" approved and moved to ${nextStatus}.` };
 }
 
 export async function updateProjectStatus(collegeId: string, projectId: string, newStatus: ProjectSubmission['status'], faculty: Faculty, remarks?: string) {
