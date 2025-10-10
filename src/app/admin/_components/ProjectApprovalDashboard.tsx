@@ -6,8 +6,8 @@ import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ProjectSubmission, Team, Faculty, ProjectIdea } from '@/lib/types';
-import { Loader, Check, X, AlertTriangle, Scale, Bot, Presentation } from 'lucide-react';
+import { ProjectSubmission, Team, Faculty, ProjectIdea, ReviewStage, ReviewType } from '@/lib/types';
+import { Loader, Check, X, AlertTriangle, Scale, Bot, Presentation, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -89,6 +89,18 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
         }
     }
 
+    const handleUpdateReviewStage = async (nextStage: ReviewStage) => {
+        if (!currentFaculty) return;
+        setIsLoading(`stage-${nextStage}`);
+        try {
+            await api.updateProjectReviewStage(project.id, nextStage, currentFaculty);
+        } catch(error) {
+            console.error('Failed to update review stage', error);
+        } finally {
+            setIsLoading(null);
+        }
+    }
+
     const handleGenerateSummary = async (idea: ProjectIdea) => {
         setIsGeneratingSummary(idea.id);
         try {
@@ -146,7 +158,6 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
         }
     };
 
-
     const canApprove = (
         (currentFaculty?.role === 'guide' && project.status === 'PendingGuide' && project.teamId && team?.guide?.id === currentFaculty.id) ||
         (currentFaculty?.role === 'rnd' && project.status === 'PendingR&D') ||
@@ -154,8 +165,22 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
         (currentFaculty?.role === 'admin') 
     );
     
+    const stageToReviewType: Record<string, ReviewType> = {
+        'Stage1': 'InternalStage1',
+        'Stage2': 'InternalStage2',
+        'InternalFinal': 'InternalFinal',
+        'ExternalFinal': 'ExternalFinal'
+    };
+
+    const currentReviewType = stageToReviewType[project.reviewStage];
+
+    const hasScoredCurrentStage = useMemo(() => {
+        if (!currentFaculty || !currentReviewType) return false;
+        return project.scores.some(s => s.evaluatorId === currentFaculty.id && s.reviewType === currentReviewType);
+    }, [project.scores, currentFaculty, currentReviewType]);
+
     const canScore = useMemo(() => {
-        if (!currentFaculty) return false;
+        if (!currentFaculty || !currentReviewType) return false;
         const { reviewStage } = project;
         const { role } = currentFaculty;
 
@@ -170,12 +195,34 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
         if (['admin', 'hod', 'rnd', 'class-mentor'].includes(role) && ['Stage1', 'Stage2', 'InternalFinal'].includes(reviewStage)) return true;
 
         return false;
-    }, [project, team, currentFaculty]);
+    }, [project, team, currentFaculty, currentReviewType]);
 
 
     if (isScoring) {
         return <ScoringForm project={project} onBack={() => setIsScoring(false)} />;
     }
+    
+    const renderStageAdvancementButton = () => {
+        if (!['admin', 'hod', 'guide', 'class-mentor'].includes(currentFaculty?.role || '')) return null;
+
+        const commonButtonProps = {
+            size: "sm",
+            disabled: !!isLoading,
+            className: "w-full",
+        } as const;
+
+        switch (project.reviewStage) {
+            case 'Stage1':
+                return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('Stage2')}>Complete Stage 1 & Move to Stage 2 <ChevronRight className="h-4 w-4 ml-2"/></Button>;
+            case 'Stage2':
+                return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('InternalFinal')}>Complete Stage 2 & Move to Final Internal Review <ChevronRight className="h-4 w-4 ml-2"/></Button>;
+            case 'InternalFinal':
+                 return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('ExternalFinal')}>Send to External Review <ChevronRight className="h-4 w-4 ml-2"/></Button>;
+            default:
+                return null;
+        }
+    };
+
 
     return (
         <>
@@ -259,15 +306,16 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
                             </AccordionItem>
                          ))}
                     </Accordion>
-
-                    {project.status === 'Approved' && canScore && (
-                         <div className="mt-4 pt-4 border-t">
-                            <Button size="sm" onClick={() => setIsScoring(true)} disabled={!!isLoading}>
+                    
+                    <div className="mt-4 pt-4 border-t space-y-2">
+                        {project.status === 'Approved' && canScore && (
+                            <Button size="sm" onClick={() => setIsScoring(true)} disabled={!!isLoading} className="w-full">
                                 <Scale className="mr-2 h-4 w-4" />
-                                Score Project: {project.projectIdeas[0].title}
+                                {hasScoredCurrentStage ? 'Edit Score' : 'Score Project'}: {project.projectIdeas[0].title}
                             </Button>
-                         </div>
-                    )}
+                        )}
+                         {renderStageAdvancementButton()}
+                    </div>
                 </CardContent>
             </Card>
             {rejectingIdea && (

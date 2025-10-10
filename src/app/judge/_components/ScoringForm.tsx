@@ -391,21 +391,23 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                                     {renderScoringBlock(currentTeamRubric, 'team')}
                                 </div>
                                 
-                                <div className="mt-6 p-4 rounded-md border bg-card">
-                                    <h3 className="text-xl font-bold font-headline mb-4">Individual Scoring</h3>
-                                    <Accordion type="single" collapsible className="w-full">
-                                        {team?.members.map(member => (
-                                            <AccordionItem value={member.id} key={member.id}>
-                                                <AccordionTrigger>
-                                                    <span className="flex items-center gap-2"><User className="h-4 w-4"/>{member.name}</span>
-                                                </AccordionTrigger>
-                                                <AccordionContent>
-                                                    {renderScoringBlock(currentIndividualRubric, member.id)}
-                                                </AccordionContent>
-                                            </AccordionItem>
-                                        ))}
-                                    </Accordion>
-                                </div>
+                                {currentIndividualRubric.length > 0 && (
+                                    <div className="mt-6 p-4 rounded-md border bg-card">
+                                        <h3 className="text-xl font-bold font-headline mb-4">Individual Scoring</h3>
+                                        <Accordion type="single" collapsible className="w-full">
+                                            {team?.members.map(member => (
+                                                <AccordionItem value={member.id} key={member.id}>
+                                                    <AccordionTrigger>
+                                                        <span className="flex items-center gap-2"><User className="h-4 w-4"/>{member.name}</span>
+                                                    </AccordionTrigger>
+                                                    <AccordionContent>
+                                                        {renderScoringBlock(currentIndividualRubric, member.id)}
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            ))}
+                                        </Accordion>
+                                    </div>
+                                )}
                                 <CardFooter className="pt-6 px-0">
                                     <Button type="submit" className="w-full" disabled={isSubmitting}>
                                     {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Score'}

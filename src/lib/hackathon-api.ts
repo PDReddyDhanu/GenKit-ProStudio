@@ -35,7 +35,7 @@ import {
     limit,
     writeBatch
 } from 'firebase/firestore';
-import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate } from './types';
+import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate, ReviewStage } from './types';
 import { 
     INTERNAL_STAGE_1_RUBRIC, 
     INDIVIDUAL_STAGE_1_RUBRIC,
@@ -867,10 +867,15 @@ export async function clearGuidanceHistory(collegeId: string, userOrFacultyId: s
 export async function evaluateProject(collegeId: string, projectId: string, evaluatorId: string, newScores: Score[]) {
     const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
     const projectDoc = await getDoc(projectRef);
-    if(!projectDoc.exists()) throw new Error("Project not found.");
+    if (!projectDoc.exists()) throw new Error("Project not found.");
+
     const project = projectDoc.data() as ProjectSubmission;
 
-    const otherScores = project.scores.filter(s => s.evaluatorId !== evaluatorId);
+    // Filter out previous scores from the same evaluator for the same review type
+    const otherScores = project.scores.filter(s => 
+        !(s.evaluatorId === evaluatorId && s.reviewType === newScores[0]?.reviewType)
+    );
+
     const allScores = [...otherScores, ...newScores];
 
     await updateDoc(projectRef, { 
@@ -879,6 +884,7 @@ export async function evaluateProject(collegeId: string, projectId: string, eval
 
     return { successMessage: "Evaluation submitted successfully." };
 }
+
 
 export async function approveProjectIdea(collegeId: string, projectId: string, approvedIdea: ProjectIdea, faculty: Faculty) {
     const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
@@ -942,6 +948,38 @@ export async function approveProjectIdea(collegeId: string, projectId: string, a
     }
 
     return { successMessage: `Project idea "${approvedIdea.title}" approved and moved to ${nextStatus}.` };
+}
+
+export async function updateProjectReviewStage(collegeId: string, projectId: string, newStage: ReviewStage, faculty: Faculty) {
+    const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
+    await updateDoc(projectRef, { reviewStage: newStage });
+
+     // Notify team members
+    const projectDoc = await getDoc(projectRef);
+    if (!projectDoc.exists()) throw new Error("Project not found.");
+
+    const project = projectDoc.data() as ProjectSubmission;
+    const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/teams`, project.teamId));
+    if (teamDoc.exists()) {
+        const team = teamDoc.data() as Team;
+        const message = `Your project "${project.projectIdeas[0].title}" has moved to the next evaluation stage: ${newStage}.`;
+        
+        const notification = {
+            id: doc(collection(db, 'dummy')).id,
+            message,
+            link: '/student',
+            timestamp: Date.now(),
+            isRead: false
+        };
+        const batch = writeBatch(db);
+        team.members.forEach(member => {
+            const memberRef = doc(db, `colleges/${collegeId}/users`, member.id);
+            batch.update(memberRef, { notifications: arrayUnion(notification) });
+        });
+        await batch.commit();
+    }
+
+    return { successMessage: `Project moved to ${newStage} successfully.` };
 }
 
 export async function updateProjectStatus(collegeId: string, projectId: string, newStatus: ProjectSubmission['status'], faculty: Faculty, remarks?: string) {
