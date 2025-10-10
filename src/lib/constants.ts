@@ -11,21 +11,22 @@ export const INTERNAL_STAGE_2_RUBRIC = [
     { id: 'documentation_initial', name: 'Initial Documentation', max: 5 },
 ];
 
-export const INTERNAL_FINAL_RUBRIC = [
-    { id: 'final_execution', name: 'Final Technical Execution & Complexity', max: 15 },
-    { id: 'project_report', name: 'Final Report & Documentation', max: 10 },
-    { id: 'internal_presentation', name: 'Internal Presentation & Viva', max: 10 },
+// This will be used for both Internal and External final reviews for simplicity
+export const FINAL_RUBRIC = [
+    { id: 'innovation_originality', name: 'Innovation & Originality', max: 10 },
+    { id: 'technical_complexity', name: 'Technical Complexity & Execution', max: 10 },
+    { id: 'design_presentation', name: 'UI/UX Design & Presentation', max: 10 },
+    { id: 'team_collaboration', name: 'Team Collaboration', max: 5 },
+    { id: 'problem_solving', name: 'Problem-Solving Approach', max: 5 },
 ];
 
-export const EXTERNAL_FINAL_RUBRIC = [
-    { id: 'innovation', name: 'Innovation & Novelty', max: 15 },
-    { id: 'real_world_application', name: 'Real-World Application & Impact', max: 15 },
-    { id: 'external_presentation', name: 'Final Presentation & Q/A', max: 20 },
-];
+export const INTERNAL_FINAL_RUBRIC = FINAL_RUBRIC;
+export const EXTERNAL_FINAL_RUBRIC = FINAL_RUBRIC;
+
 
 export const INDIVIDUAL_EVALUATION_RUBRIC = [
-    { id: 'contribution', name: 'Individual Contribution & Impact', max: 10 },
-    { id: 'teamwork', name: 'Teamwork & Communication', max: 10 },
+    { id: 'technical_contribution', name: 'Technical Contribution & Impact', max: 10 },
+    { id: 'teamwork_communication', name: 'Teamwork & Communication', max: 10 },
 ];
 
 
