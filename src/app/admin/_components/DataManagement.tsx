@@ -268,5 +268,4 @@ export default function DataManagement() {
             </Card>
         </div>
     );
-
-    
+}
