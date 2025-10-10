@@ -7,6 +7,8 @@ import ProjectList from './ProjectList';
 import ScoringForm from './ScoringForm';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { BarChart2 } from 'lucide-react';
 
 interface ScoringDashboardProps {
     event: Hackathon;
@@ -17,29 +19,20 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
     const { projects, currentFaculty, teams } = state;
     const [selectedProject, setSelectedProject] = useState<ProjectSubmission | null>(null);
 
+    // This logic is now greatly simplified and corrected.
     const facultyProjects = useMemo(() => {
         if (!currentFaculty || !event?.id) return [];
 
+        // 1. Get all approved projects for the current event.
         const eventProjects = projects.filter(p => 
             p.hackathonId === event.id && p.status === 'Approved'
         );
 
-        if (currentFaculty.role === 'guide') {
-            const myTeamIds = new Set(
-                teams.filter(t => t.guide?.id === currentFaculty.id && t.hackathonId === event.id).map(t => t.id)
-            );
-            return eventProjects.filter(p => myTeamIds.has(p.teamId));
-        }
-        
-        if (currentFaculty.role === 'class-mentor' || currentFaculty.role === 'admin' || currentFaculty.role === 'hod' || currentFaculty.role === 'rnd') {
-            return eventProjects;
-        }
+        // 2. Return all projects. The ProjectList component will handle display logic.
+        // This ensures that all relevant faculty (Guides, Mentors, Admins) see the list of projects to be scored.
+        // Specific scoring permissions are handled within the ScoringForm.
+        return eventProjects;
 
-        if (currentFaculty.role === 'external') {
-            return eventProjects;
-        }
-        
-        return [];
     }, [projects, event.id, currentFaculty, teams]);
 
     const projectsByStage = useMemo(() => {
@@ -50,7 +43,8 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
             'ExternalFinal': [],
         };
         facultyProjects.forEach(p => {
-            if (stages[p.reviewStage]) {
+            // Only add to stage if reviewStage is one of the keys
+            if (p.reviewStage && stages[p.reviewStage]) {
                 stages[p.reviewStage].push(p);
             }
         });
@@ -61,6 +55,17 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
         return <ScoringForm project={selectedProject} onBack={() => setSelectedProject(null)} />;
     }
     
+    if (facultyProjects.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-16 text-center">
+                    <BarChart2 className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <p className="mt-4 text-muted-foreground">No approved projects are available for scoring in this event yet.</p>
+                </CardContent>
+            </Card>
+        )
+    }
+    
     const isExternal = currentFaculty?.role === 'external';
 
     return (
@@ -68,7 +73,7 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
             <h2 className="text-3xl font-bold mb-6 font-headline text-center">Projects for Scoring: {event.name}</h2>
             {isExternal ? (
                  <div>
-                    <h3 className="text-xl font-semibold mb-4">Final External Review</h3>
+                    <h3 className="text-xl font-semibold mb-4">Final External Review ({projectsByStage['ExternalFinal'].length})</h3>
                     <ProjectList projects={projectsByStage['ExternalFinal']} onSelectProject={setSelectedProject} />
                 </div>
             ) : (
