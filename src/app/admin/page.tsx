@@ -11,7 +11,7 @@ import { AuthMessage } from '@/components/AuthMessage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Announcements from './_components/Announcements';
 import PageIntro from '@/components/PageIntro';
-import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User, MessageSquare, Eye, EyeOff, Users, CheckCheck } from 'lucide-react';
+import { Shield, Loader, Scale, Rss, LineChart, Database, FileText, LifeBuoy, AlertTriangle, GanttChartSquare, User, MessageSquare, Eye, EyeOff, Users, CheckCheck, Info } from 'lucide-react';
 import DataManagement from './_components/DataManagement';
 import HackathonManagement from '@/app/judge/_components/HackathonManagement';
 import AnalyticsDashboard from './_components/AnalyticsDashboard';
@@ -60,6 +60,7 @@ export default function AdminPortal() {
 
 
     const portalUser = currentAdmin ? 'Admin' : currentFaculty ? 'Faculty' : null;
+    const isExternal = currentFaculty?.role === 'external';
 
     const handleAdminLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -169,6 +170,17 @@ export default function AdminPortal() {
             </div>
         );
     }
+    
+    let defaultTab = "approvals";
+    if (isExternal) {
+        defaultTab = "approvals";
+    } else if (currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') {
+        defaultTab = 'my-teams';
+    } else if (!currentAdmin) {
+        defaultTab = 'approvals';
+    } else {
+        defaultTab = 'events';
+    }
 
     return (
         <div className="container max-w-7xl mx-auto py-12 animate-slide-in-up">
@@ -201,65 +213,93 @@ export default function AdminPortal() {
             </div>
             <AuthMessage />
 
-             <Tabs defaultValue={currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor' ? 'my-teams' : (currentFaculty ? "approvals" : "events")} className="w-full" onValueChange={handleTabChange}>
+             <Tabs defaultValue={defaultTab} className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="grid w-full h-auto grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap justify-start">
-                    {(currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') && <TabsTrigger value="my-teams"><MessageSquare className="mr-2 h-4 w-4" /> My Teams</TabsTrigger>}
-                    <TabsTrigger value="events">Events</TabsTrigger>
-                     <TabsTrigger value="urgent-approvals" className="relative">
-                        <AlertTriangle className="mr-2 h-4 w-4" /> Urgent Approvals
-                        {urgentApprovalsCount > 0 && (
-                            <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{urgentApprovalsCount}</Badge>
-                        )}
-                    </TabsTrigger>
+                    
+                    {!isExternal && (currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') && <TabsTrigger value="my-teams"><MessageSquare className="mr-2 h-4 w-4" /> My Teams</TabsTrigger>}
+                    
                     <TabsTrigger value="approvals"><CheckCheck className="mr-2 h-4 w-4" /> Approvals & Scoring</TabsTrigger>
-                    {currentFaculty?.role === 'hod' && <TabsTrigger value="assign-guides"><User className="mr-2 h-4 w-4" /> Assign Guides</TabsTrigger>}
-                    <TabsTrigger value="management"><Users className="mr-2 h-4 w-4" />User Management</TabsTrigger>
-                    <TabsTrigger value="announcements"><Rss className="mr-2 h-4 w-4" /> Announcements</TabsTrigger>
-                    <TabsTrigger value="analytics"><LineChart className="mr-2 h-4 w-4" /> Analytics</TabsTrigger>
-                    <TabsTrigger value="data"><Database className="mr-2 h-4 w-4" /> Data & Export</TabsTrigger>
-                    <TabsTrigger value="reports"><FileText className="mr-2 h-4 w-4" /> Reports</TabsTrigger>
-                    <TabsTrigger value="support"><LifeBuoy className="mr-2 h-4 w-4" /> Support</TabsTrigger>
+
+                    {isExternal && <TabsTrigger value="information"><Info className="mr-2 h-4 w-4" /> Information</TabsTrigger>}
+
+                    {!isExternal && (
+                        <>
+                            <TabsTrigger value="events">Events</TabsTrigger>
+                            <TabsTrigger value="urgent-approvals" className="relative">
+                                <AlertTriangle className="mr-2 h-4 w-4" /> Urgent Approvals
+                                {urgentApprovalsCount > 0 && (
+                                    <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{urgentApprovalsCount}</Badge>
+                                )}
+                            </TabsTrigger>
+                            {currentFaculty?.role === 'hod' && <TabsTrigger value="assign-guides"><User className="mr-2 h-4 w-4" /> Assign Guides</TabsTrigger>}
+                            <TabsTrigger value="management"><Users className="mr-2 h-4 w-4" />User Management</TabsTrigger>
+                            <TabsTrigger value="announcements"><Rss className="mr-2 h-4 w-4" /> Announcements</TabsTrigger>
+                            <TabsTrigger value="analytics"><LineChart className="mr-2 h-4 w-4" /> Analytics</TabsTrigger>
+                            <TabsTrigger value="data"><Database className="mr-2 h-4 w-4" /> Data & Export</TabsTrigger>
+                            <TabsTrigger value="reports"><FileText className="mr-2 h-4 w-4" /> Reports</TabsTrigger>
+                            <TabsTrigger value="support"><LifeBuoy className="mr-2 h-4 w-4" /> Support</TabsTrigger>
+                        </>
+                    )}
                 </TabsList>
-                {(currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') && (
+
+                {!isExternal && (currentFaculty?.role === 'guide' || currentFaculty?.role === 'class-mentor') && (
                     <TabsContent value="my-teams" className="mt-6">
                         <GuideTeamsDashboard />
                     </TabsContent>
                 )}
-                 <TabsContent value="events" className="mt-6">
-                    <HackathonManagement />
-                </TabsContent>
-                 <TabsContent value="urgent-approvals" className="mt-6">
-                    <UrgentApprovalsDashboard />
-                </TabsContent>
+                 
                 <TabsContent value="approvals" className="mt-6">
                     <ProjectApprovalDashboard />
                 </TabsContent>
-                 {currentFaculty?.role === 'hod' && (
-                    <TabsContent value="assign-guides" className="mt-6">
-                        <GuideAssignmentDashboard />
+
+                {isExternal && (
+                    <TabsContent value="information" className="mt-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Information</CardTitle>
+                                <CardDescription>Important information for external reviewers.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p>This section will contain details and guidelines for the evaluation process.</p>
+                            </CardContent>
+                        </Card>
                     </TabsContent>
                 )}
-                <TabsContent value="management" className="mt-6">
-                    <AdminDashboard />
-                </TabsContent>
-                <TabsContent value="announcements" className="mt-6">
-                    <Announcements />
-                </TabsContent>
-                 <TabsContent value="analytics" className="mt-6">
-                    {currentEvent ? <AnalyticsDashboard event={currentEvent} /> : <p className="text-center text-muted-foreground">Please select an event to view analytics.</p>}
-                </TabsContent>
-                <TabsContent value="data" className="mt-6">
-                    <DataManagement />
-                </TabsContent>
-                <TabsContent value="reports" className="mt-6">
-                    {currentEvent ? <ReportingDashboard /> : <p className="text-center text-muted-foreground">Please select an event to generate a report.</p>}
-                </TabsContent>
-                <TabsContent value="support" className="mt-6">
-                    <SupportDashboard />
-                </TabsContent>
+
+                {!isExternal && (
+                    <>
+                        <TabsContent value="events" className="mt-6">
+                           <HackathonManagement />
+                       </TabsContent>
+                        <TabsContent value="urgent-approvals" className="mt-6">
+                           <UrgentApprovalsDashboard />
+                       </TabsContent>
+                        {currentFaculty?.role === 'hod' && (
+                           <TabsContent value="assign-guides" className="mt-6">
+                               <GuideAssignmentDashboard />
+                           </TabsContent>
+                       )}
+                       <TabsContent value="management" className="mt-6">
+                           <AdminDashboard />
+                       </TabsContent>
+                       <TabsContent value="announcements" className="mt-6">
+                           <Announcements />
+                       </TabsContent>
+                        <TabsContent value="analytics" className="mt-6">
+                           {currentEvent ? <AnalyticsDashboard event={currentEvent} /> : <p className="text-center text-muted-foreground">Please select an event to view analytics.</p>}
+                       </TabsContent>
+                       <TabsContent value="data" className="mt-6">
+                           <DataManagement />
+                       </TabsContent>
+                       <TabsContent value="reports" className="mt-6">
+                           {currentEvent ? <ReportingDashboard /> : <p className="text-center text-muted-foreground">Please select an event to generate a report.</p>}
+                       </TabsContent>
+                       <TabsContent value="support" className="mt-6">
+                           <SupportDashboard />
+                       </TabsContent>
+                   </>
+                )}
             </Tabs>
         </div>
     );
 }
-
-    
