@@ -15,12 +15,29 @@ interface ScoringDashboardProps {
 
 export default function ScoringDashboard({ event }: ScoringDashboardProps) {
     const { state } = useHackathon();
-    const { projects, currentFaculty } = state;
+    const { projects, currentFaculty, teams } = state;
     const [selectedProject, setSelectedProject] = useState<ProjectSubmission | null>(null);
 
-    const eventProjects = useMemo(() => {
-        return projects.filter(p => p.hackathonId === event.id && p.status === 'Approved');
-    }, [projects, event.id]);
+    const facultyProjects = useMemo(() => {
+        if (!currentFaculty) return [];
+        
+        const eventProjects = projects.filter(p => p.hackathonId === event.id && p.status === 'Approved');
+
+        if (currentFaculty.role === 'guide') {
+            const myTeamIds = new Set(teams.filter(t => t.guide?.id === currentFaculty.id).map(t => t.id));
+            return eventProjects.filter(p => myTeamIds.has(p.teamId));
+        }
+        
+        if (currentFaculty.role === 'class-mentor' || currentFaculty.role === 'admin' || currentFaculty.role === 'hod' || currentFaculty.role === 'rnd') {
+            return eventProjects;
+        }
+
+        if (currentFaculty.role === 'external') {
+            return eventProjects;
+        }
+        
+        return [];
+    }, [projects, event.id, currentFaculty, teams]);
 
     const projectsByStage = useMemo(() => {
         const stages: { [key: string]: ProjectSubmission[] } = {
@@ -29,13 +46,13 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
             'InternalFinal': [],
             'ExternalFinal': [],
         };
-        eventProjects.forEach(p => {
+        facultyProjects.forEach(p => {
             if (stages[p.reviewStage]) {
                 stages[p.reviewStage].push(p);
             }
         });
         return stages;
-    }, [eventProjects]);
+    }, [facultyProjects]);
 
     if (selectedProject) {
         return <ScoringForm project={selectedProject} onBack={() => setSelectedProject(null)} />;
@@ -72,3 +89,4 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
         </div>
     );
 }
+
