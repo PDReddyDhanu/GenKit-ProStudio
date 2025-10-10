@@ -896,6 +896,12 @@ export async function updateProjectStatus(collegeId: string, projectId: string, 
     if (!projectDoc.exists()) throw new Error("Project not found.");
 
     const project = projectDoc.data() as ProjectSubmission;
+    
+    let reviewStageUpdate: Partial<ProjectSubmission> = {};
+    if (newStatus === 'Approved') {
+        reviewStageUpdate.reviewStage = 'Stage1';
+    }
+
 
     const statusUpdate: ProjectStatusUpdate = {
         timestamp: Date.now(),
@@ -907,7 +913,8 @@ export async function updateProjectStatus(collegeId: string, projectId: string, 
 
     await updateDoc(projectRef, {
         status: newStatus,
-        statusHistory: arrayUnion(statusUpdate)
+        statusHistory: arrayUnion(statusUpdate),
+        ...reviewStageUpdate
     });
 
     // Notify team members

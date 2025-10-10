@@ -19,7 +19,7 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
     const [selectedProject, setSelectedProject] = useState<ProjectSubmission | null>(null);
 
     const eventProjects = useMemo(() => {
-        return projects.filter(p => p.hackathonId === event.id);
+        return projects.filter(p => p.hackathonId === event.id && p.status === 'Approved');
     }, [projects, event.id]);
 
     const projectsByStage = useMemo(() => {
