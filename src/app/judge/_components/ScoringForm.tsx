@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
@@ -20,7 +21,7 @@ import {
     INDIVIDUAL_EXTERNAL_FINAL_RUBRIC
 } from '@/lib/constants';
 import Link from 'next/link';
-import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare, Presentation } from 'lucide-react';
+import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare, Presentation, Download } from 'lucide-react';
 import { getAiProjectSummary, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
 import BackButton from '@/components/layout/BackButton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -30,6 +31,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
 import { marked } from 'marked';
+import { generateScoresCsv, downloadCsv } from '@/lib/csv';
 
 
 interface ScoringFormProps {
@@ -223,6 +225,13 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
             setIsSubmitting(false);
         }
     };
+
+    const handleDownloadScores = () => {
+        if (!team) return;
+        const internalOnly = !isExternal;
+        const csv = generateScoresCsv([submission], [team], internalOnly);
+        downloadCsv(csv, `${submission.projectIdeas[0].title}_Scores.csv`);
+    }
     
     const renderScoringBlock = (rubric: RubricItem[], targetId: string) => (
         <div className="space-y-6">
@@ -282,8 +291,16 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
             <BackButton />
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-3xl font-headline">Reviewing: {submission.projectIdeas[0]?.title || "Untitled Project"}</CardTitle>
-                    <CardDescription className="text-lg text-primary">Team: {team?.name || 'Unknown Team'}</CardDescription>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle className="text-3xl font-headline">Reviewing: {submission.projectIdeas[0]?.title || "Untitled Project"}</CardTitle>
+                            <CardDescription className="text-lg text-primary">Team: {team?.name || 'Unknown Team'}</CardDescription>
+                        </div>
+                         <Button variant="outline" onClick={handleDownloadScores}>
+                            <Download className="mr-2 h-4 w-4" />
+                            {isExternal ? "Download All Scores" : "Download Internal Scores"}
+                        </Button>
+                    </div>
                 </CardHeader>
                 
                 <CardContent>

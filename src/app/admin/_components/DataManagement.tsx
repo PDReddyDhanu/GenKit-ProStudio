@@ -21,7 +21,8 @@ import {
 import { AlertTriangle, Trash2, Loader, Download } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DEPARTMENTS_DATA } from '@/lib/constants';
+import { DEPARTMENTS_DATA, ALL_EVALUATION_RUBRICS } from '@/lib/constants';
+import { generateScoresCsv } from '@/lib/csv';
 
 export default function DataManagement() {
     const { state, api } = useHackathon();
@@ -68,11 +69,6 @@ export default function DataManagement() {
     }, [users, teams, projects, selectedHackathonId, selectedBatch, selectedDepartment, selectedBranch]);
 
 
-    const createCsv = (headers: string[], data: string[][]) => {
-        const csvRows = [headers.join(','), ...data.map(row => row.join(','))];
-        return csvRows.join('\n');
-    }
-
     const downloadCsv = (csvString: string, filename: string) => {
         const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -98,12 +94,20 @@ export default function DataManagement() {
             u.passoutYear || 'N/A'
         ].map(item => `"${item.replace(/"/g, '""')}"`));
 
-        const csvString = createCsv(headers, data);
+        const csvString = [headers.join(','), ...data.map(row => row.join(','))].join('\n');
         const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
         const batchName = selectedBatch || 'AllBatches';
         const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment.replace(/\s/g, '_');
         downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_Students.csv`);
     };
+
+    const handleExportScores = () => {
+        const csvString = generateScoresCsv(eventProjects, eventTeams);
+        const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
+        const batchName = selectedBatch || 'AllBatches';
+        const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment.replace(/\s/g, '_');
+        downloadCsv(csvString, `${eventName}_${batchName}_${deptName}_All_Scores.csv`);
+    }
 
     const handleExportProjects = () => {
         const headers = ["Project Title", "Project Description", "GitHub URL", "Team Name", "Team Members", "Project Status", "Average Score"];
@@ -121,7 +125,7 @@ export default function DataManagement() {
             ]));
         });
 
-        const csvString = createCsv(headers, data);
+        const csvString = [headers.join(','), ...data.map(row => row.join(','))].join('\n');
         const eventName = currentEvent?.name.replace(/\s/g, '_') || 'Event';
         const batchName = selectedBatch || 'AllBatches';
         const deptName = selectedDepartment === 'all' ? 'AllDepts' : selectedDepartment.replace(/\s/g, '_');
@@ -175,7 +179,7 @@ export default function DataManagement() {
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <Card className="bg-muted/50">
                             <CardHeader>
                                 <CardTitle className="text-lg font-semibold">Student Data</CardTitle>
@@ -183,18 +187,29 @@ export default function DataManagement() {
                             <CardContent>
                                 <p className="text-sm text-muted-foreground mb-4">Export a CSV of all registered students for the selected filters.</p>
                                 <Button variant="outline" size="sm" onClick={handleExportStudents} disabled={eventParticipants.length === 0}>
-                                    <Download className="mr-2 h-4 w-4"/> Export Registered Students ({eventParticipants.length})
+                                    <Download className="mr-2 h-4 w-4"/> Export Students ({eventParticipants.length})
                                 </Button>
                             </CardContent>
                         </Card>
                         <Card className="bg-muted/50">
                             <CardHeader>
-                                <CardTitle className="text-lg font-semibold">Project Data</CardTitle>
+                                <CardTitle className="text-lg font-semibold">Project Details</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-muted-foreground mb-4">Export a detailed CSV of all teams, projects, status, and scores for the selected filters.</p>
+                                <p className="text-sm text-muted-foreground mb-4">Export a detailed CSV of all projects, teams, and statuses for the selected filters.</p>
                                 <Button variant="outline" size="sm" onClick={handleExportProjects} disabled={eventProjects.length === 0 || !currentEvent}>
-                                    <Download className="mr-2 h-4 w-4"/> Export Teams & Projects ({eventProjects.length})
+                                    <Download className="mr-2 h-4 w-4"/> Export Projects ({eventProjects.length})
+                                </Button>
+                            </CardContent>
+                        </Card>
+                         <Card className="bg-muted/50">
+                            <CardHeader>
+                                <CardTitle className="text-lg font-semibold">Project Scores</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground mb-4">Export a master CSV of all scores for all projects in the selected filters.</p>
+                                <Button variant="outline" size="sm" onClick={handleExportScores} disabled={eventProjects.length === 0 || !currentEvent}>
+                                    <Download className="mr-2 h-4 w-4"/> Export All Scores ({eventProjects.length})
                                 </Button>
                             </CardContent>
                         </Card>
