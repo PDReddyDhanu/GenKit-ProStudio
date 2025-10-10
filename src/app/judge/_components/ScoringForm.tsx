@@ -8,13 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
-import { ProjectSubmission, ProjectIdea, Score, TeamMember, ReviewType, ReviewStage, ChatMessage } from '@/lib/types';
+import { ProjectSubmission, ProjectIdea, Score, TeamMember, ReviewType, ChatMessage } from '@/lib/types';
 import { 
-    INDIVIDUAL_EVALUATION_RUBRIC, 
     INTERNAL_STAGE_1_RUBRIC, 
-    INTERNAL_STAGE_2_RUBRIC, 
-    INTERNAL_FINAL_RUBRIC, 
-    EXTERNAL_FINAL_RUBRIC 
+    INDIVIDUAL_STAGE_1_RUBRIC,
+    INTERNAL_STAGE_2_RUBRIC,
+    INDIVIDUAL_STAGE_2_RUBRIC,
+    INTERNAL_FINAL_RUBRIC,
+    INDIVIDUAL_INTERNAL_FINAL_RUBRIC,
+    EXTERNAL_FINAL_RUBRIC,
+    INDIVIDUAL_EXTERNAL_FINAL_RUBRIC
 } from '@/lib/constants';
 import Link from 'next/link';
 import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare, Presentation } from 'lucide-react';
@@ -34,7 +37,7 @@ interface ScoringFormProps {
     onBack: () => void;
 }
 
-type RubricItem = { id: string; name: string; max: number };
+type RubricItem = { id: string; name: string; max: number; description: string };
 
 export default function ScoringForm({ project: submission, onBack }: ScoringFormProps) {
     const { state, api } = useHackathon();
@@ -55,16 +58,35 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
     
     const team = teams.find(t => t.id === submission.teamId);
 
-    const { currentReviewType, currentTeamRubric } = useMemo((): { currentReviewType: ReviewType | null, currentTeamRubric: RubricItem[] } => {
-        if (isExternal) {
-            return { currentReviewType: 'ExternalFinal', currentTeamRubric: EXTERNAL_FINAL_RUBRIC };
+    const { currentReviewType, currentTeamRubric, currentIndividualRubric } = useMemo(() => {
+        let reviewType: ReviewType | null = null;
+        let teamRubric: RubricItem[] = [];
+        let individualRubric: RubricItem[] = [];
+
+        if (isExternal && submission.reviewStage === 'ExternalFinal') {
+            reviewType = 'ExternalFinal';
+            teamRubric = EXTERNAL_FINAL_RUBRIC;
+            individualRubric = INDIVIDUAL_EXTERNAL_FINAL_RUBRIC;
+        } else {
+            switch (submission.reviewStage) {
+                case 'Stage1':
+                    reviewType = 'InternalStage1';
+                    teamRubric = INTERNAL_STAGE_1_RUBRIC;
+                    individualRubric = INDIVIDUAL_STAGE_1_RUBRIC;
+                    break;
+                case 'Stage2':
+                    reviewType = 'InternalStage2';
+                    teamRubric = INTERNAL_STAGE_2_RUBRIC;
+                    individualRubric = INDIVIDUAL_STAGE_2_RUBRIC;
+                    break;
+                case 'InternalFinal':
+                    reviewType = 'InternalFinal';
+                    teamRubric = INTERNAL_FINAL_RUBRIC;
+                    individualRubric = INDIVIDUAL_INTERNAL_FINAL_RUBRIC;
+                    break;
+            }
         }
-        switch (submission.reviewStage) {
-            case 'Stage1': return { currentReviewType: 'InternalStage1', currentTeamRubric: INTERNAL_STAGE_1_RUBRIC };
-            case 'Stage2': return { currentReviewType: 'InternalStage2', currentTeamRubric: INTERNAL_STAGE_2_RUBRIC };
-            case 'InternalFinal': return { currentReviewType: 'InternalFinal', currentTeamRubric: INTERNAL_FINAL_RUBRIC };
-            default: return { currentReviewType: null, currentTeamRubric: [] };
-        }
+        return { currentReviewType: reviewType, currentTeamRubric: teamRubric, currentIndividualRubric: individualRubric };
     }, [submission.reviewStage, isExternal]);
 
     useEffect(() => {
@@ -180,21 +202,19 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
             });
         });
 
-        // Individual scores (only for final reviews)
-        if (currentReviewType === 'InternalFinal' || currentReviewType === 'ExternalFinal') {
-            team?.members.forEach(member => {
-                INDIVIDUAL_EVALUATION_RUBRIC.forEach(criteria => {
-                    newScores.push({
-                        evaluatorId: currentFaculty.id,
-                        memberId: member.id,
-                        criteria: criteria.id,
-                        value: scores[member.id]?.[criteria.id] || 0,
-                        comment: comments[member.id]?.[criteria.id] || '',
-                        reviewType: currentReviewType,
-                    });
+        // Individual scores
+        team?.members.forEach(member => {
+            currentIndividualRubric.forEach(criteria => {
+                newScores.push({
+                    evaluatorId: currentFaculty.id,
+                    memberId: member.id,
+                    criteria: criteria.id,
+                    value: scores[member.id]?.[criteria.id] || 0,
+                    comment: comments[member.id]?.[criteria.id] || '',
+                    reviewType: currentReviewType,
                 });
             });
-        }
+        });
         
         try {
             await api.evaluateProject(submission.id, currentFaculty.id, newScores);
@@ -209,6 +229,7 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
             {rubric.map(criteria => (
                 <div key={`${targetId}-${criteria.id}`}>
                     <Label htmlFor={`score-${targetId}-${criteria.id}`} className="text-foreground text-base">{criteria.name} (0-{criteria.max})</Label>
+                    <p className="text-xs text-muted-foreground mb-2">{criteria.description}</p>
                     <div className="flex items-center gap-4 mt-2">
                         <Slider
                             id={`score-${targetId}-${criteria.id}`}
@@ -249,6 +270,13 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
         )
     }
 
+    const stageTitles: Record<ReviewType, string> = {
+        InternalStage1: 'Project Stage 1 Review',
+        InternalStage2: 'Project Stage 2 Review',
+        InternalFinal: 'Final Internal Review',
+        ExternalFinal: 'Final External Review',
+    }
+
     return (
         <div className="container max-w-3xl mx-auto py-12 animate-slide-in-up">
             <BackButton />
@@ -266,9 +294,9 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                         </TabsList>
                         <TabsContent value="details" className="mt-4">
                              <Tabs defaultValue="idea-1" className="w-full">
-                                <TabsList className="grid w-full grid-cols-3">
+                                <TabsList className="grid w-full grid-cols-1">
                                     {submission.projectIdeas.map((idea, index) => (
-                                        <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>Idea {index + 1}</TabsTrigger>
+                                        <TabsTrigger key={idea.id} value={`idea-${index + 1}`}>{idea.title}</TabsTrigger>
                                     ))}
                                 </TabsList>
                                 {submission.projectIdeas.map((idea, index) => (
@@ -358,36 +386,26 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                         </TabsContent>
                          <TabsContent value="scoring" className="mt-4">
                              <form onSubmit={handleSubmitScores}>
-                                {isExternal ? (
-                                    <div className="p-4 rounded-md border bg-card">
-                                        <h3 className="text-xl font-bold font-headline mb-4">Final External Evaluation (50 Marks)</h3>
-                                        {renderScoringBlock(EXTERNAL_FINAL_RUBRIC, 'team')}
-                                    </div>
-                                ) : (
-                                    <>
-                                    {submission.reviewStage === 'Stage1' && <div className="p-4 rounded-md border bg-card"><h3 className="text-xl font-bold font-headline mb-4">Project Stage 1 Review</h3>{renderScoringBlock(INTERNAL_STAGE_1_RUBRIC, 'team')}</div>}
-                                    {submission.reviewStage === 'Stage2' && <div className="p-4 rounded-md border bg-card"><h3 className="text-xl font-bold font-headline mb-4">Project Stage 2 Review</h3>{renderScoringBlock(INTERNAL_STAGE_2_RUBRIC, 'team')}</div>}
-                                    {submission.reviewStage === 'InternalFinal' && <div className="p-4 rounded-md border bg-card"><h3 className="text-xl font-bold font-headline mb-4">Final Internal Review (50 Marks)</h3>{renderScoringBlock(INTERNAL_FINAL_RUBRIC, 'team')}</div>}
-                                    </>
-                                )}
-
-                                {(currentReviewType === 'InternalFinal' || currentReviewType === 'ExternalFinal') && (
-                                    <div className="mt-6 p-4 rounded-md border bg-card">
-                                        <h3 className="text-xl font-bold font-headline mb-4">Individual Scoring</h3>
-                                        <Accordion type="single" collapsible className="w-full">
-                                            {team?.members.map(member => (
-                                                <AccordionItem value={member.id} key={member.id}>
-                                                    <AccordionTrigger>
-                                                        <span className="flex items-center gap-2"><User className="h-4 w-4"/>{member.name}</span>
-                                                    </AccordionTrigger>
-                                                    <AccordionContent>
-                                                        {renderScoringBlock(INDIVIDUAL_EVALUATION_RUBRIC, member.id)}
-                                                    </AccordionContent>
-                                                </AccordionItem>
-                                            ))}
-                                        </Accordion>
-                                    </div>
-                                )}
+                                <div className="p-4 rounded-md border bg-card">
+                                    <h3 className="text-xl font-bold font-headline mb-4">{stageTitles[currentReviewType]}</h3>
+                                    {renderScoringBlock(currentTeamRubric, 'team')}
+                                </div>
+                                
+                                <div className="mt-6 p-4 rounded-md border bg-card">
+                                    <h3 className="text-xl font-bold font-headline mb-4">Individual Scoring</h3>
+                                    <Accordion type="single" collapsible className="w-full">
+                                        {team?.members.map(member => (
+                                            <AccordionItem value={member.id} key={member.id}>
+                                                <AccordionTrigger>
+                                                    <span className="flex items-center gap-2"><User className="h-4 w-4"/>{member.name}</span>
+                                                </AccordionTrigger>
+                                                <AccordionContent>
+                                                    {renderScoringBlock(currentIndividualRubric, member.id)}
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        ))}
+                                    </Accordion>
+                                </div>
                                 <CardFooter className="pt-6 px-0">
                                     <Button type="submit" className="w-full" disabled={isSubmitting}>
                                     {isSubmitting ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Submitting...</> : 'Submit Score'}

@@ -1,34 +1,53 @@
 
 export const INTERNAL_STAGE_1_RUBRIC = [
-    { id: 'problem_clarity', name: 'Problem Statement Clarity', max: 10 },
-    { id: 'originality', name: 'Originality of Idea', max: 10 },
-    { id: 'feasibility', name: 'Technical Feasibility', max: 5 },
+    { id: 'innovation_originality', name: 'Innovation & Originality', description: 'Uniqueness of idea and creativity in approach', max: 10 },
+    { id: 'problem_relevance', name: 'Problem Relevance & Clarity', description: 'Understanding and definition of the problem statement', max: 10 },
+    { id: 'feasibility_scope', name: 'Feasibility & Scope', description: 'Practicality and scalability of proposed solution', max: 10 },
+    { id: 'team_coordination', name: 'Team Coordination & Planning', description: 'Role division, communication, and initial planning', max: 10 },
+];
+
+export const INDIVIDUAL_STAGE_1_RUBRIC = [
+    { id: 'idea_contribution', name: 'Idea Contribution', description: 'Quality of individual’s inputs and creativity in brainstorming', max: 10 },
+    { id: 'communication_initiative', name: 'Communication & Initiative', description: 'Participation in discussion and presentation skills', max: 10 },
 ];
 
 export const INTERNAL_STAGE_2_RUBRIC = [
-    { id: 'progress', name: 'Progress & Milestone Achievement', max: 10 },
-    { id: 'technical_implementation', name: 'Technical Implementation (Initial)', max: 10 },
-    { id: 'documentation_initial', name: 'Initial Documentation', max: 5 },
+    { id: 'technical_execution', name: 'Technical Execution', description: 'Implementation quality, use of technologies, coding standards', max: 10 },
+    { id: 'functionality_stability', name: 'Functionality & Stability', description: 'Working features, debugging, and performance', max: 10 },
+    { id: 'ui_ux_design', name: 'UI/UX Design & Consistency', description: 'Design clarity, responsiveness, and usability', max: 10 },
+    { id: 'collaboration_workflow', name: 'Collaboration & Workflow', description: 'Use of version control, task management, and coordination', max: 10 },
 ];
 
-// This will be used for both Internal and External final reviews for simplicity
-export const FINAL_RUBRIC = [
-    { id: 'innovation_originality', name: 'Innovation & Originality', max: 10 },
-    { id: 'technical_complexity', name: 'Technical Complexity & Execution', max: 10 },
-    { id: 'design_presentation', name: 'UI/UX Design & Presentation', max: 10 },
-    { id: 'team_collaboration', name: 'Team Collaboration', max: 5 },
-    { id: 'problem_solving', name: 'Problem-Solving Approach', max: 5 },
+export const INDIVIDUAL_STAGE_2_RUBRIC = [
+    { id: 'technical_contribution', name: 'Technical Contribution & Impact', description: 'Individual role in coding, design, or integration', max: 10 },
+    { id: 'responsibility_problem_solving', name: 'Responsibility & Problem-Solving', description: 'Handling assigned tasks, independence, and issue resolution', max: 10 },
 ];
 
-export const INTERNAL_FINAL_RUBRIC = FINAL_RUBRIC;
-export const EXTERNAL_FINAL_RUBRIC = FINAL_RUBRIC;
-
-
-export const INDIVIDUAL_EVALUATION_RUBRIC = [
-    { id: 'technical_contribution', name: 'Technical Contribution & Impact', max: 10 },
-    { id: 'teamwork_communication', name: 'Teamwork & Communication', max: 10 },
+export const INTERNAL_FINAL_RUBRIC = [
+    { id: 'technical_depth_integration', name: 'Technical Depth & Integration', description: 'Advanced concepts, APIs, or frameworks used effectively', max: 10 },
+    { id: 'innovation_enhancement', name: 'Innovation Enhancement', description: 'Improvements made after feedback from earlier stages', max: 10 },
+    { id: 'presentation_demo_quality', name: 'Presentation & Demo Quality', description: 'Clarity in presenting the product and explaining features', max: 10 },
+    { id: 'documentation_reporting', name: 'Documentation & Reporting', description: 'Completeness and clarity of technical documentation', max: 10 },
 ];
 
+export const INDIVIDUAL_INTERNAL_FINAL_RUBRIC = [
+    { id: 'ownership_accountability', name: 'Ownership & Accountability', description: 'Taking responsibility for assigned modules', max: 10 },
+    { id: 'peer_coordination_communication', name: 'Peer Coordination & Communication', description: 'Interaction with team and support for others', max: 10 },
+];
+
+export const EXTERNAL_FINAL_RUBRIC = [
+    { id: 'innovation_real_world_impact', name: 'Innovation & Real-World Impact', description: 'Usefulness, social/industrial relevance of solution', max: 10 },
+    { id: 'technical_complexity_performance', name: 'Technical Complexity & Performance', description: 'Depth, efficiency, and completeness of final product', max: 10 },
+    { id: 'ui_ux_design_aesthetics', name: 'UI/UX Design & Aesthetics', description: 'Final design polish and user-friendliness', max: 10 },
+    { id: 'presentation_communication', name: 'Presentation & Communication', description: 'Confidence, clarity, and structure of presentation', max: 10 },
+    { id: 'overall_team_synergy', name: 'Overall Team Synergy', description: 'Coordination, time management, and group effort', max: 10 },
+];
+
+export const INDIVIDUAL_EXTERNAL_FINAL_RUBRIC = [
+    { id: 'individual_role_impact', name: 'Individual Role & Impact', description: 'Core contributions to final product', max: 10 },
+    { id: 'technical_mastery_knowledge', name: 'Technical Mastery & Knowledge', description: 'Understanding of technical stack and implementation', max: 10 },
+    { id: 'professionalism_communication', name: 'Professionalism & Communication', description: 'Behavior, clarity during Q&A, and attitude', max: 10 },
+];
 
 export const TEAM_ROLES = [
     'Leader',

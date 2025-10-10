@@ -36,7 +36,16 @@ import {
     writeBatch
 } from 'firebase/firestore';
 import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate } from './types';
-import { INDIVIDUAL_EVALUATION_RUBRIC, INTERNAL_STAGE_1_RUBRIC, INTERNAL_STAGE_2_RUBRIC, INTERNAL_FINAL_RUBRIC, EXTERNAL_FINAL_RUBRIC } from './constants';
+import { 
+    INTERNAL_STAGE_1_RUBRIC, 
+    INDIVIDUAL_STAGE_1_RUBRIC,
+    INTERNAL_STAGE_2_RUBRIC,
+    INDIVIDUAL_STAGE_2_RUBRIC,
+    INTERNAL_FINAL_RUBRIC,
+    INDIVIDUAL_INTERNAL_FINAL_RUBRIC,
+    EXTERNAL_FINAL_RUBRIC,
+    INDIVIDUAL_EXTERNAL_FINAL_RUBRIC
+} from './constants';
 import { generateProjectImage as generateProjectImageFlow } from '@/ai/flows/generate-project-image';
 import { triageSupportTicket } from '@/ai/flows/triage-support-ticket';
 
@@ -864,28 +873,8 @@ export async function evaluateProject(collegeId: string, projectId: string, eval
     const otherScores = project.scores.filter(s => s.evaluatorId !== evaluatorId);
     const allScores = [...otherScores, ...newScores];
 
-    const internalScores = allScores.filter(s => s.reviewType.startsWith('Internal'));
-    const externalScores = allScores.filter(s => s.reviewType.startsWith('External'));
-
-    // Calculate Internal Score (50% weight)
-    const internalRubrics = [...INTERNAL_STAGE_1_RUBRIC, ...INTERNAL_STAGE_2_RUBRIC, ...INTERNAL_FINAL_RUBRIC];
-    const internalMaxScore = internalRubrics.reduce((sum, c) => sum + c.max, 0);
-    const internalTotal = internalScores.reduce((sum, score) => sum + score.value, 0);
-    const finalInternalScore = (internalTotal / internalMaxScore) * 50;
-
-    // Calculate External Score (50% weight)
-    const externalRubrics = [...EXTERNAL_FINAL_RUBRIC, ...INDIVIDUAL_EVALUATION_RUBRIC];
-    const externalMaxScore = externalRubrics.reduce((sum, c) => sum + c.max, 0);
-    const externalTotal = externalScores.reduce((sum, score) => sum + score.value, 0);
-    const finalExternalScore = (externalTotal / externalMaxScore) * 50;
-
-    const totalScore = finalInternalScore + finalExternalScore;
-
     await updateDoc(projectRef, { 
-        scores: allScores, 
-        internalScore: finalInternalScore,
-        externalScore: finalExternalScore,
-        totalScore: totalScore,
+        scores: allScores,
     });
 
     return { successMessage: "Evaluation submitted successfully." };
