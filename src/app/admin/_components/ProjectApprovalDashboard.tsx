@@ -203,13 +203,20 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
     }
     
     const renderStageAdvancementButton = () => {
-        if (!['admin', 'hod', 'guide', 'class-mentor'].includes(currentFaculty?.role || '')) return null;
-
         const commonButtonProps = {
             size: "sm",
             disabled: !!isLoading,
             className: "w-full",
         } as const;
+
+        if (currentFaculty?.role === 'external') {
+            if (project.reviewStage === 'ExternalFinal') {
+                 return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('Completed')}>Mark as Completed <Check className="h-4 w-4 ml-2"/></Button>;
+            }
+            return null;
+        }
+
+        if (!['admin', 'hod', 'guide', 'class-mentor'].includes(currentFaculty?.role || '')) return null;
 
         switch (project.reviewStage) {
             case 'Stage1':
@@ -218,8 +225,6 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
                 return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('InternalFinal')}>Complete Stage 2 & Move to Final Internal Review <ChevronRight className="h-4 w-4 ml-2"/></Button>;
             case 'InternalFinal':
                  return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('ExternalFinal')}>Send to External Review <ChevronRight className="h-4 w-4 ml-2"/></Button>;
-            case 'ExternalFinal':
-                 return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('Completed')}>Mark as Completed <Check className="h-4 w-4 ml-2"/></Button>;
             default:
                 return null;
         }
@@ -419,5 +424,3 @@ export default function ProjectApprovalDashboard() {
         </div>
     );
 }
-
-    
