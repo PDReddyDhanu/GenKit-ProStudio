@@ -9,6 +9,7 @@ import { User, Users, Wand2, Loader, Library } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import type { Team, Faculty } from '@/lib/types';
+import { DEPARTMENTS_DATA } from '@/lib/constants';
 
 const projectEvents = [
     { id: 'real-time-project', name: 'Real-Time Project' },
@@ -17,19 +18,10 @@ const projectEvents = [
     { id: 'other-project', name: 'Other Project' }
 ];
 
-const TeamGuideCard = ({ team }: { team: Team }) => {
-    const { state, api } = useHackathon();
-    const { currentFaculty, faculty } = state;
+const TeamGuideCard = ({ team, availableGuides }: { team: Team, availableGuides: Faculty[] }) => {
+    const { api } = useHackathon();
     const [selectedGuideId, setSelectedGuideId] = useState(team.guide?.id || '');
     const [isAssigning, setIsAssigning] = useState(false);
-
-    const availableGuides = useMemo(() => {
-        return faculty.filter(f => 
-            f.role === 'guide' && 
-            f.department === currentFaculty?.department && 
-            f.status === 'approved'
-        );
-    }, [faculty, currentFaculty]);
 
     const handleAssignGuide = async () => {
         const selectedGuide = availableGuides.find(g => g.id === selectedGuideId);
@@ -114,18 +106,22 @@ export default function GuideAssignmentDashboard() {
     const { departmentTeams, departmentGuides } = useMemo(() => {
         if (!currentFaculty?.department) return { departmentTeams: [], departmentGuides: [] };
 
-        const guides = faculty.filter(f => f.role === 'guide' && f.department === currentFaculty.department && f.status === 'approved');
+        const departmentBranches = DEPARTMENTS_DATA[currentFaculty.department as keyof typeof DEPARTMENTS_DATA]?.map(b => b.id) || [];
+        
+        const guides = faculty.filter(f => 
+            f.role === 'guide' &&
+            f.status === 'approved' &&
+            departmentBranches.includes(f.branch)
+        );
         
         const allTeamsInEvent = teams.filter(t => {
             return selectedProjectType === 'all' || t.hackathonId === selectedProjectType;
         });
 
         const teamsInDepartment = allTeamsInEvent.filter(team => {
-            // A team is in the department if at least one of its members is in that department's branch
             return team.members.some(member => {
                 const user = users.find(u => u.id === member.id);
-                // Simple check if user's department matches HOD's department
-                return user?.department === currentFaculty.department;
+                return user && departmentBranches.includes(user.branch);
             });
         });
         
@@ -197,7 +193,7 @@ export default function GuideAssignmentDashboard() {
             <ScrollArea className="h-[calc(100vh-25rem)] pr-4">
                 {departmentTeams.length > 0 ? (
                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {departmentTeams.map(team => <TeamGuideCard key={team.id} team={team} />)}
+                        {departmentTeams.map(team => <TeamGuideCard key={team.id} team={team} availableGuides={departmentGuides} />)}
                     </div>
                 ) : (
                     <Card>
