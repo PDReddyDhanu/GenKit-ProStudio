@@ -184,6 +184,8 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
     }, [projects, initialSubmission.id]);
 
     const team = teams.find(t => t.id === submission.teamId);
+    
+    const canDownloadCertificate = submission.reviewStage === 'Completed';
 
     const handleGetReview = async (githubUrl: string) => {
         setIsReviewing(true);
@@ -379,11 +381,13 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                         </div>
                     )}
                     
-                    <div className="mt-6 border-t pt-4 space-y-4">
-                        <Button onClick={handleDownloadCertificate} disabled={isGeneratingCert}>
-                            {isGeneratingCert ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : <><Download className="mr-2 h-4 w-4"/>Download Participation Certificate</>}
-                        </Button>
-                    </div>
+                    {canDownloadCertificate && (
+                        <div className="mt-6 border-t pt-4 space-y-4">
+                            <Button onClick={handleDownloadCertificate} disabled={isGeneratingCert}>
+                                {isGeneratingCert ? <><Loader className="mr-2 h-4 w-4 animate-spin"/> Generating...</> : <><Download className="mr-2 h-4 w-4"/>Download Participation Certificate</>}
+                            </Button>
+                        </div>
+                    )}
 
                 </CardContent>
             </Card>

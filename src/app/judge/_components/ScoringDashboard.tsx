@@ -19,7 +19,6 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
     const { projects, currentFaculty, teams } = state;
     const [selectedProject, setSelectedProject] = useState<ProjectSubmission | null>(null);
 
-    // This logic is now greatly simplified and corrected.
     const facultyProjects = useMemo(() => {
         if (!currentFaculty || !event?.id) return [];
 
@@ -28,11 +27,22 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
             p.hackathonId === event.id && p.status === 'Approved'
         );
 
-        // 2. Return all projects. The ProjectList component will handle display logic.
-        // This ensures that all relevant faculty (Guides, Mentors, Admins) see the list of projects to be scored.
-        // Specific scoring permissions are handled within the ScoringForm.
-        return eventProjects;
+        // 2. Filter projects based on faculty role.
+        if (currentFaculty.role === 'guide') {
+            const myTeamIds = new Set(teams.filter(t => t.guide?.id === currentFaculty.id).map(t => t.id));
+            return eventProjects.filter(p => myTeamIds.has(p.teamId));
+        }
 
+        if (currentFaculty.role === 'external') {
+            return eventProjects.filter(p => p.reviewStage === 'ExternalFinal');
+        }
+
+        // For Admin, HOD, R&D, Class Mentor - show all approved projects for the event.
+        if (['admin', 'hod', 'rnd', 'class-mentor'].includes(currentFaculty.role)) {
+            return eventProjects;
+        }
+
+        return [];
     }, [projects, event.id, currentFaculty, teams]);
 
     const projectsByStage = useMemo(() => {
@@ -43,7 +53,6 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
             'ExternalFinal': [],
         };
         facultyProjects.forEach(p => {
-            // Only add to stage if reviewStage is one of the keys
             if (p.reviewStage && stages[p.reviewStage]) {
                 stages[p.reviewStage].push(p);
             }
@@ -60,7 +69,7 @@ export default function ScoringDashboard({ event }: ScoringDashboardProps) {
             <Card>
                 <CardContent className="py-16 text-center">
                     <BarChart2 className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <p className="mt-4 text-muted-foreground">No approved projects are available for scoring in this event yet.</p>
+                    <p className="mt-4 text-muted-foreground">No approved projects are available for you to score in this event yet.</p>
                 </CardContent>
             </Card>
         )

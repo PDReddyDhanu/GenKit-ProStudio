@@ -34,18 +34,9 @@ export default function ProjectList({ projects, onSelectProject }: ProjectListPr
         <div className="space-y-4">
             {projects.map(p => {
                 const team = teams.find(t => t.id === p.teamId);
-                // A faculty member has scored this project if there's any score entry from them for this specific project.
                 const hasScored = p.scores.some(s => s.evaluatorId === currentFaculty.id);
                 const primaryIdea = p.projectIdeas[0];
 
-                // Logic to determine if the guide should see this project
-                const isMyAssignedProject = currentFaculty.role === 'guide' && team?.guide?.id === currentFaculty.id;
-                const canSeeAllProjects = ['class-mentor', 'admin', 'hod', 'rnd', 'external'].includes(currentFaculty.role);
-
-                if (!isMyAssignedProject && !canSeeAllProjects) {
-                    return null;
-                }
-                
                 return (
                     <Card key={p.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4">
                         <div className="flex-grow">
