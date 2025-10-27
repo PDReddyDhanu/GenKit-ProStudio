@@ -68,6 +68,10 @@ const MeetingScheduler = ({ submission, currentReviewType, faculty }: { submissi
             setIsScheduling(false);
         }
     };
+    
+    const openGoogleMeet = () => {
+        window.open('https://meet.google.com/new', '_blank');
+    }
 
     return (
         <Card className="mt-6 bg-muted/50">
@@ -78,7 +82,11 @@ const MeetingScheduler = ({ submission, currentReviewType, faculty }: { submissi
             <CardContent className="space-y-4">
                  <div className="space-y-2">
                     <Label htmlFor="meet-link">Google Meet Link</Label>
-                    <Input id="meet-link" value={meetLink} onChange={e => setMeetLink(e.target.value)} placeholder="https://meet.google.com/..." disabled={isScheduling} />
+                    <div className="flex gap-2">
+                        <Input id="meet-link" value={meetLink} onChange={e => setMeetLink(e.target.value)} placeholder="Paste generated Google Meet link here..." disabled={isScheduling} />
+                        <Button type="button" variant="outline" onClick={openGoogleMeet}>Generate</Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Click "Generate" to open a new Google Meet, then copy its URL and paste it above.</p>
                 </div>
                  <div className="space-y-2">
                     <Label>Meeting Time</Label>
