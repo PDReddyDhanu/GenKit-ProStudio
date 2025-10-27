@@ -6,6 +6,6 @@ if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
 }
 
 export const ai = genkit({
-  plugins: [googleAI({apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY})],
+  plugins: [googleAI({apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyCcP5noL7nuA3nnOmpKLnMIsChQjGMkO1I"})],
   model: 'googleai/gemini-2.0-flash',
 });

@@ -1,7 +1,7 @@
 {
   "build": {
     "env": {
-      "NEXT_PUBLIC_GEMINI_API_KEY": "AIzaSyDYM5tUNyJgck1UZlhhXQt0YIhEAXLoAwI"
+      "NEXT_PUBLIC_GEMINI_API_KEY": "AIzaSyCcP5noL7nuA3nnOmpKLnMIsChQjGMkO1I"
     }
   },
   "github": {
