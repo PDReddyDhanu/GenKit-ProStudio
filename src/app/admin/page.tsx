@@ -190,7 +190,7 @@ export default function AdminPortal() {
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold font-headline">{currentAdmin ? 'Admin' : currentFaculty?.role.toUpperCase()} Dashboard: <span className="text-secondary">{state.selectedCollege}</span></h1>
                  <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
-                    <Select onValueChange={handleBatchChange} value={selectedBatch || ""}>
+                    <Select onValueChange={handleBatchChange} value={selectedBatch || "all"}>
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a Batch" />
                         </SelectTrigger>
@@ -201,7 +201,7 @@ export default function AdminPortal() {
                              ))}
                         </SelectContent>
                     </Select>
-                     <Select onValueChange={handleEventChange} value={selectedHackathonId || ""}>
+                     <Select onValueChange={handleEventChange} value={selectedHackathonId || "default"}>
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select an Event" />
                         </SelectTrigger>
@@ -318,4 +318,3 @@ export default function AdminPortal() {
         </div>
     );
 }
-

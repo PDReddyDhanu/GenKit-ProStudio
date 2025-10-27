@@ -135,7 +135,7 @@ export default function PartnersPage() {
     return (
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
             <section className="text-center mb-16">
-                <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter mb-4 font-headline">
+                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-4 font-headline">
                     Our Partners
                 </h1>
                 <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground">
@@ -143,7 +143,7 @@ export default function PartnersPage() {
                 </p>
             </section>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {sortedPartners.map((partner, index) => (
                     <PartnerCard key={partner.name} partner={partner} index={index} />
                 ))}
