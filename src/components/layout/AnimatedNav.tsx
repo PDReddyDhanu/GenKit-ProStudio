@@ -37,10 +37,10 @@ export function AnimatedNav() {
             onMouseOver={() => setHoveredPath(item.path)}
             onMouseLeave={() => setHoveredPath(pathname)}
           >
-            <span className={cn("relative z-10", { "text-foreground": hoveredPath === item.path })}>{item.name}</span>
+            <span className={cn("relative z-10", { "text-primary-foreground": hoveredPath === item.path && pathname === item.path, "text-foreground": !(hoveredPath === item.path && pathname === item.path) })}>{item.name}</span>
             {item.path === hoveredPath && (
               <motion.div
-                className="absolute inset-0 rounded-full bg-background shadow-sm"
+                className="absolute inset-0 rounded-full bg-primary dark:bg-background shadow-sm"
                 layoutId="animated-nav-underline"
                 transition={{
                   type: "spring",
