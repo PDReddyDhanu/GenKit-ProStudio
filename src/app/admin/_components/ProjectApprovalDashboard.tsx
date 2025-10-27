@@ -371,45 +371,59 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
     );
 };
 
+const ProjectList = ({ projects }: { projects: ProjectSubmission[] }) => {
+    const { state } = useHackathon();
+    const { teams } = state;
+    
+    if (projects.length === 0) {
+        return <p className="text-muted-foreground text-center p-4">No projects in this stage.</p>;
+    }
+    
+    return (
+        <div className="space-y-4 p-1">
+            {projects.map(project => {
+                const team = teams.find(t => t.id === project.teamId);
+                return <ProjectCard key={project.id} project={project} team={team} />;
+            })}
+        </div>
+    )
+}
+
 export default function ProjectApprovalDashboard() {
     const { state } = useHackathon();
     const { projects, teams, currentFaculty, selectedHackathonId } = state;
 
-    const projectsByStage = useMemo(() => {
+    const { pendingProjects, approvedProjects, rejectedProjects } = useMemo(() => {
+        if (!selectedHackathonId) return { pendingProjects: [], approvedProjects: [], rejectedProjects: [] };
+
+        let eventProjects = projects.filter(p => p.hackathonId === selectedHackathonId);
+        
+        if (currentFaculty?.role === 'guide') {
+            const myTeamIds = new Set(teams.filter(t => t.guide?.id === currentFaculty.id).map(t => t.id));
+            eventProjects = eventProjects.filter(p => myTeamIds.has(p.teamId));
+        }
+
+        const pending = eventProjects.filter(p => p.status.startsWith('Pending'));
+        const approved = eventProjects.filter(p => p.status === 'Approved');
+        const rejected = eventProjects.filter(p => p.status === 'Rejected');
+        
+        return { pendingProjects: pending, approvedProjects: approved, rejectedProjects: rejected };
+
+    }, [projects, teams, currentFaculty, selectedHackathonId]);
+
+    const approvedByStage = useMemo(() => {
         const stages: Record<string, ProjectSubmission[]> = {
-            'PendingGuide': [], 'PendingR&D': [], 'PendingHoD': [],
             'Stage1': [], 'Stage2': [], 'InternalFinal': [], 'ExternalFinal': [], 'Completed': []
         };
-        
-        if (!selectedHackathonId) return stages;
-
-        projects.filter(p => p.hackathonId === selectedHackathonId).forEach(p => {
-            if (p.status !== 'Approved' && stages[p.status]) {
-                 stages[p.status].push(p);
-            } else if (p.status === 'Approved' && p.reviewStage && stages[p.reviewStage]) {
+        approvedProjects.forEach(p => {
+            if (stages[p.reviewStage]) {
                 stages[p.reviewStage].push(p);
             }
         });
         return stages;
-    }, [projects, selectedHackathonId]);
+    }, [approvedProjects]);
     
-    const STAGES_CONFIG: {key: string, title: string, roles: Faculty['role'][]}[] = [
-        { key: 'PendingGuide', title: 'Pending Guide', roles: ['guide', 'admin'] },
-        { key: 'PendingR&D', title: 'Pending R&D', roles: ['rnd', 'admin', 'hod'] },
-        { key: 'PendingHoD', title: 'Pending HOD', roles: ['hod', 'admin'] },
-        { key: 'Stage1', title: 'Stage 1 Scoring', roles: ['guide', 'class-mentor', 'admin', 'hod'] },
-        { key: 'Stage2', title: 'Stage 2 Scoring', roles: ['guide', 'class-mentor', 'admin', 'hod'] },
-        { key: 'InternalFinal', title: 'Final Internal Scoring', roles: ['guide', 'class-mentor', 'admin', 'hod'] },
-        { key: 'ExternalFinal', title: 'Final External Scoring', roles: ['external', 'admin', 'hod', 'guide'] },
-        { key: 'Completed', title: 'Completed', roles: ['guide', 'class-mentor', 'admin', 'hod', 'external', 'rnd'] },
-    ];
-    
-    const facultyStages = useMemo(() => {
-        if (!currentFaculty) return [];
-        return STAGES_CONFIG.filter(stage => stage.roles.includes(currentFaculty.role));
-    }, [currentFaculty]);
-
-    const defaultTab = facultyStages.length > 0 ? facultyStages[0].key : '';
+    const isExternalReviewer = currentFaculty?.role === 'external';
 
     if (!currentFaculty || !['guide', 'rnd', 'hod', 'admin', 'class-mentor', 'external'].includes(currentFaculty.role)) {
         return (
@@ -422,49 +436,56 @@ export default function ProjectApprovalDashboard() {
             <Card><CardContent className="py-16 text-center"><AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" /><p className="mt-4 text-muted-foreground">Please select a project type from the top to view approvals.</p></CardContent></Card>
         );
     }
+    
+    if(isExternalReviewer) {
+        return (
+             <Accordion type="single" collapsible defaultValue="approved" className="w-full">
+                 <AccordionItem value="approved">
+                    <AccordionTrigger className="text-lg font-headline">Final External Review ({approvedByStage['ExternalFinal'].length})</AccordionTrigger>
+                    <AccordionContent>
+                        <ProjectList projects={approvedByStage['ExternalFinal']} />
+                    </AccordionContent>
+                </AccordionItem>
+             </Accordion>
+        );
+    }
+
 
     return (
-        <Tabs defaultValue={defaultTab} className="w-full">
-            <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:flex lg:flex-wrap">
-                 {facultyStages.map(stage => {
-                    let stageProjects = projectsByStage[stage.key] || [];
-                    if (currentFaculty.role === 'guide' && (stage.key === 'PendingGuide' || stage.key.includes('Stage') || stage.key.includes('Final'))) {
-                        const myTeamIds = new Set(teams.filter(t => t.guide?.id === currentFaculty.id).map(t => t.id));
-                        stageProjects = stageProjects.filter(p => myTeamIds.has(p.teamId));
-                    }
-                    return (
-                        <TabsTrigger key={stage.key} value={stage.key}>{stage.title} ({stageProjects.length})</TabsTrigger>
-                    )
-                 })}
-            </TabsList>
+        <Accordion type="single" collapsible defaultValue="pending" className="w-full space-y-4">
+            <AccordionItem value="pending">
+                <AccordionTrigger className="text-lg font-headline">Pending Approval ({pendingProjects.length})</AccordionTrigger>
+                <AccordionContent>
+                    <ProjectList projects={pendingProjects} />
+                </AccordionContent>
+            </AccordionItem>
             
-            {facultyStages.map(stage => {
-                let stageProjects = projectsByStage[stage.key] || [];
-                 if (currentFaculty.role === 'guide' && (stage.key === 'PendingGuide' || stage.key.includes('Stage') || stage.key.includes('Final'))) {
-                    const myTeamIds = new Set(teams.filter(t => t.guide?.id === currentFaculty.id).map(t => t.id));
-                    stageProjects = stageProjects.filter(p => myTeamIds.has(p.teamId));
-                }
-                return (
-                    <TabsContent key={stage.key} value={stage.key} className="mt-6">
-                        <ScrollArea className="h-[calc(100vh-22rem)] p-1">
-                            <div className="space-y-4 p-2">
-                                 {stageProjects.length > 0 ? (
-                                    stageProjects.map(project => {
-                                        const team = teams.find(t => t.id === project.teamId);
-                                        return <ProjectCard key={project.id} project={project} team={team} />
-                                    })
-                                ) : (
-                                    <div className="flex items-center justify-center h-48 text-muted-foreground text-center px-4">
-                                        <p>No projects in this stage.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </ScrollArea>
-                    </TabsContent>
-                )
-            })}
-        </Tabs>
+             <AccordionItem value="approved">
+                <AccordionTrigger className="text-lg font-headline">Approved & In Scoring ({approvedProjects.length})</AccordionTrigger>
+                <AccordionContent>
+                    <Tabs defaultValue="Stage1" className="w-full mt-4">
+                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
+                            <TabsTrigger value="Stage1">Stage 1 ({approvedByStage['Stage1'].length})</TabsTrigger>
+                            <TabsTrigger value="Stage2">Stage 2 ({approvedByStage['Stage2'].length})</TabsTrigger>
+                            <TabsTrigger value="InternalFinal">Internal Final ({approvedByStage['InternalFinal'].length})</TabsTrigger>
+                            <TabsTrigger value="ExternalFinal">External Final ({approvedByStage['ExternalFinal'].length})</TabsTrigger>
+                            <TabsTrigger value="Completed">Completed ({approvedByStage['Completed'].length})</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="Stage1" className="mt-4"><ProjectList projects={approvedByStage['Stage1']} /></TabsContent>
+                        <TabsContent value="Stage2" className="mt-4"><ProjectList projects={approvedByStage['Stage2']} /></TabsContent>
+                        <TabsContent value="InternalFinal" className="mt-4"><ProjectList projects={approvedByStage['InternalFinal']} /></TabsContent>
+                        <TabsContent value="ExternalFinal" className="mt-4"><ProjectList projects={approvedByStage['ExternalFinal']} /></TabsContent>
+                        <TabsContent value="Completed" className="mt-4"><ProjectList projects={approvedByStage['Completed']} /></TabsContent>
+                    </Tabs>
+                </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="rejected">
+                <AccordionTrigger className="text-lg font-headline">Rejected Projects ({rejectedProjects.length})</AccordionTrigger>
+                <AccordionContent>
+                    <ProjectList projects={rejectedProjects} />
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
     );
 }
-
-    
