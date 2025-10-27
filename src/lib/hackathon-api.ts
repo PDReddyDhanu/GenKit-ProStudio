@@ -1268,6 +1268,14 @@ export async function markNotificationsAsRead(collegeId: string, userId: string,
     return { successMessage: "Notifications marked as read." };
 }
 
+export async function clearAllNotifications(collegeId: string, userId: string, role: 'user' | 'faculty') {
+    const collectionName = role === 'user' ? 'users' : 'faculty';
+    const userRef = doc(db, `colleges/${collegeId}/${collectionName}`, userId);
+    await updateDoc(userRef, { notifications: [] });
+    return { successMessage: "All notifications have been cleared." };
+}
+
+
 // --- Data Management (Admin) ---
 
 export async function createHackathon(collegeId: string, data: Omit<Hackathon, 'id'>) {

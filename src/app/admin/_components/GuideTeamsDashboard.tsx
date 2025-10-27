@@ -18,7 +18,7 @@ import { getAiProjectSummary, generatePitchOutline, generatePitchAudioAction } f
 import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
 import { marked } from 'marked';
 
-const GuideChatDialog = ({ team, guide, open, onOpenChange }: { team: Team, guide: any, open: boolean, onOpenChange: (open: boolean) => void }) => {
+const GuideChatDialog = ({ team, guide, open, onOpenChange, users }: { team: Team, guide: any, open: boolean, onOpenChange: (open: boolean) => void, users: any[] }) => {
     const { api } = useHackathon();
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +30,16 @@ const GuideChatDialog = ({ team, guide, open, onOpenChange }: { team: Team, guid
         }
         return [];
     }, [team.guideMessages]);
+
+    const teamMembersWithDetails = useMemo(() => {
+        return team.members.map(member => {
+            const userDetails = users.find(u => u.id === member.id);
+            return {
+                ...member,
+                rollNo: userDetails?.rollNo || 'N/A'
+            };
+        });
+    }, [team.members, users]);
 
     useEffect(() => {
         if (open) {
@@ -57,10 +67,25 @@ const GuideChatDialog = ({ team, guide, open, onOpenChange }: { team: Team, guid
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-lg h-[70vh] flex flex-col">
+            <DialogContent className="max-w-lg h-[80vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Conversation with Team: {team.name}</DialogTitle>
                 </DialogHeader>
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium">Team Members</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ul className="text-xs space-y-1">
+                            {teamMembersWithDetails.map(member => (
+                                <li key={member.id} className="flex justify-between">
+                                    <span>{member.name}</span>
+                                    <span className="text-muted-foreground">{member.rollNo}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </CardContent>
+                </Card>
                 <div className="flex-grow overflow-hidden">
                     <ScrollArea className="h-full pr-4">
                         <div className="space-y-4">
@@ -261,6 +286,7 @@ const TeamCardForGuide = ({ team, project }: { team: Team, project?: ProjectSubm
                 guide={currentFaculty} 
                 open={isChatOpen} 
                 onOpenChange={setIsChatOpen} 
+                users={users}
             />
         </>
     );

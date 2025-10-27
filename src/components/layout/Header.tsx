@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHackathon } from '@/context/HackathonProvider';
 import { Button } from '@/components/ui/button';
-import { Rss, LogOut, Building2, UserCircle, Bell, ChevronsUpDown, Menu } from 'lucide-react';
+import { Rss, LogOut, Building2, UserCircle, Bell, ChevronsUpDown, Menu, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Sheet,
@@ -203,6 +203,13 @@ export function Header() {
         router.push(link);
     };
 
+    const handleClearNotifications = async () => {
+        if (loggedInUser) {
+            const role = currentUser ? 'user' : 'faculty';
+            await api.clearAllNotifications(loggedInUser.id, role);
+        }
+    };
+
     const sortedNotifications = useMemo(() => {
         return [...notifications].sort((a, b) => b.timestamp - a.timestamp);
     }, [notifications]);
@@ -281,11 +288,11 @@ export function Header() {
             </Sheet>
 
             <Sheet open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
-                <SheetContent className="w-full sm:max-w-sm">
+                <SheetContent className="w-full sm:max-w-sm flex flex-col">
                     <SheetHeader>
                         <SheetTitle>Notifications</SheetTitle>
                     </SheetHeader>
-                    <div className="py-4 space-y-2">
+                    <div className="flex-grow overflow-y-auto py-4 space-y-2">
                         {sortedNotifications.length > 0 ? (
                             sortedNotifications.slice(0, 10).map(n => (
                                 <button key={n.id} onClick={() => handleNotificationClick(n.link)} className={`block w-full text-left p-3 rounded-md ${!n.isRead ? 'bg-muted' : ''}`}>
@@ -302,6 +309,13 @@ export function Header() {
                             </Button>
                         </div>
                     </div>
+                    {sortedNotifications.length > 0 && (
+                        <div className="border-t pt-4">
+                            <Button variant="outline" className="w-full" onClick={handleClearNotifications}>
+                                <Trash2 className="mr-2 h-4 w-4" /> Clear All Notifications
+                            </Button>
+                        </div>
+                    )}
                 </SheetContent>
             </Sheet>
         </>
