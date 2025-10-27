@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
-import { ProjectSubmission, ProjectIdea, Score, TeamMember, ReviewType, ChatMessage } from '@/lib/types';
+import { ProjectSubmission, ProjectIdea, Score, TeamMember, ReviewType, ChatMessage, ScheduledMeeting } from '@/lib/types';
 import { 
     INTERNAL_STAGE_1_RUBRIC, 
     INDIVIDUAL_STAGE_1_RUBRIC,
@@ -21,17 +21,20 @@ import {
     INDIVIDUAL_EXTERNAL_FINAL_RUBRIC
 } from '@/lib/constants';
 import Link from 'next/link';
-import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare, Presentation, Download, ChevronRight, Check } from 'lucide-react';
+import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare, Presentation, Download, ChevronRight, Check, CalendarIcon, Video } from 'lucide-react';
 import { getAiProjectSummary } from '@/app/actions';
 import BackButton from '@/components/layout/BackButton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
 import { marked } from 'marked';
 import { generateScoresCsv, downloadCsv } from '@/lib/csv';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 
 interface ScoringFormProps {
@@ -40,6 +43,73 @@ interface ScoringFormProps {
 }
 
 type RubricItem = { id: string; name: string; max: number; description: string };
+
+const MeetingScheduler = ({ submission, currentReviewType, faculty }: { submission: ProjectSubmission, currentReviewType: ReviewType, faculty: any }) => {
+    const { api } = useHackathon();
+    const existingMeeting = submission.meetings?.find(m => m.stage === currentReviewType);
+    
+    const [meetLink, setMeetLink] = useState(existingMeeting?.meetLink || '');
+    const [scheduledTime, setScheduledTime] = useState<Date | undefined>(existingMeeting ? new Date(existingMeeting.scheduledTime) : undefined);
+    const [isScheduling, setIsScheduling] = useState(false);
+
+    const handleScheduleMeeting = async () => {
+        if (!meetLink || !scheduledTime) {
+            alert("Please provide a meeting link and select a time.");
+            return;
+        }
+        setIsScheduling(true);
+        try {
+            await api.scheduleOrUpdateMeeting(submission.id, {
+                stage: currentReviewType,
+                meetLink,
+                scheduledTime: scheduledTime.getTime(),
+            }, faculty);
+        } finally {
+            setIsScheduling(false);
+        }
+    };
+
+    return (
+        <Card className="mt-6 bg-muted/50">
+            <CardHeader>
+                <CardTitle className="font-headline text-xl flex items-center gap-2"><Video className="text-primary"/>Schedule Review Meeting</CardTitle>
+                <CardDescription>Set up a Google Meet call with the team for this stage.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 <div className="space-y-2">
+                    <Label htmlFor="meet-link">Google Meet Link</Label>
+                    <Input id="meet-link" value={meetLink} onChange={e => setMeetLink(e.target.value)} placeholder="https://meet.google.com/..." disabled={isScheduling} />
+                </div>
+                 <div className="space-y-2">
+                    <Label>Meeting Time</Label>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !scheduledTime && "text-muted-foreground")} disabled={isScheduling}>
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {scheduledTime ? format(scheduledTime, "PPP p") : <span>Pick a date & time</span>}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                            <Calendar mode="single" selected={scheduledTime} onSelect={setScheduledTime} initialFocus />
+                             <div className="p-2 border-t border-border">
+                                <Input type="time" defaultValue={scheduledTime ? format(scheduledTime, "HH:mm") : ""} onChange={(e) => {
+                                    const [h, m] = e.target.value.split(':').map(Number);
+                                    setScheduledTime(d => { const newDate = d ? new Date(d) : new Date(); newDate.setHours(h, m); return newDate; });
+                                }}/>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                </div>
+            </CardContent>
+            <CardFooter>
+                 <Button onClick={handleScheduleMeeting} disabled={isScheduling || !meetLink || !scheduledTime}>
+                    {isScheduling ? <Loader className="mr-2 h-4 w-4 animate-spin"/> : null}
+                    {existingMeeting ? 'Update Meeting' : 'Schedule Meeting'}
+                </Button>
+            </CardFooter>
+        </Card>
+    )
+}
 
 export default function ScoringForm({ project: submission, onBack }: ScoringFormProps) {
     const { state, api } = useHackathon();
@@ -259,7 +329,7 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
         </div>
     );
     
-    if (!currentReviewType) {
+    if (!currentReviewType || !currentFaculty) {
         return (
              <div className="container max-w-3xl mx-auto py-12">
                  <BackButton />
@@ -268,7 +338,7 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                         <CardTitle className="flex items-center justify-center gap-2"><AlertTriangle /> Invalid Stage</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p>This project is not in a valid state for review.</p>
+                        <p>This project is not in a valid state for review, or you do not have permission.</p>
                     </CardContent>
                  </Card>
             </div>
@@ -301,9 +371,10 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                 
                 <CardContent>
                     <Tabs defaultValue="details" className="w-full">
-                         <TabsList className="grid w-full grid-cols-2">
+                         <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="details">Project Details</TabsTrigger>
                             <TabsTrigger value="scoring">Scoring</TabsTrigger>
+                             <TabsTrigger value="schedule">Schedule</TabsTrigger>
                         </TabsList>
                         <TabsContent value="details" className="mt-4">
                              <Tabs defaultValue="idea-1" className="w-full">
@@ -393,6 +464,9 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
                                     {renderStageAdvancementButton()}
                                 </CardFooter>
                             </form>
+                        </TabsContent>
+                        <TabsContent value="schedule" className="mt-4">
+                            <MeetingScheduler submission={submission} currentReviewType={currentReviewType} faculty={currentFaculty} />
                         </TabsContent>
                     </Tabs>
                 </CardContent>

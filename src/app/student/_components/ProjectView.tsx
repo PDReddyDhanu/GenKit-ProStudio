@@ -4,7 +4,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProjectSubmission, ProjectIdea, ProjectStatusUpdate, Team, TeamMember } from '@/lib/types';
-import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github, PlusCircle, Clock, XCircle, UserCheck, Milestone, Star } from 'lucide-react';
+import { CheckCircle, Bot, Loader, Download, Pencil, Presentation, ArrowLeft, Link as LinkIcon, FileText, Tags, Github, PlusCircle, Clock, XCircle, UserCheck, Milestone, Star, Video } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useMemo } from 'react';
 import { getAiCodeReview, generatePitchOutline, generatePitchAudioAction } from '@/app/actions';
@@ -195,7 +195,7 @@ const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, o
 
     const approvalStages: { key: ProjectSubmission['status'], name: string }[] = [
         { key: 'PendingGuide', name: 'Guide Review' },
-        { key: 'PendingR&D', name: 'R&D Coordinator Review' },
+        { key: 'PendingR&D', name: 'R&D Co-ordinator Review' },
         { key: 'PendingHoD', name: 'HOD Review' },
     ];
     
@@ -449,9 +449,10 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="status" className="w-full">
-                         <TabsList className="grid w-full grid-cols-2">
+                         <TabsList className="grid w-full grid-cols-3">
                              <TabsTrigger value="status">Project Status</TabsTrigger>
                              <TabsTrigger value="details">Submission Details</TabsTrigger>
+                             <TabsTrigger value="schedule">Scheduled Reviews</TabsTrigger>
                         </TabsList>
                          <TabsContent value="status" className="mt-6">
                             <Card className="bg-muted/50">
@@ -504,6 +505,31 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                                     </TabsContent>
                                 ))}
                             </Tabs>
+                        </TabsContent>
+                         <TabsContent value="schedule" className="mt-6">
+                             <Card className="bg-muted/50">
+                                <CardHeader>
+                                    <CardTitle className="font-headline">Scheduled Reviews</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {(submission.meetings && submission.meetings.length > 0) ? (
+                                        submission.meetings.map(meeting => (
+                                            <div key={meeting.id} className="p-4 border rounded-md bg-background">
+                                                <h4 className="font-semibold text-primary">{meeting.stage} Review</h4>
+                                                <p className="text-sm text-muted-foreground">Scheduled by: {meeting.scheduledBy}</p>
+                                                <p className="font-bold text-lg">{format(new Date(meeting.scheduledTime), 'PPP p')}</p>
+                                                <Button asChild variant="secondary" size="sm" className="mt-2">
+                                                    <Link href={meeting.meetLink} target="_blank" rel="noopener noreferrer">
+                                                        <Video className="mr-2 h-4 w-4"/> Join Google Meet
+                                                    </Link>
+                                                </Button>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-muted-foreground text-center py-8">No review meetings have been scheduled yet.</p>
+                                    )}
+                                </CardContent>
+                            </Card>
                         </TabsContent>
                     </Tabs>
                     

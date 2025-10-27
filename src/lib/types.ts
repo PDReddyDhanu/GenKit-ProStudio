@@ -1,4 +1,5 @@
 
+
 export interface UserProfileData {
   name: string;
   skills: string[];
@@ -109,6 +110,15 @@ export interface ProjectStatusUpdate {
     remarks?: string;
 }
 
+export interface ScheduledMeeting {
+  id: string;
+  stage: ReviewStage;
+  meetLink: string;
+  scheduledTime: number;
+  scheduledBy: string; // Faculty Name
+  facultyId: string;
+}
+
 export interface ProjectSubmission {
   id: string;
   teamId: string;
@@ -124,6 +134,7 @@ export interface ProjectSubmission {
   achievements?: string[];
   imageUrl?: string;
   reviewStage: ReviewStage;
+  meetings?: ScheduledMeeting[];
   averageScore: number;
   name: string;
 }

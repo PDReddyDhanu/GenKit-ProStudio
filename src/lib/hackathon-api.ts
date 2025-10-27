@@ -36,7 +36,7 @@ import {
     limit,
     writeBatch
 } from 'firebase/firestore';
-import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate, ReviewStage } from './types';
+import { User, Faculty, Team, ProjectSubmission, Score, UserProfileData, Announcement, ChatMessage, PersonalChatMessage, JoinRequest, TeamMember, SupportTicket, SupportResponse, Notification, ProjectIdea, ProjectStatusUpdate, ReviewStage, ScheduledMeeting } from './types';
 import { 
     INTERNAL_STAGE_1_RUBRIC, INDIVIDUAL_STAGE_1_RUBRIC,
     INTERNAL_STAGE_2_RUBRIC, INDIVIDUAL_STAGE_2_RUBRIC,
@@ -842,6 +842,60 @@ export async function clearGuidanceHistory(collegeId: string, userOrFacultyId: s
 
 
 // --- Faculty ---
+
+export async function scheduleOrUpdateMeeting(collegeId: string, projectId: string, meeting: Omit<ScheduledMeeting, 'id' | 'scheduledBy' | 'facultyId'>, faculty: Faculty) {
+    const projectRef = doc(db, `colleges/${collegeId}/projects`, projectId);
+    const projectDoc = await getDoc(projectRef);
+    if (!projectDoc.exists()) throw new Error("Project not found.");
+
+    const project = projectDoc.data() as ProjectSubmission;
+    
+    let existingMeetings = project.meetings || [];
+    let isUpdate = false;
+    
+    const newMeetingData: ScheduledMeeting = {
+        ...meeting,
+        id: doc(collection(db, 'dummy')).id, // Generate a client-side unique ID
+        scheduledBy: faculty.name,
+        facultyId: faculty.id,
+    };
+    
+    const existingMeetingIndex = existingMeetings.findIndex(m => m.stage === meeting.stage);
+    
+    if (existingMeetingIndex > -1) {
+        existingMeetings[existingMeetingIndex] = newMeetingData;
+        isUpdate = true;
+    } else {
+        existingMeetings.push(newMeetingData);
+    }
+
+    await updateDoc(projectRef, { meetings: existingMeetings });
+
+    // Notify team members
+    const teamDoc = await getDoc(doc(db, `colleges/${collegeId}/teams`, project.teamId));
+    if (teamDoc.exists()) {
+        const team = teamDoc.data() as Team;
+        const message = isUpdate 
+            ? `Your review meeting for ${meeting.stage} has been rescheduled by ${faculty.name}.`
+            : `A new review meeting for ${meeting.stage} has been scheduled by ${faculty.name}.`;
+        
+        const notification = {
+            id: doc(collection(db, 'dummy')).id,
+            message,
+            link: '/student',
+            timestamp: Date.now(),
+            isRead: false
+        };
+        const batch = writeBatch(db);
+        team.members.forEach(member => {
+            const memberRef = doc(db, `colleges/${collegeId}/users`, member.id);
+            batch.update(memberRef, { notifications: arrayUnion(notification) });
+        });
+        await batch.commit();
+    }
+    
+    return { successMessage: `Meeting for ${meeting.stage} has been successfully ${isUpdate ? 'updated' : 'scheduled'}.` };
+}
 
 const calculateStageScore = (scores: Score[], teamMembers: TeamMember[], reviewType: ReviewType, teamRubric: any[], individualRubric: any[]) => {
     const stageScores = scores.filter(s => s.reviewType === reviewType);
