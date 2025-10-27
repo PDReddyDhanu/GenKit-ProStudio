@@ -19,6 +19,7 @@ import { getAiProjectSummary, generatePitchOutline, generatePitchAudioAction } f
 import { GeneratePitchOutlineOutput } from '@/ai/flows/generate-pitch-outline';
 import { marked } from 'marked';
 import { generateScoresCsv, downloadCsv } from '@/lib/csv';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const RejectDialog = ({ idea, projectId, onConfirm, open, onOpenChange }: { idea: ProjectIdea, projectId: string, onConfirm: (remarks: string) => void, open: boolean, onOpenChange: (open: boolean) => void }) => {
     const [remarks, setRemarks] = useState('');
@@ -373,7 +374,6 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
 export default function ProjectApprovalDashboard() {
     const { state } = useHackathon();
     const { projects, teams, currentFaculty, selectedHackathonId } = state;
-    const [selectedProject, setSelectedProject] = useState<ProjectSubmission | null>(null);
 
     const projectsByStage = useMemo(() => {
         const stages: Record<string, ProjectSubmission[]> = {
@@ -392,10 +392,6 @@ export default function ProjectApprovalDashboard() {
         });
         return stages;
     }, [projects, selectedHackathonId]);
-    
-    if (selectedProject) {
-        return <ScoringForm project={selectedProject} onBack={() => setSelectedProject(null)} />
-    }
     
     if (!currentFaculty || !['guide', 'rnd', 'hod', 'admin', 'class-mentor', 'external'].includes(currentFaculty.role)) {
         return (
@@ -419,26 +415,34 @@ export default function ProjectApprovalDashboard() {
         { key: 'ExternalFinal', title: 'Final External Scoring', roles: ['external', 'admin', 'hod', 'guide'] },
         { key: 'Completed', title: 'Completed', roles: ['guide', 'class-mentor', 'admin', 'hod', 'external', 'rnd'] },
     ];
+    
+    const facultyStages = STAGES_CONFIG.filter(stage => stage.roles.includes(currentFaculty.role));
+    const defaultTab = facultyStages.length > 0 ? facultyStages[0].key : '';
 
     return (
-        <div className="flex gap-6 overflow-x-auto pb-4">
-            {STAGES_CONFIG.map(stage => {
-                if (!currentFaculty || !stage.roles.includes(currentFaculty.role)) return null;
-                
-                let stageProjects = projectsByStage[stage.key] || [];
-
-                // Special filter for guides to only see their assigned teams' projects
-                if (currentFaculty.role === 'guide') {
-                    const myTeamIds = new Set(teams.filter(t => t.guide?.id === currentFaculty.id).map(t => t.id));
-                    if (stage.key === 'PendingGuide' || stage.key.includes('Stage') || stage.key.includes('Final')) {
+        <Tabs defaultValue={defaultTab} className="w-full">
+            <TabsList className="grid w-full h-auto grid-cols-2 md:grid-cols-4 lg:flex lg:flex-wrap">
+                 {facultyStages.map(stage => {
+                    let stageProjects = projectsByStage[stage.key] || [];
+                    if (currentFaculty.role === 'guide' && (stage.key === 'PendingGuide' || stage.key.includes('Stage') || stage.key.includes('Final'))) {
+                        const myTeamIds = new Set(teams.filter(t => t.guide?.id === currentFaculty.id).map(t => t.id));
                         stageProjects = stageProjects.filter(p => myTeamIds.has(p.teamId));
                     }
+                    return (
+                        <TabsTrigger key={stage.key} value={stage.key}>{stage.title} ({stageProjects.length})</TabsTrigger>
+                    )
+                 })}
+            </TabsList>
+            
+            {facultyStages.map(stage => {
+                let stageProjects = projectsByStage[stage.key] || [];
+                 if (currentFaculty.role === 'guide' && (stage.key === 'PendingGuide' || stage.key.includes('Stage') || stage.key.includes('Final'))) {
+                    const myTeamIds = new Set(teams.filter(t => t.guide?.id === currentFaculty.id).map(t => t.id));
+                    stageProjects = stageProjects.filter(p => myTeamIds.has(p.teamId));
                 }
-
                 return (
-                    <div key={stage.key} className="flex-shrink-0 w-[350px] space-y-4">
-                        <h2 className="text-xl font-bold font-headline capitalize">{stage.title} ({stageProjects.length})</h2>
-                        <ScrollArea className="h-[calc(100vh-22rem)] bg-card p-2 rounded-lg border">
+                    <TabsContent key={stage.key} value={stage.key} className="mt-6">
+                        <ScrollArea className="h-[calc(100vh-22rem)] p-1">
                             <div className="space-y-4 p-2">
                                  {stageProjects.length > 0 ? (
                                     stageProjects.map(project => {
@@ -452,9 +456,9 @@ export default function ProjectApprovalDashboard() {
                                 )}
                             </div>
                         </ScrollArea>
-                    </div>
-                );
+                    </TabsContent>
+                )
             })}
-        </div>
+        </Tabs>
     );
 }
