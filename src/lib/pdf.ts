@@ -22,7 +22,7 @@ const getRankSuffix = (rankNum: number) => {
 };
 
 
-const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectName: string, teamMembers: string[], projectId: string, totalScore: number, collegeName: string, rank: number) => {
+const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectName: string, teamMembers: string[], projectId: string, totalScore: number, collegeName: string, rank: number, eventName: string) => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const verificationUrl = `${window.location.origin}/verify/${projectId}?college=${encodeURIComponent(collegeName)}&rank=${rank}`;
@@ -67,7 +67,7 @@ const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectNa
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     doc.setTextColor(textColor);
-    doc.text(`from the HackSprint event held at ${collegeName}`, pageWidth / 2, 55, { align: 'center' });
+    doc.text(`from the "${eventName}" event held at ${collegeName}`, pageWidth / 2, 55, { align: 'center' });
 
     doc.setFontSize(11);
     doc.text('This is to certify that the team', pageWidth / 2, 75, { align: 'center' });
@@ -123,7 +123,7 @@ const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectNa
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(textColor);
-    doc.text('HackSprint Committee Lead', signatureX, bottomY + 12, { align: 'center' });
+    doc.text('GenKit ProStudio Committee Lead', signatureX, bottomY + 12, { align: 'center' });
 
     // Date
     const dateX = pageWidth * 3 / 4 - 10;
@@ -145,7 +145,7 @@ const generateWinnerCertificate = async (doc: jsPDF, teamName: string, projectNa
     doc.text('Verify authenticity', qrX, bottomY + 35, { align: 'center' });
 };
 
-const generateParticipantCertificate = async (doc: jsPDF, teamName: string, projectName: string, teamMembers: string[], projectId: string, collegeName: string) => {
+const generateParticipantCertificate = async (doc: jsPDF, teamName: string, projectName: string, teamMembers: string[], projectId: string, collegeName: string, eventName: string) => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const verificationUrl = `${window.location.origin}/verify/${projectId}?college=${encodeURIComponent(collegeName)}`;
@@ -199,7 +199,7 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     doc.setTextColor(darkText);
-    doc.text('for their successful participation and innovative project submission in the HackSprint event', pageWidth / 2, 90, { align: 'center', maxWidth: pageWidth - 80 });
+    doc.text(`for their successful participation and innovative project submission in the "${eventName}" event`, pageWidth / 2, 90, { align: 'center', maxWidth: pageWidth - 80 });
     doc.text(`at ${collegeName}.`, pageWidth / 2, 97, { align: 'center' });
 
     doc.setFont("helvetica", "bold");
@@ -239,7 +239,7 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(lightText);
-    doc.text('HackSprint Committee Lead', signatureX, bottomY + 12, { align: 'center' });
+    doc.text('GenKit ProStudio Committee Lead', signatureX, bottomY + 12, { align: 'center' });
 
     const dateX = pageWidth * 3 / 4;
     doc.setFont("times", "italic");
@@ -260,7 +260,7 @@ const generateParticipantCertificate = async (doc: jsPDF, teamName: string, proj
 
 };
 
-export const generateCertificate = async (teamName: string, projectName: string, teamMembers: string[], projectId: string, totalScore: number, collegeName: string, rank?: number) => {
+export const generateCertificate = async (teamName: string, projectName: string, teamMembers: string[], projectId: string, totalScore: number, collegeName: string, eventName: string, rank?: number) => {
     const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
@@ -268,10 +268,12 @@ export const generateCertificate = async (teamName: string, projectName: string,
     });
 
     if (rank && rank >= 1 && rank <= 3) {
-        await generateWinnerCertificate(doc, teamName, projectName, teamMembers, projectId, totalScore, collegeName, rank);
+        await generateWinnerCertificate(doc, teamName, projectName, teamMembers, projectId, totalScore, collegeName, rank, eventName);
          doc.save(`Certificate_Winner-${teamName.replace(/\s/g, '_')}.pdf`);
     } else {
-        await generateParticipantCertificate(doc, teamName, projectName, teamMembers, projectId, collegeName);
+        await generateParticipantCertificate(doc, teamName, projectName, teamMembers, projectId, collegeName, eventName);
          doc.save(`Certificate_Participation-${teamName.replace(/\s/g, '_')}.pdf`);
     }
 };
+
+    

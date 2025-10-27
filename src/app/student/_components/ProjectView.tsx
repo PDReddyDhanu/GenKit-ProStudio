@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -317,7 +318,7 @@ const StatusTimeline = ({ project, onResubmit }: { project: ProjectSubmission, o
 
 export default function ProjectView({ submission: initialSubmission, onBack, onAddIdea }: ProjectViewProps) {
     const { state, api } = useHackathon();
-    const { teams, selectedCollege, projects, users } = state;
+    const { teams, selectedCollege, projects, users, hackathons, selectedHackathonId } = state;
     const [submission, setSubmission] = useState(initialSubmission);
 
     const [isReviewing, setIsReviewing] = useState(false);
@@ -345,6 +346,21 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
 
     const canDownloadCertificate = submission.reviewStage === 'Completed';
 
+    const currentEventName = useMemo(() => {
+        const staticEvents = {
+            'real-time-project': 'Real-Time Project',
+            'mini-project': 'Mini Project',
+            'major-project': 'Major Project',
+            'other-project': 'Other Project',
+        };
+        if (selectedHackathonId && staticEvents[selectedHackathonId as keyof typeof staticEvents]) {
+            return staticEvents[selectedHackathonId as keyof typeof staticEvents];
+        }
+        const dynamicEvent = hackathons.find(h => h.id === selectedHackathonId);
+        return dynamicEvent?.name || 'Project Event';
+    }, [selectedHackathonId, hackathons]);
+
+
     const handleGetReview = async (githubUrl: string) => {
         setIsReviewing(true);
         setReview('');
@@ -364,12 +380,12 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
             setIsGeneratingCert(true);
             try {
                 const teamMembers = team.members.map(m => m.name);
-                await generateCertificate(team.name, approvedIdea?.title || submission.projectIdeas[0].title, teamMembers, submission.id, submission.totalScore, selectedCollege);
+                await generateCertificate(team.name, approvedIdea?.title || submission.projectIdeas[0].title, teamMembers, submission.id, submission.totalScore, selectedCollege, currentEventName);
             } catch (error) {
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
             } finally {
-                setIsGeneratingCert(null);
+                setIsGeneratingCert(false);
             }
         }
     };
@@ -589,6 +605,5 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
         </div>
     );
 }
-
 
     

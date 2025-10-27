@@ -177,14 +177,23 @@ export default function ProfilePage() {
         setShowIntro(false);
     };
     
-     const handleDownloadCertificate = async (projectId: string) => {
+    const handleDownloadCertificate = async (projectId: string) => {
         const project = projects.find(p => p.id === projectId);
         const team = teams.find(t => t.id === project?.teamId);
+    
         if (team && project && selectedCollege) {
+            const staticEvents = {
+                'real-time-project': 'Real-Time Project',
+                'mini-project': 'Mini Project',
+                'major-project': 'Major Project',
+                'other-project': 'Other Project',
+            };
+            const event = hackathons.find(h => h.id === project.hackathonId) || { name: staticEvents[project.hackathonId as keyof typeof staticEvents] || 'Project Event' };
+    
             setIsGeneratingCert(projectId);
             try {
                 const teamMembers = team.members.map(m => m.name);
-                await generateCertificate(team.name, project.name, teamMembers, project.id, project.averageScore, selectedCollege);
+                await generateCertificate(team.name, project.name, teamMembers, project.id, project.averageScore, selectedCollege, event.name);
             } catch (error) {
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
@@ -479,13 +488,14 @@ export default function ProfilePage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {userProjects.length > 0 ? userProjects.map(p => {
+                                {userProjects.filter(p => p.reviewStage === 'Completed').length > 0 ? userProjects.filter(p => p.reviewStage === 'Completed').map(p => {
                                     const hackathon = hackathons.find(h => h.id === p.hackathonId);
+                                    const eventName = hackathon?.name || p.hackathonId?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Project Event';
                                     return (
                                         <div key={p.id} className="p-4 bg-muted/50 rounded-md flex justify-between items-center">
                                             <div>
                                                 <p className="font-semibold">{p.name}</p>
-                                                <p className="text-sm text-muted-foreground">{hackathon?.name} - {format(new Date(hackathon?.deadline || Date.now()), 'PPP')}</p>
+                                                <p className="text-sm text-muted-foreground">{eventName} - {format(new Date(p.submittedAt || Date.now()), 'PPP')}</p>
                                             </div>
                                             <Button onClick={() => handleDownloadCertificate(p.id)} disabled={!!isGeneratingCert}>
                                                 {isGeneratingCert === p.id ? <Loader className="animate-spin" /> : <Download />}
@@ -493,7 +503,7 @@ export default function ProfilePage() {
                                         </div>
                                     )
                                 }) : (
-                                    <p className="text-muted-foreground text-center py-4">You have not submitted any projects yet. No certificates to show.</p>
+                                    <p className="text-muted-foreground text-center py-4">No completed projects yet. Certificates will be available here once your projects are fully evaluated.</p>
                                 )}
                             </div>
                         </CardContent>
@@ -504,3 +514,4 @@ export default function ProfilePage() {
     );
 }
 
+    

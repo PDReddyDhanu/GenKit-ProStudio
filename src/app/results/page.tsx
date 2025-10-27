@@ -27,13 +27,28 @@ interface ConfettiParticle {
 
 const WinnerCard = ({ winner, collegeName }: { winner: Winner, collegeName: string | null }) => {
     const [isGenerating, setIsGenerating] = useState(false);
+    const { state } = useHackathon();
+    const { hackathons } = state;
+
+    const eventName = useMemo(() => {
+        const event = hackathons.find(h => h.id === winner.project.hackathonId);
+        if (event) return event.name;
+        
+        const staticEvents = {
+            'real-time-project': 'Real-Time Project',
+            'mini-project': 'Mini Project',
+            'major-project': 'Major Project',
+            'other-project': 'Other Project',
+        };
+        return staticEvents[winner.project.hackathonId as keyof typeof staticEvents] || 'Project Event';
+    }, [winner.project.hackathonId, hackathons]);
 
     const handleDownloadCertificate = async () => {
         if (winner.team && winner.project && !isGenerating && collegeName) {
             setIsGenerating(true);
             try {
                 const teamMembers = winner.team.members.map((m: User) => m.name);
-                await generateCertificate(winner.team.name, winner.project.projectIdeas[0].title, teamMembers, winner.project.id, winner.project.totalScore, collegeName, winner.rank);
+                await generateCertificate(winner.team.name, winner.project.projectIdeas[0].title, teamMembers, winner.project.id, winner.project.totalScore, collegeName, eventName, winner.rank);
             } catch (error) {
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
@@ -167,3 +182,5 @@ export default function Results() {
         </div>
     );
 }
+
+    
