@@ -393,18 +393,6 @@ export default function ProjectApprovalDashboard() {
         return stages;
     }, [projects, selectedHackathonId]);
     
-    if (!currentFaculty || !['guide', 'rnd', 'hod', 'admin', 'class-mentor', 'external'].includes(currentFaculty.role)) {
-        return (
-            <Card><CardContent className="py-16 text-center"><AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" /><p className="mt-4 text-muted-foreground">You do not have permission to view this dashboard.</p></CardContent></Card>
-        )
-    }
-
-    if (!selectedHackathonId) {
-        return (
-            <Card><CardContent className="py-16 text-center"><AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" /><p className="mt-4 text-muted-foreground">Please select a project type from the top to view approvals.</p></CardContent></Card>
-        );
-    }
-    
     const STAGES_CONFIG: {key: string, title: string, roles: Faculty['role'][]}[] = [
         { key: 'PendingGuide', title: 'Pending Guide', roles: ['guide', 'admin'] },
         { key: 'PendingR&D', title: 'Pending R&D', roles: ['rnd', 'admin', 'hod'] },
@@ -416,8 +404,24 @@ export default function ProjectApprovalDashboard() {
         { key: 'Completed', title: 'Completed', roles: ['guide', 'class-mentor', 'admin', 'hod', 'external', 'rnd'] },
     ];
     
-    const facultyStages = STAGES_CONFIG.filter(stage => stage.roles.includes(currentFaculty.role));
+    const facultyStages = useMemo(() => {
+        if (!currentFaculty) return [];
+        return STAGES_CONFIG.filter(stage => stage.roles.includes(currentFaculty.role));
+    }, [currentFaculty]);
+
     const defaultTab = facultyStages.length > 0 ? facultyStages[0].key : '';
+
+    if (!currentFaculty || !['guide', 'rnd', 'hod', 'admin', 'class-mentor', 'external'].includes(currentFaculty.role)) {
+        return (
+            <Card><CardContent className="py-16 text-center"><AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" /><p className="mt-4 text-muted-foreground">You do not have permission to view this dashboard.</p></CardContent></Card>
+        )
+    }
+
+    if (!selectedHackathonId) {
+        return (
+            <Card><CardContent className="py-16 text-center"><AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" /><p className="mt-4 text-muted-foreground">Please select a project type from the top to view approvals.</p></CardContent></Card>
+        );
+    }
 
     return (
         <Tabs defaultValue={defaultTab} className="w-full">
@@ -462,3 +466,5 @@ export default function ProjectApprovalDashboard() {
         </Tabs>
     );
 }
+
+    
