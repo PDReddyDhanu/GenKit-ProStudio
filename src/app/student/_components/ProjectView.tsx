@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -403,7 +402,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
         try {
             const script = pitchOutline.slides
                 .map(slide => `${slide.title}. ${slide.content.replace(/^-/gm, '')}`)
-                .join('\n\n');
+                .join('\\n\\n');
             const result = await generatePitchAudioAction({ script });
             if (result) {
                 setPitchAudio(result);
@@ -590,3 +589,6 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
         </div>
     );
 }
+
+
+    
