@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ProjectSubmission, Team, Faculty, ProjectIdea, ReviewStage, ReviewType } from '@/lib/types';
-import { Loader, Check, X, AlertTriangle, Scale, Bot, Presentation, ChevronRight, Download, Star } from 'lucide-react';
+import { Loader, Check, X, AlertTriangle, Scale, Bot, Presentation, ChevronRight, Download, Star, RefreshCcw } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -217,10 +217,21 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
             disabled: !!isLoading,
             className: "w-full",
         } as const;
-
-        if (currentFaculty?.role === 'external') {
+    
+        const isExternalReviewer = currentFaculty?.role === 'external';
+    
+        if (isExternalReviewer) {
             if (project.reviewStage === 'ExternalFinal') {
-                 return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('Completed')}>Mark as Completed <Check className="h-4 w-4 ml-2"/></Button>;
+                return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('Completed')}>Mark as Completed <Check className="h-4 w-4 ml-2"/></Button>;
+            }
+            if (project.reviewStage === 'Completed') {
+                return (
+                    <div className="flex flex-col gap-2">
+                        <Button variant="outline" {...commonButtonProps} onClick={() => handleUpdateReviewStage('ExternalFinal')}>
+                            <RefreshCcw className="h-4 w-4 mr-2"/> Recall Review
+                        </Button>
+                    </div>
+                );
             }
             return null;
         }
@@ -330,6 +341,7 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
                                     <Download className="mr-2 h-4 w-4" />
                                     Download All Scores
                                 </Button>
+                                {currentFaculty?.role === 'external' && renderStageAdvancementButton()}
                             </div>
                         ) : (
                             <>

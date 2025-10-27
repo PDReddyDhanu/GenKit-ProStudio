@@ -21,7 +21,7 @@ import {
     INDIVIDUAL_EXTERNAL_FINAL_RUBRIC
 } from '@/lib/constants';
 import Link from 'next/link';
-import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare, Presentation, Download, ChevronRight, Check, CalendarIcon, Video } from 'lucide-react';
+import { Bot, Loader, User, Tags, FileText, Link as LinkIcon, AlertTriangle, Send, MessageSquare, Presentation, Download, ChevronRight, Check, CalendarIcon, Video, RefreshCcw } from 'lucide-react';
 import { getAiProjectSummary } from '@/app/actions';
 import BackButton from '@/components/layout/BackButton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -272,8 +272,16 @@ export default function ScoringForm({ project: submission, onBack }: ScoringForm
         } as const;
 
         if (currentFaculty?.role === 'external') {
-            if (submission.reviewStage === 'ExternalFinal') {
-                 return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('Completed')}>Mark as Completed <Check className="h-4 w-4 ml-2"/></Button>;
+             if (submission.reviewStage === 'ExternalFinal') {
+                return <Button {...commonButtonProps} onClick={() => handleUpdateReviewStage('Completed')}>Mark as Completed <Check className="h-4 w-4 ml-2"/></Button>;
+            }
+            // Add Recall button if stage is 'Completed'
+            if (submission.reviewStage === 'Completed') {
+                return (
+                    <Button variant="outline" {...commonButtonProps} onClick={() => handleUpdateReviewStage('ExternalFinal')}>
+                        <RefreshCcw className="h-4 w-4 mr-2"/> Recall Review
+                    </Button>
+                );
             }
             return null;
         }
