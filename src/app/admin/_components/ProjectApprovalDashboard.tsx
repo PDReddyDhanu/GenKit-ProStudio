@@ -439,11 +439,17 @@ export default function ProjectApprovalDashboard() {
     
     if(isExternalReviewer) {
         return (
-             <Accordion type="single" collapsible defaultValue="approved" className="w-full">
-                 <AccordionItem value="approved">
+             <Accordion type="single" collapsible defaultValue="external-review" className="w-full space-y-4">
+                 <AccordionItem value="external-review">
                     <AccordionTrigger className="text-lg font-headline">Final External Review ({approvedByStage['ExternalFinal'].length})</AccordionTrigger>
                     <AccordionContent>
                         <ProjectList projects={approvedByStage['ExternalFinal']} />
+                    </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="completed">
+                    <AccordionTrigger className="text-lg font-headline">Completed Reviews ({approvedByStage['Completed'].length})</AccordionTrigger>
+                    <AccordionContent>
+                        <ProjectList projects={approvedByStage['Completed']} />
                     </AccordionContent>
                 </AccordionItem>
              </Accordion>
