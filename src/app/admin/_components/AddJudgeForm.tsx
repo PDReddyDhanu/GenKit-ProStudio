@@ -14,11 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DEPARTMENTS_DATA } from '@/lib/constants';
 import type { Faculty } from '@/lib/types';
 
-const ROLES: Faculty['role'][] = ['guide', 'hod', 'rnd', 'external', 'academic-coordinator', 'class-mentor'];
+const ROLES: Faculty['role'][] = ['guide', 'hod', 'r&d', 'external', 'academic-coordinator', 'class-mentor'];
 const ROLE_DISPLAY_NAMES: { [key in Exclude<Faculty['role'], 'admin' | 'sub-admin'>]: string } = {
     'guide': 'Guide',
     'hod': 'HOD',
-    'rnd': 'R&D Coordinator',
+    'r&d': 'R&D Coordinator',
     'external': 'External',
     'academic-coordinator': 'Academic Coordinator',
     'class-mentor': 'Class Mentor',

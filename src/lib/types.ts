@@ -144,7 +144,7 @@ export interface Faculty {
   id:string;
   name: string;
   email: string;
-  role: 'guide' | 'hod' | 'rnd' | 'external' | 'admin' | 'sub-admin' | 'academic-coordinator' | 'class-mentor';
+  role: 'guide' | 'hod' | 'r&d' | 'external' | 'admin' | 'sub-admin' | 'academic-coordinator' | 'class-mentor';
   guidanceHistory?: ChatMessage[];
   gender?: 'Male' | 'Female' | 'Other';
   contactNumber?: string;

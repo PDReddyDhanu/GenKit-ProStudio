@@ -385,7 +385,7 @@ export default function ProjectView({ submission: initialSubmission, onBack, onA
                 console.error("Failed to generate certificate:", error);
                 alert("Could not generate certificate. Please try again.");
             } finally {
-                setIsGeneratingCert(false);
+                setIsGeneratingCert(null);
             }
         }
     };

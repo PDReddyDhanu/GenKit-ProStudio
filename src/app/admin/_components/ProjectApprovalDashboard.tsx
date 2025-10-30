@@ -156,7 +156,7 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
         try {
             const script = pitchOutline.slides
                 .map(slide => `${slide.title}. ${slide.content.replace(/^-/gm, '')}`)
-                .join('\n\n');
+                .join('\\n\\n');
             const result = await generatePitchAudioAction({ script });
             if (result) {
                 setPitchAudio(result);
@@ -170,7 +170,7 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
 
     const canApprove = (
         (currentFaculty?.role === 'guide' && project.status === 'PendingGuide' && project.teamId && team?.guide?.id === currentFaculty.id) ||
-        (currentFaculty?.role === 'rnd' && project.status === 'PendingR&D') ||
+        (currentFaculty?.role === 'r&d' && project.status === 'PendingR&D') ||
         (currentFaculty?.role === 'hod' && project.status === 'PendingHoD') ||
         (currentFaculty?.role === 'admin') 
     );
@@ -202,7 +202,7 @@ const ProjectCard = ({ project, team }: { project: ProjectSubmission, team?: Tea
         
         if (isGuideForTeam && ['Stage1', 'Stage2', 'InternalFinal'].includes(reviewStage)) return true;
         
-        if (['admin', 'hod', 'rnd', 'class-mentor'].includes(role) && ['Stage1', 'Stage2', 'InternalFinal', 'ExternalFinal'].includes(reviewStage)) return true;
+        if (['admin', 'hod', 'r&d', 'class-mentor'].includes(role) && ['Stage1', 'Stage2', 'InternalFinal', 'ExternalFinal'].includes(reviewStage)) return true;
 
         return false;
     }, [project, team, currentFaculty, currentReviewType]);
@@ -425,7 +425,7 @@ export default function ProjectApprovalDashboard() {
     
     const isExternalReviewer = currentFaculty?.role === 'external';
 
-    if (!currentFaculty || !['guide', 'rnd', 'hod', 'admin', 'class-mentor', 'external'].includes(currentFaculty.role)) {
+    if (!currentFaculty || !['guide', 'r&d', 'hod', 'admin', 'class-mentor', 'external'].includes(currentFaculty.role)) {
         return (
             <Card><CardContent className="py-16 text-center"><AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" /><p className="mt-4 text-muted-foreground">You do not have permission to view this dashboard.</p></CardContent></Card>
         )
