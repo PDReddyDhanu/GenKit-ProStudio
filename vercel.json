@@ -1,9 +1,4 @@
 {
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_GEMINI_API_KEY": ""
-    }
-  },
   "github": {
     "silent": true
   }
